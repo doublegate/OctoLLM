@@ -5,74 +5,149 @@ Official Python client library for the OctoLLM distributed AI architecture.
 
 Basic Usage:
     ```python
-    from octollm_sdk import OctoLLMClient
+    from octollm_sdk import OrchestratorClient, TaskRequest, ResourceBudget
 
     # Initialize client
-    client = OctoLLMClient(
+    client = OrchestratorClient(
         base_url="http://localhost:8000",
         api_key="your-api-key"
     )
 
     # Submit a task
-    task = await client.orchestrator.create_task(
+    task = TaskRequest(
         goal="Create a Python function to validate emails",
-        constraints=["Include type hints", "Add docstring"]
+        constraints=["Include type hints", "Add docstring"],
+        budget=ResourceBudget(max_tokens=5000)
     )
+    response = await client.submit_task(task)
 
     # Get task status
-    result = await client.orchestrator.get_task(task.task_id)
-    print(result.result.output)
+    result = await client.get_task(response.task_id)
+    print(result.result.output if result.result else "Still processing...")
     ```
 
-Version: 0.3.0
+Version: 0.4.0
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __author__ = "OctoLLM Core Team"
 __license__ = "Apache-2.0"
 
-from .client import OctoLLMClient
+# Service clients
+from .services import (
+    OrchestratorClient,
+    ReflexClient,
+    PlannerClient,
+    ExecutorClient,
+    RetrieverClient,
+    CoderClient,
+    JudgeClient,
+    SafetyGuardianClient,
+)
+
+# Configuration
+from .config import OctoLLMConfig
+
+# Models
 from .models import (
+    # Core task models
     TaskRequest,
     TaskResponse,
+    TaskStatusResponse,
     ResourceBudget,
-    CodeRequest,
-    CodeResponse,
+    ArmCapability,
+    # Reflex models
+    PreprocessRequest,
+    PreprocessResponse,
+    CacheStats,
+    # Planner models
+    PlanRequest,
+    PlanResponse,
+    PlanStep,
+    # Executor models
+    ExecutionRequest,
+    ExecutionResult,
+    # Retriever models
     SearchRequest,
     SearchResponse,
+    SearchResult,
+    # Coder models
+    CodeRequest,
+    CodeResponse,
+    # Judge models
     ValidationRequest,
     ValidationResult,
+    ValidationIssue,
+    # Safety models
     SafetyRequest,
     SafetyResult,
+    SafetyIssue,
+    # Common models
+    HealthResponse,
+    ErrorResponse,
 )
+
+# Exceptions
 from .exceptions import (
     OctoLLMError,
     AuthenticationError,
+    AuthorizationError,
     ValidationError,
     RateLimitError,
     ServiceUnavailableError,
     NotFoundError,
+    TimeoutError,
+    APIError,
 )
 
 __all__ = [
-    "OctoLLMClient",
-    # Models
+    # Service clients
+    "OrchestratorClient",
+    "ReflexClient",
+    "PlannerClient",
+    "ExecutorClient",
+    "RetrieverClient",
+    "CoderClient",
+    "JudgeClient",
+    "SafetyGuardianClient",
+    # Configuration
+    "OctoLLMConfig",
+    # Core models
     "TaskRequest",
     "TaskResponse",
+    "TaskStatusResponse",
     "ResourceBudget",
-    "CodeRequest",
-    "CodeResponse",
+    "ArmCapability",
+    # Service-specific models
+    "PreprocessRequest",
+    "PreprocessResponse",
+    "CacheStats",
+    "PlanRequest",
+    "PlanResponse",
+    "PlanStep",
+    "ExecutionRequest",
+    "ExecutionResult",
     "SearchRequest",
     "SearchResponse",
+    "SearchResult",
+    "CodeRequest",
+    "CodeResponse",
     "ValidationRequest",
     "ValidationResult",
+    "ValidationIssue",
     "SafetyRequest",
     "SafetyResult",
+    "SafetyIssue",
+    "HealthResponse",
+    "ErrorResponse",
     # Exceptions
     "OctoLLMError",
     "AuthenticationError",
+    "AuthorizationError",
     "ValidationError",
     "RateLimitError",
     "ServiceUnavailableError",
     "NotFoundError",
+    "TimeoutError",
+    "APIError",
 ]
