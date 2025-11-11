@@ -1,0 +1,146 @@
+%% OctoLLM Authentication & Authorization Flow
+%% Shows API key authentication, bearer token generation, and capability-based access control
+
+graph TB
+    %% Actors
+    Client["Client<br/>(User Application)"]
+    InternalService["Internal Service<br/>(Arm)"]
+
+    %% API Gateway
+    Gateway["API Gateway<br/>(Auth Middleware)"]
+
+    %% Auth Services
+    APIKeyValidator["API Key Validator"]
+    TokenGenerator["Bearer Token Generator"]
+    CapabilityManager["Capability Manager"]
+
+    %% Storage
+    APIKeyStore[(API Key Store<br/>PostgreSQL)]
+    TokenCache[(Token Cache<br/>Redis)]
+    CapabilityStore[(Capability Store<br/>PostgreSQL)]
+
+    %% Services
+    Orchestrator["Orchestrator"]
+    TargetArm["Target Arm<br/>(e.g., Coder)"]
+
+    %% === Client Authentication Flow ===
+    subgraph "Client Authentication (API Key)"
+        Client -->|"1. Request<br/>X-API-Key: octollm_live_xxx"| Gateway
+        Gateway -->|2. Extract API key| APIKeyValidator
+        APIKeyValidator -->|3. Lookup key| APIKeyStore
+
+        APIKeyStore -.->|"Invalid key"| APIKeyValidator
+        APIKeyValidator -.->|"401 Unauthorized"| Client
+
+        APIKeyStore -->|"Valid key + metadata"| APIKeyValidator
+        APIKeyValidator -->|"4. Check rate limits"| APIKeyValidator
+        APIKeyValidator -.->|"429 Rate Limited"| Client
+
+        APIKeyValidator -->|"5. Authenticated<br/>user_id, tier, limits"| Gateway
+        Gateway -->|6. Forward request| Orchestrator
+    end
+
+    %% === Inter-Service Authentication Flow ===
+    subgraph "Inter-Service Authentication (Bearer Token)"
+        Orchestrator -->|"7. Request bearer token<br/>for arm delegation"| TokenGenerator
+        TokenGenerator -->|8. Lookup arm capabilities| CapabilityStore
+
+        CapabilityStore -->|"Arm capabilities:<br/>- arm_id<br/>- allowed_operations<br/>- resource_limits"| TokenGenerator
+
+        TokenGenerator -->|9. Generate JWT token<br/>with capabilities| TokenGenerator
+        TokenGenerator -->|10. Cache token| TokenCache
+        TokenGenerator -->|"11. Return token<br/>Bearer: tok_xxx<br/>exp: 5min"| Orchestrator
+
+        Orchestrator -->|"12. Call arm<br/>Authorization: Bearer tok_xxx"| TargetArm
+        TargetArm -->|13. Validate token| TokenCache
+
+        TokenCache -.->|"Token expired/invalid"| TargetArm
+        TargetArm -.->|"401 Unauthorized"| Orchestrator
+
+        TokenCache -->|"Valid token + capabilities"| TargetArm
+        TargetArm -->|14. Check capabilities| CapabilityManager
+
+        CapabilityManager -.->|"Insufficient permissions"| TargetArm
+        TargetArm -.->|"403 Forbidden"| Orchestrator
+
+        CapabilityManager -->|"Authorized"| TargetArm
+        TargetArm -->|15. Execute operation| TargetArm
+        TargetArm -->|16. Return result| Orchestrator
+    end
+
+    %% === API Key Types ===
+    subgraph "API Key Types"
+        direction LR
+        TestKey["Test Key<br/>octollm_test_xxx<br/>Rate: 10/min<br/>Cost: Free"]
+        LiveKey["Live Key<br/>octollm_live_xxx<br/>Rate: 100/min<br/>Cost: Paid"]
+        AdminKey["Admin Key<br/>octollm_admin_xxx<br/>Rate: Unlimited<br/>Cost: N/A"]
+    end
+
+    %% === Capability Scopes ===
+    subgraph "Capability Scopes"
+        direction LR
+        ShellRead["ShellRead<br/>(ls, cat, grep)"]
+        ShellWrite["ShellWrite<br/>(rm, mv, cp)"]
+        NetworkAccess["NetworkAccess<br/>(curl, wget)"]
+        FilesystemRead["FilesystemRead<br/>(/data/*)"]
+        FilesystemWrite["FilesystemWrite<br/>(/tmp/*)"]
+    end
+
+    %% === Token Lifecycle ===
+    subgraph "Token Lifecycle"
+        direction LR
+        TokenGenerated["Generated<br/>(exp: 5min)"]
+        TokenValid["Valid<br/>(cached)"]
+        TokenExpired["Expired<br/>(auto-deleted)"]
+
+        TokenGenerated -->|"< 5min"| TokenValid
+        TokenValid -->|"> 5min"| TokenExpired
+        TokenExpired -.->|"Regenerate"| TokenGenerated
+    end
+
+    %% Styling
+    classDef actor fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef auth fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef storage fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef service fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef keyType fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef capability fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+
+    class Client,InternalService actor
+    class Gateway,APIKeyValidator,TokenGenerator,CapabilityManager auth
+    class APIKeyStore,TokenCache,CapabilityStore storage
+    class Orchestrator,TargetArm service
+    class TestKey,LiveKey,AdminKey keyType
+    class ShellRead,ShellWrite,NetworkAccess,FilesystemRead,FilesystemWrite capability
+
+%% Authentication Flow Summary:
+%%
+%% CLIENT AUTHENTICATION (API Key):
+%% 1. Client sends request with X-API-Key header
+%% 2. API Gateway extracts and validates key against PostgreSQL store
+%% 3. Check rate limits based on key tier (test: 10/min, live: 100/min, admin: unlimited)
+%% 4. If valid, forward request to Orchestrator with user context
+%% 5. If invalid/expired/rate-limited, return 401/429 error
+%%
+%% INTER-SERVICE AUTHENTICATION (Bearer Token):
+%% 1. Orchestrator requests bearer token from Token Generator
+%% 2. Token Generator looks up target arm capabilities in database
+%% 3. Generate time-limited JWT token (5min expiry) with capability scopes
+%% 4. Cache token in Redis for fast validation
+%% 5. Orchestrator includes bearer token in arm request
+%% 6. Arm validates token against cache
+%% 7. Arm checks if token has required capabilities for operation
+%% 8. If valid and authorized, execute operation
+%% 9. If token expired/invalid, return 401; if insufficient permissions, return 403
+%%
+%% CAPABILITY-BASED ACCESS CONTROL:
+%% - Each token includes specific capability scopes (e.g., ShellRead, NetworkAccess)
+%% - Arms validate requested operation against token capabilities
+%% - Least privilege: tokens only include capabilities needed for specific task
+%% - Time-limited: tokens expire after 5 minutes (regenerate if needed)
+%% - Granular: separate capabilities for read vs write, different resource paths
+%%
+%% API KEY TIERS:
+%% - Test (octollm_test_): 10 req/min, free tier, full API access for testing
+%% - Live (octollm_live_): 100 req/min, paid tier, production usage
+%% - Admin (octollm_admin_): Unlimited, internal use, system operations

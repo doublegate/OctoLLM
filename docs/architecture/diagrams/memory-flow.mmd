@@ -1,0 +1,265 @@
+%% OctoLLM Memory Architecture Flow
+%% Shows global semantic memory, local episodic memory, and caching layers
+
+graph TB
+    %% Input/Output
+    Task["Task Execution"]
+    Result["Task Result"]
+
+    %% Memory Layers
+    subgraph "Memory Hierarchy"
+        direction TB
+
+        %% Layer 1: Cache (Fastest)
+        Cache["L1: Cache Layer<br/>(Redis)<br/>TTL: 5-60 min<br/>Access: ~1-5ms"]
+
+        %% Layer 2: Local Memory (Fast)
+        LocalMemory["L2: Local Memory<br/>(Task-Specific)<br/>TTL: Task duration<br/>Access: ~10-50ms"]
+
+        %% Layer 3: Global Memory (Persistent)
+        GlobalMemory["L3: Global Memory<br/>(PostgreSQL)<br/>Persistent<br/>Access: ~50-200ms"]
+
+        %% Layer 4: Episodic Memory (Arm-Specific)
+        EpisodicMemory["L4: Episodic Memory<br/>(Per-Arm Learning)<br/>Persistent<br/>Access: ~100-300ms"]
+
+        %% Layer 5: Vector Store (Semantic)
+        VectorStore["L5: Vector Store<br/>(Qdrant/Weaviate)<br/>Persistent<br/>Access: ~200-500ms"]
+
+        Cache -->|"Cache miss"| LocalMemory
+        LocalMemory -->|"Not found"| GlobalMemory
+        GlobalMemory -->|"Semantic search"| VectorStore
+    end
+
+    %% Cache Operations
+    subgraph "Cache Layer (L1)"
+        direction LR
+        CacheKey["Cache Key:<br/>hash(goal + constraints)"]
+        CacheHit["Cache Hit<br/>Return immediately"]
+        CacheMiss["Cache Miss<br/>Execute task"]
+        CacheUpdate["Update Cache<br/>TTL: 5-60 min"]
+
+        CacheKey -->|"Found"| CacheHit
+        CacheKey -->|"Not found"| CacheMiss
+        CacheMiss --> CacheUpdate
+    end
+
+    %% Local Memory Operations
+    subgraph "Local Memory (L2 - Task-Specific)"
+        direction TB
+        TaskContext["Task Context<br/>- user_id<br/>- session_id<br/>- task_id<br/>- intermediate_results"]
+
+        Step1Context["Step 1 Context"]
+        Step2Context["Step 2 Context"]
+        Step3Context["Step 3 Context"]
+
+        TaskContext -->|"Isolated"| Step1Context
+        TaskContext -->|"Isolated"| Step2Context
+        TaskContext -->|"Isolated"| Step3Context
+
+        Step1Context -.->|"Read previous steps"| Step2Context
+        Step2Context -.->|"Read previous steps"| Step3Context
+    end
+
+    %% Global Memory Operations
+    subgraph "Global Memory (L3 - Shared)"
+        direction TB
+        KnowledgeBase["Knowledge Base<br/>- Facts<br/>- Definitions<br/>- Procedures"]
+
+        TaskHistory["Task History<br/>- Past tasks<br/>- Results<br/>- Confidence scores"]
+
+        ArmRegistry["Arm Registry<br/>- Capabilities<br/>- Endpoints<br/>- Status"]
+
+        UserProfiles["User Profiles<br/>- Preferences<br/>- Usage patterns<br/>- API keys"]
+    end
+
+    %% Episodic Memory Operations (Coder Arm Example)
+    subgraph "Episodic Memory (L4 - Arm-Specific)"
+        direction TB
+        CoderMemory["Coder Arm Memory"]
+        JudgeMemory["Judge Arm Memory"]
+        RetrieverMemory["Retriever Arm Memory"]
+
+        CoderMemory -->|"Learn from"| PastSolutions["Past Code Solutions<br/>- Language: Python<br/>- Pattern: email_validation<br/>- Code: def validate_email(...)<br/>- Confidence: 0.95<br/>- Reused: 15 times"]
+
+        JudgeMemory -->|"Learn from"| ValidationPatterns["Validation Patterns<br/>- Common errors<br/>- Effective criteria<br/>- Hallucination indicators"]
+
+        RetrieverMemory -->|"Learn from"| SearchQueries["Effective Search Queries<br/>- Query: 'SQL injection prevention'<br/>- Results: owasp.org, portswigger.net<br/>- Relevance: 0.94"]
+    end
+
+    %% Vector Store Operations
+    subgraph "Vector Store (L5 - Semantic Search)"
+        direction TB
+        EmbedQuery["1. Embed Query<br/>text → vector<br/>(1536-dim)"]
+        SearchSimilar["2. Search Similar<br/>cosine similarity<br/>threshold: 0.7"]
+        RetrieveDocs["3. Retrieve Documents<br/>Top-K: 10"]
+        Rerank["4. Rerank<br/>hybrid: vector + keyword"]
+
+        EmbedQuery --> SearchSimilar
+        SearchSimilar --> RetrieveDocs
+        RetrieveDocs --> Rerank
+    end
+
+    %% Memory Read Flow
+    Task -->|"1. Check cache"| Cache
+    Cache -->|"Hit"| Result
+    Cache -->|"Miss"| Task
+
+    Task -->|"2. Read local context"| LocalMemory
+    LocalMemory -->|"Previous steps"| Task
+
+    Task -->|"3. Read global knowledge"| GlobalMemory
+    GlobalMemory -->|"Facts, history"| Task
+
+    Task -->|"4. Check episodic memory"| EpisodicMemory
+    EpisodicMemory -->|"Past solutions"| Task
+
+    Task -->|"5. Semantic search"| VectorStore
+    VectorStore -->|"Relevant documents"| Task
+
+    %% Memory Write Flow
+    Task -->|"6. Execute"| Task
+    Task -->|"7a. Update local"| LocalMemory
+    Task -->|"7b. Update global"| GlobalMemory
+    Task -->|"7c. Learn pattern"| EpisodicMemory
+    Task -->|"7d. Index result"| VectorStore
+    Task -->|"7e. Cache result"| Cache
+
+    Task -->|"8. Return result"| Result
+
+    %% Memory Types Comparison
+    subgraph "Memory Types Comparison"
+        direction LR
+        CacheMem["Cache<br/>Scope: Recent tasks<br/>Lifetime: Minutes<br/>Purpose: Speed<br/>Example: hash(goal) → result"]
+
+        LocalMem["Local<br/>Scope: Single task<br/>Lifetime: Task duration<br/>Purpose: Context<br/>Example: Step 1 → Step 2 data"]
+
+        GlobalMem["Global<br/>Scope: All tasks/users<br/>Lifetime: Persistent<br/>Purpose: Knowledge<br/>Example: API key → user_id"]
+
+        EpisodicMem["Episodic<br/>Scope: Per-arm<br/>Lifetime: Persistent<br/>Purpose: Learning<br/>Example: Similar code → reuse"]
+
+        VectorMem["Vector<br/>Scope: Documents<br/>Lifetime: Persistent<br/>Purpose: Retrieval<br/>Example: Query → similar docs"]
+    end
+
+    %% Memory Access Patterns
+    subgraph "Common Access Patterns"
+        direction TB
+
+        Pattern1["Pattern 1: Cache-First<br/>1. Check cache<br/>2. If miss, execute + cache"]
+
+        Pattern2["Pattern 2: Context-Aware<br/>1. Read local context<br/>2. Execute with context<br/>3. Update local context"]
+
+        Pattern3["Pattern 3: Learn & Reuse<br/>1. Check episodic memory<br/>2. If similar task, reuse<br/>3. If new, learn pattern"]
+
+        Pattern4["Pattern 4: RAG<br/>1. Semantic search (vector)<br/>2. Retrieve context<br/>3. Generate with context"]
+    end
+
+    %% Styling
+    classDef task fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef cache fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef local fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef global fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef episodic fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef vector fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+
+    class Task,Result task
+    class Cache,CacheKey,CacheHit,CacheMiss,CacheUpdate cache
+    class LocalMemory,TaskContext,Step1Context,Step2Context,Step3Context local
+    class GlobalMemory,KnowledgeBase,TaskHistory,ArmRegistry,UserProfiles global
+    class EpisodicMemory,CoderMemory,JudgeMemory,RetrieverMemory,PastSolutions,ValidationPatterns,SearchQueries episodic
+    class VectorStore,EmbedQuery,SearchSimilar,RetrieveDocs,Rerank vector
+
+%% Memory Architecture Summary:
+%%
+%% MEMORY LAYERS (Ordered by access speed):
+%%
+%% L1: CACHE LAYER (Redis) - Fastest, ~1-5ms
+%% - Stores recent task results for instant retrieval
+%% - Key: hash(goal + constraints + context)
+%% - Value: TaskResponse with result
+%% - TTL: 5-60 minutes (configurable)
+%% - Hit rate target: >60% for common queries
+%% - Invalidation: On cache expiry or explicit invalidation
+%%
+%% L2: LOCAL MEMORY (Task-Specific) - Fast, ~10-50ms
+%% - Isolated memory for single task execution
+%% - Stores intermediate results between steps
+%% - Example: Step 1 retrieves CVE details → stored in local memory → Step 2 uses details
+%% - Scope: Single task_id
+%% - Lifetime: Task duration (deleted after task completes)
+%% - Purpose: Enable step-to-step data flow without global pollution
+%%
+%% L3: GLOBAL MEMORY (PostgreSQL) - Moderate, ~50-200ms
+%% - Shared persistent storage across all tasks and users
+%% - Stores:
+%%   - Knowledge base (facts, definitions, procedures)
+%%   - Task history (past tasks, results, metadata)
+%%   - Arm registry (capabilities, endpoints, health status)
+%%   - User profiles (preferences, API keys, rate limits)
+%% - Scope: System-wide
+%% - Lifetime: Persistent (manual cleanup)
+%% - Purpose: Long-term knowledge and configuration storage
+%%
+%% L4: EPISODIC MEMORY (Per-Arm) - Slower, ~100-300ms
+%% - Arm-specific learning from past executions
+%% - Each arm maintains its own episodic memory
+%% - Examples:
+%%   - Coder Arm: Past code solutions for similar tasks
+%%     "Email validation in Python" → reuse previous solution
+%%   - Judge Arm: Validation patterns and common errors
+%%     "Missing required field 'tests'" → common issue
+%%   - Retriever Arm: Effective search queries
+%%     "SQL injection" → best sources: owasp.org, portswigger.net
+%% - Stores: task description, solution, confidence, reuse count
+%% - Reuse criteria: cosine similarity > 0.8 between current and past task
+%% - Purpose: Improve quality and speed by learning from experience
+%%
+%% L5: VECTOR STORE (Qdrant/Weaviate) - Slowest, ~200-500ms
+%% - Semantic search over documents and knowledge
+%% - Embeddings: text → 1536-dim vector (e.g., text-embedding-ada-002)
+%% - Search: cosine similarity, threshold: 0.7
+%% - Hybrid search: vector (70%) + keyword (30%) + reranking
+%% - Stores: documents, code snippets, API docs, CVE databases
+%% - Purpose: Retrieval-Augmented Generation (RAG)
+%%
+%% MEMORY ACCESS PATTERNS:
+%%
+%% 1. CACHE-FIRST (for frequent queries):
+%%    - Check cache with task hash
+%%    - If hit → return cached result immediately (no LLM call)
+%%    - If miss → execute task + cache result for future
+%%    - Best for: repeated queries, common tasks
+%%
+%% 2. CONTEXT-AWARE (for multi-step tasks):
+%%    - Read local memory for context from previous steps
+%%    - Execute current step with context
+%%    - Write result to local memory for future steps
+%%    - Best for: sequential workflows, dependent steps
+%%
+%% 3. LEARN & REUSE (for episodic memory):
+%%    - Check episodic memory for similar past tasks
+%%    - If similar (>0.8 similarity) → reuse solution
+%%    - If new pattern → execute and learn for future
+%%    - Increment reuse count on successful reuse
+%%    - Best for: code generation, common patterns
+%%
+%% 4. RAG (for knowledge retrieval):
+%%    - Embed query → vector
+%%    - Search vector store for similar documents
+%%    - Retrieve top-K results (typically K=10)
+%%    - Rerank with hybrid scoring
+%%    - Use retrieved context in LLM prompt
+%%    - Best for: research, documentation, CVE lookup
+%%
+%% MEMORY CONSISTENCY:
+%% - Cache invalidation: On global memory update or explicit cache clear
+%% - Local memory isolation: Each task has isolated namespace
+%% - Global memory transactions: ACID guarantees via PostgreSQL
+%% - Episodic memory updates: Async background updates (don't block task)
+%% - Vector store indexing: Async batch updates every 5 minutes
+%%
+%% MEMORY OPTIMIZATION:
+%% - Cache warm-up: Pre-populate cache with common queries on startup
+%% - Local memory cleanup: Delete after task completion
+%% - Global memory archival: Move old tasks to cold storage after 90 days
+%% - Episodic memory pruning: Remove low-confidence entries (<0.5) quarterly
+%% - Vector store reindexing: Full reindex monthly for embedding model updates

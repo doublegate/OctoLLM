@@ -1,0 +1,224 @@
+%% OctoLLM Task Routing & Decomposition Flow
+%% Shows how tasks are decomposed into subtasks and routed to appropriate arms
+
+graph TB
+    %% Input
+    TaskRequest["Task Request<br/>goal: 'Analyze nginx CVE-2024<br/>and create exploit PoC'<br/>constraints: [...]<br/>acceptance_criteria: [...]"]
+
+    %% Orchestrator Decision Points
+    Orchestrator["Orchestrator<br/>(Central Coordinator)"]
+
+    %% Planner
+    Planner["Planner Arm<br/>(Task Decomposition)"]
+
+    %% Plan Output
+    Plan["Execution Plan<br/>Step 1: Research CVE details<br/>Step 2: Analyze vulnerability<br/>Step 3: Generate exploit code<br/>Step 4: Test exploit<br/>Step 5: Document findings"]
+
+    %% Arm Selection
+    ArmSelector["Arm Selector<br/>(Capability Matching)"]
+    ArmRegistry[(Arm Registry<br/>Capabilities DB)]
+
+    %% Routing Decisions
+    subgraph "Step Execution & Routing"
+        direction TB
+
+        %% Step 1: Research
+        Step1["Step 1: Research CVE<br/>Required: vector_search,<br/>citation_generation"]
+        Step1Decision{"Match<br/>capabilities?"}
+        Step1Retriever["Route to:<br/>Retriever Arm<br/>(Cost Tier 3)"]
+
+        %% Step 2: Analysis
+        Step2["Step 2: Analyze code<br/>Required: code_analysis"]
+        Step2Decision{"Match<br/>capabilities?"}
+        Step2Coder["Route to:<br/>Coder Arm<br/>(Cost Tier 4)"]
+
+        %% Step 3: Generate Exploit
+        Step3["Step 3: Generate exploit<br/>Required: code_generation"]
+        Step3Decision{"Match<br/>capabilities?"}
+        Step3Coder["Route to:<br/>Coder Arm<br/>(Cost Tier 4)"]
+
+        %% Step 4: Test Exploit
+        Step4["Step 4: Test exploit<br/>Required: python_execution"]
+        Step4Decision{"Match<br/>capabilities?"}
+        Step4Executor["Route to:<br/>Executor Arm<br/>(Cost Tier 3)"]
+
+        %% Step 5: Validate & Document
+        Step5["Step 5: Validate results<br/>Required: criteria_validation"]
+        Step5Decision{"Match<br/>capabilities?"}
+        Step5Judge["Route to:<br/>Judge Arm<br/>(Cost Tier 2)"]
+
+        Step1 --> Step1Decision
+        Step1Decision -->|"Yes"| Step1Retriever
+        Step1Decision -.->|"No match"| ErrorNoArm1["Error: No compatible arm"]
+
+        Step2 --> Step2Decision
+        Step2Decision -->|"Yes"| Step2Coder
+
+        Step3 --> Step3Decision
+        Step3Decision -->|"Yes"| Step3Coder
+
+        Step4 --> Step4Decision
+        Step4Decision -->|"Yes"| Step4Executor
+
+        Step5 --> Step5Decision
+        Step5Decision -->|"Yes"| Step5Judge
+    end
+
+    %% Execution Modes
+    subgraph "Execution Modes"
+        direction LR
+        Sequential["Sequential<br/>(Step-by-step)<br/>Step 1 → Step 2 → Step 3"]
+        Parallel["Parallel<br/>(Independent steps)<br/>Step 1a || Step 1b || Step 1c"]
+        Hybrid["Hybrid<br/>(Mixed)<br/>Parallel → Sequential"]
+    end
+
+    %% Dependency Resolution
+    subgraph "Dependency Resolution"
+        direction TB
+        NoDeps["No Dependencies<br/>Execute immediately"]
+        WithDeps["Has Dependencies<br/>Wait for prerequisite steps"]
+        DepExample["Example:<br/>Step 3 depends on Step 2<br/>→ Wait for Step 2 result"]
+    end
+
+    %% Cost-Based Routing
+    subgraph "Cost-Based Routing"
+        direction LR
+        CostTier1["Tier 1 (Cheap)<br/>Reflex, Safety<br/>$0.00/task"]
+        CostTier2["Tier 2 (Low)<br/>Planner, Judge<br/>$0.01-0.05/task"]
+        CostTier3["Tier 3 (Medium)<br/>Executor, Retriever<br/>$0.05-0.10/task"]
+        CostTier4["Tier 4 (High)<br/>Coder<br/>$0.10-0.50/task"]
+        CostTier5["Tier 5 (Expensive)<br/>Orchestrator<br/>$0.50-2.00/task"]
+
+        CostTier1 -->|"Prefer"| CostTier2
+        CostTier2 -->|"If needed"| CostTier3
+        CostTier3 -->|"If needed"| CostTier4
+        CostTier4 -->|"Rare"| CostTier5
+    end
+
+    %% Capability Matching Algorithm
+    subgraph "Capability Matching Algorithm"
+        direction TB
+        InputCaps["Required Capabilities<br/>[code_generation, test_generation]"]
+        QueryRegistry["Query Arm Registry"]
+        FilterArms["Filter arms with<br/>ALL required capabilities"]
+        SortByCost["Sort by cost_tier (ascending)"]
+        CheckHealth["Filter by status = healthy"]
+        SelectArm["Select first arm"]
+        NoMatch["No match found<br/>→ Error or fallback"]
+
+        InputCaps --> QueryRegistry
+        QueryRegistry --> FilterArms
+        FilterArms --> SortByCost
+        SortByCost --> CheckHealth
+        CheckHealth --> SelectArm
+        FilterArms -.->|"Empty result"| NoMatch
+        CheckHealth -.->|"No healthy arms"| NoMatch
+    end
+
+    %% Main Flow
+    TaskRequest --> Orchestrator
+    Orchestrator -->|1. Decompose task| Planner
+    Planner -->|2. Return plan| Plan
+
+    Plan --> Orchestrator
+    Orchestrator -->|3. For each step| ArmSelector
+    ArmSelector -->|4. Query capabilities| ArmRegistry
+
+    ArmRegistry -->|5. Available arms| ArmSelector
+    ArmSelector -->|6. Match & route| Step1
+    ArmSelector -->|6. Match & route| Step2
+    ArmSelector -->|6. Match & route| Step3
+    ArmSelector -->|6. Match & route| Step4
+    ArmSelector -->|6. Match & route| Step5
+
+    Step1Retriever -->|7a. Execute| ResultStep1["Result 1:<br/>CVE details"]
+    Step2Coder -->|7b. Execute| ResultStep2["Result 2:<br/>Vulnerability analysis"]
+    Step3Coder -->|7c. Execute| ResultStep3["Result 3:<br/>Exploit code"]
+    Step4Executor -->|7d. Execute| ResultStep4["Result 4:<br/>Test results"]
+    Step5Judge -->|7e. Execute| ResultStep5["Result 5:<br/>Validation passed"]
+
+    ResultStep1 --> Orchestrator
+    ResultStep2 --> Orchestrator
+    ResultStep3 --> Orchestrator
+    ResultStep4 --> Orchestrator
+    ResultStep5 --> Orchestrator
+
+    Orchestrator -->|8. Synthesize results| FinalResult["Final Result<br/>CVE analysis + exploit PoC"]
+
+    %% Styling
+    classDef input fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef orchestrator fill:#f3e5f5,stroke:#4a148c,stroke-width:3px
+    classDef planner fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef selector fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef arm fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef decision fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef result fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef error fill:#ffebee,stroke:#c62828,stroke-width:2px
+
+    class TaskRequest input
+    class Orchestrator orchestrator
+    class Planner,ArmSelector planner
+    class ArmRegistry selector
+    class Step1Retriever,Step2Coder,Step3Coder,Step4Executor,Step5Judge arm
+    class Step1Decision,Step2Decision,Step3Decision,Step4Decision,Step5Decision decision
+    class Plan,ResultStep1,ResultStep2,ResultStep3,ResultStep4,ResultStep5,FinalResult result
+    class ErrorNoArm1 error
+
+%% Task Routing & Decomposition Summary:
+%%
+%% TASK DECOMPOSITION:
+%% 1. Orchestrator receives complex task from user
+%% 2. Delegates to Planner arm for decomposition into subtasks
+%% 3. Planner analyzes goal, constraints, and acceptance criteria
+%% 4. Returns structured plan with 5-10 ordered steps
+%% 5. Each step includes: action, required capabilities, estimated duration, dependencies
+%%
+%% ARM SELECTION ALGORITHM:
+%% 1. Extract required capabilities from step (e.g., "code_generation", "vector_search")
+%% 2. Query arm registry for all registered arms
+%% 3. Filter arms that have ALL required capabilities
+%% 4. Sort by cost_tier (ascending) to prefer cheaper arms
+%% 5. Filter by health status (only "healthy" arms)
+%% 6. Select first arm in sorted list
+%% 7. If no match found, return error or fallback to general-purpose arm
+%%
+%% EXECUTION MODES:
+%% - Sequential: Steps executed one at a time (Step 1 → Step 2 → Step 3)
+%%   Used when steps have dependencies or order matters
+%%
+%% - Parallel: Independent steps executed concurrently (Step 1a || Step 1b || Step 1c)
+%%   Used when steps have no dependencies and can run simultaneously
+%%   Reduces total latency
+%%
+%% - Hybrid: Mix of sequential and parallel execution
+%%   Example: Step 1 (sequential) → [Step 2a || Step 2b || Step 2c] (parallel) → Step 3 (sequential)
+%%
+%% DEPENDENCY RESOLUTION:
+%% - Each step declares dependencies on other steps (by step number)
+%% - Orchestrator builds dependency graph
+%% - Steps with no dependencies execute immediately
+%% - Steps with dependencies wait until all prerequisites complete
+%% - Prevents race conditions and ensures correct data flow
+%%
+%% COST-BASED ROUTING:
+%% - Arms are assigned cost tiers (1-5) based on LLM usage and resource consumption
+%% - Routing algorithm prefers cheaper arms when multiple arms have same capabilities
+%% - Budget-aware: if task has tight budget, avoid expensive arms
+%% - Examples:
+%%   - Tier 1 (Cheap): Reflex, Safety Guardian - no LLM calls
+%%   - Tier 2 (Low): Planner, Judge - GPT-3.5-turbo
+%%   - Tier 3 (Medium): Executor (sandboxing overhead), Retriever (vector search)
+%%   - Tier 4 (High): Coder - GPT-4 for complex code generation
+%%   - Tier 5 (Expensive): Orchestrator - multi-step reasoning with frontier models
+%%
+%% CAPABILITY TAGS:
+%% - Each arm registers capabilities it provides (e.g., "code_generation", "vector_search")
+%% - Steps specify required capabilities
+%% - Routing system matches required → available capabilities
+%% - Enables dynamic arm addition/removal without modifying Orchestrator logic
+%%
+%% ERROR HANDLING:
+%% - If no arm matches required capabilities → return error to user
+%% - If selected arm is unhealthy → try next arm in sorted list
+%% - If all arms unhealthy → return 503 Service Unavailable
+%% - Fallback option: route to general-purpose arm (if available)

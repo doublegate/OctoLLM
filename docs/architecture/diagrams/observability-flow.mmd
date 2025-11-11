@@ -1,0 +1,432 @@
+%% OctoLLM Observability Flow
+%% Shows logging, metrics, distributed tracing, and monitoring architecture
+
+graph TB
+    %% Request Flow
+    Client["Client"]
+    Gateway["API Gateway"]
+    Orchestrator["Orchestrator"]
+    PlannerArm["Planner Arm"]
+    CoderArm["Coder Arm"]
+    JudgeArm["Judge Arm"]
+
+    %% Observability Stack
+    subgraph "Observability Stack"
+        direction TB
+        Prometheus[("Prometheus<br/>(Metrics)")]
+        Loki[("Loki<br/>(Logs)")]
+        Jaeger[("Jaeger<br/>(Traces)")]
+        Grafana["Grafana<br/>(Dashboards)"]
+        Alertmanager["Alertmanager<br/>(Alerts)"]
+
+        Prometheus --> Grafana
+        Loki --> Grafana
+        Jaeger --> Grafana
+        Prometheus --> Alertmanager
+    end
+
+    %% Logging Layer
+    subgraph "Structured Logging (JSON)"
+        direction TB
+        LogEntry["Log Entry"]
+        LogLevel["level: info/warn/error"]
+        LogMessage["message: string"]
+        LogTimestamp["timestamp: ISO 8601"]
+        LogTraceID["trace_id: string"]
+        LogService["service: orchestrator"]
+        LogContext["context: {...}"]
+
+        LogEntry --> LogLevel
+        LogEntry --> LogMessage
+        LogEntry --> LogTimestamp
+        LogEntry --> LogTraceID
+        LogEntry --> LogService
+        LogEntry --> LogContext
+    end
+
+    %% Metrics Layer
+    subgraph "Metrics (Prometheus Format)"
+        direction TB
+
+        %% Request Metrics
+        RequestMetrics["Request Metrics"]
+        RequestTotal["http_requests_total<br/>(Counter)"]
+        RequestDuration["http_request_duration_seconds<br/>(Histogram)"]
+        RequestSize["http_request_size_bytes<br/>(Histogram)"]
+
+        RequestMetrics --> RequestTotal
+        RequestMetrics --> RequestDuration
+        RequestMetrics --> RequestSize
+
+        %% Task Metrics
+        TaskMetrics["Task Metrics"]
+        TasksTotal["tasks_total<br/>(Counter)"]
+        TaskDuration["task_duration_seconds<br/>(Histogram)"]
+        TaskSuccess["task_success_rate<br/>(Gauge)"]
+        TaskTokens["task_tokens_used<br/>(Histogram)"]
+
+        TaskMetrics --> TasksTotal
+        TaskMetrics --> TaskDuration
+        TaskMetrics --> TaskSuccess
+        TaskMetrics --> TaskTokens
+
+        %% Arm Metrics
+        ArmMetrics["Arm Metrics"]
+        ArmCalls["arm_calls_total<br/>(Counter)"]
+        ArmLatency["arm_latency_seconds<br/>(Histogram)"]
+        ArmErrors["arm_errors_total<br/>(Counter)"]
+        CircuitState["circuit_breaker_state<br/>(Gauge: 0/1/2)"]
+
+        ArmMetrics --> ArmCalls
+        ArmMetrics --> ArmLatency
+        ArmMetrics --> ArmErrors
+        ArmMetrics --> CircuitState
+    end
+
+    %% Distributed Tracing
+    subgraph "Distributed Tracing (OpenTelemetry)"
+        direction TB
+        TraceSpan["Trace Span"]
+        SpanID["span_id: unique ID"]
+        TraceIDField["trace_id: request ID"]
+        ParentSpanID["parent_span_id: parent"]
+        Operation["operation: POST /tasks"]
+        StartTime["start_time: timestamp"]
+        Duration["duration: milliseconds"]
+        Tags["tags: {service, arm_id, ...}"]
+
+        TraceSpan --> SpanID
+        TraceSpan --> TraceIDField
+        TraceSpan --> ParentSpanID
+        TraceSpan --> Operation
+        TraceSpan --> StartTime
+        TraceSpan --> Duration
+        TraceSpan --> Tags
+    end
+
+    %% Example Trace Flow
+    subgraph "Example: Complete Request Trace"
+        direction TB
+        RootSpan["Root Span<br/>POST /tasks<br/>trace_id: trace_abc123<br/>duration: 12.5s"]
+
+        PlanSpan["Child Span<br/>Planner.plan()<br/>parent: root<br/>duration: 2.3s"]
+
+        CodeSpan["Child Span<br/>Coder.generate()<br/>parent: root<br/>duration: 8.1s"]
+
+        JudgeSpan["Child Span<br/>Judge.validate()<br/>parent: root<br/>duration: 1.8s"]
+
+        RootSpan --> PlanSpan
+        RootSpan --> CodeSpan
+        RootSpan --> JudgeSpan
+    end
+
+    %% Dashboards
+    subgraph "Grafana Dashboards"
+        direction TB
+        OverviewDash["Overview Dashboard<br/>- Total requests<br/>- Success rate<br/>- P95 latency<br/>- Error rate"]
+
+        ArmsDash["Arms Dashboard<br/>- Calls per arm<br/>- Latency per arm<br/>- Circuit breaker state<br/>- Health status"]
+
+        CostDash["Cost Dashboard<br/>- Tokens used<br/>- Cost per task<br/>- Cost by arm<br/>- Budget utilization"]
+
+        ErrorDash["Error Dashboard<br/>- Errors by type<br/>- Errors by arm<br/>- Retry rate<br/>- Degraded responses"]
+    end
+
+    %% Alerting Rules
+    subgraph "Alerting Rules (Prometheus)"
+        direction TB
+        HighErrorRate["High Error Rate<br/>>5% in 5 minutes<br/>Severity: warning"]
+
+        ArmDown["Arm Down<br/>Circuit breaker open<br/>Severity: critical"]
+
+        HighLatency["High Latency<br/>P95 > 30s for 10 min<br/>Severity: warning"]
+
+        BudgetExceeded["Budget Alert<br/>80% budget used<br/>Severity: info"]
+    end
+
+    %% Main Observability Flow
+    Client -->|"1. Request<br/>X-Request-ID: req_123"| Gateway
+
+    Gateway -->|"2. Generate trace_id<br/>trace_abc123"| Gateway
+    Gateway -->|"3. Forward with trace_id"| Orchestrator
+
+    Orchestrator -->|"4. Delegate with trace_id"| PlannerArm
+    Orchestrator -->|"5. Delegate with trace_id"| CoderArm
+    Orchestrator -->|"6. Delegate with trace_id"| JudgeArm
+
+    %% Logging
+    Gateway -.->|"Log: request received"| Loki
+    Orchestrator -.->|"Log: task started"| Loki
+    PlannerArm -.->|"Log: plan generated"| Loki
+    CoderArm -.->|"Log: code generated"| Loki
+    JudgeArm -.->|"Log: validation passed"| Loki
+    Orchestrator -.->|"Log: task completed"| Loki
+
+    %% Metrics
+    Gateway -.->|"Metric: http_requests_total++"| Prometheus
+    Orchestrator -.->|"Metric: tasks_total++"| Prometheus
+    PlannerArm -.->|"Metric: arm_calls_total{arm=planner}++"| Prometheus
+    CoderArm -.->|"Metric: arm_calls_total{arm=coder}++"| Prometheus
+    JudgeArm -.->|"Metric: arm_calls_total{arm=judge}++"| Prometheus
+    Orchestrator -.->|"Metric: task_duration_seconds"| Prometheus
+
+    %% Tracing
+    Gateway -.->|"Span: gateway.forward"| Jaeger
+    Orchestrator -.->|"Span: orchestrator.execute"| Jaeger
+    PlannerArm -.->|"Span: planner.plan"| Jaeger
+    CoderArm -.->|"Span: coder.generate"| Jaeger
+    JudgeArm -.->|"Span: judge.validate"| Jaeger
+
+    %% Dashboard Updates
+    Prometheus -.->|"Query metrics"| Grafana
+    Loki -.->|"Query logs"| Grafana
+    Jaeger -.->|"Query traces"| Grafana
+
+    %% Alerting
+    Prometheus -.->|"Evaluate rules"| Alertmanager
+    Alertmanager -.->|"Notify: Slack/PagerDuty"| Ops["Operations Team"]
+
+    %% Log Correlation Example
+    subgraph "Log Correlation by trace_id"
+        direction TB
+        Log1["[INFO] Gateway: Request received<br/>trace_id=trace_abc123<br/>path=/tasks<br/>method=POST"]
+
+        Log2["[INFO] Orchestrator: Task started<br/>trace_id=trace_abc123<br/>task_id=task_xyz789<br/>goal='Generate code...'"]
+
+        Log3["[INFO] Coder: Code generated<br/>trace_id=trace_abc123<br/>task_id=task_xyz789<br/>language=python<br/>confidence=0.92"]
+
+        Log4["[INFO] Orchestrator: Task completed<br/>trace_id=trace_abc123<br/>task_id=task_xyz789<br/>duration=12.5s<br/>success=true"]
+    end
+
+    %% Key Metrics
+    subgraph "Key Performance Indicators (KPIs)"
+        direction LR
+        KPI1["Availability<br/>Target: 99.9%<br/>4-nines uptime"]
+
+        KPI2["Latency<br/>P50: <5s<br/>P95: <30s<br/>P99: <60s"]
+
+        KPI3["Success Rate<br/>Target: >95%<br/>vs baseline"]
+
+        KPI4["Cost Efficiency<br/>Target: <50%<br/>vs monolithic LLM"]
+
+        KPI5["Error Rate<br/>Target: <1%<br/>of total requests"]
+    end
+
+    %% Styling
+    classDef service fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef observability fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef logs fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef metrics fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef traces fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef dashboard fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef alert fill:#ffebee,stroke:#c62828,stroke-width:2px
+
+    class Client,Gateway,Orchestrator,PlannerArm,CoderArm,JudgeArm service
+    class Prometheus,Loki,Jaeger,Grafana,Alertmanager observability
+    class LogEntry,LogLevel,LogMessage,LogTimestamp,LogTraceID,LogService,LogContext logs
+    class RequestMetrics,TaskMetrics,ArmMetrics,RequestTotal,RequestDuration,TasksTotal,TaskDuration,ArmCalls,ArmLatency metrics
+    class TraceSpan,SpanID,TraceIDField,ParentSpanID,Operation,StartTime,Duration,Tags,RootSpan,PlanSpan,CodeSpan,JudgeSpan traces
+    class OverviewDash,ArmsDash,CostDash,ErrorDash dashboard
+    class HighErrorRate,ArmDown,HighLatency,BudgetExceeded,Ops alert
+
+%% Observability Architecture Summary:
+%%
+%% THREE PILLARS OF OBSERVABILITY:
+%%
+%% 1. LOGGING (Loki + JSON structured logs)
+%% 2. METRICS (Prometheus + Grafana)
+%% 3. DISTRIBUTED TRACING (Jaeger + OpenTelemetry)
+%%
+%% LOGGING STRATEGY:
+%%
+%% - Format: JSON structured logs (not plain text)
+%% - Library: structlog (Python), winston (Node.js), slog (Rust)
+%% - Required fields in EVERY log:
+%%   - level: info | warn | error | debug
+%%   - message: Human-readable description
+%%   - timestamp: ISO 8601 format
+%%   - trace_id: Request correlation ID
+%%   - service: Service name (e.g., "orchestrator", "coder")
+%%   - context: Additional structured data (task_id, user_id, etc.)
+%%
+%% Example log entry:
+%% {
+%%   "level": "info",
+%%   "message": "Task completed successfully",
+%%   "timestamp": "2025-11-11T12:34:56.789Z",
+%%   "trace_id": "trace_abc123xyz789",
+%%   "service": "orchestrator",
+%%   "context": {
+%%     "task_id": "task_xyz789",
+%%     "user_id": "user_12345",
+%%     "duration_seconds": 12.5,
+%%     "success": true
+%%   }
+%% }
+%%
+%% - Log levels:
+%%   - DEBUG: Detailed debugging info (disabled in production)
+%%   - INFO: Normal operations (task started, arm called, etc.)
+%%   - WARN: Degraded operations (retries, fallbacks, circuit breaker)
+%%   - ERROR: Failures requiring attention (arm timeout, validation failed)
+%%
+%% - Log correlation:
+%%   - Use trace_id to correlate logs across services
+%%   - Example: Find all logs for request trace_abc123 → complete story
+%%
+%% METRICS STRATEGY:
+%%
+%% - Format: Prometheus exposition format
+%% - Metric types:
+%%   - Counter: Monotonically increasing (e.g., http_requests_total)
+%%   - Gauge: Can increase/decrease (e.g., circuit_breaker_state)
+%%   - Histogram: Distribution of values (e.g., http_request_duration_seconds)
+%%   - Summary: Similar to histogram, precomputed percentiles
+%%
+%% Key metrics:
+%%
+%% REQUEST METRICS:
+%% - http_requests_total{method,path,status} - Total HTTP requests (counter)
+%% - http_request_duration_seconds{method,path} - Request latency (histogram)
+%% - http_request_size_bytes{method,path} - Request body size (histogram)
+%%
+%% TASK METRICS:
+%% - tasks_total{status} - Total tasks (completed, failed, cancelled) (counter)
+%% - task_duration_seconds{arm} - Task execution time (histogram)
+%% - task_success_rate - Percentage of successful tasks (gauge)
+%% - task_tokens_used{arm,model} - Tokens consumed per task (histogram)
+%% - task_cost_dollars{arm,model} - Cost per task in USD (histogram)
+%%
+%% ARM METRICS:
+%% - arm_calls_total{arm_id,operation} - Total arm calls (counter)
+%% - arm_latency_seconds{arm_id} - Arm response time (histogram)
+%% - arm_errors_total{arm_id,error_type} - Arm errors (counter)
+%% - circuit_breaker_state{arm_id} - Circuit state (0=closed, 1=half-open, 2=open) (gauge)
+%% - arm_health_status{arm_id} - Health status (1=healthy, 0=unhealthy) (gauge)
+%%
+%% DISTRIBUTED TRACING:
+%%
+%% - Protocol: OpenTelemetry (OTLP)
+%% - Storage: Jaeger
+%% - Visualization: Jaeger UI + Grafana
+%%
+%% Trace structure:
+%% - Trace: End-to-end request flow (from client to response)
+%% - Span: Single operation within trace (e.g., "Coder.generate()")
+%% - Parent-child relationships: Spans form tree structure
+%%
+%% Example trace:
+%% trace_abc123 (root)
+%% ├─ gateway.forward (1.2ms)
+%% ├─ orchestrator.execute (12.5s)
+%% │  ├─ planner.plan (2.3s)
+%% │  ├─ coder.generate (8.1s)
+%% │  └─ judge.validate (1.8s)
+%% └─ gateway.return (0.5ms)
+%%
+%% Span attributes (tags):
+%% - service.name: "orchestrator"
+%% - arm.id: "coder"
+%% - task.id: "task_xyz789"
+%% - http.method: "POST"
+%% - http.status_code: 200
+%% - error: true/false
+%% - error.message: "Timeout after 30s" (if error)
+%%
+%% Benefits:
+%% - Visualize request flow across services
+%% - Identify bottlenecks (slow arms)
+%% - Debug errors (see exact failure point)
+%% - Measure latency contribution per service
+%%
+%% DASHBOARDS (Grafana):
+%%
+%% 1. OVERVIEW DASHBOARD:
+%%    - Total requests (last 24h)
+%%    - Success rate (%)
+%%    - P95 latency (seconds)
+%%    - Error rate (%)
+%%    - Active tasks
+%%    - Cache hit rate
+%%
+%% 2. ARMS DASHBOARD:
+%%    - Calls per arm (bar chart)
+%%    - Latency per arm (line chart, P50/P95/P99)
+%%    - Circuit breaker state (gauge, per arm)
+%%    - Health status (up/down indicator, per arm)
+%%    - Error rate per arm
+%%
+%% 3. COST DASHBOARD:
+%%    - Tokens used (last 7 days, by arm)
+%%    - Cost per task (histogram)
+%%    - Cost by arm (pie chart)
+%%    - Budget utilization (gauge, 0-100%)
+%%    - Cost trend (line chart, daily)
+%%
+%% 4. ERROR DASHBOARD:
+%%    - Errors by type (bar chart)
+%%    - Errors by arm (bar chart)
+%%    - Retry rate (%)
+%%    - Degraded response rate (%)
+%%    - Top error messages (table)
+%%
+%% ALERTING (Prometheus Alertmanager):
+%%
+%% Critical alerts (PagerDuty):
+%% - Arm down (circuit breaker open for >5 minutes)
+%% - High error rate (>10% in 5 minutes)
+%% - Service unreachable (health check fails)
+%%
+%% Warning alerts (Slack):
+%% - High latency (P95 > 30s for 10 minutes)
+%% - Moderate error rate (>5% in 5 minutes)
+%% - Circuit breaker open (any arm)
+%% - Cache hit rate low (<40% for 15 minutes)
+%%
+%% Info alerts (Slack):
+%% - Budget alert (80% budget used)
+%% - New arm registered
+%% - Deployment completed
+%%
+%% Alert routing:
+%% - Critical → PagerDuty (on-call engineer)
+%% - Warning → Slack #octollm-alerts channel
+%% - Info → Slack #octollm-notifications channel
+%%
+%% KEY PERFORMANCE INDICATORS (KPIs):
+%%
+%% 1. AVAILABILITY:
+%%    - Target: 99.9% uptime (4-nines)
+%%    - Measure: (uptime / total_time) * 100
+%%    - Allowed downtime: ~8.7 hours/year
+%%
+%% 2. LATENCY:
+%%    - P50: <5 seconds (median)
+%%    - P95: <30 seconds (95th percentile)
+%%    - P99: <60 seconds (99th percentile)
+%%    - Measure: task_duration_seconds histogram
+%%
+%% 3. SUCCESS RATE:
+%%    - Target: >95% vs baseline (single LLM)
+%%    - Measure: (successful_tasks / total_tasks) * 100
+%%
+%% 4. COST EFFICIENCY:
+%%    - Target: <50% cost vs monolithic GPT-4
+%%    - Measure: (avg_octollm_cost / avg_gpt4_cost) * 100
+%%
+%% 5. ERROR RATE:
+%%    - Target: <1% of total requests
+%%    - Measure: (failed_tasks / total_tasks) * 100
+%%
+%% OBSERVABILITY BEST PRACTICES:
+%%
+%% 1. Always include trace_id in logs and metrics
+%% 2. Use structured logging (JSON), never plain text
+%% 3. Log both success and failure paths
+%% 4. Emit metrics at service boundaries (before/after arm calls)
+%% 5. Create spans for operations >100ms
+%% 6. Add context to errors (arm_id, step_number, trace_id)
+%% 7. Set meaningful alert thresholds (not too sensitive)
+%% 8. Review dashboards weekly, refine as needed
+%% 9. Archive logs after 30 days (cost optimization)
+%% 10. Use sampling for high-volume traces (1-10% sampling)

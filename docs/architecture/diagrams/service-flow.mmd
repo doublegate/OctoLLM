@@ -1,0 +1,123 @@
+%% OctoLLM Service Flow Diagram
+%% Shows complete request flow from client through Orchestrator to Arms
+
+graph TB
+    %% Client Layer
+    Client["Client<br/>(API, CLI, Web)"]
+
+    %% API Gateway
+    API["API Gateway<br/>(NGINX/Traefik)<br/>Port: 80/443"]
+
+    %% Reflex Layer (Preprocessing)
+    Reflex["Reflex Layer<br/>(Preprocessing)<br/>Port: 8001<br/>Cost Tier: 1<br/>~10ms"]
+    Cache[(Redis Cache)]
+
+    %% Orchestrator (Brain)
+    Orchestrator["Orchestrator<br/>(Central Brain)<br/>Port: 8000<br/>Cost Tier: 5<br/>~5-30s"]
+
+    %% Specialized Arms
+    Planner["Planner Arm<br/>(Task Decomposition)<br/>Port: 8002<br/>Cost Tier: 2<br/>~2-5s"]
+    Executor["Executor Arm<br/>(Sandboxed Execution)<br/>Port: 8003<br/>Cost Tier: 3<br/>~0.5-10s"]
+    Retriever["Retriever Arm<br/>(Knowledge Search)<br/>Port: 8004<br/>Cost Tier: 3<br/>~1-3s"]
+    Coder["Coder Arm<br/>(Code Generation)<br/>Port: 8005<br/>Cost Tier: 4<br/>~5-15s"]
+    Judge["Judge Arm<br/>(Validation)<br/>Port: 8006<br/>Cost Tier: 2<br/>~2-5s"]
+    SafetyGuardian["Safety Guardian<br/>(PII/Secret Detection)<br/>Port: 8007<br/>Cost Tier: 1<br/>~50-100ms"]
+
+    %% Storage Layer
+    GlobalMemory[(Global Memory<br/>PostgreSQL)]
+    VectorDB[(Vector DB<br/>Qdrant/Weaviate)]
+    LocalMemory[(Local Memory<br/>Task-specific)]
+
+    %% Observability
+    Metrics[("Prometheus<br/>(Metrics)")]
+    Logs[("Loki<br/>(Logs)")]
+    Traces[("Jaeger<br/>(Traces)")]
+
+    %% Main Request Flow
+    Client -->|1. POST /tasks| API
+    API -->|2. Route request| Reflex
+
+    %% Reflex Layer Decision Points
+    Reflex -->|3. Check cache| Cache
+    Cache -.->|Hit: Return cached| Reflex
+    Reflex -->|Miss: Forward| Orchestrator
+
+    Reflex -->|4. Check patterns| Reflex
+    Reflex -.->|Match: Reflex handled| Client
+
+    Reflex -->|5. Safety check| SafetyGuardian
+    SafetyGuardian -.->|Blocked| Client
+    SafetyGuardian -->|Pass| Orchestrator
+
+    %% Orchestrator Workflow
+    Orchestrator -->|6. Plan task| Planner
+    Planner -->|Plan with steps| Orchestrator
+
+    Orchestrator -->|7a. Execute step| Executor
+    Orchestrator -->|7b. Retrieve context| Retriever
+    Orchestrator -->|7c. Generate code| Coder
+
+    Retriever -->|Search results| VectorDB
+    VectorDB -->|Documents| Retriever
+    Retriever -->|Context| Orchestrator
+
+    Coder -->|Read/Write| LocalMemory
+    Executor -->|Read/Write| LocalMemory
+
+    %% Validation Flow
+    Orchestrator -->|8. Validate output| Judge
+    Judge -->|9. Check safety| SafetyGuardian
+    SafetyGuardian -->|Sanitized output| Judge
+    Judge -->|Validation result| Orchestrator
+
+    %% Memory Updates
+    Orchestrator -->|10. Update memory| GlobalMemory
+
+    %% Response Flow
+    Orchestrator -->|11. Synthesize result| Orchestrator
+    Orchestrator -->|12. Return response| Client
+
+    %% Cache Update
+    Orchestrator -.->|Update cache| Cache
+
+    %% Observability (Background)
+    Orchestrator -.->|Metrics| Metrics
+    Orchestrator -.->|Logs| Logs
+    Orchestrator -.->|Traces| Traces
+
+    Planner -.->|Metrics| Metrics
+    Executor -.->|Metrics| Metrics
+    Retriever -.->|Metrics| Metrics
+    Coder -.->|Metrics| Metrics
+    Judge -.->|Metrics| Metrics
+    SafetyGuardian -.->|Metrics| Metrics
+
+    %% Styling
+    classDef client fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef gateway fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef orchestrator fill:#f3e5f5,stroke:#4a148c,stroke-width:3px
+    classDef arm fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef storage fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef observability fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+
+    class Client client
+    class API gateway
+    class Reflex gateway
+    class Orchestrator orchestrator
+    class Planner,Executor,Retriever,Coder,Judge,SafetyGuardian arm
+    class Cache,GlobalMemory,VectorDB,LocalMemory storage
+    class Metrics,Logs,Traces observability
+
+%% Flow Summary:
+%% 1. Client sends request to API Gateway
+%% 2. Reflex Layer checks cache and patterns
+%% 3. If cache miss and no pattern match, forward to Orchestrator
+%% 4. Safety Guardian checks input for PII/secrets
+%% 5. Orchestrator delegates to Planner for task decomposition
+%% 6. Orchestrator executes steps via specialized arms (Executor, Retriever, Coder)
+%% 7. Orchestrator validates output via Judge
+%% 8. Judge uses Safety Guardian to sanitize output
+%% 9. Orchestrator synthesizes final result
+%% 10. Response returned to client via API Gateway
+%% 11. Cache updated for future requests
+%% 12. Observability data collected throughout
