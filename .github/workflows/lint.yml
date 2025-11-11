@@ -1,0 +1,102 @@
+name: Lint
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:  # Allow manual trigger
+
+# Cancel in-progress runs of the same workflow
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-python:
+    name: Lint Python Code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black mypy
+
+      - name: Run Ruff (linting + import sorting)
+        run: |
+          echo "Running Ruff linter..."
+          ruff check . --output-format=github
+        continue-on-error: false
+
+      - name: Run Black (formatting check)
+        run: |
+          echo "Checking code formatting with Black..."
+          black --check --diff .
+        continue-on-error: false
+
+      - name: Run mypy (type checking)
+        run: |
+          echo "Running mypy type checker..."
+          mypy services/orchestrator/ services/arms/ --ignore-missing-imports --no-error-summary
+        continue-on-error: true  # Don't fail on type errors initially
+
+  lint-rust:
+    name: Lint Rust Code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+          override: true
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            services/reflex-layer/target
+            services/arms/executor/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Run rustfmt (formatting check)
+        working-directory: services/reflex-layer
+        run: |
+          echo "Checking Rust formatting..."
+          cargo fmt -- --check
+
+      - name: Run clippy (linting) - Reflex Layer
+        working-directory: services/reflex-layer
+        run: |
+          echo "Running clippy on Reflex Layer..."
+          cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Run rustfmt (formatting check) - Executor Arm
+        working-directory: services/arms/executor
+        run: |
+          echo "Checking Rust formatting..."
+          cargo fmt -- --check
+
+      - name: Run clippy (linting) - Executor Arm
+        working-directory: services/arms/executor
+        run: |
+          echo "Running clippy on Executor Arm..."
+          cargo clippy --all-targets --all-features -- -D warnings
