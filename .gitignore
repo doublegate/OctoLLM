@@ -91,6 +91,7 @@ Cargo.lock  # Commit for binaries, ignore for libraries
 .env.local
 .env.*.local
 !.env.example
+infrastructure/docker-compose/.env
 *.key
 *.pem
 *.p12
