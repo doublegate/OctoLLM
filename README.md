@@ -2,13 +2,17 @@
 
 **Distributed AI Architecture for Offensive Security and Developer Tooling**
 
+Inspired by the octopus's distributed nervous system, OctoLLM reimagines AI architecture through biological intelligence principles, achieving superior cost efficiency, security, and flexibility compared to monolithic LLM systems.
+
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Lint](https://github.com/doublegate/OctoLLM/workflows/Lint/badge.svg)](https://github.com/doublegate/OctoLLM/actions?query=workflow%3ALint)
+[![Test](https://github.com/doublegate/OctoLLM/workflows/Test/badge.svg)](https://github.com/doublegate/OctoLLM/actions?query=workflow%3ATest)
+[![Security](https://github.com/doublegate/OctoLLM/workflows/Security%20Scan/badge.svg)](https://github.com/doublegate/OctoLLM/actions?query=workflow%3A%22Security+Scan%22)
+[![codecov](https://codecov.io/gh/doublegate/OctoLLM/branch/main/graph/badge.svg)](https://codecov.io/gh/doublegate/OctoLLM)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
-[![Rust](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](infrastructure/docker-compose/)
-[![Documentation](https://img.shields.io/badge/Docs-79k%20lines-green.svg)](docs/)
-[![Phase](https://img.shields.io/badge/Phase-0%20(20%25)-yellow.svg)](to-dos/MASTER-TODO.md)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Rust](https://img.shields.io/badge/Rust-1.82.0-orange.svg)](https://www.rust-lang.org/)
+[![Phase](https://img.shields.io/badge/Phase-0%20(30%25)-yellow.svg)](to-dos/MASTER-TODO.md)
+[![Version](https://img.shields.io/badge/Version-0.2.0-green.svg)](CHANGELOG.md)
 
 ## What is OctoLLM?
 
@@ -81,35 +85,72 @@ graph TB
 - **Disaster Recovery**: 15-minute RPO, 1-hour RTO with automated backups
 - **Cost Optimization**: Spot instances, model selection, aggressive caching
 
-## Project Status
+## Current Status
 
-**Current Phase**: Phase 0 - Project Setup & Infrastructure
-**Completed Sprints**: Sprint 0.1 (Repository Setup) ✅ | Sprint 0.2 (Dev Environment) ✅
-**Next Sprint**: Sprint 0.3 - CI/CD Pipeline (3 days)
-**Overall Progress**: 20% (2/10 sprints in Phase 0 complete)
+### Phase 0 Progress: Infrastructure & CI/CD
 
-### Recent Updates
+**Current Sprint**: Sprint 0.3 ✅ **COMPLETE** (2025-11-11)
+**Next Sprint**: Sprint 0.4 - API Skeleton & Documentation (5-7 days)
+**Overall Progress**: 30% (3/10 Phase 0 sprints complete)
+**Version**: 0.2.0 | **Estimated Phase 0 Completion**: Late November 2025
 
-- **2025-11-10**: Sprint 0.2 complete - Docker development environment ready with 13 services
-- **2025-11-10**: Sprint 0.1 complete - Repository structure and Git workflow established
-- **2025-11-10**: Repository created with comprehensive documentation (79,485 lines across 57 files)
+### Operational Infrastructure
 
-### Development Status by Component
+| Component | Status | Details |
+|-----------|--------|---------|
+| **CI/CD Pipeline** | ✅ Complete | 4 workflows operational (lint, test, security, build) |
+| **Security Scanning** | ✅ Complete | Multi-layer: SAST (Bandit), dependencies (Snyk, cargo-audit), secrets (gitleaks) |
+| **Test Framework** | ✅ Complete | pytest + cargo test + Codecov integration |
+| **Development Environment** | ✅ Complete | Docker Compose with 13 services, hot-reload support |
+| **Pre-commit Hooks** | ✅ Complete | 15+ quality checks (Black, Ruff, mypy, rustfmt, clippy) |
+| **Container Builds** | ⏸️ Disabled | Multi-arch builds configured, will enable in Phase 1 |
+| **Documentation** | ✅ Complete | 56+ files, ~77,300 lines |
 
-| Component | Status | Implementation |
-|-----------|--------|----------------|
-| **Orchestrator** | 🟡 Planning | Docker ready, code pending |
-| **Reflex Layer** | 🟡 Planning | Docker ready, code pending |
-| **Planner Arm** | 🟡 Planning | Docker ready, code pending |
-| **Executor Arm** | 🟡 Planning | Docker ready, code pending |
-| **Retriever Arm** | 🟡 Planning | Docker ready, code pending |
-| **Coder Arm** | 🟡 Planning | Docker ready, code pending |
-| **Judge Arm** | 🟡 Planning | Docker ready, code pending |
-| **Safety Guardian** | 🟡 Planning | Docker ready, code pending |
-| **Infrastructure** | 🟢 Partial | Docker Compose ✅, K8s pending |
-| **Documentation** | 🟢 Complete | 57 files, 79,485 lines |
+### Recent Achievements
 
-**Legend**: 🟢 Complete | 🟡 In Progress | 🔴 Not Started
+#### Sprint 0.3: CI/CD Pipeline (2025-11-11)
+- ✅ **4 GitHub Actions Workflows Operational**:
+  - **Lint**: Python (Ruff, Black, mypy) + Rust (rustfmt, clippy) - PASSING (~1m 9s)
+  - **Test**: Unit tests (Python 3.11/3.12, Rust) + Integration tests - PASSING (~2m 30s)
+  - **Security**: SAST, dependency scanning, secret detection, daily scans - PASSING (~3m 0s)
+  - **Build**: Multi-arch Docker builds for 8 services - READY (disabled in Phase 0)
+- ✅ **Security Improvements**: Fixed 7 CVEs (4 HIGH, 3 MEDIUM severity)
+  - python-multipart: ^0.0.6 → ^0.0.18 (DoS and ReDoS fixes)
+  - starlette: (implicit) → ^0.47.2 (DoS fixes)
+  - langchain: ^1.0.5 → ^0.2.5 (SQL injection and DoS fixes)
+  - langchain-openai: ^1.0.2 → ^0.1.20 (compatibility update)
+- ✅ **Test Infrastructure**: Placeholder tests + Codecov integration operational
+- ✅ **Code Quality**: Rust 1.82.0 compliance, Ruff configuration updated
+
+#### Sprint 0.2: Development Environment (2025-11-10)
+- ✅ Production-ready Dockerfiles for 8 services (multi-stage builds)
+- ✅ Docker Compose development stack with 13 services
+- ✅ VS Code devcontainer with 14 extensions and hot-reload
+- ✅ Makefile with 20+ commands for local development
+
+#### Sprint 0.1: Repository Setup (2025-11-10)
+- ✅ Complete repository structure (103+ directories, 8 services)
+- ✅ Git workflow (PR templates, issue templates, CODEOWNERS)
+- ✅ Pre-commit hooks (15+ hooks)
+- ✅ Comprehensive documentation (56+ markdown files)
+
+### Component Status
+
+| Component | Phase 0 Status | Phase 1 Target |
+|-----------|---------------|----------------|
+| **Orchestrator** | ✅ Docker + config | Full implementation (FastAPI + LLM integration) |
+| **Reflex Layer** | ✅ Docker + minimal Rust | Full implementation (PII detection, caching, rate limiting) |
+| **Planner Arm** | ✅ Docker + config | Full implementation (task decomposition) |
+| **Executor Arm** | ✅ Docker + minimal Rust | Full implementation (sandboxed execution) |
+| **Coder Arm** | ✅ Docker + config | Phase 2 implementation |
+| **Judge Arm** | ✅ Docker + config | Phase 2 implementation |
+| **Retriever Arm** | ✅ Docker + config | Phase 2 implementation |
+| **Safety Guardian** | ✅ Docker + config | Phase 2 implementation |
+| **PostgreSQL** | ✅ Operational | Schema implementation in Phase 1 |
+| **Redis** | ✅ Operational | Full caching logic in Phase 1 |
+| **Qdrant** | ✅ Operational | Vector embeddings in Phase 2 |
+
+**Note**: Phase 0 focuses on infrastructure setup. Full service implementation begins in Phase 1 (December 2025).
 
 ### Documentation Inventory
 
@@ -123,48 +164,165 @@ graph TB
 - **ADR**: 6 files (architecture decisions)
 - **TODOs**: 12 files (MASTER-TODO + phase-specific + checklists)
 
+## CI/CD Pipeline
+
+OctoLLM uses GitHub Actions for continuous integration and deployment with 4 comprehensive workflows:
+
+### Lint Workflow
+**Status**: ✅ PASSING | **Duration**: ~1m 9s | **Triggers**: Push/PR to main/develop
+
+- **Python**: Ruff (linting + import sorting), Black (formatting), mypy (type checking)
+- **Rust**: rustfmt (formatting), clippy (linting with `-D warnings`)
+- **Features**: Dependency caching, concurrency control, automatic failure detection
+
+### Test Workflow
+**Status**: ✅ PASSING | **Duration**: ~2m 30s | **Triggers**: Push/PR to main/develop
+
+- **Python Unit Tests**: pytest on Python 3.11 and 3.12 with matrix strategy
+- **Rust Unit Tests**: cargo test for reflex-layer and executor services
+- **Integration Tests**: PostgreSQL 15 + Redis 7 services with health checks
+- **Coverage**: Codecov integration with XML reports
+- **Phase 0 Note**: Placeholder tests validate project structure (real tests in Phase 1)
+
+### Security Workflow
+**Status**: ✅ PASSING | **Duration**: ~3m 0s | **Triggers**: Push/PR, daily at midnight UTC
+
+- **SAST**: Bandit for Python code vulnerabilities
+- **Dependencies**: Snyk (Python packages), cargo-audit (Rust crates)
+- **Secrets**: gitleaks for credential detection (full git history scan)
+- **Container**: Trivy (disabled in Phase 0, will enable in Phase 1)
+- **Integration**: SARIF results to GitHub Security tab, 30-day artifact retention
+
+### Build Workflow
+**Status**: ⏸️ DISABLED (Phase 0) | **Duration**: ~7s (summary only) | **Triggers**: Push/PR, version tags
+
+- **Multi-arch**: linux/amd64, linux/arm64
+- **Registry**: GitHub Container Registry (GHCR)
+- **Services**: 8 total (orchestrator, reflex-layer, 6 arms)
+- **Features**: BuildKit caching, automatic tagging, post-build vulnerability scanning
+- **Phase 1 Activation**: Change `if: false` to `if: true` in workflow file
+
+### Security Achievements
+
+**Sprint 0.3 Security Fixes** (2025-11-11):
+- ✅ Fixed 7 CVEs: 4 HIGH + 3 MEDIUM severity
+- ✅ python-multipart: DoS and ReDoS vulnerabilities patched
+- ✅ starlette: DoS vulnerabilities patched
+- ✅ langchain: SQL injection and DoS vulnerabilities patched
+- ✅ Daily automated security scans operational
+
+**Current Security Posture**:
+- Multi-layer scanning (SAST, dependency, secrets)
+- Zero HIGH/CRITICAL vulnerabilities in production dependencies
+- Automated daily scans with GitHub Security tab integration
+
+### Workflow Files
+```
+.github/workflows/
+├── lint.yml          # Code quality checks
+├── test.yml          # Unit + integration tests
+├── security.yml      # Security scanning
+└── build.yml         # Docker image builds
+```
+
 ## Quick Start (Development)
 
 ### Prerequisites
 
-- Docker 24+ and Docker Compose
-- Python 3.11+ (for local development)
-- Rust 1.75+ (for Rust services)
-- OpenAI API key (for LLM functionality)
+**Required**:
+- Docker 24.0+ and Docker Compose 2.20+
+- Git
+- Text editor (VS Code recommended)
 
-### Start Local Environment
+**Optional** (for local development without Docker):
+- Python 3.11+ (for Python services)
+- Rust 1.82.0+ (for Rust services)
+- OpenAI API key (for LLM functionality in Phase 1+)
+
+### Phase 0 Setup (Current)
 
 ```bash
 # Clone repository
 git clone https://github.com/doublegate/OctoLLM.git
 cd OctoLLM
 
-# Configure environment
-cp infrastructure/docker-compose/.env.example infrastructure/docker-compose/.env
-# Edit .env and add your OPENAI_API_KEY
+# Install pre-commit hooks (recommended)
+python -m pip install pre-commit
+pre-commit install
 
-# Start all services
-docker-compose -f infrastructure/docker-compose/docker-compose.dev.yml up -d
+# Verify setup - run linting and formatting checks
+make lint  # or: ruff check . && black --check . && cargo fmt --check
 
-# Verify services are running
-docker-compose -f infrastructure/docker-compose/docker-compose.dev.yml ps
+# Run placeholder tests (validates project structure)
+make test  # or: pytest tests/ -v
 
-# View logs
-docker-compose -f infrastructure/docker-compose/docker-compose.dev.yml logs -f orchestrator
+# View all available commands
+make help
 ```
 
-### Access Services
+### Development Environment (Phase 0)
 
+```bash
+# Start development environment (placeholder services + databases)
+cd infrastructure/docker-compose
+docker-compose -f docker-compose.dev.yml up -d
+
+# Check service health
+docker-compose -f docker-compose.dev.yml ps
+
+# View logs for specific service
+docker-compose -f docker-compose.dev.yml logs -f orchestrator
+
+# Stop environment
+docker-compose -f docker-compose.dev.yml down
+```
+
+### Service Access (Phase 0)
+
+**OctoLLM Services** (placeholder in Phase 0):
 - **Orchestrator**: http://localhost:8000
-- **Reflex Layer**: http://localhost:8080
+- **Reflex Layer**: http://localhost:8080 (minimal Rust service)
 - **Planner Arm**: http://localhost:8001
-- **Retriever Arm**: http://localhost:8002
 - **Coder Arm**: http://localhost:8003
 - **Judge Arm**: http://localhost:8004
+- **Retriever Arm**: http://localhost:8002
 - **Safety Guardian**: http://localhost:8005
-- **Executor Arm**: http://localhost:8006
-- **Grafana**: http://localhost:3000
+- **Executor Arm**: http://localhost:8006 (minimal Rust service)
+
+**Infrastructure Services** (fully operational):
+- **PostgreSQL**: localhost:15432 (user: octollm, db: octollm)
+- **Redis**: localhost:6379
+- **Qdrant**: localhost:6333 (REST API), localhost:6334 (gRPC)
 - **Prometheus**: http://localhost:9090
+- **Grafana**: http://localhost:3000
+
+**Note**: Phase 0 services are minimal "hello world" placeholders. Full implementation begins in Phase 1 (December 2025).
+
+### Development Workflow
+
+```bash
+# Make code changes
+# ...
+
+# Run pre-commit hooks manually (before commit)
+pre-commit run --all-files
+
+# Run tests
+pytest tests/unit/ -v
+cargo test --manifest-path services/reflex-layer/Cargo.toml
+
+# Format code
+black .
+cargo fmt --manifest-path services/reflex-layer/Cargo.toml
+
+# Check linting
+ruff check .
+cargo clippy --manifest-path services/reflex-layer/Cargo.toml -- -D warnings
+
+# Commit changes (pre-commit hooks run automatically)
+git add .
+git commit -m "feat: your feature description"
+```
 
 See [Local Development Guide](docs/development/local-setup.md) for detailed instructions.
 
@@ -187,101 +345,190 @@ See [Local Development Guide](docs/development/local-setup.md) for detailed inst
 
 ## Roadmap
 
-### Phase 0: Project Setup & Infrastructure (20% Complete)
+### Phase 0: Project Setup & Infrastructure (30% Complete)
+
+**Timeline**: November 2025 | **Status**: 3/4 sprints complete
 
 - ✅ **Sprint 0.1**: Repository Setup & Git Workflow (Complete - 2025-11-10)
-  - Repository structure with 8 services
-  - Git workflow (PR templates, CODEOWNERS, pre-commit hooks)
-  - Documentation (57 files, 79,485 lines)
+  - 22 files modified/created, 2,135 insertions
+  - Repository structure with 8 services (103+ directories)
+  - Git workflow (PR templates, issue templates, CODEOWNERS)
+  - Pre-commit hooks (15+ hooks)
+  - Documentation (56+ files, ~77,300 lines)
+  - **Duration**: 4 hours (75% faster than estimated)
 
 - ✅ **Sprint 0.2**: Development Environment Setup (Complete - 2025-11-10)
-  - Docker development environment (8 Dockerfiles)
-  - docker-compose.dev.yml with 13 services
-  - VS Code devcontainer
-  - Local setup documentation
+  - 19 files modified, ~9,800 lines
+  - Production-ready Dockerfiles for 8 services (multi-stage builds)
+  - Docker Compose with 13 services (5 infrastructure + 8 OctoLLM)
+  - VS Code devcontainer with 14 extensions
+  - Makefile with 20+ commands
+  - Fixed dependency conflicts and security issues
+  - **Duration**: 2 hours (infrastructure operational)
 
-- 🔵 **Sprint 0.3**: CI/CD Pipeline (Next - 13 hours)
-  - GitHub Actions workflows (lint, test, security-scan, build)
-  - Code coverage integration (Codecov)
-  - Security scanning (Snyk, CodeQL)
-  - Docker image builds
+- ✅ **Sprint 0.3**: CI/CD Pipeline (Complete - 2025-11-11)
+  - 11 files created, 6 files modified
+  - 4 GitHub Actions workflows operational (lint, test, security, build)
+  - Fixed 7 CVEs (4 HIGH, 3 MEDIUM severity)
+  - Codecov integration with coverage reporting
+  - Multi-layer security scanning (Bandit, Snyk, cargo-audit, gitleaks)
+  - Rust 1.82.0 compliance, Ruff configuration updated
+  - **Duration**: 1 day (faster than 3-day estimate)
 
-- 🔵 **Sprint 0.4**: Infrastructure as Code (18 hours)
-  - Terraform modules (VPC, EKS, RDS, ElastiCache, S3)
-  - Environment configs (dev, staging, prod)
-  - Kubernetes manifests (Helm charts)
+- 📋 **Sprint 0.4**: API Skeleton & Documentation (Planned - 5-7 days)
+  - OpenAPI 3.0 specifications for all 8 services
+  - API client SDKs (Python, TypeScript)
+  - Postman/Insomnia collections
+  - Comprehensive API documentation
+  - Service interaction diagrams
 
-- 🔵 **Sprint 0.5**: Secrets Management (8 hours)
-  - External Secrets Operator
-  - AWS Secrets Manager integration
-  - .env.example templates
-  - Security documentation
+**Success Criteria** (Phase 0 Complete):
+- ✅ Repository structure operational
+- ✅ CI/CD pipeline passing on all checks
+- ✅ Development environment verified
+- 📋 API specifications complete
+- 📋 Branch protection configured
 
-### Phase 1: Proof of Concept (0% Complete)
+---
 
-- Reflex Layer implementation (Rust)
-- Orchestrator core (Python)
-- Planner Arm (Python)
-- Executor Arm (Rust)
-- Basic end-to-end workflow
+### Phase 1: Proof of Concept (Planned)
 
-### Phase 2-6: Future Development
+**Timeline**: December 2025 (estimated 2 weeks) | **Prerequisites**: Phase 0 complete
 
-See [MASTER-TODO.md](to-dos/MASTER-TODO.md) for complete 7-phase roadmap.
+**Goal**: Minimal end-to-end task execution with 4 core components
 
-**Timeline**: 12 months estimated
+**Deliverables**:
+- Reflex Layer implementation (Rust) - <10ms latency, PII detection, caching
+- Orchestrator core implementation (Python) - Task routing, LLM integration
+- Planner Arm implementation (Python) - Task decomposition with GPT-3.5-turbo
+- Executor Arm implementation (Rust) - Sandboxed command execution
+- Basic end-to-end workflow testing
+- E2E tests with >90% success rate
+
+**Success Criteria**:
+- All 4 components deployed and healthy
+- E2E tests passing (>90% success rate)
+- Latency targets met (P99 <30s)
+- Security tests passing (no sandbox escapes)
+
+---
+
+### Phase 2: Core Capabilities (Planned)
+
+**Timeline**: Estimated 8-10 weeks | **Prerequisites**: Phase 1 complete
+
+**Deliverables**:
+- 4 additional arms (Coder, Judge, Retriever, Safety Guardian)
+- Distributed memory system (PostgreSQL + Qdrant + Redis)
+- Kubernetes production deployment
+- Swarm decision-making
+- Load testing (1,000 concurrent tasks)
+
+---
+
+### Phase 3-6: Advanced Features (Planned)
+
+See [MASTER-TODO.md](to-dos/MASTER-TODO.md) for complete 7-phase roadmap (420+ tasks).
+
+**Phase 3**: Operations & Deployment (4-6 weeks) - Monitoring, alerting, disaster recovery
+**Phase 4**: Engineering & Standards (3-4 weeks) - Code quality, testing, documentation
+**Phase 5**: Security Hardening (8-10 weeks) - Capability isolation, PII protection, penetration testing
+**Phase 6**: Production Readiness (8-10 weeks) - Autoscaling, cost optimization, compliance certification
+
+---
+
+### Overall Project Status
+
+**Timeline**: 12 months estimated (36-48 weeks)
 **Budget**: ~$177,900 total (37 sprints, 420+ tasks)
+**Team Size**: 5-8 engineers (mixed skills)
+**Overall Progress**: 30% Phase 0 complete (3/10 sprints)
+**Next Milestone**: Phase 0 complete (late November 2025)
+**Production Launch**: Estimated Q3 2026
 
 ## Technology Stack
 
 ### Core Languages
 
-| Language | Version | Usage | Status |
-|----------|---------|-------|--------|
-| **Python** | 3.11+ | Orchestrator, 5 Arms | Docker ready ✅ |
-| **Rust** | 1.75+ | Reflex Layer, Executor | Docker ready ✅ |
+| Language | Version | Usage | Phase 0 Status | Phase 1+ Status |
+|----------|---------|-------|---------------|----------------|
+| **Python** | 3.11+ | Orchestrator, 5 Arms | ✅ Configured (pyproject.toml, linting) | Full implementation |
+| **Rust** | 1.82.0 | Reflex Layer, Executor | ✅ Configured (Cargo.toml, linting) | Full implementation |
 
-### Frameworks
+### Web Frameworks
 
-| Framework | Version | Purpose | Status |
-|-----------|---------|---------|--------|
-| **FastAPI** | 0.109+ | Python web services | Configured ✅ |
-| **Axum** | 0.7+ | Rust web services | Configured ✅ |
+| Framework | Version | Purpose | Phase 0 Status | Phase 1+ Status |
+|-----------|---------|---------|---------------|----------------|
+| **FastAPI** | Latest | Python web services | ✅ Dependencies configured | API implementation |
+| **Axum** | 0.7+ | Rust web services | 📋 Planned | Implementation |
 
 ### Databases
 
-| Database | Version | Purpose | Status |
-|----------|---------|---------|--------|
-| **PostgreSQL** | 15+ | Global memory | Docker ready ✅ |
-| **Redis** | 7+ | Caching | Docker ready ✅ |
-| **Qdrant** | 1.7+ | Vector store | Docker ready ✅ |
+| Database | Version | Purpose | Phase 0 Status | Phase 1+ Status |
+|----------|---------|---------|---------------|----------------|
+| **PostgreSQL** | 15 | Global memory | ✅ Operational (Docker, port 15432) | Schema + queries |
+| **Redis** | 7 | Caching | ✅ Operational (Docker, port 6379) | Cache logic |
+| **Qdrant** | 1.7 | Vector store | ✅ Operational (Docker, ports 6333-6334) | Embeddings |
+
+### CI/CD
+
+| Tool | Purpose | Phase 0 Status | Details |
+|------|---------|---------------|---------|
+| **GitHub Actions** | CI/CD automation | ✅ Operational | 4 workflows (lint, test, security, build) |
+| **Codecov** | Coverage reporting | ✅ Integrated | Coverage uploads for Python 3.11 |
+| **Pre-commit** | Quality gates | ✅ Operational | 15+ hooks (Black, Ruff, mypy, rustfmt, clippy) |
+
+### Security
+
+| Tool | Purpose | Phase 0 Status | Details |
+|------|---------|---------------|---------|
+| **Bandit** | SAST (Python) | ✅ Operational | Scanning services/orchestrator, services/arms |
+| **Snyk** | Dependency scanning (Python) | ✅ Operational | HIGH+ severity threshold, SARIF output |
+| **cargo-audit** | Dependency scanning (Rust) | ✅ Operational | Auditing reflex-layer + executor |
+| **gitleaks** | Secret detection | ✅ Operational | Full git history scanning |
+| **Trivy** | Container scanning | ⏸️ Disabled (Phase 0) | Will enable in Phase 1 |
 
 ### Infrastructure
 
-| Tool | Version | Purpose | Status |
-|------|---------|---------|--------|
-| **Docker** | 24+ | Containerization | ✅ Complete |
-| **Docker Compose** | 2.0+ | Dev orchestration | ✅ Complete |
-| **Kubernetes** | 1.28+ | Production orchestration | Planned |
-| **Terraform** | 1.6+ | IaC | Planned |
+| Tool | Version | Purpose | Phase 0 Status | Phase 1+ Status |
+|------|---------|---------|---------------|----------------|
+| **Docker** | 24+ | Containerization | ✅ Complete | Production builds |
+| **Docker Compose** | 2.20+ | Dev orchestration | ✅ Complete (13 services) | Continued use |
+| **Kubernetes** | 1.28+ | Production orchestration | 📋 Planned | Phase 2 deployment |
+| **Terraform** | 1.6+ | Infrastructure as Code | 📋 Planned | Phase 2 provisioning |
 
 ### Development Tools
 
-| Tool | Purpose | Status |
-|------|---------|--------|
-| **Poetry** | Python dependency management | ✅ Configured |
-| **Cargo** | Rust build system | ✅ Configured |
-| **Pre-commit** | Quality gates (15+ hooks) | ✅ Complete |
-| **VS Code Devcontainer** | Unified dev environment | ✅ Complete |
+| Tool | Purpose | Phase 0 Status | Details |
+|------|---------|---------------|---------|
+| **Poetry** | Python dependency management | ✅ Configured | pyproject.toml with 80+ lines |
+| **Cargo** | Rust build system | ✅ Configured | Workspace with 2 members |
+| **Black** | Python formatting | ✅ Operational | Line length: 100 |
+| **Ruff** | Python linting | ✅ Operational | Import sorting + 50+ rules |
+| **mypy** | Python type checking | ✅ Operational | Strict mode with plugins |
+| **rustfmt** | Rust formatting | ✅ Operational | Edition 2021 |
+| **clippy** | Rust linting | ✅ Operational | `-D warnings` (treat as errors) |
+| **VS Code Devcontainer** | Unified dev environment | ✅ Complete | 14 extensions, 13 ports |
+| **Makefile** | Task automation | ✅ Complete | 20+ commands |
 
-### Monitoring (Planned)
+### Monitoring
 
-| Tool | Purpose | Status |
-|------|---------|--------|
-| **Prometheus** | Metrics collection | Docker ready ✅ |
-| **Grafana** | Visualization | Docker ready ✅ |
-| **Loki** | Log aggregation | Planned |
-| **Jaeger** | Distributed tracing | Planned |
+| Tool | Purpose | Phase 0 Status | Phase 3+ Status |
+|------|---------|---------------|----------------|
+| **Prometheus** | Metrics collection | ✅ Docker ready | Full implementation + dashboards |
+| **Grafana** | Visualization | ✅ Docker ready | Custom dashboards (5+) |
+| **Loki** | Log aggregation | 📋 Planned | Phase 3 implementation |
+| **Jaeger** | Distributed tracing | 📋 Planned | Phase 3 implementation |
+
+### LLM Providers (Phase 1+)
+
+| Provider | Models | Purpose | Status |
+|----------|--------|---------|--------|
+| **OpenAI** | GPT-4, GPT-4 Turbo, GPT-3.5-turbo | Orchestrator, Planner, Coder | 📋 Phase 1 |
+| **Anthropic** | Claude 3 Opus, Sonnet | Alternative provider | 📋 Phase 1 |
+| **Local** | vLLM, Ollama | Cost optimization | 📋 Phase 3 |
+
+**Legend**: ✅ Complete/Operational | ⏸️ Disabled (temporary) | 📋 Planned | 🚧 In Progress
 
 ## Performance Targets
 
@@ -396,46 +643,107 @@ This project is licensed under the **Apache License 2.0** - see the [LICENSE](./
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+OctoLLM is currently in **Phase 0 (Project Setup & Infrastructure)** and not yet accepting external contributions. We're focused on establishing the foundational architecture and CI/CD infrastructure before opening to the community.
 
-### Quick Contribution Guide
+### Current Development Status
+
+- **Team**: Single developer (Phase 0)
+- **Status**: Pre-implementation (infrastructure and documentation)
+- **Phase 0 Completion**: Late November 2025
+- **Phase 1 Start**: December 2025
+
+### Future Contribution Process (Phase 1+)
+
+Once we enter Phase 1, we will welcome contributions! The planned process:
 
 1. **Fork** the repository
 2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Develop** with pre-commit hooks enabled (`pre-commit install`)
-4. **Test** thoroughly (85% Python coverage, 80% Rust coverage)
-5. **Commit** using Conventional Commits format
-6. **Push** to your fork
-7. **Open** a Pull Request
+3. **Install** pre-commit hooks (`pre-commit install`)
+4. **Make** your changes following our coding standards
+5. **Test** thoroughly (target: 85% Python coverage, 80% Rust coverage)
+6. **Commit** using Conventional Commits format (`feat:`, `fix:`, `docs:`, `test:`)
+7. **Push** to your fork
+8. **Open** a Pull Request
 
-### Development Setup
+### Quality Standards
+
+**Code Quality** (enforced by CI/CD):
+- **Python**: Black (formatting), Ruff (linting), mypy (type checking)
+- **Rust**: rustfmt (formatting), clippy (linting with `-D warnings`)
+- **Commits**: Conventional Commits format
+- **Coverage**: 85% Python, 80% Rust minimum (Phase 1+)
+
+**CI/CD Requirements** (must pass):
+- ✅ Lint workflow (Python + Rust)
+- ✅ Test workflow (unit + integration)
+- ✅ Security workflow (SAST + dependency scanning)
+- ✅ Pre-commit hooks (15+ checks)
+
+### Development Setup (For Future Contributors)
 
 ```bash
+# Clone repository
+git clone https://github.com/doublegate/OctoLLM.git
+cd OctoLLM
+
 # Install pre-commit hooks
-poetry install
+python -m pip install pre-commit
 pre-commit install
 
 # Run pre-commit checks manually
 pre-commit run --all-files
 
-# Run tests
-poetry run pytest tests/ -v --cov
-cargo test --all
+# Run tests (Phase 1+)
+pytest tests/ -v --cov=services
+cargo test --manifest-path services/reflex-layer/Cargo.toml
+
+# Start development environment
+cd infrastructure/docker-compose
+docker-compose -f docker-compose.dev.yml up -d
 ```
 
-### Code Standards
+### Code of Conduct
 
-- **Python**: Black (formatting), Ruff (linting), mypy (type checking)
-- **Rust**: rustfmt (formatting), clippy (linting)
-- **Commits**: Conventional Commits format (`feat:`, `fix:`, `docs:`, etc.)
-- **Coverage**: 85% Python, 80% Rust minimum
+Be respectful, inclusive, and collaborative. Detailed code of conduct will be published when external contributions open in Phase 1.
+
+### How to Stay Updated
+
+- **Watch** this repository for updates
+- **Star** to show your interest
+- **Follow** development progress in [CHANGELOG.md](CHANGELOG.md)
+- **Read** sprint completion reports in [to-dos/status/](to-dos/status/)
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for comprehensive guidelines (will be expanded for Phase 1).
 
 ---
 
-**Last Updated**: 2025-11-10
-**Document Version**: 1.1
-**Next Review**: After Phase 0 completion
+## Acknowledgments
+
+### Biological Inspiration
+- **Octopus vulgaris** research on distributed nervous systems and autonomous control
+- Neuroscience studies on swarm intelligence and consensus algorithms
+- Nature's solution to distributed computing challenges
+
+### Technology Stack
+- **LangChain** and **LlamaIndex** for LLM orchestration patterns
+- **OpenAI** and **Anthropic** for frontier LLM capabilities
+- **PostgreSQL**, **Redis**, and **Qdrant** for data persistence
+- **FastAPI** and **Axum** for high-performance web frameworks
+- **Docker** and **Kubernetes** for containerization and orchestration
+
+### Development Tools
+- **Claude Code** (Anthropic) for AI-assisted development and documentation
+- **GitHub Actions** for CI/CD automation
+- **Codecov** for test coverage analysis
+- **Snyk** for security vulnerability scanning
 
 ---
 
-*Built with ❤️ and inspired by the intelligence of cephalopods*
+**Last Updated**: 2025-11-11
+**Document Version**: 2.0 (Sprint 0.3 Update)
+**Next Review**: After Sprint 0.4 completion
+**Repository**: https://github.com/doublegate/OctoLLM
+
+---
+
+*Built with intelligence inspired by cephalopods*
