@@ -47,7 +47,7 @@ The following files are staged and ready to be committed to GitHub:
 **New Files** (3):
 - `CODEOWNERS`
 - `scripts/setup/setup-pre-commit.sh`
-- `to-dos/SPRINT-0.1-COMPLETION-REPORT.md`
+- `to-dos/status/SPRINT-0.1-COMPLETION-REPORT.md`
 
 **Total Changes**: 21 files, ~432 lines in new files
 

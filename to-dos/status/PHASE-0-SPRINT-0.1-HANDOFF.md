@@ -139,14 +139,14 @@ The repository is **production-ready for Phase 0 Sprint 0.2** (Development Envir
 
 ### 6. Sprint Tracking (Commit: 5bc03fc)
 
-**Sprint 0.1 Completion Report** (`to-dos/SPRINT-0.1-COMPLETION-REPORT.md`):
+**Sprint 0.1 Completion Report** (`to-dos/status/SPRINT-0.1-COMPLETION-REPORT.md`):
 - 248 lines of detailed completion documentation
 - Task-by-task status
 - Metrics and statistics
 - Lessons learned
 - Next steps
 
-**Sprint 0.2 Readiness Assessment** (`to-dos/SPRINT-0.2-READY.md`):
+**Sprint 0.2 Readiness Assessment** (`to-dos/status/SPRINT-0.2-READY.md`):
 - 331 lines of readiness documentation
 - Prerequisites checklist
 - Task breakdown
@@ -383,8 +383,8 @@ All prerequisites for Sprint 0.2 (Development Environment Setup) have been met:
 - Project Overview: `/ref-docs/OctoLLM-Project-Overview.md`
 - Architecture: `/ref-docs/OctoLLM-Architecture-Implementation.md`
 - Phase 0 TODO: `/to-dos/PHASE-0-PROJECT-SETUP.md`
-- Sprint 0.1 Report: `/to-dos/SPRINT-0.1-COMPLETION-REPORT.md`
-- Sprint 0.2 Readiness: `/to-dos/SPRINT-0.2-READY.md`
+- Sprint 0.1 Report: `/to-dos/status/SPRINT-0.1-COMPLETION-REPORT.md`
+- Sprint 0.2 Readiness: `/to-dos/status/SPRINT-0.2-READY.md`
 
 ---
 

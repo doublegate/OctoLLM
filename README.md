@@ -207,7 +207,8 @@ See [`docs/guides/quickstart.md`](./docs/guides/quickstart.md) for detailed setu
 ### For Project Managers
 - [Master TODO](./to-dos/MASTER-TODO.md) - Complete 7-phase roadmap (420+ tasks)
 - [Phase 0 TODO](./to-dos/PHASE-0-PROJECT-SETUP.md) - Project setup (45 tasks, 2 weeks)
-- [Pre-Phase 0 Readiness Report](./to-dos/PRE-PHASE-0-READINESS-REPORT.md) - Documentation audit
+- [Status & Progress](./to-dos/status/README.md) - Sprint reports and tracking
+- [Pre-Phase 0 Readiness Report](./to-dos/status/PRE-PHASE-0-READINESS-REPORT.md) - Documentation audit
 
 ## Contributing
 

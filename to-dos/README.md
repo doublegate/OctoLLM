@@ -12,6 +12,26 @@ This directory contains actionable TODO files for implementing OctoLLM from desi
 
 **Key Principle**: Every task links to detailed documentation. Use the TODOs for tracking progress, and the docs/ for implementation details.
 
+### Directory Organization
+
+```
+to-dos/
+├── README.md                    # This file - Overview and navigation
+├── MASTER-TODO.md              # Complete project roadmap (7 phases)
+├── PHASE-X-*.md                # Phase-specific TODO files (actionable tasks)
+├── *-CHECKLIST.md              # Testing, security, compliance checklists
+└── status/                     # Status reports and progress tracking
+    ├── README.md               # Status directory guide
+    ├── SPRINT-*-REPORT.md      # Sprint completion reports
+    ├── SPRINT-*-READY.md       # Sprint readiness assessments
+    ├── PHASE-*-SUMMARY.md      # Strategic planning documents
+    └── *-GUIDE.md              # Historical setup and implementation guides
+```
+
+**What Goes Where**:
+- **Root `to-dos/`**: Active TODO lists, phase tasks, checklists (work to be done)
+- **`to-dos/status/`**: Completed reports, progress tracking, handoffs (work that's done)
+
 ---
 
 ## TODO File Structure
@@ -30,11 +50,11 @@ This directory contains actionable TODO files for implementing OctoLLM from desi
 
 ### Phase 0-1 Enhancement Planning
 
-**NEW: Comprehensive planning documents for completing Phase 0 and Phase 1 TODOs**
+**Comprehensive planning documents for completing Phase 0 and Phase 1 TODOs**
 
-These documents provide a detailed roadmap for enhancing Phase 0 and Phase 1 TODO files to production-ready quality (9,000-12,000 lines with 150+ complete code files).
+These strategic documents (now in `status/`) provide a detailed roadmap for enhancing Phase 0 and Phase 1 TODO files to production-ready quality (9,000-12,000 lines with 150+ complete code files).
 
-**[PHASE-0-1-EXECUTIVE-SUMMARY.md](./PHASE-0-1-EXECUTIVE-SUMMARY.md)** ⭐ **START HERE**
+**[status/PHASE-0-1-EXECUTIVE-SUMMARY.md](./status/PHASE-0-1-EXECUTIVE-SUMMARY.md)** ⭐ **START HERE**
 - Quick reference dashboard
 - Budget: $42,240 | Timeline: 4 weeks
 - Current gap analysis (88 tasks, 10,601 lines needed)
@@ -42,7 +62,7 @@ These documents provide a detailed roadmap for enhancing Phase 0 and Phase 1 TOD
 - Go/no-go decision framework
 - **Lines**: ~500 | **Size**: 14 KB
 
-**[PHASE-0-1-IMPLEMENTATION-GUIDE.md](./PHASE-0-1-IMPLEMENTATION-GUIDE.md)** 📘 **PRIMARY REFERENCE**
+**[status/PHASE-0-1-IMPLEMENTATION-GUIDE.md](./status/PHASE-0-1-IMPLEMENTATION-GUIDE.md)** 📘 **PRIMARY REFERENCE**
 - Complete quality example (Task 0.1.4: 230-line README.md)
 - Reusable task template for all 88 tasks
 - Detailed task outlines with exact line counts
@@ -51,7 +71,7 @@ These documents provide a detailed roadmap for enhancing Phase 0 and Phase 1 TOD
 - Quality gates and validation checklist
 - **Lines**: ~2,000 | **Size**: 52 KB
 
-**[PHASE-0-1-ENHANCEMENT-SUMMARY.md](./PHASE-0-1-ENHANCEMENT-SUMMARY.md)**
+**[status/PHASE-0-1-ENHANCEMENT-SUMMARY.md](./status/PHASE-0-1-ENHANCEMENT-SUMMARY.md)**
 - Current state analysis (Phase 0: 25% done, Phase 1: 2% done)
 - Complete scope breakdown (10 sprints, 88 tasks)
 - Code examples inventory (150+ files needed)
@@ -59,7 +79,7 @@ These documents provide a detailed roadmap for enhancing Phase 0 and Phase 1 TOD
 - Effort: 220 hours | Cost: $42,240
 - **Lines**: ~800 | **Size**: 21 KB
 
-**[PHASE-0-1-COMPLETION-REPORT.md](./PHASE-0-1-COMPLETION-REPORT.md)**
+**[status/PHASE-0-1-COMPLETION-REPORT.md](./status/PHASE-0-1-COMPLETION-REPORT.md)**
 - Strategic recommendations (3 approaches evaluated)
 - Resource requirements (2-3 engineers, 4 weeks)
 - Risk analysis and mitigation strategies
@@ -68,7 +88,7 @@ These documents provide a detailed roadmap for enhancing Phase 0 and Phase 1 TOD
 - Anticipated challenges and lessons learned
 - **Lines**: ~1,000 | **Size**: 26 KB
 
-**Total Enhancement Planning**: 113 KB across 4 strategic documents
+**Total Enhancement Planning**: 113 KB across 4 strategic documents (see [status/README.md](./status/README.md) for details)
 
 ### Phase TODOs
 
@@ -148,6 +168,24 @@ These documents provide a detailed roadmap for enhancing Phase 0 and Phase 1 TOD
 - ISO 27001 certification
 - **Team**: 3-4 engineers + 1 SRE
 - **Reference**: `docs/operations/scaling.md` (3,806 lines), `docs/security/compliance.md` (3,948 lines)
+
+### Status & Progress Tracking
+
+**[status/](./status/)** - Status reports and progress documentation
+
+This subdirectory contains completed sprint reports, progress tracking, handoff documents, and strategic planning artifacts. Unlike the actionable TODO files in the root directory, these documents provide historical context and status updates.
+
+**Current Sprint Status**:
+- **Sprint 0.1**: COMPLETE - [Completion Report](./status/SPRINT-0.1-COMPLETION-REPORT.md), [Handoff](./status/PHASE-0-SPRINT-0.1-HANDOFF.md)
+- **Sprint 0.2**: READY - [Readiness Assessment](./status/SPRINT-0.2-READY.md)
+
+**Key Documents**:
+- [Status Directory Overview](./status/README.md) - Guide to all status documents
+- [Sprint Reports](./status/) - Completion reports, progress tracking, handoffs
+- [Strategic Planning](./status/) - Phase 0-1 enhancement documents
+- [Historical Guides](./status/) - Setup guides and readiness reports
+
+See [status/README.md](./status/README.md) for complete documentation, naming conventions, and usage guidelines.
 
 ### Checklists
 
@@ -349,6 +387,11 @@ Time estimates are provided for each task:
 **Blockers**: None (starting fresh)
 
 **Recent Updates**:
+- 2025-11-10: **Status Directory Organization Complete**
+  - Created `to-dos/status/` subdirectory for progress tracking
+  - Moved 12 status/report documents to organized location
+  - Updated README.md with directory structure and navigation
+  - Created status/README.md with comprehensive documentation
 - 2025-11-10: **Phase 0-1 Enhancement Planning Complete** (4 strategic documents, 113 KB)
   - Executive Summary, Implementation Guide, Enhancement Summary, Completion Report
   - Roadmap for completing 88 tasks with 150+ code files
@@ -365,11 +408,16 @@ Time estimates are provided for each task:
 - [MASTER-TODO.md](./MASTER-TODO.md) - Full project roadmap
 - [Phase 0 Setup](./PHASE-0-PROJECT-SETUP.md) - Get started here
 
-### Phase 0-1 Enhancement (NEW)
-- ⭐ [Executive Summary](./PHASE-0-1-EXECUTIVE-SUMMARY.md) - Quick overview, budget, timeline
-- 📘 [Implementation Guide](./PHASE-0-1-IMPLEMENTATION-GUIDE.md) - How to complete enhancement
-- [Enhancement Summary](./PHASE-0-1-ENHANCEMENT-SUMMARY.md) - Detailed scope analysis
-- [Completion Report](./PHASE-0-1-COMPLETION-REPORT.md) - Strategy and risks
+### Status & Progress
+- [Status Directory](./status/README.md) - All status reports and progress tracking
+- [Sprint 0.2 Ready](./status/SPRINT-0.2-READY.md) - Current sprint readiness
+- [Sprint 0.1 Complete](./status/SPRINT-0.1-COMPLETION-REPORT.md) - Last sprint summary
+
+### Phase 0-1 Enhancement Planning
+- ⭐ [Executive Summary](./status/PHASE-0-1-EXECUTIVE-SUMMARY.md) - Quick overview, budget, timeline
+- 📘 [Implementation Guide](./status/PHASE-0-1-IMPLEMENTATION-GUIDE.md) - How to complete enhancement
+- [Enhancement Summary](./status/PHASE-0-1-ENHANCEMENT-SUMMARY.md) - Detailed scope analysis
+- [Completion Report](./status/PHASE-0-1-COMPLETION-REPORT.md) - Strategy and risks
 
 ### Documentation
 - [Docs Index](../docs/README.md) - All documentation
