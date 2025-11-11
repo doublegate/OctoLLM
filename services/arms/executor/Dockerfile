@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Executor Arm Dockerfile - Multi-stage build for Rust service (security-critical)
-FROM rust:1.75-slim as builder
+FROM rust:slim as builder
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
