@@ -1,0 +1,184 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight UTC
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sast-bandit:
+    name: SAST - Bandit (Python)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit security linter
+        run: |
+          echo "Running Bandit SAST scanner..."
+          bandit -r services/orchestrator/ services/arms/ -f json -o bandit-report.json || true
+          bandit -r services/orchestrator/ services/arms/ -ll -ii
+        continue-on-error: false
+
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-report
+          path: bandit-report.json
+          retention-days: 30
+
+  dependency-scan-python:
+    name: Dependency Scan - Snyk (Python)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/python-3.11@master
+        continue-on-error: true  # Don't fail build on vulnerabilities yet
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --all-projects
+
+      - name: Upload Snyk results to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: snyk.sarif
+
+  dependency-scan-rust:
+    name: Dependency Scan - cargo-audit (Rust)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit
+
+      - name: Run cargo audit - Reflex Layer
+        working-directory: services/reflex-layer
+        run: |
+          echo "Auditing Reflex Layer dependencies..."
+          cargo audit --json > ../../reflex-audit.json || true
+          cargo audit
+        continue-on-error: true
+
+      - name: Run cargo audit - Executor Arm
+        working-directory: services/arms/executor
+        run: |
+          echo "Auditing Executor Arm dependencies..."
+          cargo audit --json > ../../executor-audit.json || true
+          cargo audit
+        continue-on-error: true
+
+      - name: Upload audit reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cargo-audit-reports
+          path: |
+            reflex-audit.json
+            executor-audit.json
+          retention-days: 30
+
+  container-scan:
+    name: Container Scan - Trivy
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [orchestrator, reflex-layer, planner, executor]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          echo "Building ${{ matrix.service }} image..."
+          if [ "${{ matrix.service }}" = "orchestrator" ]; then
+            docker build -t octollm/${{ matrix.service }}:latest -f services/orchestrator/Dockerfile .
+          elif [ "${{ matrix.service }}" = "reflex-layer" ]; then
+            docker build -t octollm/${{ matrix.service }}:latest -f services/reflex-layer/Dockerfile .
+          elif [ "${{ matrix.service }}" = "executor" ]; then
+            docker build -t octollm/${{ matrix.service }}:latest -f services/arms/executor/Dockerfile .
+          else
+            docker build -t octollm/${{ matrix.service }}:latest -f services/arms/${{ matrix.service }}/Dockerfile .
+          fi
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: octollm/${{ matrix.service }}:latest
+          format: 'sarif'
+          output: 'trivy-${{ matrix.service }}.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-${{ matrix.service }}.sarif'
+
+  secret-scan:
+    name: Secret Scan - gitleaks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for gitleaks
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [sast-bandit, dependency-scan-python, dependency-scan-rust, container-scan, secret-scan]
+    if: always()
+
+    steps:
+      - name: Check security scan results
+        run: |
+          echo "✅ Security scan workflow complete"
+          echo "Review Security tab for detailed results: https://github.com/${{ github.repository }}/security"
+          echo ""
+          echo "Expected Phase 0 Results:"
+          echo "- Bandit: Few/no issues (minimal code)"
+          echo "- Snyk: Some dependency warnings (acceptable)"
+          echo "- cargo-audit: Should be clean"
+          echo "- Trivy: Some base image CVEs (acceptable)"
+          echo "- gitleaks: Should be clean (no secrets)"

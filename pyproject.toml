@@ -185,3 +185,7 @@ exclude_lines = [
 
 [tool.coverage.html]
 directory = "htmlcov"
+
+[tool.bandit]
+exclude_dirs = ["/tests", "/venv", "/.venv", "/docs"]
+skips = ["B101"]  # Skip assert_used (common in tests)
