@@ -1,0 +1,313 @@
+version: '3.8'
+
+# OctoLLM Development Environment
+# Full stack with all services, databases, and development tools
+
+services:
+  # ============================================================================
+  # Infrastructure Services
+  # ============================================================================
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: octollm-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-octollm}
+      POSTGRES_USER: ${POSTGRES_USER:-octollm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-octollm_dev_password}
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-octollm}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - octollm-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: octollm-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - octollm-network
+
+  qdrant:
+    image: qdrant/qdrant:v1.7.0
+    container_name: octollm-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - octollm-network
+
+  # ============================================================================
+  # Core Services
+  # ============================================================================
+
+  reflex-layer:
+    build:
+      context: ../..
+      dockerfile: services/reflex-layer/Dockerfile
+    container_name: octollm-reflex
+    environment:
+      REDIS_URL: redis://redis:6379
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      RUST_LOG: ${RUST_LOG:-info}
+      REFLEX_CACHE_TTL: ${REFLEX_CACHE_TTL:-3600}
+      REFLEX_RATE_LIMIT_PER_MINUTE: ${REFLEX_RATE_LIMIT_PER_MINUTE:-100}
+      PII_DETECTION_ENABLED: ${PII_DETECTION_ENABLED:-true}
+      PII_AUTO_REDACT: ${PII_AUTO_REDACT:-true}
+    ports:
+      - "8080:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - octollm-network
+
+  orchestrator:
+    build:
+      context: ../..
+      dockerfile: services/orchestrator/Dockerfile
+    container_name: octollm-orchestrator
+    environment:
+      # Database connections
+      DATABASE_URL: postgresql://${POSTGRES_USER:-octollm}:${POSTGRES_PASSWORD:-octollm_dev_password}@postgres:5432/${POSTGRES_DB:-octollm}
+      REDIS_URL: redis://redis:6379
+      QDRANT_URL: http://qdrant:6333
+
+      # LLM API keys
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+
+      # Service configuration
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      MAX_PARALLEL_ARMS: ${MAX_PARALLEL_ARMS:-5}
+      TASK_TIMEOUT: ${TASK_TIMEOUT:-300}
+      CACHE_TTL: ${CACHE_TTL:-3600}
+
+      # Service URLs
+      REFLEX_URL: http://reflex-layer:8080
+      PLANNER_URL: http://planner-arm:8001
+      RETRIEVER_URL: http://retriever-arm:8002
+      CODER_URL: http://coder-arm:8003
+      JUDGE_URL: http://judge-arm:8004
+      SAFETY_GUARDIAN_URL: http://safety-guardian-arm:8005
+      EXECUTOR_URL: http://executor-arm:8006
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      reflex-layer:
+        condition: service_started
+    volumes:
+      - ../../services/orchestrator:/app/services/orchestrator:cached
+    restart: unless-stopped
+    networks:
+      - octollm-network
+
+  # ============================================================================
+  # Specialized Arms
+  # ============================================================================
+
+  planner-arm:
+    build:
+      context: ../..
+      dockerfile: services/arms/planner/Dockerfile
+    container_name: octollm-planner
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    ports:
+      - "8001:8001"
+    volumes:
+      - ../../services/arms/planner:/app/services/arms/planner:cached
+    restart: unless-stopped
+    networks:
+      - octollm-network
+
+  retriever-arm:
+    build:
+      context: ../..
+      dockerfile: services/arms/retriever/Dockerfile
+    container_name: octollm-retriever
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    ports:
+      - "8002:8002"
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    volumes:
+      - ../../services/arms/retriever:/app/services/arms/retriever:cached
+    restart: unless-stopped
+    networks:
+      - octollm-network
+
+  coder-arm:
+    build:
+      context: ../..
+      dockerfile: services/arms/coder/Dockerfile
+    container_name: octollm-coder
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    ports:
+      - "8003:8003"
+    volumes:
+      - ../../services/arms/coder:/app/services/arms/coder:cached
+    restart: unless-stopped
+    networks:
+      - octollm-network
+
+  judge-arm:
+    build:
+      context: ../..
+      dockerfile: services/arms/judge/Dockerfile
+    container_name: octollm-judge
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    ports:
+      - "8004:8004"
+    volumes:
+      - ../../services/arms/judge:/app/services/arms/judge:cached
+    restart: unless-stopped
+    networks:
+      - octollm-network
+
+  safety-guardian-arm:
+    build:
+      context: ../..
+      dockerfile: services/arms/safety-guardian/Dockerfile
+    container_name: octollm-safety-guardian
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      PII_DETECTION_ENABLED: ${PII_DETECTION_ENABLED:-true}
+    ports:
+      - "8005:8005"
+    volumes:
+      - ../../services/arms/safety-guardian:/app/services/arms/safety-guardian:cached
+    restart: unless-stopped
+    networks:
+      - octollm-network
+
+  executor-arm:
+    build:
+      context: ../..
+      dockerfile: services/arms/executor/Dockerfile
+    container_name: octollm-executor
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      RUST_LOG: ${RUST_LOG:-info}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    ports:
+      - "8006:8006"
+    # Privileged mode for sandboxing capabilities
+    privileged: true
+    restart: unless-stopped
+    networks:
+      - octollm-network
+
+  # ============================================================================
+  # Monitoring & Observability (Optional)
+  # ============================================================================
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: octollm-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    restart: unless-stopped
+    networks:
+      - octollm-network
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: octollm-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: ''
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - octollm-network
+    profiles:
+      - monitoring
+
+# ============================================================================
+# Volumes
+# ============================================================================
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  qdrant_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# ============================================================================
+# Networks
+# ============================================================================
+
+networks:
+  octollm-network:
+    driver: bridge
+    name: octollm-network

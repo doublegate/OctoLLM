@@ -1,0 +1,157 @@
+{
+  "name": "OctoLLM Development",
+  "dockerComposeFile": "../infrastructure/docker-compose/docker-compose.dev.yml",
+  "service": "orchestrator",
+  "workspaceFolder": "/app",
+
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    },
+    "ghcr.io/devcontainers/features/rust:1": {
+      "version": "1.75",
+      "profile": "default"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "charliermarsh.ruff",
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml",
+        "ms-azuretools.vscode-docker",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "eamodio.gitlens",
+        "redhat.vscode-yaml",
+        "esbenp.prettier-vscode",
+        "ms-vscode.makefile-tools",
+        "gruntfuggly.todo-tree"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.ruffEnabled": true,
+        "python.formatting.provider": "black",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": true
+        },
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter",
+          "editor.tabSize": 4
+        },
+        "[rust]": {
+          "editor.defaultFormatter": "rust-lang.rust-analyzer",
+          "editor.tabSize": 4
+        },
+        "[yaml]": {
+          "editor.defaultFormatter": "redhat.vscode-yaml",
+          "editor.tabSize": 2
+        },
+        "[json]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.tabSize": 2
+        },
+        "rust-analyzer.checkOnSave.command": "clippy",
+        "files.exclude": {
+          "**/__pycache__": true,
+          "**/.pytest_cache": true,
+          "**/.mypy_cache": true,
+          "**/.ruff_cache": true,
+          "**/target": true,
+          "**/*.pyc": true
+        },
+        "search.exclude": {
+          "**/node_modules": true,
+          "**/bower_components": true,
+          "**/*.code-search": true,
+          "**/target": true,
+          "**/.venv": true
+        }
+      }
+    }
+  },
+
+  "forwardPorts": [
+    8000,
+    8001,
+    8002,
+    8003,
+    8004,
+    8005,
+    8006,
+    8080,
+    5432,
+    6379,
+    6333,
+    9090,
+    3000
+  ],
+
+  "portsAttributes": {
+    "8000": {
+      "label": "Orchestrator",
+      "protocol": "http"
+    },
+    "8001": {
+      "label": "Planner Arm",
+      "protocol": "http"
+    },
+    "8002": {
+      "label": "Retriever Arm",
+      "protocol": "http"
+    },
+    "8003": {
+      "label": "Coder Arm",
+      "protocol": "http"
+    },
+    "8004": {
+      "label": "Judge Arm",
+      "protocol": "http"
+    },
+    "8005": {
+      "label": "Safety Guardian Arm",
+      "protocol": "http"
+    },
+    "8006": {
+      "label": "Executor Arm",
+      "protocol": "http"
+    },
+    "8080": {
+      "label": "Reflex Layer",
+      "protocol": "http"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "protocol": "tcp"
+    },
+    "6379": {
+      "label": "Redis",
+      "protocol": "tcp"
+    },
+    "6333": {
+      "label": "Qdrant API",
+      "protocol": "http"
+    },
+    "9090": {
+      "label": "Prometheus",
+      "protocol": "http"
+    },
+    "3000": {
+      "label": "Grafana",
+      "protocol": "http"
+    }
+  },
+
+  "postCreateCommand": "echo 'OctoLLM development environment ready!' && echo 'Run: cd infrastructure/docker-compose && cp .env.example .env' && echo 'Then edit .env with your API keys'",
+
+  "remoteUser": "octollm"
+}

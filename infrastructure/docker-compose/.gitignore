@@ -1,0 +1,10 @@
+# Environment files (NEVER commit secrets)
+.env
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*~

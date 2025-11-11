@@ -1,0 +1,82 @@
+# Prometheus configuration for OctoLLM services
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'octollm-dev'
+    environment: 'development'
+
+scrape_configs:
+  # Orchestrator metrics
+  - job_name: 'orchestrator'
+    static_configs:
+      - targets: ['orchestrator:8000']
+        labels:
+          service: 'orchestrator'
+          component: 'core'
+
+  # Reflex Layer metrics
+  - job_name: 'reflex-layer'
+    static_configs:
+      - targets: ['reflex-layer:8080']
+        labels:
+          service: 'reflex-layer'
+          component: 'core'
+
+  # Planner Arm metrics
+  - job_name: 'planner-arm'
+    static_configs:
+      - targets: ['planner-arm:8001']
+        labels:
+          service: 'planner-arm'
+          component: 'arm'
+
+  # Retriever Arm metrics
+  - job_name: 'retriever-arm'
+    static_configs:
+      - targets: ['retriever-arm:8002']
+        labels:
+          service: 'retriever-arm'
+          component: 'arm'
+
+  # Coder Arm metrics
+  - job_name: 'coder-arm'
+    static_configs:
+      - targets: ['coder-arm:8003']
+        labels:
+          service: 'coder-arm'
+          component: 'arm'
+
+  # Judge Arm metrics
+  - job_name: 'judge-arm'
+    static_configs:
+      - targets: ['judge-arm:8004']
+        labels:
+          service: 'judge-arm'
+          component: 'arm'
+
+  # Safety Guardian Arm metrics
+  - job_name: 'safety-guardian-arm'
+    static_configs:
+      - targets: ['safety-guardian-arm:8005']
+        labels:
+          service: 'safety-guardian-arm'
+          component: 'arm'
+
+  # Executor Arm metrics
+  - job_name: 'executor-arm'
+    static_configs:
+      - targets: ['executor-arm:8006']
+        labels:
+          service: 'executor-arm'
+          component: 'arm'
+
+  # PostgreSQL metrics (if postgres_exporter is added)
+  # - job_name: 'postgres'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+
+  # Redis metrics (if redis_exporter is added)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
