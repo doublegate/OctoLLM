@@ -1,0 +1,616 @@
+{
+	"_type": "export",
+	"__export_format": 4,
+	"__export_date": "2025-11-11T00:00:00.000Z",
+	"__export_source": "insomnia.desktop.app:v2023.5.0",
+	"resources": [
+		{
+			"_id": "wrk_octollm",
+			"_type": "workspace",
+			"name": "OctoLLM API",
+			"description": "Comprehensive API workspace for OctoLLM distributed AI architecture",
+			"scope": "collection"
+		},
+		{
+			"_id": "env_base",
+			"_type": "environment",
+			"name": "Base Environment",
+			"data": {
+				"BASE_URL": "http://localhost",
+				"API_KEY": "your-api-key-here",
+				"BEARER_TOKEN": "",
+				"TASK_ID": "",
+				"SANDBOX_ID": ""
+			},
+			"dataPropertyOrder": {
+				"&": ["BASE_URL", "API_KEY", "BEARER_TOKEN", "TASK_ID", "SANDBOX_ID"]
+			},
+			"color": null,
+			"isPrivate": false,
+			"metaSortKey": 1,
+			"parentId": "wrk_octollm"
+		},
+		{
+			"_id": "env_dev",
+			"_type": "environment",
+			"name": "Development",
+			"data": {
+				"BASE_URL": "http://localhost",
+				"API_KEY": "dev-api-key",
+				"BEARER_TOKEN": ""
+			},
+			"dataPropertyOrder": {
+				"&": ["BASE_URL", "API_KEY", "BEARER_TOKEN"]
+			},
+			"color": "#7d69cb",
+			"isPrivate": false,
+			"metaSortKey": 2,
+			"parentId": "wrk_octollm"
+		},
+		{
+			"_id": "env_staging",
+			"_type": "environment",
+			"name": "Staging",
+			"data": {
+				"BASE_URL": "https://staging-api.octollm.example.com",
+				"API_KEY": "staging-api-key",
+				"BEARER_TOKEN": ""
+			},
+			"dataPropertyOrder": {
+				"&": ["BASE_URL", "API_KEY", "BEARER_TOKEN"]
+			},
+			"color": "#f39c12",
+			"isPrivate": false,
+			"metaSortKey": 3,
+			"parentId": "wrk_octollm"
+		},
+		{
+			"_id": "env_production",
+			"_type": "environment",
+			"name": "Production",
+			"data": {
+				"BASE_URL": "https://api.octollm.example.com",
+				"API_KEY": "{{ _.API_KEY }}",
+				"BEARER_TOKEN": ""
+			},
+			"dataPropertyOrder": {
+				"&": ["BASE_URL", "API_KEY", "BEARER_TOKEN"]
+			},
+			"color": "#e74c3c",
+			"isPrivate": false,
+			"metaSortKey": 4,
+			"parentId": "wrk_octollm"
+		},
+		{
+			"_id": "fld_orchestrator",
+			"_type": "request_group",
+			"name": "Orchestrator (8000)",
+			"description": "Central brain that coordinates task execution",
+			"environment": {},
+			"environmentPropertyOrder": null,
+			"metaSortKey": 1,
+			"parentId": "wrk_octollm"
+		},
+		{
+			"_id": "req_orch_health",
+			"_type": "request",
+			"name": "Health Check",
+			"url": "{{ _.BASE_URL }}:8000/health",
+			"method": "GET",
+			"body": {},
+			"parameters": [],
+			"headers": [],
+			"authentication": {},
+			"metaSortKey": 1,
+			"isPrivate": false,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"settingRebuildPath": true,
+			"settingFollowRedirects": "global",
+			"parentId": "fld_orchestrator"
+		},
+		{
+			"_id": "req_orch_submit_task",
+			"_type": "request",
+			"name": "Submit Task",
+			"url": "{{ _.BASE_URL }}:8000/tasks",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"goal\": \"Analyze the security vulnerabilities in the provided Python web application\",\n  \"constraints\": [\n    \"Focus on OWASP Top 10 vulnerabilities\",\n    \"Include SQL injection and XSS analysis\"\n  ],\n  \"acceptance_criteria\": [\n    \"All high-severity vulnerabilities identified\",\n    \"Remediation recommendations provided\",\n    \"Code examples for fixes included\"\n  ],\n  \"context\": {\n    \"framework\": \"Flask\",\n    \"python_version\": \"3.11\",\n    \"authentication\": \"JWT\"\n  },\n  \"budget\": {\n    \"max_tokens\": 10000,\n    \"max_time_seconds\": 120,\n    \"max_cost_dollars\": 1.0\n  }\n}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json"
+				},
+				{
+					"name": "X-API-Key",
+					"value": "{{ _.API_KEY }}"
+				},
+				{
+					"name": "X-Request-ID",
+					"value": "{{ uuid }}"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": 2,
+			"isPrivate": false,
+			"parentId": "fld_orchestrator"
+		},
+		{
+			"_id": "req_orch_get_task",
+			"_type": "request",
+			"name": "Get Task Status",
+			"url": "{{ _.BASE_URL }}:8000/tasks/{{ _.TASK_ID }}",
+			"method": "GET",
+			"body": {},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "X-API-Key",
+					"value": "{{ _.API_KEY }}"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": 3,
+			"isPrivate": false,
+			"parentId": "fld_orchestrator"
+		},
+		{
+			"_id": "req_orch_cancel_task",
+			"_type": "request",
+			"name": "Cancel Task",
+			"url": "{{ _.BASE_URL }}:8000/tasks/{{ _.TASK_ID }}",
+			"method": "DELETE",
+			"body": {},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "X-API-Key",
+					"value": "{{ _.API_KEY }}"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": 4,
+			"isPrivate": false,
+			"parentId": "fld_orchestrator"
+		},
+		{
+			"_id": "req_orch_list_arms",
+			"_type": "request",
+			"name": "List Arms",
+			"url": "{{ _.BASE_URL }}:8000/arms",
+			"method": "GET",
+			"body": {},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "X-API-Key",
+					"value": "{{ _.API_KEY }}"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": 5,
+			"isPrivate": false,
+			"parentId": "fld_orchestrator"
+		},
+		{
+			"_id": "fld_reflex",
+			"_type": "request_group",
+			"name": "Reflex Layer (8001)",
+			"description": "Fast preprocessing with caching",
+			"environment": {},
+			"environmentPropertyOrder": null,
+			"metaSortKey": 2,
+			"parentId": "wrk_octollm"
+		},
+		{
+			"_id": "req_reflex_health",
+			"_type": "request",
+			"name": "Health Check",
+			"url": "{{ _.BASE_URL }}:8001/health",
+			"method": "GET",
+			"body": {},
+			"parameters": [],
+			"headers": [],
+			"authentication": {},
+			"metaSortKey": 1,
+			"isPrivate": false,
+			"parentId": "fld_reflex"
+		},
+		{
+			"_id": "req_reflex_preprocess",
+			"_type": "request",
+			"name": "Preprocess Input",
+			"url": "{{ _.BASE_URL }}:8001/preprocess",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"input\": \"Analyze the security of this Flask application\",\n  \"context\": {\n    \"source\": \"web\",\n    \"user_id\": \"user_123\"\n  }\n}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json"
+				},
+				{
+					"name": "X-API-Key",
+					"value": "{{ _.API_KEY }}"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": 2,
+			"isPrivate": false,
+			"parentId": "fld_reflex"
+		},
+		{
+			"_id": "req_reflex_cache_stats",
+			"_type": "request",
+			"name": "Get Cache Stats",
+			"url": "{{ _.BASE_URL }}:8001/cache/stats",
+			"method": "GET",
+			"body": {},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "X-API-Key",
+					"value": "{{ _.API_KEY }}"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": 3,
+			"isPrivate": false,
+			"parentId": "fld_reflex"
+		},
+		{
+			"_id": "fld_planner",
+			"_type": "request_group",
+			"name": "Planner (8002)",
+			"description": "Task decomposition into subtasks",
+			"environment": {},
+			"environmentPropertyOrder": null,
+			"metaSortKey": 3,
+			"parentId": "wrk_octollm"
+		},
+		{
+			"_id": "req_planner_health",
+			"_type": "request",
+			"name": "Health Check",
+			"url": "{{ _.BASE_URL }}:8002/health",
+			"method": "GET",
+			"body": {},
+			"parameters": [],
+			"headers": [],
+			"authentication": {},
+			"metaSortKey": 1,
+			"isPrivate": false,
+			"parentId": "fld_planner"
+		},
+		{
+			"_id": "req_planner_plan",
+			"_type": "request",
+			"name": "Plan Task",
+			"url": "{{ _.BASE_URL }}:8002/plan",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"goal\": \"Scan network 192.168.1.0/24 for vulnerabilities\",\n  \"constraints\": [\n    \"Use only passive scanning techniques\",\n    \"Do not exceed 100 requests per second\"\n  ],\n  \"budget\": {\n    \"max_tokens\": 5000,\n    \"max_time_seconds\": 300,\n    \"max_cost_dollars\": 0.50\n  }\n}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json"
+				},
+				{
+					"name": "X-API-Key",
+					"value": "{{ _.API_KEY }}"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": 2,
+			"isPrivate": false,
+			"parentId": "fld_planner"
+		},
+		{
+			"_id": "fld_executor",
+			"_type": "request_group",
+			"name": "Executor (8003)",
+			"description": "Sandboxed command execution",
+			"environment": {},
+			"environmentPropertyOrder": null,
+			"metaSortKey": 4,
+			"parentId": "wrk_octollm"
+		},
+		{
+			"_id": "req_executor_health",
+			"_type": "request",
+			"name": "Health Check",
+			"url": "{{ _.BASE_URL }}:8003/health",
+			"method": "GET",
+			"body": {},
+			"parameters": [],
+			"headers": [],
+			"authentication": {},
+			"metaSortKey": 1,
+			"isPrivate": false,
+			"parentId": "fld_executor"
+		},
+		{
+			"_id": "req_executor_execute",
+			"_type": "request",
+			"name": "Execute Command",
+			"url": "{{ _.BASE_URL }}:8003/execute",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"command\": \"nmap\",\n  \"args\": [\"-sV\", \"-p\", \"80,443\", \"192.168.1.1\"],\n  \"timeout\": 60,\n  \"env\": {\n    \"SCAN_TYPE\": \"passive\"\n  }\n}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json"
+				},
+				{
+					"name": "X-API-Key",
+					"value": "{{ _.API_KEY }}"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": 2,
+			"isPrivate": false,
+			"parentId": "fld_executor"
+		},
+		{
+			"_id": "req_executor_sandbox_status",
+			"_type": "request",
+			"name": "Get Sandbox Status",
+			"url": "{{ _.BASE_URL }}:8003/sandbox/{{ _.SANDBOX_ID }}/status",
+			"method": "GET",
+			"body": {},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "X-API-Key",
+					"value": "{{ _.API_KEY }}"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": 3,
+			"isPrivate": false,
+			"parentId": "fld_executor"
+		},
+		{
+			"_id": "fld_retriever",
+			"_type": "request_group",
+			"name": "Retriever (8004)",
+			"description": "Semantic search over knowledge bases",
+			"environment": {},
+			"environmentPropertyOrder": null,
+			"metaSortKey": 5,
+			"parentId": "wrk_octollm"
+		},
+		{
+			"_id": "req_retriever_health",
+			"_type": "request",
+			"name": "Health Check",
+			"url": "{{ _.BASE_URL }}:8004/health",
+			"method": "GET",
+			"body": {},
+			"parameters": [],
+			"headers": [],
+			"authentication": {},
+			"metaSortKey": 1,
+			"isPrivate": false,
+			"parentId": "fld_retriever"
+		},
+		{
+			"_id": "req_retriever_search",
+			"_type": "request",
+			"name": "Search Knowledge Base",
+			"url": "{{ _.BASE_URL }}:8004/search",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"query\": \"SQL injection vulnerabilities in Python web applications\",\n  \"top_k\": 10,\n  \"min_score\": 0.7,\n  \"filters\": {\n    \"language\": \"python\",\n    \"category\": \"security\"\n  }\n}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json"
+				},
+				{
+					"name": "X-API-Key",
+					"value": "{{ _.API_KEY }}"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": 2,
+			"isPrivate": false,
+			"parentId": "fld_retriever"
+		},
+		{
+			"_id": "fld_coder",
+			"_type": "request_group",
+			"name": "Coder (8005)",
+			"description": "Code generation, debugging, and refactoring",
+			"environment": {},
+			"environmentPropertyOrder": null,
+			"metaSortKey": 6,
+			"parentId": "wrk_octollm"
+		},
+		{
+			"_id": "req_coder_health",
+			"_type": "request",
+			"name": "Health Check",
+			"url": "{{ _.BASE_URL }}:8005/health",
+			"method": "GET",
+			"body": {},
+			"parameters": [],
+			"headers": [],
+			"authentication": {},
+			"metaSortKey": 1,
+			"isPrivate": false,
+			"parentId": "fld_coder"
+		},
+		{
+			"_id": "req_coder_generate",
+			"_type": "request",
+			"name": "Generate Code",
+			"url": "{{ _.BASE_URL }}:8005/code",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"operation\": \"generate\",\n  \"prompt\": \"Write a Python function to validate email addresses using regex\",\n  \"language\": \"python\",\n  \"context\": {\n    \"style\": \"functional\",\n    \"include_tests\": true\n  }\n}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json"
+				},
+				{
+					"name": "X-API-Key",
+					"value": "{{ _.API_KEY }}"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": 2,
+			"isPrivate": false,
+			"parentId": "fld_coder"
+		},
+		{
+			"_id": "req_coder_debug",
+			"_type": "request",
+			"name": "Debug Code",
+			"url": "{{ _.BASE_URL }}:8005/code",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"operation\": \"debug\",\n  \"code\": \"def divide(a, b):\\n    return a / b\",\n  \"prompt\": \"Fix the division by zero error\",\n  \"language\": \"python\"\n}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json"
+				},
+				{
+					"name": "X-API-Key",
+					"value": "{{ _.API_KEY }}"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": 3,
+			"isPrivate": false,
+			"parentId": "fld_coder"
+		},
+		{
+			"_id": "fld_judge",
+			"_type": "request_group",
+			"name": "Judge (8006)",
+			"description": "Output validation against acceptance criteria",
+			"environment": {},
+			"environmentPropertyOrder": null,
+			"metaSortKey": 7,
+			"parentId": "wrk_octollm"
+		},
+		{
+			"_id": "req_judge_health",
+			"_type": "request",
+			"name": "Health Check",
+			"url": "{{ _.BASE_URL }}:8006/health",
+			"method": "GET",
+			"body": {},
+			"parameters": [],
+			"headers": [],
+			"authentication": {},
+			"metaSortKey": 1,
+			"isPrivate": false,
+			"parentId": "fld_judge"
+		},
+		{
+			"_id": "req_judge_validate",
+			"_type": "request",
+			"name": "Validate Output",
+			"url": "{{ _.BASE_URL }}:8006/validate",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"output\": \"The security analysis identified 5 high-severity SQL injection vulnerabilities in the user authentication module. Remediation: Use parameterized queries instead of string concatenation. Example: cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))\",\n  \"criteria\": [\n    \"Must identify all high-severity vulnerabilities\",\n    \"Must include remediation recommendations\",\n    \"Must provide code examples for fixes\"\n  ]\n}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json"
+				},
+				{
+					"name": "X-API-Key",
+					"value": "{{ _.API_KEY }}"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": 2,
+			"isPrivate": false,
+			"parentId": "fld_judge"
+		},
+		{
+			"_id": "fld_safety",
+			"_type": "request_group",
+			"name": "Safety Guardian (8007)",
+			"description": "PII detection and content filtering",
+			"environment": {},
+			"environmentPropertyOrder": null,
+			"metaSortKey": 8,
+			"parentId": "wrk_octollm"
+		},
+		{
+			"_id": "req_safety_health",
+			"_type": "request",
+			"name": "Health Check",
+			"url": "{{ _.BASE_URL }}:8007/health",
+			"method": "GET",
+			"body": {},
+			"parameters": [],
+			"headers": [],
+			"authentication": {},
+			"metaSortKey": 1,
+			"isPrivate": false,
+			"parentId": "fld_safety"
+		},
+		{
+			"_id": "req_safety_check",
+			"_type": "request",
+			"name": "Check Content Safety",
+			"url": "{{ _.BASE_URL }}:8007/check",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"content\": \"Contact me at john.doe@example.com or call 555-123-4567. My SSN is 123-45-6789.\",\n  \"check_pii\": true,\n  \"check_harmful\": true\n}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json"
+				},
+				{
+					"name": "X-API-Key",
+					"value": "{{ _.API_KEY }}"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": 2,
+			"isPrivate": false,
+			"parentId": "fld_safety"
+		}
+	]
+}

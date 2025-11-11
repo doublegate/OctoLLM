@@ -1,0 +1,838 @@
+{
+	"info": {
+		"_postman_id": "octollm-api-collection",
+		"name": "OctoLLM API Collection",
+		"description": "Comprehensive API collection for OctoLLM distributed AI architecture.\n\nIncludes all 8 services with authentication, tests, and realistic examples.\n\n**Services**:\n- Orchestrator (8000): Task coordination\n- Reflex Layer (8001): Preprocessing & caching\n- Planner (8002): Task decomposition\n- Executor (8003): Sandboxed execution\n- Retriever (8004): Semantic search\n- Coder (8005): Code generation\n- Judge (8006): Output validation\n- Safety Guardian (8007): PII detection\n\n**Version**: 0.4.0\n**Sprint**: 0.5",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "{{API_KEY}}",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "X-API-Key",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script",
+					"",
+					"// Generate request ID for tracing",
+					"pm.environment.set('REQUEST_ID', pm.variables.replaceIn('{{$guid}}'));",
+					"",
+					"// Set timestamp",
+					"pm.environment.set('TIMESTAMP', new Date().toISOString());",
+					"",
+					"// Log request",
+					"console.log(`[${pm.environment.get('TIMESTAMP')}] ${pm.request.method} ${pm.request.url}`);",
+					"",
+					"// Validate API key is set",
+					"if (!pm.environment.get('API_KEY')) {",
+					"    console.warn('WARNING: API_KEY environment variable not set');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script",
+					"",
+					"// Test response time",
+					"pm.test('Response time is less than 30s', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+					"});",
+					"",
+					"// Test content type",
+					"pm.test('Content-Type is application/json', function () {",
+					"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+					"});",
+					"",
+					"// Log response",
+					"console.log(`Response status: ${pm.response.code}`);",
+					"console.log(`Response time: ${pm.response.responseTime}ms`);"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "http://localhost",
+			"type": "string"
+		},
+		{
+			"key": "API_KEY",
+			"value": "your-api-key-here",
+			"type": "string"
+		},
+		{
+			"key": "BEARER_TOKEN",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Orchestrator (8000)",
+			"description": "Central brain that coordinates task execution",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Service is healthy', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.status).to.eql('healthy');",
+									"    pm.expect(response.version).to.exist;",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}:8000/health",
+							"host": ["{{BASE_URL}}"],
+							"port": "8000",
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Submit Task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Task created with ID', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.task_id).to.exist;",
+									"    pm.expect(response.task_id).to.match(/^task_[a-zA-Z0-9]{16}$/);",
+									"    pm.expect(response.status).to.be.oneOf(['queued', 'processing']);",
+									"    ",
+									"    // Save task ID for subsequent requests",
+									"    pm.environment.set('TASK_ID', response.task_id);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Request-ID",
+								"value": "{{REQUEST_ID}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"goal\": \"Analyze the security vulnerabilities in the provided Python web application\",\n  \"constraints\": [\n    \"Focus on OWASP Top 10 vulnerabilities\",\n    \"Include SQL injection and XSS analysis\"\n  ],\n  \"acceptance_criteria\": [\n    \"All high-severity vulnerabilities identified\",\n    \"Remediation recommendations provided\",\n    \"Code examples for fixes included\"\n  ],\n  \"context\": {\n    \"framework\": \"Flask\",\n    \"python_version\": \"3.11\",\n    \"authentication\": \"JWT\"\n  },\n  \"budget\": {\n    \"max_tokens\": 10000,\n    \"max_time_seconds\": 120,\n    \"max_cost_dollars\": 1.0\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}:8000/tasks",
+							"host": ["{{BASE_URL}}"],
+							"port": "8000",
+							"path": ["tasks"]
+						}
+					}
+				},
+				{
+					"name": "Get Task Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Task status returned', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.task_id).to.exist;",
+									"    pm.expect(response.status).to.be.oneOf(['queued', 'processing', 'completed', 'failed', 'cancelled']);",
+									"    pm.expect(response.created_at).to.exist;",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Request-ID",
+								"value": "{{REQUEST_ID}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}:8000/tasks/{{TASK_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"port": "8000",
+							"path": ["tasks", "{{TASK_ID}}"]
+						}
+					}
+				},
+				{
+					"name": "Cancel Task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Task cancelled', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.status).to.eql('cancelled');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-Request-ID",
+								"value": "{{REQUEST_ID}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}:8000/tasks/{{TASK_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"port": "8000",
+							"path": ["tasks", "{{TASK_ID}}"]
+						}
+					}
+				},
+				{
+					"name": "List Arms",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Arms list returned', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.arms).to.be.an('array');",
+									"    pm.expect(response.arms.length).to.be.at.least(6);",
+									"    ",
+									"    response.arms.forEach(arm => {",
+									"        pm.expect(arm.arm_id).to.exist;",
+									"        pm.expect(arm.name).to.exist;",
+									"        pm.expect(arm.capabilities).to.be.an('array');",
+									"    });",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}:8000/arms",
+							"host": ["{{BASE_URL}}"],
+							"port": "8000",
+							"path": ["arms"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Reflex Layer (8001)",
+			"description": "Fast preprocessing with caching",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}:8001/health",
+							"host": ["{{BASE_URL}}"],
+							"port": "8001",
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Preprocess Input",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Preprocessing result returned', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.cached).to.be.a('boolean');",
+									"    pm.expect(response.pii_detected).to.be.a('boolean');",
+									"    pm.expect(response.injection_detected).to.be.a('boolean');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"input\": \"Analyze the security of this Flask application\",\n  \"context\": {\n    \"source\": \"web\",\n    \"user_id\": \"user_123\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}:8001/preprocess",
+							"host": ["{{BASE_URL}}"],
+							"port": "8001",
+							"path": ["preprocess"]
+						}
+					}
+				},
+				{
+					"name": "Get Cache Stats",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Cache stats returned', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.total_entries).to.be.a('number');",
+									"    pm.expect(response.hit_rate).to.be.within(0, 1);",
+									"    pm.expect(response.avg_response_time_ms).to.be.a('number');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}:8001/cache/stats",
+							"host": ["{{BASE_URL}}"],
+							"port": "8001",
+							"path": ["cache", "stats"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Planner (8002)",
+			"description": "Task decomposition into subtasks",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}:8002/health",
+							"host": ["{{BASE_URL}}"],
+							"port": "8002",
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Plan Task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Plan generated', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.subtasks).to.be.an('array');",
+									"    pm.expect(response.subtasks.length).to.be.at.least(1);",
+									"    pm.expect(response.estimated_cost_usd).to.be.a('number');",
+									"    pm.expect(response.estimated_time_seconds).to.be.a('number');",
+									"    ",
+									"    response.subtasks.forEach(subtask => {",
+									"        pm.expect(subtask.subtask_id).to.exist;",
+									"        pm.expect(subtask.assigned_arm).to.exist;",
+									"    });",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"goal\": \"Scan network 192.168.1.0/24 for vulnerabilities\",\n  \"constraints\": [\n    \"Use only passive scanning techniques\",\n    \"Do not exceed 100 requests per second\"\n  ],\n  \"budget\": {\n    \"max_tokens\": 5000,\n    \"max_time_seconds\": 300,\n    \"max_cost_dollars\": 0.50\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}:8002/plan",
+							"host": ["{{BASE_URL}}"],
+							"port": "8002",
+							"path": ["plan"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Executor (8003)",
+			"description": "Sandboxed command execution",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}:8003/health",
+							"host": ["{{BASE_URL}}"],
+							"port": "8003",
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Execute Command",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Execution result returned', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.sandbox_id).to.exist;",
+									"    pm.expect(response.status).to.be.oneOf(['running', 'completed', 'failed', 'timeout']);",
+									"    ",
+									"    if (response.status === 'completed') {",
+									"        pm.expect(response.exit_code).to.be.a('number');",
+									"    }",
+									"    ",
+									"    // Save sandbox ID",
+									"    pm.environment.set('SANDBOX_ID', response.sandbox_id);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"command\": \"nmap\",\n  \"args\": [\"-sV\", \"-p\", \"80,443\", \"192.168.1.1\"],\n  \"timeout\": 60,\n  \"env\": {\n    \"SCAN_TYPE\": \"passive\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}:8003/execute",
+							"host": ["{{BASE_URL}}"],
+							"port": "8003",
+							"path": ["execute"]
+						}
+					}
+				},
+				{
+					"name": "Get Sandbox Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Sandbox status returned', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.sandbox_id).to.exist;",
+									"    pm.expect(response.status).to.be.oneOf(['running', 'completed', 'terminated']);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}:8003/sandbox/{{SANDBOX_ID}}/status",
+							"host": ["{{BASE_URL}}"],
+							"port": "8003",
+							"path": ["sandbox", "{{SANDBOX_ID}}", "status"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Retriever (8004)",
+			"description": "Semantic search over knowledge bases",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}:8004/health",
+							"host": ["{{BASE_URL}}"],
+							"port": "8004",
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Search Knowledge Base",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Search results returned', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.results).to.be.an('array');",
+									"    pm.expect(response.total_matches).to.be.a('number');",
+									"    pm.expect(response.search_time_ms).to.be.a('number');",
+									"    ",
+									"    response.results.forEach(result => {",
+									"        pm.expect(result.doc_id).to.exist;",
+									"        pm.expect(result.content).to.exist;",
+									"        pm.expect(result.score).to.be.within(0, 1);",
+									"    });",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"SQL injection vulnerabilities in Python web applications\",\n  \"top_k\": 10,\n  \"min_score\": 0.7,\n  \"filters\": {\n    \"language\": \"python\",\n    \"category\": \"security\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}:8004/search",
+							"host": ["{{BASE_URL}}"],
+							"port": "8004",
+							"path": ["search"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Coder (8005)",
+			"description": "Code generation, debugging, and refactoring",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}:8005/health",
+							"host": ["{{BASE_URL}}"],
+							"port": "8005",
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Generate Code",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Code generated', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.code).to.exist;",
+									"    pm.expect(response.explanation).to.exist;",
+									"    pm.expect(response.language).to.exist;",
+									"    pm.expect(response.confidence).to.be.within(0, 1);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"operation\": \"generate\",\n  \"prompt\": \"Write a Python function to validate email addresses using regex\",\n  \"language\": \"python\",\n  \"context\": {\n    \"style\": \"functional\",\n    \"include_tests\": true\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}:8005/code",
+							"host": ["{{BASE_URL}}"],
+							"port": "8005",
+							"path": ["code"]
+						}
+					}
+				},
+				{
+					"name": "Debug Code",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Debugged code returned', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.code).to.exist;",
+									"    pm.expect(response.explanation).to.exist;",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"operation\": \"debug\",\n  \"code\": \"def divide(a, b):\\n    return a / b\",\n  \"prompt\": \"Fix the division by zero error\",\n  \"language\": \"python\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}:8005/code",
+							"host": ["{{BASE_URL}}"],
+							"port": "8005",
+							"path": ["code"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Judge (8006)",
+			"description": "Output validation against acceptance criteria",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}:8006/health",
+							"host": ["{{BASE_URL}}"],
+							"port": "8006",
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Validate Output",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Validation result returned', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.passed).to.be.a('boolean');",
+									"    pm.expect(response.confidence).to.be.within(0, 1);",
+									"    pm.expect(response.criteria_results).to.be.an('array');",
+									"    ",
+									"    response.criteria_results.forEach(cr => {",
+									"        pm.expect(cr.criterion).to.exist;",
+									"        pm.expect(cr.passed).to.be.a('boolean');",
+									"        pm.expect(cr.explanation).to.exist;",
+									"    });",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"output\": \"The security analysis identified 5 high-severity SQL injection vulnerabilities in the user authentication module. Remediation: Use parameterized queries instead of string concatenation. Example: cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))\",\n  \"criteria\": [\n    \"Must identify all high-severity vulnerabilities\",\n    \"Must include remediation recommendations\",\n    \"Must provide code examples for fixes\"\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}:8006/validate",
+							"host": ["{{BASE_URL}}"],
+							"port": "8006",
+							"path": ["validate"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Safety Guardian (8007)",
+			"description": "PII detection and content filtering",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}:8007/health",
+							"host": ["{{BASE_URL}}"],
+							"port": "8007",
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Check Content Safety",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Safety check result returned', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.safe).to.be.a('boolean');",
+									"    pm.expect(response.pii_detected).to.be.a('boolean');",
+									"    pm.expect(response.harmful_detected).to.be.a('boolean');",
+									"    ",
+									"    if (response.pii_detected) {",
+									"        pm.expect(response.pii_entities).to.be.an('array');",
+									"        pm.expect(response.redacted_content).to.exist;",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"content\": \"Contact me at john.doe@example.com or call 555-123-4567. My SSN is 123-45-6789.\",\n  \"check_pii\": true,\n  \"check_harmful\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}:8007/check",
+							"host": ["{{BASE_URL}}"],
+							"port": "8007",
+							"path": ["check"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
