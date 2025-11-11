@@ -7,12 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned for Sprint 0.3 (CI/CD Pipeline)
-- GitHub Actions workflows (lint, test, security-scan, build)
-- Code coverage integration (Codecov)
-- Security scanning (Snyk, CodeQL)
-- Automated Docker image builds and pushes
-- Branch protection rules configuration
+### Planned for Sprint 0.4 (API Skeleton & Documentation)
+- OpenAPI 3.0 specifications for all services
+- API client SDKs (Python, TypeScript)
+- Postman/Insomnia collections
+- Comprehensive API documentation
+- Service interaction diagrams
 
 ### Planned for Phase 1 (Proof of Concept)
 - Reflex Layer implementation (Rust)
@@ -22,6 +22,87 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic end-to-end task execution workflow
 
 ---
+
+## [0.2.0] - 2025-11-11
+
+### Added - Phase 0 Sprint 0.3: CI/CD Pipeline
+
+#### GitHub Actions Workflows
+- **Lint Workflow** (`.github/workflows/lint.yml`):
+  - Python linting: Ruff (linting + import sorting), Black (formatting), mypy (type checking)
+  - Rust linting: rustfmt (formatting), clippy (linting)
+  - Runs on every push and PR to main/develop branches
+  - Includes dependency caching for faster runs
+  - Concurrency control to cancel redundant workflow runs
+- **Test Workflow** (`.github/workflows/test.yml`):
+  - Python unit tests on 3.11 and 3.12 with matrix strategy
+  - Rust unit tests for reflex-layer and executor services
+  - Integration tests with PostgreSQL 15 and Redis 7 services
+  - Test coverage reporting with Codecov integration
+  - Artifact uploads for coverage reports
+- **Security Workflow** (`.github/workflows/security.yml`):
+  - SAST (Static Analysis): Bandit for Python code vulnerabilities
+  - Dependency scanning: Snyk for Python packages, cargo-audit for Rust crates
+  - Container scanning: Trivy for Docker images (disabled in Phase 0, no Dockerfiles yet)
+  - Secret scanning: gitleaks for credential detection
+  - Daily scheduled scans at midnight UTC
+  - SARIF format integration with GitHub Security tab
+  - 30-day artifact retention for security reports
+- **Build Workflow** (`.github/workflows/build.yml`):
+  - Multi-architecture Docker builds (linux/amd64, linux/arm64)
+  - GitHub Container Registry (GHCR) integration
+  - Automatic tagging: branch names, PR numbers, semantic versions, Git SHAs
+  - BuildKit caching for faster builds
+  - Post-build Trivy vulnerability scanning
+  - Disabled in Phase 0 (no Dockerfiles yet, will enable in Phase 1)
+
+#### Test Infrastructure
+- Placeholder test structure:
+  - `tests/unit/test_placeholder.py` - Project structure validation
+  - `tests/integration/test_placeholder.py` - Dependency availability checks
+  - `tests/e2e/__init__.py` - E2E test directory (for Phase 1)
+- Phase 0 test strategy:
+  - Validates project structure and key files exist
+  - Checks dependency imports without requiring installation
+  - Provides baseline for Phase 1 implementation tests
+
+#### Configuration Updates
+- Updated `pyproject.toml`:
+  - Migrated Ruff configuration to new `[tool.ruff.lint]` format
+  - Fixed security vulnerabilities in dependencies:
+    - python-multipart: ^0.0.6 → ^0.0.18 (HIGH CVE fixes)
+    - starlette: (implicit) → ^0.47.2 (HIGH+MEDIUM CVE fixes)
+    - langchain: ^1.0.5 → ^0.2.5 (LOW+MEDIUM CVE fixes)
+    - langchain-openai: ^1.0.2 → ^0.1.20 (compatibility update)
+  - Added Bandit security linter configuration
+  - Excluded test directories from security scanning
+- Updated `.gitignore`: Added `.claude/` directory for Claude Code configuration
+
+#### Code Quality Improvements
+- Rust code formatting:
+  - Applied `cargo fmt` to services/reflex-layer and services/arms/executor
+  - Fixed method chaining and macro formatting for Rust 1.82.0 standards
+- Updated Rust toolchain version to 1.82.0 in `Cargo.toml`
+
+#### Documentation Updates
+- Updated `README.md`:
+  - Added CI/CD status badges (Lint, Test, Security, Codecov)
+  - Enhanced development status tables by component
+  - Expanded technology stack section with status indicators
+  - Updated project phase to 30% (3/10 sprints complete)
+  - Added comprehensive quick start guide
+
+### Fixed
+- Snyk workflow SARIF file generation (added --sarif-file-output argument)
+- Container scan workflow failures (disabled in Phase 0, no Dockerfiles yet)
+- Python linting errors (unused imports, deprecated Ruff config format)
+- Rust formatting compliance (rustfmt standards for 1.82.0)
+
+### Security
+- Resolved 4 high-severity CVEs in python-multipart and starlette
+- Resolved 3 medium-severity CVEs in langchain and starlette
+- Implemented multi-layer security scanning (SAST, dependency, secrets)
+- Enabled daily automated security scans
 
 ## [0.1.0] - 2025-11-10
 
