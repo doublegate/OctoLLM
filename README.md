@@ -11,8 +11,8 @@ Inspired by the octopus's distributed nervous system, OctoLLM reimagines AI arch
 [![codecov](https://codecov.io/gh/doublegate/OctoLLM/branch/main/graph/badge.svg)](https://codecov.io/gh/doublegate/OctoLLM)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![Rust](https://img.shields.io/badge/Rust-1.82.0-orange.svg)](https://www.rust-lang.org/)
-[![Phase](https://img.shields.io/badge/Phase-0%20(30%25)-yellow.svg)](to-dos/MASTER-TODO.md)
-[![Version](https://img.shields.io/badge/Version-0.2.0-green.svg)](CHANGELOG.md)
+[![Phase](https://img.shields.io/badge/Phase-0%20(50%25)-yellow.svg)](to-dos/MASTER-TODO.md)
+[![Version](https://img.shields.io/badge/Version-0.4.0-green.svg)](CHANGELOG.md)
 
 ## What is OctoLLM?
 
@@ -89,10 +89,10 @@ graph TB
 
 ### Phase 0 Progress: Infrastructure & CI/CD
 
-**Current Sprint**: Sprint 0.3 ✅ **COMPLETE** (2025-11-11)
-**Next Sprint**: Sprint 0.4 - API Skeleton & Documentation (5-7 days)
-**Overall Progress**: 30% (3/10 Phase 0 sprints complete)
-**Version**: 0.2.0 | **Estimated Phase 0 Completion**: Late November 2025
+**Current Sprint**: Sprint 0.5 ✅ **COMPLETE** (2025-11-11)
+**Next Sprint**: Sprint 0.6 - Phase 0 Completion Tasks (3-5 days)
+**Overall Progress**: 50% (5/10 Phase 0 sprints complete)
+**Version**: 0.4.0 | **Estimated Phase 0 Completion**: Late November 2025
 
 ### Operational Infrastructure
 
@@ -104,9 +104,34 @@ graph TB
 | **Development Environment** | ✅ Complete | Docker Compose with 13 services, hot-reload support |
 | **Pre-commit Hooks** | ✅ Complete | 15+ quality checks (Black, Ruff, mypy, rustfmt, clippy) |
 | **Container Builds** | ⏸️ Disabled | Multi-arch builds configured, will enable in Phase 1 |
-| **Documentation** | ✅ Complete | 56+ files, ~77,300 lines |
+| **Documentation** | ✅ Complete | 70+ files, ~98,000 lines |
+| **API Documentation & SDKs** | ✅ Complete | TypeScript SDK, Postman/Insomnia collections, 8 service docs, 6 schema docs, 6 diagrams |
 
 ### Recent Achievements
+
+#### Sprint 0.5: Complete API Documentation & SDKs (2025-11-11)
+- ✅ **TypeScript SDK**: Production-ready SDK with 8 service clients (2,963 lines, 24 files)
+  - Full TypeScript support with 50+ interfaces
+  - 9 custom exception classes with metadata
+  - Exponential backoff retry logic
+  - 3 comprehensive usage examples + test suites
+- ✅ **API Testing Collections**:
+  - Postman collection (778 lines, 25+ requests with tests)
+  - Insomnia collection (727 lines, 4 environment templates)
+  - Request chaining, pre-request scripts, automated testing
+- ✅ **Comprehensive API Documentation**:
+  - API-OVERVIEW.md (1,331 lines, 13 sections, 30+ examples)
+  - 8 service documentation files (6,821 lines total)
+  - 6 schema documentation files (5,300 lines total)
+  - 6 Mermaid architecture diagrams (1,544 lines)
+- ✅ **Total Deliverable**: ~21,000 lines across 50 files
+
+#### Sprint 0.4: API Specifications (2025-11-11)
+- ✅ **OpenAPI 3.0 Specifications**: Complete specs for all 8 services (79.6KB total)
+- ✅ **Standardized Endpoints**: Health checks, capabilities, service-specific endpoints
+- ✅ **Authentication Documentation**: API key + Bearer token schemes
+- ✅ **Schema Definitions**: 15+ data models with validation rules
+- ✅ **Example Requests**: curl, Python, TypeScript examples for all endpoints
 
 #### Sprint 0.3: CI/CD Pipeline (2025-11-11)
 - ✅ **4 GitHub Actions Workflows Operational**:
