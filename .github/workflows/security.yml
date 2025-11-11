@@ -59,13 +59,14 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --severity-threshold=high --all-projects
+          args: --severity-threshold=high --all-projects --sarif-file-output=snyk.sarif
 
       - name: Upload Snyk results to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: snyk.sarif
+        continue-on-error: true  # Don't fail if SARIF file not generated
 
   dependency-scan-rust:
     name: Dependency Scan - cargo-audit (Rust)
@@ -113,6 +114,7 @@ jobs:
   container-scan:
     name: Container Scan - Trivy
     runs-on: ubuntu-latest
+    if: false  # Disabled in Phase 0 - no Dockerfiles exist yet (will enable in Phase 1)
     strategy:
       matrix:
         service: [orchestrator, reflex-layer, planner, executor]
@@ -167,7 +169,7 @@ jobs:
   security-summary:
     name: Security Summary
     runs-on: ubuntu-latest
-    needs: [sast-bandit, dependency-scan-python, dependency-scan-rust, container-scan, secret-scan]
+    needs: [sast-bandit, dependency-scan-python, dependency-scan-rust, secret-scan]
     if: always()
 
     steps:
@@ -176,9 +178,15 @@ jobs:
           echo "✅ Security scan workflow complete"
           echo "Review Security tab for detailed results: https://github.com/${{ github.repository }}/security"
           echo ""
-          echo "Expected Phase 0 Results:"
-          echo "- Bandit: Few/no issues (minimal code)"
+          echo "Phase 0 Active Scans:"
+          echo "- ✅ Bandit (SAST): Scanning Python code for security issues"
+          echo "- ✅ Snyk: Checking Python dependencies for vulnerabilities"
+          echo "- ✅ cargo-audit: Auditing Rust dependencies"
+          echo "- ✅ gitleaks: Scanning for exposed secrets"
+          echo "- ⏸️  Trivy (Container): Disabled until Phase 1 (no Dockerfiles yet)"
+          echo ""
+          echo "Expected Results:"
+          echo "- Bandit: Clean (minimal code in Phase 0)"
           echo "- Snyk: Some dependency warnings (acceptable)"
-          echo "- cargo-audit: Should be clean"
-          echo "- Trivy: Some base image CVEs (acceptable)"
-          echo "- gitleaks: Should be clean (no secrets)"
+          echo "- cargo-audit: Clean"
+          echo "- gitleaks: Clean (no secrets)"
