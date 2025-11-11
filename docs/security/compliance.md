@@ -1,0 +1,2350 @@
+# OctoLLM Compliance Guide: SOC 2, ISO 27001, GDPR, and CCPA
+
+**Version**: 1.0
+**Last Updated**: 2025-11-10
+**Classification**: Internal Use
+**Phase**: Phase 6 Production Optimization
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [SOC 2 Type II Compliance](#soc-2-type-ii-compliance)
+3. [ISO 27001:2022 Compliance](#iso-270012022-compliance)
+4. [GDPR Article 32 Technical Measures](#gdpr-article-32-technical-measures)
+5. [CCPA/CPRA Compliance](#ccpacpra-compliance)
+6. [HIPAA Considerations](#hipaa-considerations)
+7. [Data Residency and Localization](#data-residency-and-localization)
+8. [Compliance Monitoring](#compliance-monitoring)
+9. [Third-Party Risk Management](#third-party-risk-management)
+10. [Policy Templates](#policy-templates)
+11. [Audit and Assessment](#audit-and-assessment)
+
+---
+
+## Overview
+
+This document provides comprehensive compliance guidance for OctoLLM, covering major regulatory frameworks including SOC 2, ISO 27001, GDPR, CCPA, and HIPAA. Compliance is achieved through technical controls, policies, procedures, and continuous monitoring.
+
+### Compliance Objectives
+
+| Framework | Target | Status | Next Audit |
+|-----------|--------|--------|------------|
+| **SOC 2 Type II** | Certified | In Progress | Q2 2025 |
+| **ISO 27001:2022** | Certified | In Progress | Q3 2025 |
+| **GDPR** | Compliant | Compliant | Annual Review |
+| **CCPA/CPRA** | Compliant | Compliant | Annual Review |
+| **HIPAA** (optional) | Business Associate | Not Started | N/A |
+
+### Compliance Principles
+
+1. **Privacy by Design**: Embed privacy into architecture
+2. **Data Minimization**: Collect only necessary data
+3. **Transparency**: Clear data processing notices
+4. **Accountability**: Document all compliance activities
+5. **Continuous Monitoring**: Automated compliance checks
+
+---
+
+## SOC 2 Type II Compliance
+
+### Trust Service Criteria (TSC)
+
+SOC 2 evaluates controls based on five Trust Service Criteria:
+
+| Criteria | Description | OctoLLM Implementation |
+|----------|-------------|------------------------|
+| **Security (CC)** | Protection against unauthorized access | Capability isolation, encryption, network segmentation |
+| **Availability (A)** | System is available for operation | 99.9% SLA, auto-scaling, disaster recovery |
+| **Processing Integrity (PI)** | System processing is complete, accurate | Input validation, error handling, audit logs |
+| **Confidentiality (C)** | Confidential information is protected | PII protection, encryption at rest/transit |
+| **Privacy (P)** | Personal information collection, use, retention | GDPR/CCPA compliance, consent management |
+
+### Common Criteria (CC) - Security
+
+**CC1: Control Environment**
+
+```yaml
+# Control: CC1.1 - Organizational structure with defined roles
+Organization:
+  CEO:
+    - Strategic oversight
+    - Board reporting
+  CISO:
+    - Security program ownership
+    - Compliance oversight
+    - Incident response
+  Engineering Lead:
+    - Technical architecture
+    - Security implementation
+  Operations Lead:
+    - Infrastructure security
+    - Monitoring and alerting
+
+# Control: CC1.2 - Management establishes commitment to integrity and ethics
+Code of Conduct:
+  - Required annual training
+  - Signed acknowledgment
+  - Enforcement procedures
+
+# Control: CC1.3 - Management establishes oversight
+Board Oversight:
+  - Quarterly security reviews
+  - Annual risk assessment
+  - Audit committee oversight
+```
+
+**CC2: Communication and Information**
+
+```python
+# Control: CC2.1 - Security policies communicated to personnel
+# security/policy_distribution.py
+
+from datetime import datetime
+from typing import List
+import smtplib
+from email.mime.text import MIMEText
+
+class PolicyDistribution:
+    """Manage security policy distribution and acknowledgment"""
+
+    def __init__(self, policy_repo: str):
+        self.policy_repo = policy_repo
+
+    def distribute_policy(self, policy_name: str, employees: List[str]):
+        """Distribute policy to employees for acknowledgment"""
+        policy_content = self.load_policy(policy_name)
+
+        for employee in employees:
+            # Send policy via email
+            self.send_policy_email(employee, policy_name, policy_content)
+
+            # Track distribution
+            self.log_distribution(employee, policy_name, datetime.now())
+
+    def track_acknowledgment(self, employee: str, policy_name: str) -> bool:
+        """Track employee policy acknowledgment"""
+        # Record in compliance database
+        self.record_acknowledgment(
+            employee=employee,
+            policy=policy_name,
+            acknowledged_at=datetime.now(),
+            ip_address=self.get_client_ip(),
+        )
+
+        # Check if all employees acknowledged
+        return self.all_acknowledged(policy_name)
+
+    def generate_acknowledgment_report(self) -> dict:
+        """Generate compliance report for policy acknowledgments"""
+        return {
+            "total_employees": self.count_employees(),
+            "policies_distributed": self.count_policies(),
+            "acknowledgment_rate": self.calculate_acknowledgment_rate(),
+            "outstanding_acknowledgments": self.get_outstanding(),
+        }
+
+# Control: CC2.2 - External communication regarding security
+public_disclosure = {
+    "security_page": "https://octollm.example.com/security",
+    "vulnerability_disclosure": "security@octollm.example.com",
+    "status_page": "https://status.octollm.example.com",
+    "incident_notifications": "Via email to customers",
+}
+```
+
+**CC3: Risk Assessment**
+
+```python
+# Control: CC3.1 - Risk assessment process
+# security/risk_assessment.py
+
+from dataclasses import dataclass
+from enum import Enum
+from typing import List
+
+class RiskLevel(Enum):
+    CRITICAL = 4
+    HIGH = 3
+    MEDIUM = 2
+    LOW = 1
+
+@dataclass
+class Risk:
+    id: str
+    description: str
+    likelihood: int  # 1-5
+    impact: int      # 1-5
+    controls: List[str]
+    owner: str
+    status: str
+
+class RiskAssessment:
+    """Annual risk assessment process"""
+
+    def __init__(self):
+        self.risks: List[Risk] = []
+
+    def identify_risks(self) -> List[Risk]:
+        """Identify information security risks"""
+        risks = [
+            Risk(
+                id="RISK-001",
+                description="Prompt injection leading to data exfiltration",
+                likelihood=3,
+                impact=5,
+                controls=["Guardian Arm PII detection", "Input validation", "Rate limiting"],
+                owner="Security Team",
+                status="Mitigated"
+            ),
+            Risk(
+                id="RISK-002",
+                description="Container escape via Executor Arm",
+                likelihood=2,
+                impact=5,
+                controls=["gVisor sandboxing", "Capability isolation", "Seccomp profiles"],
+                owner="Security Team",
+                status="Mitigated"
+            ),
+            Risk(
+                id="RISK-003",
+                description="Database breach exposing PII",
+                likelihood=2,
+                impact=5,
+                controls=["Encryption at rest", "Network policies", "Access controls"],
+                owner="Operations Team",
+                status="Mitigated"
+            ),
+            # ... more risks
+        ]
+        self.risks = risks
+        return risks
+
+    def calculate_risk_score(self, risk: Risk) -> int:
+        """Calculate risk score (likelihood × impact)"""
+        return risk.likelihood * risk.impact
+
+    def prioritize_risks(self) -> List[Risk]:
+        """Prioritize risks by score"""
+        return sorted(self.risks, key=self.calculate_risk_score, reverse=True)
+
+    def generate_risk_register(self) -> dict:
+        """Generate risk register for audit"""
+        return {
+            "assessment_date": datetime.now().isoformat(),
+            "assessor": "CISO",
+            "risks": [
+                {
+                    "id": r.id,
+                    "description": r.description,
+                    "likelihood": r.likelihood,
+                    "impact": r.impact,
+                    "risk_score": self.calculate_risk_score(r),
+                    "controls": r.controls,
+                    "owner": r.owner,
+                    "status": r.status,
+                }
+                for r in self.risks
+            ],
+            "high_risks_count": len([r for r in self.risks if self.calculate_risk_score(r) >= 15]),
+        }
+
+# Control: CC3.2 - Risk assessment updated annually
+risk_assessment_schedule = {
+    "frequency": "Annual",
+    "next_assessment": "2025-11-01",
+    "responsible_party": "CISO",
+}
+```
+
+**CC4: Monitoring Activities**
+
+```python
+# Control: CC4.1 - Ongoing monitoring of control effectiveness
+# security/control_monitoring.py
+
+from prometheus_client import Gauge, Counter
+import structlog
+
+logger = structlog.get_logger()
+
+# Metrics for control effectiveness
+CONTROL_FAILURES = Counter(
+    'octollm_control_failures_total',
+    'Number of control failures',
+    ['control_id', 'severity']
+)
+
+COMPLIANCE_STATUS = Gauge(
+    'octollm_compliance_status',
+    'Compliance status (1=compliant, 0=non-compliant)',
+    ['framework', 'control']
+)
+
+class ControlMonitoring:
+    """Monitor security control effectiveness"""
+
+    def __init__(self):
+        self.controls = self.load_controls()
+
+    def check_control_effectiveness(self, control_id: str) -> bool:
+        """Check if control is operating effectively"""
+        control = self.get_control(control_id)
+
+        # Execute control test
+        result = self.execute_test(control)
+
+        # Log result
+        logger.info(
+            "control_test_executed",
+            control_id=control_id,
+            result=result,
+            timestamp=datetime.now().isoformat()
+        )
+
+        # Update metrics
+        if not result:
+            CONTROL_FAILURES.labels(
+                control_id=control_id,
+                severity=control.severity
+            ).inc()
+
+        return result
+
+    def execute_test(self, control: dict) -> bool:
+        """Execute automated test for control"""
+        if control["id"] == "CC6.6":  # Encryption at rest
+            return self.test_encryption_at_rest()
+        elif control["id"] == "CC6.7":  # Encryption in transit
+            return self.test_encryption_in_transit()
+        elif control["id"] == "CC7.2":  # Security monitoring
+            return self.test_security_monitoring()
+        # ... more tests
+
+    def test_encryption_at_rest(self) -> bool:
+        """Test that data is encrypted at rest"""
+        # Query PostgreSQL for encryption status
+        query = "SHOW ssl;"
+        result = execute_db_query(query)
+        return result["ssl"] == "on"
+
+    def test_encryption_in_transit(self) -> bool:
+        """Test that all connections use TLS"""
+        # Check TLS configuration
+        endpoints = [
+            "https://octollm.example.com",
+            "postgresql://db:5432",
+            "redis://cache:6379",
+        ]
+        for endpoint in endpoints:
+            if not self.verify_tls(endpoint):
+                return False
+        return True
+
+    def test_security_monitoring(self) -> bool:
+        """Test that security monitoring is active"""
+        # Check Prometheus alerting
+        alerts = self.get_active_alerts()
+        # Monitoring is working if alerts can be retrieved
+        return alerts is not None
+
+    def generate_monitoring_report(self) -> dict:
+        """Generate control monitoring report for audit"""
+        return {
+            "period": "Monthly",
+            "controls_tested": len(self.controls),
+            "controls_passed": self.count_passed_controls(),
+            "controls_failed": self.count_failed_controls(),
+            "failure_details": self.get_failure_details(),
+        }
+```
+
+**CC5: Control Activities**
+
+```yaml
+# Control: CC5.1 - Access to data and systems restricted to authorized users
+
+Access Control Matrix:
+  Orchestrator:
+    Developers:
+      - Read logs
+      - View metrics
+      - No production data access
+    Operations:
+      - Deploy updates
+      - Scale resources
+      - View logs and metrics
+    Security Team:
+      - Full access
+      - Security configuration
+      - Audit logs
+
+  Database:
+    Developers:
+      - No access (staging only)
+    Operations:
+      - Read-only access
+      - Backup management
+    DBAs:
+      - Full access
+      - Schema changes
+
+  Kubernetes:
+    Developers:
+      - View pods/logs
+      - No secrets access
+    Operations:
+      - Deploy applications
+      - Manage resources
+    Administrators:
+      - Full cluster access
+
+# Control: CC5.2 - Logical access security measures
+Logical Access Controls:
+  Authentication:
+    - Multi-factor authentication (MFA) required
+    - Password complexity: min 12 chars, uppercase, lowercase, number, symbol
+    - Password rotation: 90 days
+  Authorization:
+    - Role-based access control (RBAC)
+    - Least privilege principle
+    - Capability-based isolation for components
+  Monitoring:
+    - All access logged
+    - Failed login attempts monitored
+    - Anomalous access patterns detected
+```
+
+### Availability Criteria (A)
+
+**A1: System Availability**
+
+```python
+# Control: A1.1 - System available per SLA
+# operations/availability_monitoring.py
+
+from prometheus_client import Gauge
+import time
+
+UPTIME_SECONDS = Gauge(
+    'octollm_uptime_seconds',
+    'System uptime in seconds',
+    ['component']
+)
+
+SLA_COMPLIANCE = Gauge(
+    'octollm_sla_compliance_percentage',
+    'SLA compliance percentage',
+    ['period']
+)
+
+class AvailabilityMonitoring:
+    """Monitor system availability for SLA compliance"""
+
+    SLA_TARGET = 99.9  # 99.9% uptime
+
+    def __init__(self):
+        self.start_time = time.time()
+
+    def calculate_uptime_percentage(self, period_hours: int) -> float:
+        """Calculate uptime percentage for period"""
+        total_seconds = period_hours * 3600
+        downtime_seconds = self.get_downtime_seconds(period_hours)
+
+        uptime_percentage = ((total_seconds - downtime_seconds) / total_seconds) * 100
+        return uptime_percentage
+
+    def check_sla_compliance(self, period: str = "monthly") -> bool:
+        """Check if SLA target met"""
+        if period == "monthly":
+            hours = 24 * 30
+        elif period == "quarterly":
+            hours = 24 * 90
+        else:  # annual
+            hours = 24 * 365
+
+        uptime = self.calculate_uptime_percentage(hours)
+
+        # Update metric
+        SLA_COMPLIANCE.labels(period=period).set(uptime)
+
+        return uptime >= self.SLA_TARGET
+
+    def get_downtime_seconds(self, period_hours: int) -> int:
+        """Query downtime from monitoring system"""
+        # Query Prometheus for downtime
+        query = f'sum(up{{job="octollm"}} == 0) * {period_hours * 3600}'
+        result = self.prometheus_query(query)
+        return result
+
+    def generate_availability_report(self) -> dict:
+        """Generate availability report for audit"""
+        return {
+            "sla_target": f"{self.SLA_TARGET}%",
+            "monthly_uptime": f"{self.calculate_uptime_percentage(24 * 30):.3f}%",
+            "quarterly_uptime": f"{self.calculate_uptime_percentage(24 * 90):.3f}%",
+            "annual_uptime": f"{self.calculate_uptime_percentage(24 * 365):.3f}%",
+            "sla_compliant": self.check_sla_compliance("monthly"),
+            "incidents": self.get_availability_incidents(),
+        }
+
+# Control: A1.2 - Disaster recovery and business continuity
+disaster_recovery_plan = {
+    "rto": "4 hours",  # Recovery Time Objective
+    "rpo": "1 hour",   # Recovery Point Objective
+    "backup_frequency": "Continuous (WAL archiving)",
+    "backup_retention": "30 days",
+    "failover_strategy": "Multi-region deployment with automatic failover",
+    "testing_frequency": "Quarterly",
+}
+```
+
+### Processing Integrity Criteria (PI)
+
+**PI1: Processing Integrity**
+
+```python
+# Control: PI1.1 - Inputs are complete, accurate, and authorized
+# orchestrator/input_validation.py
+
+from pydantic import BaseModel, validator, Field
+from typing import Optional
+import re
+
+class TaskInput(BaseModel):
+    """Validated task input"""
+
+    goal: str = Field(..., min_length=1, max_length=10000)
+    priority: str = Field(default="medium")
+    context: Optional[str] = Field(default=None, max_length=50000)
+    constraints: Optional[dict] = Field(default_factory=dict)
+
+    @validator('goal')
+    def validate_goal(cls, v):
+        """Ensure goal is valid and safe"""
+        if not v or not v.strip():
+            raise ValueError("Goal cannot be empty")
+
+        # Check for malicious patterns
+        malicious_patterns = [
+            r'<script[^>]*>.*?</script>',
+            r'javascript:',
+            r'on\w+\s*=',
+        ]
+        for pattern in malicious_patterns:
+            if re.search(pattern, v, re.IGNORECASE):
+                raise ValueError("Invalid characters in goal")
+
+        return v.strip()
+
+    @validator('priority')
+    def validate_priority(cls, v):
+        """Ensure priority is valid"""
+        valid_priorities = ['low', 'medium', 'high', 'critical']
+        if v not in valid_priorities:
+            raise ValueError(f"Priority must be one of: {valid_priorities}")
+        return v
+
+    @validator('constraints')
+    def validate_constraints(cls, v):
+        """Ensure constraints are valid"""
+        if not isinstance(v, dict):
+            raise ValueError("Constraints must be a dictionary")
+
+        # Validate time constraint
+        if 'max_time' in v:
+            if not isinstance(v['max_time'], int) or v['max_time'] < 0:
+                raise ValueError("max_time must be positive integer")
+
+        # Validate budget constraint
+        if 'max_budget' in v:
+            if not isinstance(v['max_budget'], (int, float)) or v['max_budget'] < 0:
+                raise ValueError("max_budget must be positive number")
+
+        return v
+
+# Usage in FastAPI
+from fastapi import FastAPI, HTTPException
+
+app = FastAPI()
+
+@app.post("/api/v1/tasks")
+async def create_task(task_input: TaskInput):
+    """Create task with validated input"""
+    try:
+        # Input automatically validated by Pydantic
+        task = process_task(task_input)
+        return {"task_id": task.id, "status": "accepted"}
+    except ValueError as e:
+        # Log validation failure
+        logger.warning("input_validation_failed", error=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+
+# Control: PI1.2 - Processing is complete and accurate
+processing_checks = {
+    "idempotency": "Task IDs ensure duplicate prevention",
+    "atomicity": "Database transactions ensure all-or-nothing",
+    "error_handling": "Comprehensive error handling with rollback",
+    "audit_trail": "All processing steps logged with provenance",
+}
+```
+
+### Evidence Collection for SOC 2 Audit
+
+```python
+# security/soc2_evidence.py
+
+import os
+from datetime import datetime, timedelta
+from typing import List, Dict
+import json
+
+class SOC2EvidenceCollector:
+    """Collect evidence for SOC 2 Type II audit"""
+
+    def __init__(self, evidence_dir: str = "/var/evidence"):
+        self.evidence_dir = evidence_dir
+        os.makedirs(evidence_dir, exist_ok=True)
+
+    def collect_cc_evidence(self) -> Dict[str, str]:
+        """Collect evidence for Common Criteria"""
+        evidence = {}
+
+        # CC1.1: Organizational structure
+        evidence["CC1.1_org_chart"] = self.export_org_chart()
+
+        # CC1.2: Code of conduct acknowledgments
+        evidence["CC1.2_code_of_conduct"] = self.export_acknowledgments("code_of_conduct")
+
+        # CC3.1: Risk assessment
+        evidence["CC3.1_risk_assessment"] = self.export_risk_assessment()
+
+        # CC4.1: Control monitoring reports
+        evidence["CC4.1_monitoring_reports"] = self.export_monitoring_reports()
+
+        # CC6.1: Logical access logs
+        evidence["CC6.1_access_logs"] = self.export_access_logs()
+
+        # CC6.6: Encryption verification
+        evidence["CC6.6_encryption"] = self.verify_encryption()
+
+        # CC7.2: Security monitoring alerts
+        evidence["CC7.2_security_alerts"] = self.export_security_alerts()
+
+        # Save evidence
+        self.save_evidence(evidence)
+
+        return evidence
+
+    def collect_availability_evidence(self) -> Dict[str, str]:
+        """Collect evidence for Availability criteria"""
+        evidence = {}
+
+        # A1.1: Uptime metrics
+        evidence["A1.1_uptime"] = self.export_uptime_metrics()
+
+        # A1.2: Disaster recovery tests
+        evidence["A1.2_dr_tests"] = self.export_dr_test_results()
+
+        # A1.3: Capacity monitoring
+        evidence["A1.3_capacity"] = self.export_capacity_reports()
+
+        self.save_evidence(evidence)
+        return evidence
+
+    def collect_processing_integrity_evidence(self) -> Dict[str, str]:
+        """Collect evidence for Processing Integrity criteria"""
+        evidence = {}
+
+        # PI1.1: Input validation logs
+        evidence["PI1.1_validation"] = self.export_validation_logs()
+
+        # PI1.2: Processing completeness checks
+        evidence["PI1.2_completeness"] = self.export_completeness_checks()
+
+        # PI1.3: Error handling logs
+        evidence["PI1.3_errors"] = self.export_error_logs()
+
+        self.save_evidence(evidence)
+        return evidence
+
+    def export_access_logs(self, days: int = 30) -> str:
+        """Export access logs for audit period"""
+        start_date = datetime.now() - timedelta(days=days)
+
+        # Query access logs from audit system
+        logs = self.query_audit_logs(
+            start_date=start_date,
+            log_type="access"
+        )
+
+        # Export to CSV for auditor review
+        csv_path = f"{self.evidence_dir}/access_logs_{days}days.csv"
+        self.export_to_csv(logs, csv_path)
+
+        return csv_path
+
+    def export_security_alerts(self, days: int = 30) -> str:
+        """Export security alerts for audit period"""
+        start_date = datetime.now() - timedelta(days=days)
+
+        # Query Prometheus for security alerts
+        alerts = self.query_prometheus_alerts(start_date=start_date)
+
+        json_path = f"{self.evidence_dir}/security_alerts_{days}days.json"
+        with open(json_path, 'w') as f:
+            json.dump(alerts, f, indent=2)
+
+        return json_path
+
+    def verify_encryption(self) -> dict:
+        """Verify encryption is properly configured"""
+        return {
+            "database_encryption": self.check_db_encryption(),
+            "tls_enabled": self.check_tls_enabled(),
+            "at_rest_encryption": self.check_at_rest_encryption(),
+            "key_management": self.check_key_management(),
+        }
+
+    def save_evidence(self, evidence: Dict[str, str]):
+        """Save evidence manifest"""
+        manifest = {
+            "collection_date": datetime.now().isoformat(),
+            "auditor": "External Auditor",
+            "files": evidence,
+        }
+
+        manifest_path = f"{self.evidence_dir}/evidence_manifest.json"
+        with open(manifest_path, 'w') as f:
+            json.dump(manifest, f, indent=2)
+
+# Automated evidence collection (scheduled job)
+if __name__ == "__main__":
+    collector = SOC2EvidenceCollector()
+    collector.collect_cc_evidence()
+    collector.collect_availability_evidence()
+    collector.collect_processing_integrity_evidence()
+```
+
+---
+
+## ISO 27001:2022 Compliance
+
+### Information Security Management System (ISMS)
+
+**ISMS Structure**:
+
+```yaml
+ISMS_Framework:
+  Leadership:
+    - Information Security Policy
+    - Roles and responsibilities
+    - Risk assessment methodology
+
+  Planning:
+    - Risk assessment (annual)
+    - Risk treatment plan
+    - Security objectives
+
+  Support:
+    - Competence and awareness training
+    - Communication procedures
+    - Document control
+
+  Operation:
+    - Operational planning and control
+    - Risk assessment execution
+    - Incident management
+
+  Performance Evaluation:
+    - Monitoring and measurement
+    - Internal audit (annual)
+    - Management review (quarterly)
+
+  Improvement:
+    - Nonconformity and corrective action
+    - Continual improvement process
+```
+
+### Annex A Controls Implementation
+
+**A.5: Organizational Controls**
+
+```python
+# A.5.1: Policies for information security
+information_security_policy = {
+    "policy_name": "OctoLLM Information Security Policy",
+    "version": "1.0",
+    "effective_date": "2025-01-01",
+    "review_frequency": "Annual",
+    "owner": "CISO",
+    "scope": "All OctoLLM systems, data, and personnel",
+    "objectives": [
+        "Protect confidentiality, integrity, and availability of information assets",
+        "Comply with legal and regulatory requirements",
+        "Enable business operations securely",
+    ],
+    "controls": [
+        "Access control policy",
+        "Asset management policy",
+        "Cryptography policy",
+        "Incident response policy",
+    ],
+}
+
+# A.5.7: Threat intelligence
+threat_intelligence_sources = [
+    "CISA alerts",
+    "OWASP Top 10",
+    "CVE database",
+    "Security vendor advisories",
+    "Industry threat reports",
+]
+
+# A.5.10: Acceptable use of information and assets
+acceptable_use_policy = {
+    "approved_uses": [
+        "Business-related activities only",
+        "Authorized tools and services",
+        "Compliance with security policies",
+    ],
+    "prohibited_uses": [
+        "Personal use of production systems",
+        "Unauthorized data exfiltration",
+        "Circumventing security controls",
+    ],
+    "enforcement": "Violation may result in termination",
+}
+```
+
+**A.8: Technology Controls**
+
+```python
+# A.8.1: User endpoint devices
+endpoint_security = {
+    "full_disk_encryption": "Required (BitLocker, FileVault)",
+    "antivirus": "Required (CrowdStrike, Defender)",
+    "firewall": "Enabled",
+    "automatic_updates": "Enforced",
+    "screen_lock": "5 minutes idle timeout",
+    "mobile_device_management": "Intune or Jamf",
+}
+
+# A.8.2: Privileged access rights
+privileged_access_management = {
+    "principle": "Least privilege",
+    "mfa_required": True,
+    "session_recording": "All privileged sessions recorded",
+    "review_frequency": "Quarterly",
+    "approval_required": "Manager and security team",
+}
+
+# A.8.3: Information access restriction
+access_restriction = {
+    "need_to_know": "Access granted only for job function",
+    "time_bound": "Access expires after 90 days (renewable)",
+    "network_segmentation": "Production isolated from dev/staging",
+    "data_classification": "Public, Internal, Confidential, Restricted",
+}
+
+# A.8.9: Configuration management
+configuration_management = {
+    "baseline": "CIS Benchmarks",
+    "drift_detection": "Automated with Ansible/Terraform",
+    "change_approval": "Required for production",
+    "version_control": "All configurations in Git",
+}
+
+# A.8.23: Web filtering
+web_filtering = {
+    "egress_proxy": "Required for all internet access",
+    "blocked_categories": ["Malware", "Phishing", "Adult content", "Illegal"],
+    "ssl_inspection": "Enabled",
+    "bypass_not_allowed": True,
+}
+
+# A.8.25: Secure development lifecycle
+secure_sdlc = {
+    "threat_modeling": "Required for new features",
+    "secure_code_review": "Peer review + automated SAST",
+    "security_testing": "SAST, DAST, dependency scanning",
+    "security_training": "Annual secure coding training",
+}
+```
+
+### Statement of Applicability (SoA)
+
+```python
+# security/iso27001_soa.py
+
+from dataclasses import dataclass
+from typing import List
+
+@dataclass
+class Control:
+    id: str
+    name: str
+    applicable: bool
+    implementation_status: str  # Implemented, Planned, Not Applicable
+    justification: str
+    evidence: List[str]
+
+class StatementOfApplicability:
+    """ISO 27001 Statement of Applicability"""
+
+    def __init__(self):
+        self.controls = self.load_controls()
+
+    def load_controls(self) -> List[Control]:
+        """Load all 93 Annex A controls"""
+        return [
+            Control(
+                id="A.5.1",
+                name="Policies for information security",
+                applicable=True,
+                implementation_status="Implemented",
+                justification="Information security policy established and communicated",
+                evidence=["Information_Security_Policy_v1.0.pdf", "Policy_Distribution_Records.csv"]
+            ),
+            Control(
+                id="A.8.1",
+                name="User endpoint devices",
+                applicable=True,
+                implementation_status="Implemented",
+                justification="All endpoint devices configured per security baseline",
+                evidence=["Endpoint_Security_Config.yaml", "MDM_Compliance_Report.pdf"]
+            ),
+            Control(
+                id="A.8.23",
+                name="Web filtering",
+                applicable=True,
+                implementation_status="Implemented",
+                justification="Egress traffic filtered through proxy",
+                evidence=["Proxy_Configuration.yaml", "Web_Filter_Logs.csv"]
+            ),
+            # ... all 93 controls
+        ]
+
+    def generate_soa_document(self) -> dict:
+        """Generate Statement of Applicability for audit"""
+        return {
+            "organization": "OctoLLM Inc.",
+            "isms_scope": "All OctoLLM production systems and supporting infrastructure",
+            "controls": [
+                {
+                    "id": c.id,
+                    "name": c.name,
+                    "applicable": c.applicable,
+                    "status": c.implementation_status,
+                    "justification": c.justification,
+                    "evidence": c.evidence,
+                }
+                for c in self.controls
+            ],
+            "applicable_controls": len([c for c in self.controls if c.applicable]),
+            "implemented_controls": len([c for c in self.controls if c.implementation_status == "Implemented"]),
+        }
+
+    def check_compliance(self) -> bool:
+        """Check if all applicable controls are implemented"""
+        applicable = [c for c in self.controls if c.applicable]
+        implemented = [c for c in applicable if c.implementation_status == "Implemented"]
+
+        compliance_rate = len(implemented) / len(applicable) * 100
+        return compliance_rate >= 95  # Target: 95%+ implementation
+```
+
+### Risk Assessment Methodology
+
+```python
+# security/iso27001_risk_assessment.py
+
+from dataclasses import dataclass
+from typing import List
+from enum import Enum
+
+class AssetType(Enum):
+    DATA = "data"
+    SOFTWARE = "software"
+    HARDWARE = "hardware"
+    PERSONNEL = "personnel"
+    SERVICES = "services"
+
+class ThreatSource(Enum):
+    MALICIOUS_OUTSIDER = "malicious_outsider"
+    MALICIOUS_INSIDER = "malicious_insider"
+    ACCIDENTAL = "accidental"
+    ENVIRONMENTAL = "environmental"
+
+@dataclass
+class Asset:
+    id: str
+    name: str
+    type: AssetType
+    owner: str
+    confidentiality: int  # 1-5
+    integrity: int        # 1-5
+    availability: int     # 1-5
+
+@dataclass
+class Threat:
+    id: str
+    description: str
+    source: ThreatSource
+    likelihood: int  # 1-5
+    asset_id: str
+
+@dataclass
+class Vulnerability:
+    id: str
+    description: str
+    asset_id: str
+    severity: int  # 1-5
+
+class ISO27001RiskAssessment:
+    """ISO 27001 risk assessment process"""
+
+    def __init__(self):
+        self.assets: List[Asset] = []
+        self.threats: List[Threat] = []
+        self.vulnerabilities: List[Vulnerability] = []
+
+    def identify_assets(self):
+        """Identify information assets"""
+        self.assets = [
+            Asset(
+                id="ASSET-001",
+                name="PostgreSQL Database",
+                type=AssetType.DATA,
+                owner="Database Administrator",
+                confidentiality=5,  # Contains PII
+                integrity=5,        # Critical for operations
+                availability=5      # Must be always available
+            ),
+            Asset(
+                id="ASSET-002",
+                name="Orchestrator Service",
+                type=AssetType.SOFTWARE,
+                owner="Engineering Lead",
+                confidentiality=4,
+                integrity=5,
+                availability=5
+            ),
+            Asset(
+                id="ASSET-003",
+                name="Executor Arm",
+                type=AssetType.SOFTWARE,
+                owner="Security Team",
+                confidentiality=3,
+                integrity=5,
+                availability=4
+            ),
+            # ... more assets
+        ]
+
+    def identify_threats(self):
+        """Identify threats to assets"""
+        self.threats = [
+            Threat(
+                id="THREAT-001",
+                description="SQL injection leading to data breach",
+                source=ThreatSource.MALICIOUS_OUTSIDER,
+                likelihood=2,
+                asset_id="ASSET-001"
+            ),
+            Threat(
+                id="THREAT-002",
+                description="Prompt injection bypassing safety controls",
+                source=ThreatSource.MALICIOUS_OUTSIDER,
+                likelihood=3,
+                asset_id="ASSET-002"
+            ),
+            # ... more threats
+        ]
+
+    def identify_vulnerabilities(self):
+        """Identify vulnerabilities"""
+        self.vulnerabilities = [
+            Vulnerability(
+                id="VULN-001",
+                description="Lack of input validation on API endpoints",
+                asset_id="ASSET-002",
+                severity=3
+            ),
+            # ... more vulnerabilities
+        ]
+
+    def calculate_risk(self, threat: Threat, vulnerability: Vulnerability, asset: Asset) -> int:
+        """Calculate risk score"""
+        # Risk = Likelihood × Severity × Asset Value
+        asset_value = max(asset.confidentiality, asset.integrity, asset.availability)
+        risk_score = threat.likelihood * vulnerability.severity * asset_value
+        return risk_score
+
+    def generate_risk_treatment_plan(self) -> List[dict]:
+        """Generate risk treatment plan"""
+        treatment_plan = []
+
+        for threat in self.threats:
+            for vuln in self.vulnerabilities:
+                if vuln.asset_id == threat.asset_id:
+                    asset = self.get_asset(threat.asset_id)
+                    risk_score = self.calculate_risk(threat, vuln, asset)
+
+                    treatment_plan.append({
+                        "threat_id": threat.id,
+                        "vulnerability_id": vuln.id,
+                        "asset_id": asset.id,
+                        "risk_score": risk_score,
+                        "treatment": self.determine_treatment(risk_score),
+                    })
+
+        return sorted(treatment_plan, key=lambda x: x["risk_score"], reverse=True)
+
+    def determine_treatment(self, risk_score: int) -> str:
+        """Determine risk treatment approach"""
+        if risk_score >= 50:
+            return "Mitigate (implement controls immediately)"
+        elif risk_score >= 30:
+            return "Mitigate (implement controls within 30 days)"
+        elif risk_score >= 15:
+            return "Accept with monitoring"
+        else:
+            return "Accept"
+
+# Run risk assessment
+if __name__ == "__main__":
+    assessment = ISO27001RiskAssessment()
+    assessment.identify_assets()
+    assessment.identify_threats()
+    assessment.identify_vulnerabilities()
+
+    treatment_plan = assessment.generate_risk_treatment_plan()
+    print(json.dumps(treatment_plan, indent=2))
+```
+
+---
+
+## GDPR Article 32 Technical Measures
+
+### Security of Processing
+
+**Article 32(1) Requirements**:
+
+```yaml
+GDPR_Article_32_Controls:
+  a: Pseudonymisation and encryption of personal data
+    Implementation:
+      - PII encrypted at rest (AES-256)
+      - PII encrypted in transit (TLS 1.3)
+      - Pseudonymization of identifiers (hashed user IDs)
+      - Tokenization of sensitive data
+
+  b: Ability to ensure ongoing confidentiality, integrity, availability, and resilience
+    Implementation:
+      - Multi-region deployment
+      - Auto-scaling and load balancing
+      - Database replication and backups
+      - Disaster recovery procedures
+
+  c: Ability to restore availability and access to personal data in a timely manner
+    Implementation:
+      - RTO: 4 hours
+      - RPO: 1 hour
+      - Automated backups (continuous + daily)
+      - Quarterly DR tests
+
+  d: Regular testing, assessment, and evaluation of effectiveness
+    Implementation:
+      - Quarterly penetration testing
+      - Annual security audit
+      - Continuous vulnerability scanning
+      - Automated compliance checks
+```
+
+### Data Subject Rights Implementation
+
+```python
+# security/gdpr_data_subject_rights.py
+
+from datetime import datetime
+from typing import List, Dict
+import json
+
+class GDPRDataSubjectRights:
+    """Implement GDPR data subject rights"""
+
+    def __init__(self, db_connection):
+        self.db = db_connection
+
+    # Article 15: Right of Access
+    def right_of_access(self, user_id: str) -> dict:
+        """Provide user with copy of their personal data"""
+        personal_data = {
+            "user_profile": self.get_user_profile(user_id),
+            "tasks": self.get_user_tasks(user_id),
+            "audit_logs": self.get_user_audit_logs(user_id),
+            "preferences": self.get_user_preferences(user_id),
+        }
+
+        # Log access request
+        self.log_data_access(user_id, "right_of_access")
+
+        return {
+            "request_date": datetime.now().isoformat(),
+            "user_id": user_id,
+            "data": personal_data,
+            "data_retention_period": "2 years from last activity",
+            "data_recipients": ["OctoLLM Inc.", "Cloud Provider (AWS/GCP)"],
+        }
+
+    # Article 16: Right to Rectification
+    def right_to_rectification(self, user_id: str, corrections: dict) -> bool:
+        """Allow user to correct inaccurate personal data"""
+        # Validate corrections
+        valid_fields = ["name", "email", "preferences"]
+        for field in corrections.keys():
+            if field not in valid_fields:
+                raise ValueError(f"Cannot modify field: {field}")
+
+        # Update user data
+        self.update_user_data(user_id, corrections)
+
+        # Log rectification
+        self.log_data_access(user_id, "right_to_rectification", corrections)
+
+        return True
+
+    # Article 17: Right to Erasure ("Right to be Forgotten")
+    def right_to_erasure(self, user_id: str, reason: str) -> dict:
+        """Delete user's personal data"""
+        # Check if erasure is legally permissible
+        if not self.can_erase(user_id):
+            return {
+                "success": False,
+                "reason": "Legal obligation to retain data (e.g., accounting records)"
+            }
+
+        # Perform deletion
+        deletion_results = {
+            "user_profile": self.delete_user_profile(user_id),
+            "tasks": self.anonymize_user_tasks(user_id),  # Keep tasks but anonymize
+            "audit_logs": self.anonymize_audit_logs(user_id),
+            "preferences": self.delete_user_preferences(user_id),
+        }
+
+        # Log erasure (after anonymization, store only that erasure occurred)
+        self.log_data_access(user_id, "right_to_erasure", reason)
+
+        return {
+            "success": True,
+            "deletion_date": datetime.now().isoformat(),
+            "details": deletion_results,
+        }
+
+    # Article 18: Right to Restriction of Processing
+    def right_to_restriction(self, user_id: str, reason: str) -> bool:
+        """Restrict processing of user's data"""
+        # Mark account as restricted
+        self.update_user_status(user_id, status="restricted", reason=reason)
+
+        # Log restriction
+        self.log_data_access(user_id, "right_to_restriction", reason)
+
+        return True
+
+    # Article 20: Right to Data Portability
+    def right_to_data_portability(self, user_id: str, format: str = "json") -> dict:
+        """Provide user data in portable format"""
+        data = self.right_of_access(user_id)["data"]
+
+        if format == "json":
+            portable_data = json.dumps(data, indent=2)
+        elif format == "csv":
+            portable_data = self.convert_to_csv(data)
+        elif format == "xml":
+            portable_data = self.convert_to_xml(data)
+        else:
+            raise ValueError(f"Unsupported format: {format}")
+
+        # Log portability request
+        self.log_data_access(user_id, "right_to_data_portability", format)
+
+        return {
+            "format": format,
+            "data": portable_data,
+            "export_date": datetime.now().isoformat(),
+        }
+
+    # Article 21: Right to Object
+    def right_to_object(self, user_id: str, processing_purpose: str) -> bool:
+        """Allow user to object to certain processing"""
+        # Implement opt-out for specific processing
+        self.update_user_preferences(user_id, {
+            f"opt_out_{processing_purpose}": True
+        })
+
+        # Log objection
+        self.log_data_access(user_id, "right_to_object", processing_purpose)
+
+        return True
+
+    def can_erase(self, user_id: str) -> bool:
+        """Check if user data can be legally erased"""
+        # Check for legal obligations to retain
+        legal_holds = self.check_legal_holds(user_id)
+        return len(legal_holds) == 0
+
+# FastAPI endpoints for data subject rights
+from fastapi import FastAPI, HTTPException
+
+app = FastAPI()
+
+@app.post("/api/v1/gdpr/access")
+async def gdpr_access_request(user_id: str):
+    """Article 15: Right of Access"""
+    try:
+        gdpr = GDPRDataSubjectRights(db)
+        data = gdpr.right_of_access(user_id)
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/gdpr/erasure")
+async def gdpr_erasure_request(user_id: str, reason: str):
+    """Article 17: Right to Erasure"""
+    try:
+        gdpr = GDPRDataSubjectRights(db)
+        result = gdpr.right_to_erasure(user_id, reason)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/gdpr/portability")
+async def gdpr_portability_request(user_id: str, format: str = "json"):
+    """Article 20: Right to Data Portability"""
+    try:
+        gdpr = GDPRDataSubjectRights(db)
+        data = gdpr.right_to_data_portability(user_id, format)
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+```
+
+### Data Breach Notification (Article 33)
+
+```python
+# security/gdpr_breach_notification.py
+
+from datetime import datetime, timedelta
+from enum import Enum
+
+class BreachSeverity(Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+class DataBreachNotification:
+    """GDPR Article 33: Breach notification to supervisory authority"""
+
+    NOTIFICATION_DEADLINE_HOURS = 72  # Must notify within 72 hours
+
+    def __init__(self):
+        self.breaches = []
+
+    def report_breach(
+        self,
+        description: str,
+        affected_records: int,
+        data_categories: List[str],
+        severity: BreachSeverity,
+        root_cause: str,
+    ) -> dict:
+        """Report data breach"""
+
+        breach = {
+            "breach_id": self.generate_breach_id(),
+            "discovery_time": datetime.now(),
+            "notification_deadline": datetime.now() + timedelta(hours=self.NOTIFICATION_DEADLINE_HOURS),
+            "description": description,
+            "affected_records": affected_records,
+            "data_categories": data_categories,
+            "severity": severity.value,
+            "root_cause": root_cause,
+            "likely_consequences": self.assess_consequences(severity, data_categories),
+            "measures_taken": [],
+            "notified_authority": False,
+            "notified_subjects": False,
+        }
+
+        self.breaches.append(breach)
+
+        # Auto-notify if high/critical severity
+        if severity in [BreachSeverity.HIGH, BreachSeverity.CRITICAL]:
+            self.notify_supervisory_authority(breach)
+
+        return breach
+
+    def assess_consequences(self, severity: BreachSeverity, data_categories: List[str]) -> str:
+        """Assess likely consequences of breach"""
+        if severity == BreachSeverity.CRITICAL:
+            return "High risk of identity theft, financial fraud, or significant harm to individuals"
+        elif severity == BreachSeverity.HIGH:
+            return "Risk of privacy violations and potential financial harm"
+        elif severity == BreachSeverity.MEDIUM:
+            return "Limited privacy impact with low likelihood of harm"
+        else:
+            return "Minimal privacy impact"
+
+    def notify_supervisory_authority(self, breach: dict):
+        """Notify data protection authority (GDPR Article 33)"""
+        # In EU: notify relevant DPA (e.g., ICO in UK, CNIL in France)
+        notification = {
+            "authority": "Data Protection Authority",
+            "notification_time": datetime.now().isoformat(),
+            "breach_id": breach["breach_id"],
+            "breach_description": breach["description"],
+            "affected_records": breach["affected_records"],
+            "data_categories": breach["data_categories"],
+            "likely_consequences": breach["likely_consequences"],
+            "measures_taken": breach["measures_taken"],
+            "dpo_contact": "dpo@octollm.example.com",
+        }
+
+        # Send notification (email, portal, etc.)
+        self.send_notification(notification, recipient="dpa@supervisory-authority.eu")
+
+        breach["notified_authority"] = True
+        breach["authority_notification_time"] = datetime.now()
+
+    def notify_data_subjects(self, breach: dict):
+        """Notify affected individuals (GDPR Article 34)"""
+        # Required if breach likely to result in high risk to individuals
+
+        if breach["severity"] in ["high", "critical"]:
+            # Identify affected users
+            affected_users = self.identify_affected_users(breach)
+
+            for user in affected_users:
+                notification = {
+                    "user_id": user["id"],
+                    "breach_description": breach["description"],
+                    "likely_consequences": breach["likely_consequences"],
+                    "measures_taken": breach["measures_taken"],
+                    "recommended_actions": [
+                        "Change your password immediately",
+                        "Monitor your accounts for suspicious activity",
+                        "Enable multi-factor authentication",
+                    ],
+                    "contact": "privacy@octollm.example.com",
+                }
+
+                # Send notification via email
+                self.send_notification(notification, recipient=user["email"])
+
+            breach["notified_subjects"] = True
+            breach["subject_notification_time"] = datetime.now()
+
+# Example usage
+notifier = DataBreachNotification()
+breach = notifier.report_breach(
+    description="Unauthorized access to customer database via SQL injection",
+    affected_records=1500,
+    data_categories=["names", "email addresses", "hashed passwords"],
+    severity=BreachSeverity.HIGH,
+    root_cause="Unpatched SQL injection vulnerability in API endpoint"
+)
+```
+
+---
+
+## CCPA/CPRA Compliance
+
+### Consumer Rights Implementation
+
+```python
+# security/ccpa_compliance.py
+
+class CCPAConsumerRights:
+    """California Consumer Privacy Act (CCPA) and CPRA compliance"""
+
+    def __init__(self, db_connection):
+        self.db = db_connection
+
+    # CCPA Right to Know
+    def right_to_know(self, consumer_id: str) -> dict:
+        """Provide consumer with information about data collection"""
+        return {
+            "categories_collected": [
+                "Identifiers (name, email)",
+                "Commercial information (tasks submitted)",
+                "Internet activity (API usage)",
+            ],
+            "categories_sold": [],  # OctoLLM does not sell data
+            "categories_disclosed": [
+                "Service providers (cloud infrastructure)"
+            ],
+            "business_purposes": [
+                "Providing AI-powered services",
+                "Improving system performance",
+                "Security and fraud prevention",
+            ],
+            "retention_period": "2 years from last activity",
+            "data_collected": self.get_consumer_data(consumer_id),
+        }
+
+    # CCPA Right to Delete
+    def right_to_delete(self, consumer_id: str) -> dict:
+        """Delete consumer's personal information"""
+        # Similar to GDPR right to erasure
+        deletion_result = {
+            "consumer_profile": self.delete_consumer_profile(consumer_id),
+            "tasks": self.anonymize_consumer_tasks(consumer_id),
+            "audit_logs": self.anonymize_consumer_logs(consumer_id),
+        }
+
+        return {
+            "success": True,
+            "deletion_date": datetime.now().isoformat(),
+            "details": deletion_result,
+        }
+
+    # CCPA Right to Opt-Out of Sale
+    def right_to_opt_out(self, consumer_id: str) -> bool:
+        """Opt out of data sale (N/A for OctoLLM - data not sold)"""
+        # OctoLLM does not sell personal information
+        # This right is automatically satisfied
+        self.update_consumer_preferences(consumer_id, {"opt_out_sale": True})
+        return True
+
+    # CPRA Right to Correct
+    def right_to_correct(self, consumer_id: str, corrections: dict) -> bool:
+        """Correct inaccurate personal information"""
+        self.update_consumer_data(consumer_id, corrections)
+        self.log_correction(consumer_id, corrections)
+        return True
+
+    # CPRA Right to Limit Use of Sensitive Personal Information
+    def right_to_limit_sensitive(self, consumer_id: str) -> bool:
+        """Limit use of sensitive personal information"""
+        self.update_consumer_preferences(consumer_id, {
+            "limit_sensitive_use": True,
+            "sensitive_data_processing": "essential_only"
+        })
+        return True
+
+    # Global Privacy Control (GPC) Support
+    def process_gpc_signal(self, request_headers: dict, consumer_id: str):
+        """Process Global Privacy Control signal (CPRA requirement)"""
+        if request_headers.get("Sec-GPC") == "1":
+            # User has GPC enabled - automatically opt out
+            self.right_to_opt_out(consumer_id)
+            self.right_to_limit_sensitive(consumer_id)
+
+# Privacy Notice (CCPA requirement)
+privacy_notice = {
+    "effective_date": "2025-01-01",
+    "categories_collected": [
+        {
+            "category": "Identifiers",
+            "examples": "Name, email address, user ID",
+            "business_purpose": "Account management, authentication",
+        },
+        {
+            "category": "Commercial Information",
+            "examples": "Tasks submitted, API usage",
+            "business_purpose": "Providing AI services",
+        },
+        {
+            "category": "Internet Activity",
+            "examples": "API requests, access logs",
+            "business_purpose": "Security, fraud prevention, system improvement",
+        },
+    ],
+    "data_sold": "No personal information is sold",
+    "data_shared": [
+        {
+            "recipient": "Cloud service providers (AWS/GCP)",
+            "purpose": "Infrastructure hosting",
+        },
+        {
+            "recipient": "LLM providers (OpenAI, Anthropic)",
+            "purpose": "AI model inference (PII redacted)",
+        },
+    ],
+    "retention_period": "2 years from last activity",
+    "consumer_rights": [
+        "Right to know",
+        "Right to delete",
+        "Right to opt-out (if applicable)",
+        "Right to non-discrimination",
+        "Right to correct (CPRA)",
+        "Right to limit use of sensitive information (CPRA)",
+    ],
+    "contact": "privacy@octollm.example.com",
+    "toll_free": "1-800-XXX-XXXX",
+}
+```
+
+### Do Not Sell My Personal Information
+
+```html
+<!-- CCPA "Do Not Sell" link (required on website) -->
+<!-- https://octollm.example.com/do-not-sell -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Do Not Sell My Personal Information</title>
+</head>
+<body>
+    <h1>Do Not Sell My Personal Information</h1>
+
+    <p>
+        OctoLLM does not sell personal information to third parties.
+        This includes all categories of personal information we collect.
+    </p>
+
+    <h2>What We Do With Your Data</h2>
+    <ul>
+        <li><strong>Service Delivery</strong>: Use data to provide AI services</li>
+        <li><strong>Service Providers</strong>: Share with infrastructure providers (AWS, GCP) for hosting</li>
+        <li><strong>LLM Providers</strong>: Share de-identified data with OpenAI/Anthropic for AI processing</li>
+    </ul>
+
+    <p>
+        None of these constitute a "sale" under CCPA as defined in California Civil Code § 1798.140(ad)(1).
+    </p>
+
+    <h2>Your Privacy Rights</h2>
+    <ul>
+        <li>Right to Know: Request details about data we collect</li>
+        <li>Right to Delete: Request deletion of your personal information</li>
+        <li>Right to Non-Discrimination: Equal service regardless of privacy choices</li>
+    </ul>
+
+    <p>
+        To exercise your rights, contact us at <a href="mailto:privacy@octollm.example.com">privacy@octollm.example.com</a>
+        or call toll-free: 1-800-XXX-XXXX
+    </p>
+</body>
+</html>
+```
+
+---
+
+## HIPAA Considerations
+
+### Business Associate Agreement (BAA)
+
+If OctoLLM processes Protected Health Information (PHI) for covered entities, a Business Associate Agreement is required.
+
+**HIPAA Safeguards**:
+
+```yaml
+Administrative Safeguards:
+  - Security management process
+  - Assigned security responsibility (CISO)
+  - Workforce security (background checks)
+  - Information access management (least privilege)
+  - Security awareness training (annual)
+  - Security incident procedures (documented)
+  - Contingency plan (disaster recovery)
+
+Physical Safeguards:
+  - Facility access controls (cloud provider responsibility)
+  - Workstation use (encrypted laptops)
+  - Device and media controls (full disk encryption)
+
+Technical Safeguards:
+  - Access control (MFA, RBAC)
+  - Audit controls (comprehensive logging)
+  - Integrity controls (checksums, provenance)
+  - Transmission security (TLS 1.3)
+```
+
+**BAA Template**:
+
+```markdown
+# Business Associate Agreement (BAA)
+
+This Business Associate Agreement ("Agreement") is entered into as of [DATE]
+between [COVERED ENTITY] ("Covered Entity") and OctoLLM Inc. ("Business Associate").
+
+## 1. Definitions
+Terms used but not defined in this Agreement shall have the meanings set forth in HIPAA.
+
+## 2. Permitted Uses and Disclosures
+Business Associate may use or disclose PHI only to perform services specified
+in the underlying Service Agreement and as permitted by this Agreement.
+
+## 3. Obligations of Business Associate
+
+### 3.1 Safeguards
+Business Associate shall implement administrative, physical, and technical
+safeguards that reasonably and appropriately protect the confidentiality,
+integrity, and availability of PHI.
+
+### 3.2 Reporting
+Business Associate shall report any Security Incident or breach to Covered
+Entity within 24 hours of discovery.
+
+### 3.3 Subcontractors
+Business Associate shall ensure any subcontractors that create, receive,
+maintain, or transmit PHI on behalf of Business Associate agree to the same
+restrictions and conditions that apply to Business Associate.
+
+## 4. Termination
+Upon termination of this Agreement, Business Associate shall return or destroy
+all PHI received from Covered Entity, except as required by law.
+
+[Signatures]
+```
+
+---
+
+## Data Residency and Localization
+
+### Multi-Region Deployment for GDPR
+
+```yaml
+# k8s/multi-region/eu-deployment.yaml
+# European deployment for GDPR compliance
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: octollm-eu
+  labels:
+    region: eu-west-1
+    data-residency: gdpr
+---
+# Database with EU data residency
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-eu
+  namespace: octollm-eu
+spec:
+  serviceName: postgresql-eu
+  replicas: 1
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: failure-domain.beta.kubernetes.io/region
+                    operator: In
+                    values:
+                      - eu-west-1
+                      - eu-central-1
+      containers:
+        - name: postgresql
+          image: postgres:15-alpine
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: eu-regional-ssd  # Region-specific storage class
+        resources:
+          requests:
+            storage: 100Gi
+```
+
+**Data Residency Routing**:
+
+```python
+# orchestrator/data_residency.py
+
+from enum import Enum
+
+class DataRegion(Enum):
+    EU = "eu"
+    US = "us"
+    APAC = "apac"
+
+class DataResidencyRouter:
+    """Route requests to region-specific infrastructure"""
+
+    REGION_ENDPOINTS = {
+        DataRegion.EU: {
+            "orchestrator": "https://eu.octollm.example.com",
+            "database": "postgresql-eu.octollm-eu.svc.cluster.local",
+            "storage": "s3://octollm-eu-west-1",
+        },
+        DataRegion.US: {
+            "orchestrator": "https://us.octollm.example.com",
+            "database": "postgresql-us.octollm-us.svc.cluster.local",
+            "storage": "s3://octollm-us-east-1",
+        },
+        DataRegion.APAC: {
+            "orchestrator": "https://apac.octollm.example.com",
+            "database": "postgresql-apac.octollm-apac.svc.cluster.local",
+            "storage": "s3://octollm-ap-southeast-1",
+        },
+    }
+
+    def determine_region(self, user_id: str) -> DataRegion:
+        """Determine user's data region based on account settings"""
+        user = self.get_user(user_id)
+        return DataRegion(user.data_residency_preference)
+
+    def route_request(self, user_id: str, request_type: str):
+        """Route request to appropriate region"""
+        region = self.determine_region(user_id)
+        endpoint = self.REGION_ENDPOINTS[region][request_type]
+        return endpoint
+
+    def enforce_data_residency(self, user_id: str, data_location: str) -> bool:
+        """Verify data remains in specified region"""
+        region = self.determine_region(user_id)
+        allowed_regions = self.get_allowed_regions(region)
+
+        # Check if data location matches allowed regions
+        return any(allowed_region in data_location for allowed_region in allowed_regions)
+
+    def get_allowed_regions(self, primary_region: DataRegion) -> List[str]:
+        """Get allowed data storage regions based on primary region"""
+        if primary_region == DataRegion.EU:
+            # GDPR: data must stay in EU
+            return ["eu-west-1", "eu-central-1", "eu-north-1"]
+        elif primary_region == DataRegion.US:
+            return ["us-east-1", "us-west-2"]
+        else:  # APAC
+            return ["ap-southeast-1", "ap-northeast-1"]
+```
+
+---
+
+## Compliance Monitoring
+
+### Automated Compliance Checks
+
+```python
+# security/compliance_monitoring.py
+
+from dataclasses import dataclass
+from typing import List, Dict
+import schedule
+import time
+
+@dataclass
+class ComplianceCheck:
+    id: str
+    name: str
+    framework: str  # SOC2, ISO27001, GDPR, CCPA
+    frequency: str  # daily, weekly, monthly
+    check_function: callable
+    pass_threshold: float  # 0.0-1.0
+
+class ComplianceMonitoring:
+    """Automated compliance monitoring and alerting"""
+
+    def __init__(self):
+        self.checks = self.load_checks()
+
+    def load_checks(self) -> List[ComplianceCheck]:
+        """Define automated compliance checks"""
+        return [
+            ComplianceCheck(
+                id="SOC2-CC6.6",
+                name="Encryption at Rest",
+                framework="SOC2",
+                frequency="daily",
+                check_function=self.check_encryption_at_rest,
+                pass_threshold=1.0  # Must be 100% compliant
+            ),
+            ComplianceCheck(
+                id="GDPR-Art32",
+                name="Security Measures",
+                framework="GDPR",
+                frequency="weekly",
+                check_function=self.check_gdpr_security_measures,
+                pass_threshold=0.95
+            ),
+            ComplianceCheck(
+                id="ISO27001-A8.2",
+                name="Privileged Access Management",
+                framework="ISO27001",
+                frequency="monthly",
+                check_function=self.check_privileged_access,
+                pass_threshold=1.0
+            ),
+            # ... more checks
+        ]
+
+    def check_encryption_at_rest(self) -> float:
+        """Verify all data encrypted at rest"""
+        # Check database encryption
+        db_encrypted = self.verify_db_encryption()
+
+        # Check storage encryption
+        storage_encrypted = self.verify_storage_encryption()
+
+        # Return compliance score (0.0-1.0)
+        return 1.0 if (db_encrypted and storage_encrypted) else 0.0
+
+    def check_gdpr_security_measures(self) -> float:
+        """Verify GDPR Article 32 technical measures"""
+        measures = {
+            "encryption": self.verify_encryption(),
+            "pseudonymization": self.verify_pseudonymization(),
+            "backup_restore": self.verify_backup_restore(),
+            "security_testing": self.verify_security_testing(),
+        }
+
+        # Calculate compliance score
+        passed = sum(measures.values())
+        total = len(measures)
+        return passed / total
+
+    def check_privileged_access(self) -> float:
+        """Verify privileged access controls"""
+        # Check MFA enabled for privileged accounts
+        privileged_accounts = self.get_privileged_accounts()
+        mfa_enabled = [acc for acc in privileged_accounts if acc.mfa_enabled]
+
+        return len(mfa_enabled) / len(privileged_accounts)
+
+    def run_checks(self):
+        """Run all scheduled compliance checks"""
+        results = []
+
+        for check in self.checks:
+            try:
+                score = check.check_function()
+                passed = score >= check.pass_threshold
+
+                result = {
+                    "check_id": check.id,
+                    "name": check.name,
+                    "framework": check.framework,
+                    "score": score,
+                    "passed": passed,
+                    "timestamp": datetime.now().isoformat(),
+                }
+
+                results.append(result)
+
+                # Alert if failed
+                if not passed:
+                    self.send_compliance_alert(check, score)
+
+            except Exception as e:
+                logger.error(f"Compliance check failed: {check.id}", error=str(e))
+
+        # Store results
+        self.store_compliance_results(results)
+
+        return results
+
+    def send_compliance_alert(self, check: ComplianceCheck, score: float):
+        """Send alert for failed compliance check"""
+        alert = {
+            "severity": "high",
+            "check": check.name,
+            "framework": check.framework,
+            "score": score,
+            "threshold": check.pass_threshold,
+            "action_required": "Investigate and remediate compliance gap",
+        }
+
+        # Send to security team
+        self.send_alert(alert, recipient="security-team@octollm.example.com")
+
+    def generate_compliance_dashboard(self) -> dict:
+        """Generate compliance dashboard data"""
+        return {
+            "frameworks": {
+                "SOC2": self.calculate_framework_compliance("SOC2"),
+                "ISO27001": self.calculate_framework_compliance("ISO27001"),
+                "GDPR": self.calculate_framework_compliance("GDPR"),
+                "CCPA": self.calculate_framework_compliance("CCPA"),
+            },
+            "recent_failures": self.get_recent_failures(),
+            "compliance_trend": self.get_compliance_trend(),
+        }
+
+# Schedule compliance checks
+monitoring = ComplianceMonitoring()
+
+schedule.every().day.at("00:00").do(lambda: monitoring.run_checks())
+schedule.every().week.do(lambda: monitoring.generate_compliance_report())
+
+while True:
+    schedule.run_pending()
+    time.sleep(60)
+```
+
+---
+
+## Third-Party Risk Management
+
+### Vendor Assessment
+
+```python
+# security/vendor_assessment.py
+
+from dataclasses import dataclass
+from typing import List
+
+@dataclass
+class Vendor:
+    name: str
+    service: str
+    data_access: List[str]
+    certifications: List[str]
+    risk_level: str  # low, medium, high
+    contract_review_date: str
+
+class ThirdPartyRiskManagement:
+    """Assess and manage third-party vendor risks"""
+
+    def __init__(self):
+        self.vendors = self.load_vendors()
+
+    def load_vendors(self) -> List[Vendor]:
+        """Define third-party vendors"""
+        return [
+            Vendor(
+                name="AWS",
+                service="Cloud infrastructure",
+                data_access=["All production data"],
+                certifications=["SOC 2", "ISO 27001", "GDPR compliant"],
+                risk_level="medium",
+                contract_review_date="2025-01-01"
+            ),
+            Vendor(
+                name="OpenAI",
+                service="LLM API",
+                data_access=["De-identified task prompts"],
+                certifications=["SOC 2"],
+                risk_level="medium",
+                contract_review_date="2025-03-01"
+            ),
+            # ... more vendors
+        ]
+
+    def assess_vendor_risk(self, vendor: Vendor) -> dict:
+        """Assess vendor security and compliance risk"""
+        risk_factors = {
+            "data_sensitivity": self.assess_data_sensitivity(vendor.data_access),
+            "certifications": len(vendor.certifications) >= 2,
+            "contract_terms": self.review_contract_terms(vendor),
+            "data_breach_history": self.check_breach_history(vendor.name),
+        }
+
+        risk_score = self.calculate_risk_score(risk_factors)
+
+        return {
+            "vendor": vendor.name,
+            "risk_score": risk_score,
+            "risk_level": self.determine_risk_level(risk_score),
+            "mitigations": self.recommend_mitigations(vendor, risk_score),
+        }
+
+    def calculate_risk_score(self, risk_factors: dict) -> float:
+        """Calculate overall vendor risk score (0-10)"""
+        # Weighted risk calculation
+        weights = {
+            "data_sensitivity": 0.4,
+            "certifications": 0.2,
+            "contract_terms": 0.2,
+            "data_breach_history": 0.2,
+        }
+
+        risk_score = sum(
+            factor_value * weights[factor_name]
+            for factor_name, factor_value in risk_factors.items()
+        )
+
+        return risk_score
+
+    def generate_vendor_risk_register(self) -> List[dict]:
+        """Generate vendor risk register for audit"""
+        return [
+            self.assess_vendor_risk(vendor)
+            for vendor in self.vendors
+        ]
+```
+
+---
+
+## Policy Templates
+
+### Information Security Policy
+
+```markdown
+# OctoLLM Information Security Policy
+
+**Version**: 1.0
+**Effective Date**: 2025-01-01
+**Owner**: CISO
+**Review Frequency**: Annual
+
+## 1. Purpose
+This policy establishes the framework for protecting OctoLLM information assets and ensuring compliance with applicable laws and regulations.
+
+## 2. Scope
+This policy applies to:
+- All OctoLLM employees, contractors, and third parties
+- All information systems, data, and assets
+- All locations and environments (production, staging, development)
+
+## 3. Roles and Responsibilities
+
+### 3.1 Chief Information Security Officer (CISO)
+- Overall responsibility for information security program
+- Security policy development and maintenance
+- Incident response coordination
+
+### 3.2 Engineering Lead
+- Technical security implementation
+- Secure development practices
+- Security architecture review
+
+### 3.3 All Employees
+- Comply with security policies
+- Report security incidents
+- Complete annual security training
+
+## 4. Security Controls
+
+### 4.1 Access Control
+- Unique user IDs for all personnel
+- Multi-factor authentication required
+- Least privilege principle enforced
+- Access reviewed quarterly
+
+### 4.2 Data Protection
+- Encryption at rest (AES-256)
+- Encryption in transit (TLS 1.3)
+- PII protection and sanitization
+- Secure data disposal
+
+### 4.3 Incident Response
+- Security incidents reported within 1 hour
+- Incident response team activated for critical incidents
+- Post-incident review required
+
+### 4.4 Security Awareness
+- Annual security training required
+- Phishing simulation quarterly
+- Security newsletters monthly
+
+## 5. Compliance
+This policy supports compliance with:
+- SOC 2 Type II
+- ISO 27001:2022
+- GDPR
+- CCPA/CPRA
+
+## 6. Policy Violations
+Violations may result in:
+- Warning
+- Suspension
+- Termination
+- Legal action
+
+## 7. Policy Review
+This policy will be reviewed annually and updated as needed.
+
+---
+
+**Approved by**:
+- CEO: ___________________ Date: ___________
+- CISO: __________________ Date: ___________
+```
+
+### Data Retention and Disposal Policy
+
+```markdown
+# Data Retention and Disposal Policy
+
+**Version**: 1.0
+**Effective Date**: 2025-01-01
+
+## 1. Purpose
+Define data retention periods and secure disposal procedures.
+
+## 2. Retention Periods
+
+| Data Category | Retention Period | Legal Basis |
+|---------------|------------------|-------------|
+| User accounts | 2 years after last activity | Business need |
+| Task data | 2 years after completion | Business need |
+| Audit logs | 7 years | Legal requirement |
+| Financial records | 7 years | Legal requirement |
+| Security incidents | 7 years | Legal requirement |
+| Backups | 30 days | Business need |
+
+## 3. Disposal Procedures
+
+### 3.1 Electronic Data
+- Secure deletion using NIST 800-88 guidelines
+- Database records: DELETE with VACUUM
+- Files: Overwrite with random data (7 passes)
+- Cloud storage: Permanent delete with verification
+
+### 3.2 Physical Media
+- Hard drives: Physical destruction or degaussing
+- Certificates of destruction maintained
+
+## 4. GDPR Right to Erasure
+User requests for data deletion processed within 30 days.
+
+---
+
+**Approved by**: CISO
+**Date**: 2025-01-01
+```
+
+---
+
+## Audit and Assessment
+
+### Annual Internal Audit Plan
+
+```python
+# security/internal_audit.py
+
+from datetime import datetime
+from typing import List
+
+class InternalAudit:
+    """Conduct internal security and compliance audits"""
+
+    def __init__(self):
+        self.audit_scope = self.define_audit_scope()
+
+    def define_audit_scope(self) -> List[dict]:
+        """Define annual internal audit scope"""
+        return [
+            {
+                "area": "Access Control",
+                "framework": "SOC 2 CC6, ISO 27001 A.9",
+                "procedures": [
+                    "Review user access lists",
+                    "Verify MFA enforcement",
+                    "Test privileged access controls",
+                    "Review access logs for anomalies",
+                ],
+                "frequency": "Quarterly",
+            },
+            {
+                "area": "Encryption",
+                "framework": "SOC 2 CC6.6, GDPR Art 32",
+                "procedures": [
+                    "Verify encryption at rest",
+                    "Verify encryption in transit",
+                    "Review key management",
+                    "Test TLS configuration",
+                ],
+                "frequency": "Semi-annually",
+            },
+            {
+                "area": "Incident Response",
+                "framework": "SOC 2 CC7.3, ISO 27001 A.16",
+                "procedures": [
+                    "Review incident response logs",
+                    "Conduct tabletop exercise",
+                    "Verify notification procedures",
+                    "Test backup restoration",
+                ],
+                "frequency": "Annually",
+            },
+            # ... more audit areas
+        ]
+
+    def conduct_audit(self, area: str) -> dict:
+        """Conduct audit for specified area"""
+        audit_area = self.get_audit_area(area)
+
+        findings = []
+        for procedure in audit_area["procedures"]:
+            finding = self.execute_procedure(procedure)
+            findings.append(finding)
+
+        # Generate audit report
+        report = {
+            "audit_area": area,
+            "audit_date": datetime.now().isoformat(),
+            "auditor": "Internal Audit Team",
+            "findings": findings,
+            "recommendations": self.generate_recommendations(findings),
+        }
+
+        return report
+
+    def execute_procedure(self, procedure: str) -> dict:
+        """Execute audit procedure"""
+        # Example: Review user access lists
+        if "Review user access lists" in procedure:
+            users = self.get_all_users()
+            users_with_excessive_access = self.identify_excessive_access(users)
+
+            return {
+                "procedure": procedure,
+                "status": "Pass" if len(users_with_excessive_access) == 0 else "Fail",
+                "details": f"Found {len(users_with_excessive_access)} users with excessive access",
+                "evidence": users_with_excessive_access,
+            }
+
+# Schedule annual audit
+audit = InternalAudit()
+annual_audit_schedule = {
+    "Q1": ["Access Control", "Data Protection"],
+    "Q2": ["Encryption", "Network Security"],
+    "Q3": ["Incident Response", "Business Continuity"],
+    "Q4": ["Vendor Management", "Policy Compliance"],
+}
+```
+
+---
+
+## Conclusion
+
+This comprehensive compliance guide provides:
+
+1. **SOC 2 Type II**: Complete control implementation for all Trust Service Criteria
+2. **ISO 27001:2022**: ISMS framework, Annex A controls, and Statement of Applicability
+3. **GDPR**: Article 32 technical measures and data subject rights implementation
+4. **CCPA/CPRA**: Consumer rights, privacy notices, and GPC support
+5. **HIPAA**: Business Associate Agreement and safeguards (if applicable)
+6. **Data Residency**: Multi-region deployment for data localization
+7. **Compliance Monitoring**: Automated checks and alerting
+8. **Third-Party Risk**: Vendor assessment and management
+9. **Policy Templates**: Complete policy suite for audit
+10. **Internal Audits**: Annual audit plan and procedures
+
+### Next Steps
+
+1. **Engage Auditor**: Select SOC 2 and ISO 27001 auditor
+2. **Evidence Collection**: Implement automated evidence collection
+3. **Policy Distribution**: Distribute policies and collect acknowledgments
+4. **Compliance Monitoring**: Deploy automated compliance checks
+5. **Internal Audit**: Conduct first internal audit
+6. **Gap Remediation**: Address any compliance gaps identified
+7. **External Audit**: Complete SOC 2 Type II and ISO 27001 certification audits
+
+### See Also
+
+- [Security Overview](./overview.md) - Security architecture
+- [Threat Model](./threat-model.md) - STRIDE analysis and mitigations
+- [Security Testing](./security-testing.md) - Vulnerability assessment and penetration testing
+- [PII Protection](./pii-protection.md) - Privacy mechanisms implementation
+
+---
+
+**Document Maintainers**: OctoLLM Compliance Team
+**Last Review**: 2025-11-10
+**Next Review**: 2026-01-01 (Annual)

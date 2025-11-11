@@ -1,0 +1,327 @@
+# ================================================================
+# OctoLLM .gitignore
+# Last Updated: 2025-11-10
+# ================================================================
+
+# ================================================================
+# Python
+# ================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+.env/
+virtualenv/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# MyPy type checker
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Ruff cache
+.ruff_cache/
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# Poetry
+poetry.lock  # Commit this in production, ignore in monorepo
+
+# ================================================================
+# Rust
+# ================================================================
+target/
+Cargo.lock  # Commit for binaries, ignore for libraries
+**/*.rs.bk
+*.pdb
+
+# ================================================================
+# Environment Variables & Secrets (NEVER COMMIT)
+# ================================================================
+.env
+.env.local
+.env.*.local
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+credentials.json
+secrets.yaml
+!*secrets*.example.yaml
+service-account-*.json
+gcp-key.json
+aws-credentials.txt
+
+# ================================================================
+# IDEs and Editors
+# ================================================================
+# VS Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json.example
+
+# JetBrains IDEs (PyCharm, IntelliJ, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# ================================================================
+# Databases & Data Files
+# ================================================================
+*.db
+*.sqlite
+*.sqlite3
+*.rdb
+postgres-data/
+redis-data/
+qdrant-data/
+elasticsearch-data/
+*.dump
+*.sql.gz
+*.bak
+
+# ================================================================
+# Logs
+# ================================================================
+*.log
+logs/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ================================================================
+# Docker
+# ================================================================
+docker-compose.override.yml
+*.dockerfile.tmp
+.docker/
+
+# ================================================================
+# Terraform
+# ================================================================
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+.terraformrc
+terraform.rc
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terragrunt-cache/
+
+# ================================================================
+# Kubernetes
+# ================================================================
+*secret*.yaml
+!*secret*.example.yaml
+kubeconfig
+kubeconfig.*
+*.kubeconfig
+
+# ================================================================
+# Build Artifacts
+# ================================================================
+*.tar
+*.tar.gz
+*.tar.bz2
+*.zip
+*.jar
+*.war
+*.nar
+*.ear
+*.rar
+*.7z
+dist/
+build/
+out/
+
+# ================================================================
+# OS-Specific
+# ================================================================
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ================================================================
+# Temporary Files
+# ================================================================
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~.nib
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# ================================================================
+# CI/CD
+# ================================================================
+.github/**/*.log
+
+# ================================================================
+# Monitoring & Observability
+# ================================================================
+.prometheus/
+.grafana/
+.jaeger/
+
+# ================================================================
+# Project-Specific
+# ================================================================
+# Local overrides
+docker-compose.local.yml
+.local/
+
+# Performance profiles
+*.prof
+*.pprof
+
+# Generated files
+*_generated.py
+*_generated.rs
+
+# Cache directories
+.cache/
+cache/
+
+# Backup files
+*.backup
+
+# ================================================================
+# Documentation Build Artifacts
+# ================================================================
+docs/_build/
+docs/.doctrees/
+site/
+
+# ================================================================
+# Node.js (if used for tooling)
+# ================================================================
+node_modules/
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+.npm
+.eslintcache
+.node_repl_history
+.yarn-integrity
+
+# ================================================================
+# END OF .gitignore
+# ================================================================
