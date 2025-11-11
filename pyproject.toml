@@ -1,10 +1,85 @@
+[tool.poetry]
+name = "octollm"
+version = "0.1.0"
+description = "OctoLLM - Distributed AI Architecture for Offensive Security and Developer Tooling"
+authors = ["OctoLLM Team"]
+license = "Apache-2.0"
+readme = "README.md"
+homepage = "https://github.com/doublegate/OctoLLM"
+repository = "https://github.com/doublegate/OctoLLM"
+documentation = "https://github.com/doublegate/OctoLLM/tree/main/docs"
+keywords = ["ai", "llm", "distributed-systems", "security", "octopus-inspired"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security",
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.109.0"
+pydantic = "^2.5.0"
+pydantic-settings = "^2.1.0"
+uvicorn = {extras = ["standard"], version = "^0.27.0"}
+httpx = "^0.26.0"
+redis = "^5.0.1"
+psycopg = {extras = ["binary", "pool"], version = "^3.1.0"}
+sqlalchemy = "^2.0.25"
+alembic = "^1.13.0"
+qdrant-client = "^1.7.0"
+openai = "^1.10.0"
+anthropic = "^0.8.0"
+langchain = "^0.1.0"
+langchain-openai = "^0.0.2"
+structlog = "^24.1.0"
+prometheus-client = "^0.19.0"
+pyjwt = {extras = ["crypto"], version = "^2.8.0"}
+tenacity = "^8.2.0"
+python-multipart = "^0.0.6"
+python-dotenv = "^1.0.0"
+presidio-analyzer = "^2.2.0"
+presidio-anonymizer = "^2.2.0"
+tiktoken = "^0.6.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.12.0"
+pytest-timeout = "^2.2.0"
+black = "^24.1.0"
+ruff = "^0.1.0"
+mypy = "^1.8.0"
+pre-commit = "^3.6.0"
+ipython = "^8.20.0"
+httpx = "^0.26.0"
+
+[tool.poetry.group.test.dependencies]
+pytest-benchmark = "^4.0.0"
+faker = "^22.0.0"
+hypothesis = "^6.96.0"
+locust = "^2.20.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.black]
 line-length = 100
-target-version = ['py311']
+target-version = ["py311", "py312"]
 include = '\.pyi?$'
-exclude = '''
+extend-exclude = '''
 /(
-    \.git
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
   | \.venv
   | build
   | dist
@@ -22,13 +97,22 @@ select = [
     "C",   # flake8-comprehensions
     "B",   # flake8-bugbear
     "UP",  # pyupgrade
+    "S",   # flake8-bandit (security)
+    "T20", # flake8-print
 ]
 ignore = [
     "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+    "S101",  # use of assert detected (pytest uses assert)
+    "S104",  # possible binding to all interfaces
+    "S608",  # possible SQL injection (false positives with SQLAlchemy)
 ]
 
 [tool.ruff.per-file-ignores]
-"__init__.py" = ["F401"]
+"tests/**/*.py" = [
+    "S101",  # assert allowed in tests
+    "T20",   # print allowed in tests
+]
 
 [tool.mypy]
 python_version = "3.11"
@@ -37,32 +121,63 @@ warn_unused_configs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
-disallow_untyped_decorators = false
 no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 strict_equality = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "redis.*",
+    "qdrant_client.*",
+    "langchain.*",
+    "presidio_analyzer.*",
+    "presidio_anonymizer.*",
+]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config --cov=services --cov=shared/python --cov-report=term-missing --cov-report=html"
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --tb=short --strict-markers"
+asyncio_mode = "auto"
 markers = [
-    "unit: Unit tests",
-    "integration: Integration tests",
-    "e2e: End-to-end tests",
-    "slow: Slow tests",
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "e2e: marks tests as end-to-end tests",
+    "performance: marks tests as performance tests",
+    "security: marks tests as security tests",
 ]
+timeout = 30
+timeout_method = "thread"
 
 [tool.coverage.run]
-source = ["services"]
-omit = ["*/tests/*", "*/migrations/*", "*/__pycache__/*"]
+source = ["services", "shared/python"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__pycache__/*",
+    "*/migrations/*",
+]
 
 [tool.coverage.report]
 precision = 2
 show_missing = true
 skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"

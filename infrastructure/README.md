@@ -1,57 +1,75 @@
-# OctoLLM Infrastructure
+# Infrastructure
 
-This directory contains infrastructure as code (IaC) for deploying OctoLLM across different environments.
+Infrastructure as Code (IaC) and deployment configurations for OctoLLM.
 
 ## Structure
 
 ```
 infrastructure/
-├── terraform/           # Terraform modules and configurations
-│   ├── modules/        # Reusable Terraform modules
-│   │   ├── vpc/        # VPC networking
-│   │   ├── eks/        # Kubernetes cluster
-│   │   ├── rds/        # PostgreSQL database
-│   │   ├── elasticache/# Redis cache
-│   │   ├── s3/         # Object storage
-│   │   └── iam/        # IAM roles and policies
-│   └── environments/   # Environment-specific configurations
-│       ├── dev/        # Development
-│       ├── staging/    # Staging
-│       └── prod/       # Production
-├── kubernetes/         # Kubernetes manifests
-│   ├── base/          # Base Kustomize configurations
-│   ├── overlays/      # Environment overlays
-│   └── charts/        # Helm charts
-└── docker-compose/    # Docker Compose for local development
+├── terraform/           # Terraform modules for AWS/GCP/Azure
+│   ├── modules/         # Reusable modules (VPC, EKS, RDS, etc.)
+│   └── environments/    # Environment-specific configs (dev/staging/prod)
+├── kubernetes/          # Kubernetes manifests
+│   ├── base/            # Base configurations
+│   ├── overlays/        # Kustomize overlays per environment
+│   └── charts/          # Helm charts
+└── docker-compose/      # Local development with Docker Compose
 ```
 
-## Usage
+## Terraform Modules
 
-### Local Development (Docker Compose)
+- **vpc** - Virtual Private Cloud with public/private subnets
+- **eks** - Elastic Kubernetes Service cluster
+- **rds** - PostgreSQL database (Multi-AZ)
+- **elasticache** - Redis cluster
+- **s3** - Object storage for backups/artifacts
+- **iam** - Service accounts and IRSA roles
+
+## Kubernetes Resources
+
+- **Namespaces**: octollm-dev, octollm-staging, octollm-prod
+- **Deployments**: Orchestrator, Reflex, 6 Arms
+- **Services**: ClusterIP for internal, LoadBalancer for ingress
+- **ConfigMaps**: Environment-specific configuration
+- **Secrets**: External Secrets Operator (AWS Secrets Manager)
+- **Ingress**: NGINX with TLS (cert-manager)
+
+## Docker Compose
+
+For local development without Kubernetes:
 
 ```bash
-cd docker-compose
+cd infrastructure/docker-compose
 docker-compose up -d
 ```
 
-### Terraform (AWS Infrastructure)
+Services:
+- orchestrator:8000
+- reflex-layer:8080
+- planner:8001, executor:8002, retriever:8003, coder:8004, judge:8005, safety-guardian:8006
+- postgres:5432, redis:6379, qdrant:6333
+- prometheus:9090, grafana:3000
+
+## Development
 
 ```bash
-cd terraform/environments/dev
+# Terraform
+cd infrastructure/terraform/environments/dev
 terraform init
 terraform plan
 terraform apply
-```
 
-### Kubernetes Deployment
+# Kubernetes
+cd infrastructure/kubernetes
+kubectl apply -k overlays/dev
 
-```bash
-cd kubernetes
-kubectl apply -k overlays/dev/
+# Docker Compose
+cd infrastructure/docker-compose
+docker-compose up -d
 ```
 
 ## References
 
 - [Deployment Guide](../docs/operations/deployment-guide.md)
-- [Infrastructure Design](../docs/architecture/infrastructure-design.md)
-- [Terraform Modules](../docs/operations/terraform-modules.md)
+- [Kubernetes Deployment](../docs/operations/kubernetes-deployment.md)
+- [Docker Compose Setup](../docs/operations/docker-compose-setup.md)

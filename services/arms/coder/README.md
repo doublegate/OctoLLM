@@ -1,23 +1,32 @@
 # Coder Arm
 
-The Coder Arm specializes in code generation, analysis, debugging, and refactoring across multiple programming languages.
+The Coder Arm generates, debugs, and refactors code across multiple programming languages.
 
-## Features
-
-- Multi-language code generation (Python, Rust, JavaScript, Go)
-- Code analysis and review
-- Bug detection and fixing
-- Refactoring suggestions
-- Test generation
-
-## Architecture
+## Overview
 
 - **Language**: Python 3.11+
 - **Framework**: FastAPI
-- **LLM**: GPT-4 (high-quality code generation)
-- **Port**: 8040
+- **LLM**: GPT-4 (code-specific models)
+- **Languages**: Python, Rust, JavaScript, TypeScript, Go, Bash
+
+## Capabilities
+
+- Code generation from natural language
+- Bug fixing with test case validation
+- Refactoring for performance/readability
+- Test generation (unit, integration)
+- Code review and suggestions
+
+## Development
+
+```bash
+cd services/arms/coder
+poetry install
+poetry run pytest tests/ -v
+poetry run uvicorn src.main:app --reload --port 8003
+```
 
 ## References
 
-- [Component Specification](../../../docs/components/coder-arm.md)
-- [Implementation Guide](../../../docs/implementation/coder-arm-impl.md)
+- [Coder Arm Specification](../../../docs/components/arms/coder.md)
+- [Code Quality Standards](../../../docs/engineering/coding-standards.md)

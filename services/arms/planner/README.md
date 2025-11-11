@@ -1,41 +1,57 @@
 # Planner Arm
 
-The Planner Arm specializes in task decomposition, breaking complex goals into executable subtasks with acceptance criteria.
+The Planner Arm specializes in task decomposition, breaking complex goals into actionable subtasks with acceptance criteria.
 
-## Architecture
+## Overview
 
 - **Language**: Python 3.11+
 - **Framework**: FastAPI
 - **LLM**: GPT-3.5-turbo (cost-optimized)
-- **Port**: 8010
+- **Capabilities**: Task decomposition, dependency analysis, constraint verification
 
-## Features
+## Functionality
 
-- Hierarchical task decomposition
-- Dependency analysis
-- Acceptance criteria generation
-- Self-assessment and confidence scoring
-- Recursive planning for complex tasks
+Given a high-level goal, the Planner produces:
 
-## Project Structure
+1. **Subtask List** - Ordered steps to achieve goal
+2. **Dependencies** - Task ordering constraints
+3. **Acceptance Criteria** - Measurable success conditions
+4. **Resource Estimates** - Time, tokens, cost predictions
+5. **Risk Assessment** - Potential failure modes
 
+## Input Schema
+
+```python
+class PlanRequest(BaseModel):
+    task_id: str
+    goal: str
+    constraints: Dict[str, Any]
+    context: Optional[str] = None
+    max_subtasks: int = 10
 ```
-planner/
-├── src/
-│   ├── api/          # FastAPI routes
-│   ├── core/         # Planning algorithms
-│   └── models/       # Pydantic models
-├── tests/            # Unit and integration tests
-├── pyproject.toml    # Python dependencies
-├── Dockerfile        # Multi-stage Docker build
-└── README.md         # This file
+
+## Output Schema
+
+```python
+class PlanResponse(BaseModel):
+    task_id: str
+    subtasks: List[Subtask]
+    dependencies: List[Tuple[str, str]]
+    estimated_duration: int  # seconds
+    estimated_cost: float  # USD
+    confidence: float  # 0.0-1.0
 ```
 
 ## Development
 
-See [Implementation Guide](../../../docs/implementation/planner-arm-impl.md) for details.
+```bash
+cd services/arms/planner
+poetry install
+poetry run pytest tests/ -v
+poetry run uvicorn src.main:app --reload --port 8001
+```
 
 ## References
 
-- [Component Specification](../../../docs/components/planner-arm.md)
-- [Planning Algorithms](../../../docs/architecture/planning-strategies.md)
+- [Planner Arm Specification](../../../docs/components/arms/planner.md)
+- [API Contracts](../../../docs/api/component-contracts.md)

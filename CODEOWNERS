@@ -1,0 +1,68 @@
+# CODEOWNERS file for OctoLLM
+# 
+# This file defines code ownership and review requirements for the repository.
+# When a PR touches files in these paths, the specified owners will be automatically
+# requested for review.
+#
+# Format: path/to/files @github-username @github-team
+#
+# Documentation: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global owners (fallback for any file not matched below)
+* @doublegate
+
+# Documentation
+/docs/ @doublegate
+/ref-docs/ @doublegate
+/to-dos/ @doublegate
+*.md @doublegate
+
+# Core architecture files
+/ARCHITECTURE.md @doublegate
+/README.md @doublegate
+/LICENSE @doublegate
+
+# Python services (Orchestrator + Python Arms)
+/services/orchestrator/ @doublegate
+/services/arms/planner/ @doublegate
+/services/arms/retriever/ @doublegate
+/services/arms/coder/ @doublegate
+/services/arms/judge/ @doublegate
+/services/arms/safety-guardian/ @doublegate
+
+# Rust services (Reflex Layer + Executor Arm)
+/services/reflex-layer/ @doublegate
+/services/arms/executor/ @doublegate
+
+# Shared libraries
+/shared/python/ @doublegate
+/shared/rust/ @doublegate
+/shared/proto/ @doublegate
+/shared/schemas/ @doublegate
+
+# Infrastructure as Code
+/infrastructure/terraform/ @doublegate
+/infrastructure/kubernetes/ @doublegate
+/infrastructure/docker-compose/ @doublegate
+
+# CI/CD and automation
+/.github/ @doublegate
+/scripts/ @doublegate
+/.pre-commit-config.yaml @doublegate
+
+# Tests
+/tests/ @doublegate
+
+# Security-critical files (require security team review)
+/docs/security/ @doublegate
+/services/reflex-layer/src/pii/ @doublegate
+/services/arms/safety-guardian/ @doublegate
+/SECURITY.md @doublegate
+
+# Python configuration
+/pyproject.toml @doublegate
+/poetry.lock @doublegate
+
+# Rust configuration
+/Cargo.toml @doublegate
+/Cargo.lock @doublegate

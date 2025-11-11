@@ -1,90 +1,208 @@
-# OctoLLM Pre-Commit Hooks Configuration
-# See https://pre-commit.com for more information
+# Pre-commit hooks configuration for OctoLLM
+# 
+# Install: pre-commit install
+# Run manually: pre-commit run --all-files
+# Update hooks: pre-commit autoupdate
+#
+# Documentation: https://pre-commit.com/
+
+default_language_version:
+  python: python3.11
 
 repos:
-  # General pre-commit hooks
+  # General file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
+        exclude: '\.md$'
       - id: end-of-file-fixer
+        exclude: '\.md$'
       - id: check-yaml
-        args: ['--unsafe']  # Allow custom tags in K8s YAML
+        args: ['--unsafe']  # Allow custom YAML tags
+      - id: check-toml
+      - id: check-json
       - id: check-added-large-files
         args: ['--maxkb=1000']
       - id: check-merge-conflict
-      - id: check-toml
-      - id: check-json
-      - id: detect-private-key
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
       - id: mixed-line-ending
+        args: ['--fix=lf']
+      - id: detect-private-key
+        exclude: '(tests/|docs/|\.example)'
 
-  # Python: Ruff (linter + formatter)
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.14
-    hooks:
-      - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
-        files: ^services/.*\.py$
-      - id: ruff-format
-        files: ^services/.*\.py$
-
-  # Python: Black (formatter)
+  # Python: Black (code formatting)
   - repo: https://github.com/psf/black
-    rev: 23.12.1
+    rev: 24.1.1
     hooks:
       - id: black
         language_version: python3.11
-        files: ^services/.*\.py$
+        args: ['--line-length=100']
+        files: '^(services|shared|tests)/.*\.py$'
 
-  # Python: mypy (type checking)
+  # Python: Ruff (linting and import sorting)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.15
+    hooks:
+      - id: ruff
+        args: ['--fix', '--exit-non-zero-on-fix']
+        files: '^(services|shared|tests)/.*\.py$'
+
+  # Python: MyPy (type checking)
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.8.0
     hooks:
       - id: mypy
-        additional_dependencies: [types-redis, types-requests]
-        files: ^services/orchestrator/.*\.py$
-        args: [--strict, --ignore-missing-imports]
+        additional_dependencies:
+          - types-redis
+          - types-requests
+          - pydantic
+        args: ['--ignore-missing-imports', '--no-implicit-optional']
+        files: '^(services|shared)/.*\.py$'
+        exclude: '(tests/|migrations/)'
 
-  # Rust: rustfmt (formatter)
-  - repo: local
+  # Rust: Rustfmt (code formatting)
+  - repo: https://github.com/doubleodd/pre-commit-rust
+    rev: v1.0
     hooks:
-      - id: cargo-fmt
-        name: cargo fmt
-        description: Run cargo fmt on Rust code
-        entry: cargo fmt --all --
-        language: system
-        types: [rust]
-        pass_filenames: false
+      - id: fmt
+        args: ['--manifest-path', 'Cargo.toml', '--']
+        files: '^(services|shared)/.*\.rs$'
 
-  # Rust: clippy (linter)
-  - repo: local
+  # Rust: Clippy (linting)
+  - repo: https://github.com/doubleodd/pre-commit-rust
+    rev: v1.0
     hooks:
-      - id: cargo-clippy
-        name: cargo clippy
-        description: Run cargo clippy on Rust code
-        entry: cargo clippy --all-targets --all-features -- -D warnings
-        language: system
-        types: [rust]
-        pass_filenames: false
+      - id: clippy
+        args: ['--manifest-path', 'Cargo.toml', '--', '-D', 'warnings']
+        files: '^(services|shared)/.*\.rs$'
 
-  # Secrets detection
+  # Secrets detection (GitLeaks)
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.18.1
+    rev: v8.18.2
     hooks:
       - id: gitleaks
 
   # YAML linting
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.33.0
+    rev: v1.35.1
     hooks:
       - id: yamllint
-        args: [-c=.yamllint.yaml]
-        files: \.(yaml|yml)$
+        args: ['-d', '{extends: default, rules: {line-length: {max: 120}, document-start: disable}}']
+        files: '^infrastructure/.*\.ya?ml$'
+
+  # Dockerfile linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        args: ['--ignore', 'DL3008', '--ignore', 'DL3009']  # Allow apt-get without version pinning in dev
+
+  # Terraform formatting
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.86.1
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_validate
+        files: '^infrastructure/terraform/.*\.tf$'
+      - id: terraform_tflint
+        files: '^infrastructure/terraform/.*\.tf$'
 
   # Markdown linting
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.38.0
+    rev: v0.39.0
     hooks:
       - id: markdownlint
-        args: [--fix]
-        files: \.md$
+        args: ['--fix', '--disable', 'MD013', 'MD033', 'MD041']  # Disable line length, HTML, first line h1
+
+  # Shell script linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+        args: ['-x']  # Follow source statements
+
+  # Security: Bandit (Python security linter)
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        args: ['-c', 'pyproject.toml', '-r']
+        files: '^(services|shared)/.*\.py$'
+        exclude: '(tests/|test_.*\.py)'
+        additional_dependencies: ['bandit[toml]']
+
+  # Security: Safety (Python dependency vulnerability scanner)
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.3
+    hooks:
+      - id: python-safety-dependencies-check
+        files: 'pyproject.toml'
+
+  # Commit message linting (Conventional Commits)
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.0.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: ['--force-scope']
+
+# Custom local hooks
+  - repo: local
+    hooks:
+      # Check for TODO/FIXME without issue reference
+      - id: check-todos
+        name: Check TODOs have issue references
+        entry: bash -c 'git grep -n "TODO\|FIXME" -- "*.py" "*.rs" | grep -v "#[0-9]" && exit 1 || exit 0'
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      # Ensure test files have proper naming
+      - id: test-naming
+        name: Check test file naming
+        entry: bash -c 'find tests -name "*.py" ! -name "test_*.py" ! -name "*_test.py" ! -name "__init__.py" ! -name "conftest.py" && exit 1 || exit 0'
+        language: system
+        pass_filenames: false
+        files: '^tests/.*\.py$'
+
+      # Check Python test coverage
+      - id: pytest-coverage
+        name: Check pytest coverage (85% minimum)
+        entry: bash -c 'poetry run pytest --cov=services --cov=shared/python --cov-report=term --cov-fail-under=85 tests/unit/'
+        language: system
+        pass_filenames: false
+        files: '^(services|shared)/.*\.py$'
+        stages: [push]  # Only run on push, not every commit
+
+      # Check Rust test coverage
+      - id: cargo-coverage
+        name: Check cargo coverage (80% minimum)
+        entry: bash -c 'cd services/reflex-layer && cargo tarpaulin --skip-clean --out Stdout --fail-under 80'
+        language: system
+        pass_filenames: false
+        files: '^(services|shared)/.*\.rs$'
+        stages: [push]  # Only run on push, not every commit
+
+      # Prevent commits to main/master
+      - id: no-commit-to-main
+        name: Prevent direct commits to main/master
+        entry: bash -c 'BRANCH=$(git symbolic-ref HEAD 2>/dev/null | sed "s/refs\/heads\///"); if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then echo "Direct commits to $BRANCH are not allowed. Use a feature branch."; exit 1; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+
+# Configuration for specific hooks
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [pytest-coverage, cargo-coverage]  # Skip slow tests in CI
+  submodules: false

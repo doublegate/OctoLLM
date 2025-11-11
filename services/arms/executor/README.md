@@ -1,52 +1,37 @@
 # Executor Arm
 
-The Executor Arm provides sandboxed command execution with strict security controls and allowlisting.
+The Executor Arm runs external commands and tools in isolated, sandboxed environments.
 
-## Architecture
+## Overview
 
 - **Language**: Rust 1.75+
-- **Framework**: Axum
-- **Sandbox**: Docker + gVisor (optional)
-- **Port**: 8020
+- **Sandboxing**: Docker containers, gVisor (optional)
+- **Security**: Command allowlisting, resource limits, network isolation
+- **Capabilities**: Shell commands, HTTP requests, file operations
 
-## Features
+## Security Model
 
-- Command allowlisting with regex patterns
-- Docker-based sandboxing
-- Resource limits (CPU, memory, disk)
-- Timeout enforcement
-- Output capture and validation
-- Comprehensive audit logging
+- **Allowlisting**: Only pre-approved commands executable
+- **Resource Limits**: CPU (1 core), Memory (512MB), Disk (1GB), Time (60s)
+- **Network**: Outbound HTTPS only, no internal network access
+- **Filesystem**: Read-only mounted volumes, ephemeral workspace
 
-## Project Structure
+## Supported Tools
 
-```
-executor/
-├── src/
-│   ├── sandbox/      # Sandbox manager
-│   ├── allowlist/    # Command validation
-│   └── docker/       # Docker client wrapper
-├── tests/            # Unit and integration tests
-├── benches/          # Performance benchmarks
-├── Cargo.toml        # Rust dependencies
-├── Dockerfile        # Multi-stage Docker build
-└── README.md         # This file
-```
-
-## Security
-
-This is the most security-critical component. All commands:
-- Must match allowlist patterns
-- Run in isolated containers
-- Have strict resource limits
-- Cannot access host network
-- Log all activity with provenance
+- Shell: bash, python3, node, curl, git
+- Security: nmap, nikto, sqlmap, metasploit
+- Development: cargo, npm, pip, docker
 
 ## Development
 
-See [Security Guide](../../../docs/security/executor-security.md) for implementation requirements.
+```bash
+cd services/arms/executor
+cargo build --release
+cargo test
+cargo run --release
+```
 
 ## References
 
-- [Component Specification](../../../docs/components/executor-arm.md)
-- [Sandbox Design](../../../docs/security/sandbox-design.md)
+- [Executor Arm Specification](../../../docs/components/arms/executor.md)
+- [Security Hardening](../../../docs/security/capability-isolation.md)

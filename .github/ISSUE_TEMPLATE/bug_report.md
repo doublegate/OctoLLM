@@ -1,40 +1,78 @@
 ---
 name: Bug Report
-about: Report a bug to help us improve
+about: Create a report to help us improve
 title: "[BUG] "
 labels: bug
 assignees: ''
+
 ---
 
 ## Bug Description
 
-<!-- A clear and concise description of the bug -->
+<!-- A clear and concise description of what the bug is -->
+
+## Component
+
+<!-- Which component is affected? -->
+
+- [ ] Orchestrator
+- [ ] Reflex Layer
+- [ ] Planner Arm
+- [ ] Executor Arm
+- [ ] Retriever Arm
+- [ ] Coder Arm
+- [ ] Judge Arm
+- [ ] Safety Guardian Arm
+- [ ] Infrastructure
+- [ ] Documentation
+- [ ] Other: 
+
+## Severity
+
+<!-- Select one -->
+
+- [ ] Critical (system down, data loss)
+- [ ] High (major functionality broken)
+- [ ] Medium (significant impact, workaround exists)
+- [ ] Low (minor issue, cosmetic)
 
 ## Steps to Reproduce
 
-1.
-2.
-3.
+1. Go to '...'
+2. Execute '...'
+3. Observe '...'
 
 ## Expected Behavior
 
-<!-- What you expected to happen -->
+<!-- A clear and concise description of what you expected to happen -->
 
 ## Actual Behavior
 
-<!-- What actually happened -->
+<!-- A clear and concise description of what actually happened -->
 
 ## Environment
 
-- OS: [e.g., Ubuntu 22.04]
-- Python Version: [e.g., 3.11.5]
-- Rust Version: [e.g., 1.75.0]
-- Docker Version: [e.g., 24.0.7]
+- **Deployment**: [Docker Compose / Kubernetes / Local]
+- **OS**: [e.g., Ubuntu 22.04, macOS 14.0]
+- **Python Version**: [e.g., 3.11.5]
+- **Rust Version**: [e.g., 1.75.0]
+- **Commit/Version**: [e.g., v0.1.0, commit hash]
 
-## Logs/Screenshots
+## Logs
 
-<!-- Add any relevant logs or screenshots -->
+<details>
+<summary>Click to expand logs</summary>
+
+```
+Paste relevant logs here
+```
+
+</details>
 
 ## Additional Context
 
-<!-- Any other context about the problem -->
+<!-- Add any other context about the problem here (screenshots, error messages, etc.) -->
+
+## Possible Solution
+
+<!-- Optional: Suggest a fix or reason for the bug -->

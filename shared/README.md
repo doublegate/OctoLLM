@@ -1,58 +1,80 @@
 # Shared Libraries
 
-This directory contains shared code, schemas, and types used across multiple OctoLLM services.
+Common code shared across multiple services in the OctoLLM monorepo.
 
 ## Structure
 
 ```
 shared/
-├── proto/              # Protocol Buffer definitions (future)
-├── schemas/            # JSON schemas for validation
-├── types/              # Shared type definitions
+├── proto/              # Protocol Buffers definitions (gRPC)
+├── schemas/            # JSON schemas for API contracts
+├── types/              # Language-agnostic type definitions
 ├── python/             # Python shared libraries
-│   ├── common/        # Common utilities
-│   ├── models/        # Pydantic models
-│   └── clients/       # Client libraries
+│   ├── common/         # Common utilities
+│   ├── models/         # Pydantic models
+│   └── clients/        # API clients for inter-service communication
 └── rust/               # Rust shared libraries
-    ├── common/        # Common utilities
-    ├── types/         # Type definitions
-    └── clients/       # Client libraries
+    ├── common/         # Common utilities
+    ├── types/          # Rust type definitions
+    └── clients/        # API clients for inter-service communication
 ```
 
-## Python Shared Library
+## Protocol Buffers
 
-The Python shared library (`shared/python/`) provides:
-- **Common Models**: Pydantic models for TaskContract, ArmCapability, etc.
-- **Database Clients**: PostgreSQL, Redis, Qdrant connection managers
-- **LLM Clients**: OpenAI and Anthropic SDK wrappers
-- **Observability**: Logging, metrics, tracing utilities
+gRPC service definitions for high-performance inter-service communication:
 
-## Rust Shared Library
+- `task_contract.proto` - Core TaskContract message
+- `arm_capability.proto` - Arm capability registry
+- `execution_state.proto` - Execution tracking
 
-The Rust shared library (`shared/rust/`) provides:
-- **Common Types**: Shared data structures
-- **Error Handling**: Custom error types
-- **Serialization**: Serde implementations
-- **Utilities**: Helper functions
-
-## Usage
-
-### Python
-
-```python
-from octollm_common.models import TaskContract, ArmCapability
-from octollm_common.db import get_postgres_client, get_redis_client
-from octollm_common.llm import OpenAIClient, AnthropicClient
+Generate code:
+```bash
+cd shared/proto
+./generate.sh  # Generates Python and Rust code
 ```
 
-### Rust
+## Python Shared Libraries
 
-```rust
-use octollm_common::{TaskContract, ArmCapability};
-use octollm_common::error::{OctoLLMError, Result};
+Install as local package:
+```bash
+cd shared/python
+poetry install
+```
+
+Key modules:
+- `common.logging` - Structured logging setup
+- `common.metrics` - Prometheus metrics helpers
+- `common.cache` - Redis caching utilities
+- `models.task_contract` - TaskContract Pydantic model
+- `clients.orchestrator` - Orchestrator API client
+
+## Rust Shared Libraries
+
+Add to Cargo.toml:
+```toml
+[dependencies]
+octollm-common = { path = "../../shared/rust/common" }
+octollm-types = { path = "../../shared/rust/types" }
+```
+
+Key crates:
+- `octollm-common` - Common utilities (error handling, tracing)
+- `octollm-types` - Core type definitions (TaskContract, ArmCapability)
+- `octollm-clients` - Async HTTP clients for services
+
+## Development
+
+```bash
+# Python
+cd shared/python
+poetry run pytest tests/ -v
+
+# Rust
+cd shared/rust
+cargo test --all
 ```
 
 ## References
 
 - [API Contracts](../docs/api/component-contracts.md)
-- [Data Models](../docs/architecture/data-models.md)
+- [Integration Patterns](../docs/implementation/integration-patterns.md)

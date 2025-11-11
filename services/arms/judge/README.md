@@ -1,23 +1,31 @@
 # Judge Arm
 
-The Judge Arm validates outputs, scores confidence, and ensures quality assurance across all arm results.
+The Judge Arm validates outputs from other arms, ensuring quality and correctness.
 
-## Features
-
-- Output validation against acceptance criteria
-- Confidence scoring (0.0-1.0)
-- Quality metrics calculation
-- Failure detection and reporting
-- Multi-dimensional evaluation
-
-## Architecture
+## Overview
 
 - **Language**: Python 3.11+
 - **Framework**: FastAPI
-- **LLM**: GPT-3.5-turbo
-- **Port**: 8050
+- **LLM**: GPT-3.5-turbo (validation-focused prompts)
+- **Capabilities**: Output validation, quality scoring, acceptance criteria verification
+
+## Validation Types
+
+- **Syntax**: Code compilation, JSON validation
+- **Semantic**: Requirement fulfillment, logic correctness
+- **Security**: Vulnerability scanning, unsafe pattern detection
+- **Performance**: Efficiency analysis, resource usage
+
+## Development
+
+```bash
+cd services/arms/judge
+poetry install
+poetry run pytest tests/ -v
+poetry run uvicorn src.main:app --reload --port 8004
+```
 
 ## References
 
-- [Component Specification](../../../docs/components/judge-arm.md)
-- [Validation Strategies](../../../docs/architecture/validation-strategies.md)
+- [Judge Arm Specification](../../../docs/components/arms/judge.md)
+- [Testing Strategy](../../../docs/testing/strategy.md)
