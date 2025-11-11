@@ -12,7 +12,6 @@ def test_placeholder() -> None:
 
 def test_project_structure() -> None:
     """Verify project structure is set up correctly."""
-    import os
     from pathlib import Path
 
     project_root = Path(__file__).parent.parent.parent

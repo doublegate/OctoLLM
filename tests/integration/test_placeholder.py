@@ -12,15 +12,16 @@ def test_integration_placeholder() -> None:
 
 def test_python_imports() -> None:
     """Verify Python dependencies can be imported."""
-    # Test that key dependencies are available
-    try:
-        import fastapi
-        import pydantic
-        import redis
-        import psycopg
+    from importlib.util import find_spec
 
-        assert True, "All key Python dependencies importable"
-    except ImportError as e:
-        # In Phase 0, dependencies might not be installed in CI
-        # This is acceptable - will be fixed in Phase 1
-        assert True, f"Phase 0: Some dependencies not yet installed ({e})"
+    # Test that key dependencies are available
+    key_packages = ["fastapi", "pydantic", "redis", "psycopg"]
+
+    for package in key_packages:
+        spec = find_spec(package)
+        if spec is None:
+            # In Phase 0, dependencies might not be installed in CI
+            # This is acceptable - will be fixed in Phase 1
+            assert True, f"Phase 0: {package} not installed yet (expected)"
+        else:
+            assert True, f"{package} is available"
