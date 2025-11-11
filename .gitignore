@@ -80,7 +80,8 @@ poetry.lock  # Commit this in production, ignore in monorepo
 # Rust
 # ================================================================
 target/
-Cargo.lock  # Commit for binaries, ignore for libraries
+# Cargo.lock - COMMITTED for OctoLLM (binary services)
+# Note: Cargo.lock is committed to ensure reproducible builds
 **/*.rs.bk
 *.pdb
 

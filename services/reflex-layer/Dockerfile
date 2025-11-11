@@ -14,6 +14,8 @@ WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
 COPY shared/rust ./shared/rust
 COPY services/reflex-layer ./services/reflex-layer
+# Copy other workspace members (required for workspace build)
+COPY services/arms/executor ./services/arms/executor
 
 # Build release binary
 RUN cargo build --release --package reflex-layer
