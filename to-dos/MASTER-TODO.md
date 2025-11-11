@@ -23,7 +23,7 @@ This master TODO tracks the complete implementation of OctoLLM from initial setu
 
 | Phase | Status | Progress | Start Date | Target Date | Team Size | Duration | Est. Hours |
 |-------|--------|----------|------------|-------------|-----------|----------|------------|
-| Phase 0: Project Setup | ✅ Sprint 0.2 INFRASTRUCTURE READY | 20% | 2025-11-10 | - | 2-3 engineers | 1-2 weeks | ~80h |
+| Phase 0: Project Setup | ✅ Sprint 0.4 API SPECS COMPLETE | 35% | 2025-11-10 | - | 2-3 engineers | 1-2 weeks | ~80h |
 | Phase 1: Proof of Concept | Not Started | 0% | - | - | 3-4 engineers | 4-6 weeks | ~200h |
 | Phase 2: Core Capabilities | Not Started | 0% | - | - | 4-5 engineers | 8-10 weeks | 190h |
 | Phase 3: Operations & Deployment | Not Started | 0% | - | - | 2-3 SREs | 4-6 weeks | 145h |
@@ -31,13 +31,13 @@ This master TODO tracks the complete implementation of OctoLLM from initial setu
 | Phase 5: Security Hardening | Not Started | 0% | - | - | 3-4 engineers | 8-10 weeks | 210h |
 | Phase 6: Production Readiness | Not Started | 0% | - | - | 4-5 engineers | 8-10 weeks | 271h |
 
-**Overall Progress**: 2.9% (Sprint 0.2 infrastructure/7 phases complete)
+**Overall Progress**: 5.0% (Sprint 0.4 API specifications complete/7 phases)
 **Estimated Total Time**: 36-48 weeks (8-11 months)
 **Estimated Total Hours**: ~1,186 development hours
 **Estimated Team**: 5-8 engineers (mixed skills)
 **Estimated Cost**: ~$177,900 at $150/hour blended rate
 
-**Latest Update**: Sprint 0.2 infrastructure ready (2025-11-11) - Docker environment operational, all infrastructure services healthy (PostgreSQL, Redis, Qdrant, Rust services)
+**Latest Update**: Sprint 0.4 API specifications complete (2025-11-11) - All 8 services have OpenAPI 3.0 specs (79.6KB total), standard endpoints, authentication, schemas, and examples documented
 
 ---
 
@@ -224,7 +224,70 @@ This master TODO tracks the complete implementation of OctoLLM from initial setu
 
 ---
 
-### 0.4 Infrastructure as Code (Cloud Provisioning)
+### 0.4 API Skeleton & Documentation ✅ COMPLETE
+
+- [x] **OpenAPI 3.0 Specifications** [HIGH] - ✅ COMPLETE (Commit: pending)
+  - [x] Create OpenAPI specs for all 8 services (79.6KB total):
+    - [x] `orchestrator.yaml` (21KB) - Task submission and status API
+    - [x] `reflex-layer.yaml` (12KB) - Preprocessing and caching API
+    - [x] `planner.yaml` (5.9KB) - Task decomposition API
+    - [x] `executor.yaml` (8.4KB) - Sandboxed execution API
+    - [x] `retriever.yaml` (6.4KB) - Hybrid search API
+    - [x] `coder.yaml` (7.4KB) - Code generation API
+    - [x] `judge.yaml` (8.7KB) - Validation API
+    - [x] `safety-guardian.yaml` (9.8KB) - Content filtering API
+  - [x] Standard endpoints: GET /health, GET /metrics, GET /capabilities
+  - [x] Authentication: ApiKeyAuth (external), BearerAuth (inter-service)
+  - [x] All schemas defined (47 total): TaskContract, ResourceBudget, ArmCapability, ValidationResult, SearchResponse, CodeResponse
+  - [x] 86 examples provided across all endpoints
+  - [x] 40+ error responses documented
+
+- [x] **Python SDK Foundation** [MEDIUM] - ✅ PARTIAL COMPLETE
+  - [x] Create `sdks/python/octollm-sdk/` structure
+  - [x] `pyproject.toml` with dependencies (httpx, pydantic)
+  - [x] `octollm_sdk/__init__.py` with core exports
+  - [ ] Full SDK implementation (deferred to Sprint 0.5)
+
+- [ ] **TypeScript SDK** [MEDIUM] - DEFERRED to Sprint 0.5
+  - [ ] Create `sdks/typescript/octollm-sdk/` structure
+  - [ ] Full TypeScript SDK with type definitions
+
+- [ ] **API Collections** [MEDIUM] - DEFERRED to Sprint 0.5
+  - [ ] Postman collection (50+ requests)
+  - [ ] Insomnia collection with environment templates
+
+- [ ] **API Documentation** [MEDIUM] - DEFERRED to Sprint 0.5
+  - [ ] API-OVERVIEW.md (architecture, auth, errors)
+  - [ ] Per-service API docs (8 files)
+  - [ ] Schema documentation (6 files)
+
+- [ ] **Mermaid Diagrams** [MEDIUM] - DEFERRED to Sprint 0.5
+  - [ ] Service flow diagram
+  - [ ] Authentication flow diagram
+  - [ ] Task routing diagram
+  - [ ] Memory flow diagram
+  - [ ] Error flow diagram
+  - [ ] Observability flow diagram
+
+**Sprint 0.4 Status**: ✅ CORE COMPLETE (2025-11-11)
+**Files Created**: 10 files (8 OpenAPI specs + 2 SDK files)
+**Total Size**: 79.6KB OpenAPI documentation
+**Duration**: ~2.5 hours (under 4-hour target)
+**Version Bump**: 0.2.0 → 0.3.0 (MINOR - backward-compatible API additions)
+**Next**: Sprint 0.5 (Complete SDKs, collections, docs, diagrams)
+
+**Success Criteria**:
+- ✅ All 8 services have OpenAPI 3.0 specifications
+- ✅ 100% endpoint coverage (32 endpoints documented)
+- ✅ 100% schema coverage (47 schemas defined)
+- ⚠️ SDK coverage: 20% (skeleton only, full implementation Sprint 0.5)
+- ❌ Collection coverage: 0% (deferred to Sprint 0.5)
+
+**Reference**: `docs/sprint-reports/SPRINT-0.4-COMPLETION.md`, `docs/api/openapi/`
+
+---
+
+### 0.5 Infrastructure as Code (Cloud Provisioning)
 
 - [ ] **Choose Cloud Provider** [CRITICAL] - Decision Needed
   - [ ] Evaluate options:

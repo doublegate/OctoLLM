@@ -1,0 +1,256 @@
+openapi: 3.0.3
+info:
+  title: OctoLLM Coder Arm API
+  description: |
+    Code generation, debugging, and refactoring specialist with multi-language support
+    and episodic memory for continuous improvement.
+
+    **Technology**: Python 3.11+ / FastAPI
+    **Port**: 8005
+    **Cost Tier**: 4 (High - uses GPT-4)
+    **Average Latency**: 2-5 seconds
+  version: 0.3.0
+
+servers:
+  - url: http://localhost:8005
+    description: Local development
+  - url: http://coder:8005
+    description: Docker Compose / Kubernetes internal
+
+tags:
+  - name: code
+  - name: health
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      tags:
+        - health
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  version:
+                    type: string
+                  model:
+                    type: string
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      operationId: getMetrics
+      tags:
+        - health
+      responses:
+        '200':
+          description: Metrics
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /capabilities:
+    get:
+      summary: Get capabilities
+      operationId: getCapabilities
+      tags:
+        - health
+      responses:
+        '200':
+          description: Capabilities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capabilities:
+                    type: array
+                    items:
+                      type: string
+                  supported_languages:
+                    type: array
+                    items:
+                      type: string
+                example:
+                  capabilities:
+                    - code_generation
+                    - debugging
+                    - refactoring
+                    - code_analysis
+                    - test_generation
+                  supported_languages:
+                    - python
+                    - javascript
+                    - typescript
+                    - go
+                    - rust
+                    - java
+
+  /code:
+    post:
+      summary: Generate, debug, or refactor code
+      description: |
+        Process code requests including:
+        - Generate new code from scratch
+        - Debug existing code
+        - Refactor for improvement
+        - Analyze code structure
+        - Generate unit tests
+        - Explain code behavior
+        - Optimize performance
+      operationId: processCodeRequest
+      tags:
+        - code
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeRequest'
+            examples:
+              generate:
+                summary: Generate new code
+                value:
+                  request_type: generate
+                  language: python
+                  instruction: "Create a function that validates email addresses using regex"
+                  constraints:
+                    - "Must support RFC 5322 standard"
+                    - "Include docstring with examples"
+                    - "Add type hints"
+              debug:
+                summary: Debug existing code
+                value:
+                  request_type: debug
+                  language: python
+                  instruction: "Fix the bug causing IndexError"
+                  existing_code: "def get_item(items, index):\\n    return items[index]\\n\\nresult = get_item([1, 2, 3], 5)"
+                  constraints:
+                    - "Add proper error handling"
+              refactor:
+                summary: Refactor code
+                value:
+                  request_type: refactor
+                  language: javascript
+                  instruction: "Convert to async/await"
+                  existing_code: "function fetchData(url, callback) {\\n  fetch(url).then(res => res.json()).then(data => callback(null, data)).catch(err => callback(err, null));\\n}"
+      responses:
+        '200':
+          description: Code processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeResponse'
+              example:
+                success: true
+                code: "import re\\nfrom typing import Optional\\n\\ndef validate_email(email: str) -> bool:\\n    \\\"\\\"\\\"Validate email address using RFC 5322 regex.\\\"\\\"\\\"\\n    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$'\\n    return bool(re.match(pattern, email))"
+                explanation: "Created email validator using regex pattern. Includes type hints and docstring."
+                language: python
+                tests: "def test_validate_email():\\n    assert validate_email('user@example.com') == True\\n    assert validate_email('invalid') == False"
+                confidence: 0.92
+                warnings:
+                  - "Regex validation is not 100% RFC 5322 compliant"
+                metadata:
+                  model: gpt-4
+                  tokens_used: 450
+                  memory_hits: 2
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    CodeRequest:
+      type: object
+      required:
+        - request_type
+        - language
+        - instruction
+      properties:
+        request_type:
+          type: string
+          enum:
+            - generate
+            - debug
+            - refactor
+            - analyze
+            - test
+            - explain
+            - optimize
+          description: Type of code operation
+        language:
+          type: string
+          description: Programming language
+          example: python
+        instruction:
+          type: string
+          description: What to do with the code
+          minLength: 10
+          maxLength: 1000
+        context:
+          type: object
+          additionalProperties: true
+          description: Additional context
+        existing_code:
+          type: string
+          description: Existing code (for debug/refactor/analyze)
+        constraints:
+          type: array
+          items:
+            type: string
+          description: Requirements and constraints
+
+    CodeResponse:
+      type: object
+      required:
+        - success
+        - code
+        - explanation
+        - language
+        - confidence
+      properties:
+        success:
+          type: boolean
+        code:
+          type: string
+          description: Generated or modified code
+        explanation:
+          type: string
+          description: Explanation of approach and decisions
+        language:
+          type: string
+        tests:
+          type: string
+          description: Unit tests (if requested)
+        confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+        warnings:
+          type: array
+          items:
+            type: string
+          description: Caveats or limitations
+        metadata:
+          type: object
+          additionalProperties: true
+          properties:
+            model:
+              type: string
+            tokens_used:
+              type: integer
+            memory_hits:
+              type: integer

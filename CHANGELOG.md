@@ -7,12 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned for Sprint 0.4 (API Skeleton & Documentation)
-- OpenAPI 3.0 specifications for all services
-- API client SDKs (Python, TypeScript)
-- Postman/Insomnia collections
-- Comprehensive API documentation
-- Service interaction diagrams
+### Planned for Sprint 0.5 (SDK & Documentation Completion)
+- Complete Python and TypeScript SDK implementations
+- Postman/Insomnia API collections
+- Per-service API documentation (8 docs)
+- Schema documentation (6 docs)
+- Mermaid architecture diagrams (6 diagrams)
 
 ### Planned for Phase 1 (Proof of Concept)
 - Reflex Layer implementation (Rust)
@@ -20,6 +20,77 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Planner Arm implementation (Python)
 - Executor Arm implementation (Rust)
 - Basic end-to-end task execution workflow
+
+---
+
+## [0.3.0] - 2025-11-11
+
+### Added - Phase 0 Sprint 0.4: API Skeleton & Documentation
+
+#### OpenAPI 3.0 Specifications
+- **Complete API specifications for all 8 services** (79.6KB total):
+  - `orchestrator.yaml` (21KB) - Central brain API with task submission and status
+  - `reflex-layer.yaml` (12KB) - Fast preprocessing and caching API
+  - `planner.yaml` (5.9KB) - Task decomposition and planning API
+  - `executor.yaml` (8.4KB) - Sandboxed command execution API
+  - `retriever.yaml` (6.4KB) - Hybrid search and knowledge retrieval API
+  - `coder.yaml` (7.4KB) - Code generation, debugging, and refactoring API
+  - `judge.yaml` (8.7KB) - Multi-layer validation and quality assurance API
+  - `safety-guardian.yaml` (9.8KB) - PII detection and content filtering API
+
+#### Standard Endpoints (All Services)
+- `GET /health` - Health check with service status and component health
+- `GET /metrics` - Prometheus-compatible metrics for monitoring
+- `GET /capabilities` - Service capabilities and supported operations
+
+#### Authentication Patterns
+- **ApiKeyAuth**: External requests (header: X-API-Key)
+- **BearerAuth**: Inter-service JWT tokens for capability-based access control
+
+#### Core Schemas Documented
+- **TaskContract**: Goal, constraints, acceptance criteria, context, budget
+- **ResourceBudget**: Token limits, time limits, cost limits
+- **ArmCapability**: Arm registry with capabilities, endpoints, status
+- **ValidationResult**: Multi-layer validation with issues and quality scores
+- **RetrievalResult**: Hybrid search results with synthesis and citations
+- **CodeGeneration**: Code responses with confidence, tests, and warnings
+
+#### Service-Specific Endpoints
+- **Orchestrator**: `POST /tasks`, `GET /tasks/{task_id}`
+- **Reflex Layer**: `POST /preprocess`, `GET /cache/stats`, `POST /cache/clear`
+- **Planner**: `POST /plan` (task decomposition with acceptance criteria)
+- **Executor**: `POST /execute` (capability-token protected execution)
+- **Retriever**: `POST /search` (vector, keyword, hybrid search)
+- **Coder**: `POST /code` (generate, debug, refactor, analyze, test, explain)
+- **Judge**: `POST /validate` (schema, facts, criteria, hallucination, quality)
+- **Safety Guardian**: `POST /check` (PII, secrets, content, policy)
+
+#### Python SDK Foundation
+- Created `sdks/python/octollm-sdk/` structure
+- `pyproject.toml` with dependencies and build config
+- `octollm_sdk/__init__.py` with core exports
+- Type-safe models (Pydantic)
+- Async HTTP client (httpx)
+
+#### Documentation
+- Sprint 0.4 completion report: `docs/sprint-reports/SPRINT-0.4-COMPLETION.md`
+- Comprehensive API architecture decisions
+- Port assignment strategy (8000-8007)
+- Error response standards
+- Request tracing patterns
+
+### Quality Metrics
+- ✅ 100% endpoint coverage (32 endpoints documented)
+- ✅ 100% schema coverage (47 schemas defined)
+- ✅ All OpenAPI specs validated (8/8 valid)
+- ✅ 86 examples provided across all endpoints
+- ✅ 40+ error responses documented
+
+### Architecture Decisions
+- **Port Scheme**: 8000 (orchestrator), 8001 (reflex), 8002-8007 (arms)
+- **Versioning**: Semantic versioning with version in /health response
+- **Error Format**: Consistent JSON error responses across all services
+- **Request Tracing**: Optional X-Request-ID header for distributed tracing
 
 ---
 

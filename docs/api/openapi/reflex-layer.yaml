@@ -1,0 +1,423 @@
+openapi: 3.0.3
+info:
+  title: OctoLLM Reflex Layer API
+  description: |
+    Fast preprocessing layer that handles common patterns without LLM involvement. Acts as ingress
+    gateway with caching, rate limiting, and pattern-based routing.
+
+    The Reflex Layer provides <10ms responses for cache hits and <50ms for reflex decisions, significantly
+    reducing load on expensive LLM-based components.
+
+    **Technology**: Rust 1.75+ / Axum
+    **Port**: 8001
+    **Cost Tier**: 1 (Low - no LLM calls)
+    **Average Latency**: <10ms (cache hit), <50ms (reflex decision)
+  version: 0.3.0
+  contact:
+    name: OctoLLM Core Team
+    email: octollm@example.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: http://localhost:8001
+    description: Local development
+  - url: http://reflex-layer:8001
+    description: Docker Compose / Kubernetes internal
+  - url: https://reflex.octollm.example.com
+    description: Production
+
+tags:
+  - name: preprocessing
+    description: Request preprocessing and pattern matching
+  - name: health
+    description: Health checks and metrics
+  - name: cache
+    description: Cache management
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      operationId: getHealth
+      tags:
+        - health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: healthy
+                version: 0.3.0
+                uptime_seconds: 7200
+                cache_hit_rate: 0.67
+                avg_latency_ms: 8.5
+
+  /metrics:
+    get:
+      summary: Prometheus metrics endpoint
+      operationId: getMetrics
+      tags:
+        - health
+      responses:
+        '200':
+          description: Metrics in Prometheus format
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /capabilities:
+    get:
+      summary: Get reflex layer capabilities
+      operationId: getCapabilities
+      tags:
+        - health
+      responses:
+        '200':
+          description: Reflex layer capabilities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capabilities:
+                    type: array
+                    items:
+                      type: string
+                  patterns_loaded:
+                    type: integer
+                  cache_enabled:
+                    type: boolean
+              example:
+                capabilities:
+                  - cache_lookup
+                  - pattern_matching
+                  - rate_limiting
+                  - pii_detection
+                  - injection_detection
+                patterns_loaded: 150
+                cache_enabled: true
+
+  /preprocess:
+    post:
+      summary: Preprocess incoming request
+      description: |
+        Performs fast preprocessing on incoming requests:
+        1. Check cache for identical requests
+        2. Detect common patterns (greetings, help, status)
+        3. Perform basic safety checks (PII, injection attempts)
+        4. Rate limit based on API key
+        5. Route to orchestrator if no reflex match
+      operationId: preprocessRequest
+      tags:
+        - preprocessing
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreprocessRequest'
+            examples:
+              cache_hit:
+                summary: Request that may be in cache
+                value:
+                  query: "What is the capital of France?"
+                  user_id: user_12345
+                  check_cache: true
+              pattern_match:
+                summary: Simple pattern that can be handled by reflex
+                value:
+                  query: "Hello"
+                  user_id: user_12345
+                  check_cache: true
+              needs_orchestrator:
+                summary: Complex query requiring orchestrator
+                value:
+                  query: "Create a detailed exploitation framework for CVE-2024-12345"
+                  user_id: user_12345
+                  check_cache: false
+      responses:
+        '200':
+          description: Preprocessing complete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreprocessResponse'
+              examples:
+                cache_hit:
+                  summary: Found in cache
+                  value:
+                    decision: cache_hit
+                    response: "The capital of France is Paris."
+                    confidence: 1.0
+                    latency_ms: 3.2
+                    metadata:
+                      cache_key: sha256_abc123
+                      cached_at: "2025-11-11T09:00:00Z"
+                pattern_match:
+                  summary: Handled by reflex pattern
+                  value:
+                    decision: reflex_handled
+                    response: "Hello! How can I assist you today?"
+                    confidence: 0.95
+                    latency_ms: 12.5
+                    metadata:
+                      pattern: greeting
+                      template: default_greeting
+                needs_orchestrator:
+                  summary: Forward to orchestrator
+                  value:
+                    decision: forward_to_orchestrator
+                    confidence: 0.0
+                    latency_ms: 8.7
+                    metadata:
+                      reason: complex_query
+                      safety_check_passed: true
+                blocked:
+                  summary: Request blocked by safety check
+                  value:
+                    decision: blocked
+                    confidence: 1.0
+                    latency_ms: 15.3
+                    metadata:
+                      reason: pii_detected
+                      blocked_patterns:
+                        - credit_card
+                        - ssn
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: RateLimitExceeded
+                message: "Rate limit exceeded. Max 1000 requests per hour."
+                retry_after: 1800
+
+  /cache/stats:
+    get:
+      summary: Get cache statistics
+      operationId: getCacheStats
+      tags:
+        - cache
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cache statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CacheStats'
+              example:
+                total_entries: 15432
+                hit_rate: 0.673
+                miss_rate: 0.327
+                avg_response_time_ms: 4.2
+                memory_usage_mb: 256
+                evictions_last_hour: 45
+
+  /cache/clear:
+    post:
+      summary: Clear cache
+      description: Clear all cached responses (requires admin privileges)
+      operationId: clearCache
+      tags:
+        - cache
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cache cleared successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  entries_cleared:
+                    type: integer
+              example:
+                message: "Cache cleared successfully"
+                entries_cleared: 15432
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    PreprocessRequest:
+      type: object
+      required:
+        - query
+        - user_id
+      properties:
+        query:
+          type: string
+          description: User query or request text
+          minLength: 1
+          maxLength: 5000
+          example: "What is the capital of France?"
+        user_id:
+          type: string
+          description: Unique user identifier for rate limiting
+          pattern: '^user_[a-zA-Z0-9_-]+$'
+          example: user_12345
+        check_cache:
+          type: boolean
+          description: Whether to check cache
+          default: true
+          example: true
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional metadata
+          example:
+            source: web
+            session_id: sess_xyz789
+
+    PreprocessResponse:
+      type: object
+      required:
+        - decision
+        - confidence
+        - latency_ms
+      properties:
+        decision:
+          type: string
+          enum:
+            - cache_hit
+            - reflex_handled
+            - forward_to_orchestrator
+            - blocked
+          description: Preprocessing decision
+          example: cache_hit
+        response:
+          type: string
+          description: Response text (only for cache_hit or reflex_handled)
+          example: "The capital of France is Paris."
+        confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Confidence in decision (1.0 for cache/blocked, <1.0 for patterns)
+          example: 1.0
+        latency_ms:
+          type: number
+          format: float
+          description: Processing latency in milliseconds
+          example: 3.2
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional metadata about decision
+          example:
+            cache_key: sha256_abc123
+            cached_at: "2025-11-11T09:00:00Z"
+
+    CacheStats:
+      type: object
+      properties:
+        total_entries:
+          type: integer
+          description: Total number of cached entries
+          example: 15432
+        hit_rate:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Cache hit rate
+          example: 0.673
+        miss_rate:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Cache miss rate
+          example: 0.327
+        avg_response_time_ms:
+          type: number
+          format: float
+          description: Average response time for cache hits
+          example: 4.2
+        memory_usage_mb:
+          type: number
+          format: float
+          description: Current memory usage in MB
+          example: 256
+        evictions_last_hour:
+          type: integer
+          description: Number of cache evictions in last hour
+          example: 45
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - version
+      properties:
+        status:
+          type: string
+          enum:
+            - healthy
+            - degraded
+            - unhealthy
+          example: healthy
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+          example: 0.3.0
+        uptime_seconds:
+          type: integer
+          example: 7200
+        cache_hit_rate:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          example: 0.67
+        avg_latency_ms:
+          type: number
+          format: float
+          example: 8.5
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          example: RateLimitExceeded
+        message:
+          type: string
+          example: "Rate limit exceeded"
+        retry_after:
+          type: integer
+          description: Seconds to wait before retrying
+          example: 1800

@@ -1,0 +1,670 @@
+openapi: 3.0.3
+info:
+  title: OctoLLM Orchestrator API
+  description: |
+    Central Brain component that coordinates task planning, arm delegation, and result integration.
+
+    The Orchestrator receives complex tasks, breaks them down into subtasks, delegates to specialized
+    arms (Planner, Executor, Retriever, Coder, Judge, Safety Guardian), and synthesizes results.
+
+    **Technology**: Python 3.11+ / FastAPI
+    **Port**: 8000
+    **Cost Tier**: 5 (Expensive - uses GPT-4/Claude Opus)
+    **Average Latency**: 5-30 seconds
+  version: 0.3.0
+  contact:
+    name: OctoLLM Core Team
+    email: octollm@example.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: http://localhost:8000
+    description: Local development
+  - url: http://orchestrator:8000
+    description: Docker Compose / Kubernetes internal
+  - url: https://api.octollm.example.com
+    description: Production
+
+tags:
+  - name: tasks
+    description: Task submission and management
+  - name: health
+    description: Health checks and service status
+  - name: capabilities
+    description: Service capabilities and arm registry
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns service health status, version, and component status
+      operationId: getHealth
+      tags:
+        - health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: healthy
+                version: 0.3.0
+                uptime_seconds: 3600
+                components:
+                  cache: healthy
+                  memory: healthy
+                  arms:
+                    planner: healthy
+                    executor: healthy
+                    retriever: healthy
+                    coder: healthy
+                    judge: healthy
+                    safety-guardian: healthy
+
+  /metrics:
+    get:
+      summary: Prometheus metrics endpoint
+      description: Returns Prometheus-formatted metrics for monitoring
+      operationId: getMetrics
+      tags:
+        - health
+      responses:
+        '200':
+          description: Metrics in Prometheus format
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: |
+                  # HELP orchestrator_tasks_total Total number of tasks processed
+                  # TYPE orchestrator_tasks_total counter
+                  orchestrator_tasks_total 1234
+                  # HELP orchestrator_task_duration_seconds Task processing duration
+                  # TYPE orchestrator_task_duration_seconds histogram
+                  orchestrator_task_duration_seconds_bucket{le="1"} 100
+                  orchestrator_task_duration_seconds_bucket{le="5"} 450
+
+  /capabilities:
+    get:
+      summary: Get registered arm capabilities
+      description: Returns list of available arms with their capabilities, endpoints, and cost tiers
+      operationId: getCapabilities
+      tags:
+        - capabilities
+      responses:
+        '200':
+          description: List of registered arms
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  arms:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ArmCapability'
+              example:
+                arms:
+                  - arm_id: planner
+                    name: Planner Arm
+                    description: Task decomposition and planning specialist
+                    capabilities:
+                      - task_planning
+                      - goal_decomposition
+                      - acceptance_criteria
+                    cost_tier: 2
+                    endpoint: http://planner:8002
+                    status: healthy
+                  - arm_id: executor
+                    name: Tool Executor Arm
+                    description: Sandboxed command execution specialist
+                    capabilities:
+                      - shell_execution
+                      - http_requests
+                      - python_execution
+                    cost_tier: 3
+                    endpoint: http://executor:8003
+                    status: healthy
+
+  /tasks:
+    post:
+      summary: Submit a new task
+      description: |
+        Submit a task to the orchestrator for processing. The task will be:
+        1. Validated and preprocessed by Safety Guardian
+        2. Decomposed into subtasks by Planner
+        3. Delegated to appropriate arms for execution
+        4. Results validated by Judge
+        5. Synthesized into final response
+      operationId: createTask
+      tags:
+        - tasks
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskRequest'
+            examples:
+              simple_task:
+                summary: Simple code generation task
+                value:
+                  goal: "Create a Python function to validate email addresses"
+                  constraints:
+                    - "Include type hints"
+                    - "Add docstring with examples"
+                    - "Handle edge cases"
+                  context:
+                    project_type: "web_api"
+                    language: "python"
+                  budget:
+                    max_tokens: 5000
+                    max_time_seconds: 30
+                    max_cost_dollars: 0.10
+              complex_task:
+                summary: Complex multi-step task
+                value:
+                  goal: "Research latest vulnerabilities in nginx and create exploitation report"
+                  constraints:
+                    - "Use only trusted sources"
+                    - "Include CVE references"
+                    - "Provide mitigation strategies"
+                  acceptance_criteria:
+                    - "Report includes at least 3 recent CVEs"
+                    - "Each vulnerability has exploit details"
+                    - "Mitigations are actionable"
+                  context:
+                    target_version: "nginx/1.24.0"
+                  budget:
+                    max_tokens: 20000
+                    max_time_seconds: 120
+                    max_cost_dollars: 0.50
+      responses:
+        '202':
+          description: Task accepted and queued for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+              example:
+                task_id: task_abc123xyz789
+                status: processing
+                created_at: "2025-11-11T10:30:00Z"
+                estimated_completion: "2025-11-11T10:30:30Z"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: ValidationError
+                message: "Missing required field 'goal'"
+                details:
+                  field: goal
+                  type: required
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: AuthenticationError
+                message: "Invalid or missing API key"
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: RateLimitError
+                message: "Rate limit exceeded. Max 100 requests per minute."
+                retry_after: 45
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: ServiceUnavailable
+                message: "Orchestrator is overloaded. Please retry later."
+
+  /tasks/{task_id}:
+    get:
+      summary: Get task status and result
+      description: Retrieve status, progress, and result (if complete) for a specific task
+      operationId: getTask
+      tags:
+        - tasks
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          description: Task identifier returned from task submission
+          schema:
+            type: string
+            pattern: '^task_[a-zA-Z0-9]{16}$'
+          example: task_abc123xyz789
+      responses:
+        '200':
+          description: Task status and result (if complete)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskStatusResponse'
+              examples:
+                processing:
+                  summary: Task still processing
+                  value:
+                    task_id: task_abc123xyz789
+                    status: processing
+                    progress:
+                      current_step: execution
+                      completed_steps: 3
+                      total_steps: 5
+                      percentage: 60
+                    created_at: "2025-11-11T10:30:00Z"
+                    updated_at: "2025-11-11T10:30:15Z"
+                completed:
+                  summary: Task completed successfully
+                  value:
+                    task_id: task_abc123xyz789
+                    status: completed
+                    result:
+                      output: "def validate_email(email: str) -> bool:\n    \"\"\"Validate email address.\"\"\"\n    import re\n    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'\n    return bool(re.match(pattern, email))"
+                      confidence: 0.92
+                      validation_passed: true
+                    metadata:
+                      arms_used:
+                        - planner
+                        - coder
+                        - judge
+                      tokens_used: 1450
+                      cost_dollars: 0.043
+                      duration_seconds: 12.5
+                    created_at: "2025-11-11T10:30:00Z"
+                    completed_at: "2025-11-11T10:30:12Z"
+                failed:
+                  summary: Task failed
+                  value:
+                    task_id: task_abc123xyz789
+                    status: failed
+                    error:
+                      type: ValidationError
+                      message: "Output failed validation: Code syntax error"
+                      details: "Missing closing parenthesis on line 5"
+                    created_at: "2025-11-11T10:30:00Z"
+                    failed_at: "2025-11-11T10:30:08Z"
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NotFound
+                message: "Task 'task_invalid123' not found"
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for inter-service communication
+
+  schemas:
+    TaskRequest:
+      type: object
+      required:
+        - goal
+      properties:
+        goal:
+          type: string
+          description: Natural language description of the task objective
+          minLength: 10
+          maxLength: 2000
+          example: "Create a Python function to validate email addresses"
+        constraints:
+          type: array
+          items:
+            type: string
+          description: Hard constraints that must be satisfied
+          example:
+            - "Include type hints"
+            - "Add docstring"
+        acceptance_criteria:
+          type: array
+          items:
+            type: string
+          description: Success conditions for validation
+          example:
+            - "Function validates RFC 5322 emails"
+            - "Includes test cases"
+        context:
+          type: object
+          additionalProperties: true
+          description: Additional context and metadata
+          example:
+            project_type: "web_api"
+            language: "python"
+            framework: "fastapi"
+        budget:
+          $ref: '#/components/schemas/ResourceBudget'
+
+    ResourceBudget:
+      type: object
+      properties:
+        max_tokens:
+          type: integer
+          description: Maximum LLM tokens to use
+          minimum: 100
+          maximum: 100000
+          default: 10000
+          example: 5000
+        max_time_seconds:
+          type: integer
+          description: Maximum execution time in seconds
+          minimum: 5
+          maximum: 300
+          default: 60
+          example: 30
+        max_cost_dollars:
+          type: number
+          format: float
+          description: Maximum cost in USD
+          minimum: 0.01
+          maximum: 10.0
+          default: 1.0
+          example: 0.50
+
+    TaskResponse:
+      type: object
+      required:
+        - task_id
+        - status
+        - created_at
+      properties:
+        task_id:
+          type: string
+          pattern: '^task_[a-zA-Z0-9]{16}$'
+          description: Unique task identifier
+          example: task_abc123xyz789
+        status:
+          type: string
+          enum:
+            - queued
+            - processing
+            - completed
+            - failed
+            - cancelled
+          description: Current task status
+          example: processing
+        created_at:
+          type: string
+          format: date-time
+          description: Task creation timestamp
+          example: "2025-11-11T10:30:00Z"
+        estimated_completion:
+          type: string
+          format: date-time
+          description: Estimated completion time
+          example: "2025-11-11T10:30:30Z"
+
+    TaskStatusResponse:
+      type: object
+      required:
+        - task_id
+        - status
+        - created_at
+      properties:
+        task_id:
+          type: string
+          pattern: '^task_[a-zA-Z0-9]{16}$'
+          example: task_abc123xyz789
+        status:
+          type: string
+          enum:
+            - queued
+            - processing
+            - completed
+            - failed
+            - cancelled
+          example: completed
+        progress:
+          type: object
+          properties:
+            current_step:
+              type: string
+              enum:
+                - preprocessing
+                - planning
+                - execution
+                - validation
+                - synthesis
+              example: execution
+            completed_steps:
+              type: integer
+              example: 3
+            total_steps:
+              type: integer
+              example: 5
+            percentage:
+              type: integer
+              minimum: 0
+              maximum: 100
+              example: 60
+        result:
+          type: object
+          description: Task result (only present if status is completed)
+          properties:
+            output:
+              type: string
+              description: Primary output
+            confidence:
+              type: number
+              format: float
+              minimum: 0.0
+              maximum: 1.0
+              description: Confidence score
+            validation_passed:
+              type: boolean
+              description: Whether output passed validation
+        error:
+          type: object
+          description: Error details (only present if status is failed)
+          properties:
+            type:
+              type: string
+              example: ValidationError
+            message:
+              type: string
+              example: "Output failed validation"
+            details:
+              type: string
+              example: "Missing required field 'tests'"
+        metadata:
+          type: object
+          properties:
+            arms_used:
+              type: array
+              items:
+                type: string
+              example:
+                - planner
+                - coder
+                - judge
+            tokens_used:
+              type: integer
+              example: 1450
+            cost_dollars:
+              type: number
+              format: float
+              example: 0.043
+            duration_seconds:
+              type: number
+              format: float
+              example: 12.5
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-11-11T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-11-11T10:30:15Z"
+        completed_at:
+          type: string
+          format: date-time
+          example: "2025-11-11T10:30:12Z"
+        failed_at:
+          type: string
+          format: date-time
+          example: "2025-11-11T10:30:08Z"
+
+    ArmCapability:
+      type: object
+      required:
+        - arm_id
+        - name
+        - description
+        - capabilities
+        - cost_tier
+        - endpoint
+      properties:
+        arm_id:
+          type: string
+          description: Unique arm identifier
+          example: planner
+        name:
+          type: string
+          description: Human-readable arm name
+          example: Planner Arm
+        description:
+          type: string
+          description: Arm purpose and specialization
+          example: Task decomposition and planning specialist
+        capabilities:
+          type: array
+          items:
+            type: string
+          description: List of capabilities this arm provides
+          example:
+            - task_planning
+            - goal_decomposition
+        cost_tier:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Cost tier (1=low, 5=expensive)
+          example: 2
+        endpoint:
+          type: string
+          format: uri
+          description: Arm service endpoint URL
+          example: http://planner:8002
+        status:
+          type: string
+          enum:
+            - healthy
+            - degraded
+            - unavailable
+          example: healthy
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - version
+      properties:
+        status:
+          type: string
+          enum:
+            - healthy
+            - degraded
+            - unhealthy
+          example: healthy
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+          example: 0.3.0
+        uptime_seconds:
+          type: integer
+          description: Service uptime in seconds
+          example: 3600
+        components:
+          type: object
+          description: Health status of dependent components
+          properties:
+            cache:
+              type: string
+              enum:
+                - healthy
+                - unhealthy
+              example: healthy
+            memory:
+              type: string
+              enum:
+                - healthy
+                - unhealthy
+              example: healthy
+            arms:
+              type: object
+              additionalProperties:
+                type: string
+                enum:
+                  - healthy
+                  - degraded
+                  - unavailable
+              example:
+                planner: healthy
+                executor: healthy
+                retriever: healthy
+                coder: healthy
+                judge: healthy
+                safety-guardian: healthy
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error type/code
+          example: ValidationError
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Missing required field 'goal'"
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error details
+        retry_after:
+          type: integer
+          description: Seconds to wait before retrying (for rate limits)
+          example: 45
