@@ -15,7 +15,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-octollm_dev_password}
       POSTGRES_INITDB_ARGS: "-E UTF8"
     ports:
-      - "5432:5432"
+      - "15432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -53,10 +53,11 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      test: ["CMD-SHELL", "timeout 1 sh -c 'pidof qdrant' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     restart: unless-stopped
     networks:
       - octollm-network
@@ -237,7 +238,7 @@ services:
       RUST_LOG: ${RUST_LOG:-info}
       ENVIRONMENT: ${ENVIRONMENT:-development}
     ports:
-      - "8006:8006"
+      - "18006:8006"
     # Privileged mode for sandboxing capabilities
     privileged: true
     restart: unless-stopped
