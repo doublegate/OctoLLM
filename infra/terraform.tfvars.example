@@ -1,0 +1,20 @@
+# Example Terraform Variables
+# Copy this file to terraform.tfvars and customize for your environment
+# NEVER commit terraform.tfvars to git (contains sensitive values)
+
+# GCP Project Configuration
+project_id  = "octollm-dev"  # Change to your GCP project ID
+region      = "us-central1"   # us-central1, us-east1, europe-west1, etc.
+environment = "dev"           # dev, staging, or prod
+
+# Resource Labels (for cost tracking and organization)
+labels = {
+  project     = "octollm"
+  environment = "dev"
+  managed_by  = "terraform"
+  cost_center = "engineering"
+  owner       = "team-backend"
+}
+
+# Note: Detailed configuration is in environments/*/terraform.tfvars
+# This file is for root-level configuration only (if needed)

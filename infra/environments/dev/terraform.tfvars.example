@@ -1,0 +1,5 @@
+# Development Environment Variables
+# Copy this file to terraform.tfvars and customize
+
+project_id = "octollm-dev"  # Your GCP project ID
+region     = "us-central1"   # GCP region

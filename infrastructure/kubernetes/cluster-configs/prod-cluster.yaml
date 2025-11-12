@@ -1,0 +1,46 @@
+# Production GKE Cluster Configuration
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-config-prod
+  namespace: kube-system
+data:
+  cluster_name: "octollm-prod-cluster"
+  environment: "prod"
+  region: "us-central1"
+  kubernetes_version: "1.28"
+
+  # Node Configuration
+  node_machine_type: "n2-standard-8"  # 8 vCPU, 32GB RAM
+  node_count_min: "5"
+  node_count_max: "15"
+  node_disk_size: "100"
+  node_disk_type: "pd-ssd"
+  preemptible: "false"
+
+  # Network (Multi-AZ)
+  zones: "us-central1-a,us-central1-b,us-central1-c"
+  network_cidr: "10.0.0.0/20"
+  pods_cidr: "10.4.0.0/14"
+  services_cidr: "10.8.0.0/20"
+
+  # Features
+  workload_identity: "enabled"
+  binary_authorization: "enabled"
+  private_cluster: "true"
+  network_policy: "enabled"
+  high_availability: "true"
+
+  # Maintenance
+  maintenance_day: "sunday"
+  maintenance_hour: "03:00"
+
+  # Monitoring (Full)
+  monitoring: "SYSTEM_COMPONENTS,WORKLOADS"
+  logging: "SYSTEM_COMPONENTS,WORKLOADS"
+  managed_prometheus: "enabled"
+
+  # SLA
+  uptime_sla: "99.95%"
+  monthly_cost: "~$2,000-3,000"

@@ -1,0 +1,44 @@
+# Development GKE Cluster Configuration
+# This file documents the dev cluster specs (actual provisioning via Terraform in infra/environments/dev/)
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-config-dev
+  namespace: kube-system
+data:
+  # Cluster Specifications
+  cluster_name: "octollm-dev-cluster"
+  environment: "dev"
+  region: "us-central1"
+  kubernetes_version: "1.28"
+
+  # Node Configuration
+  node_machine_type: "e2-standard-2"  # 2 vCPU, 8GB RAM
+  node_count_min: "1"
+  node_count_max: "3"
+  node_disk_size: "50"  # GB
+  node_disk_type: "pd-standard"
+  preemptible: "true"  # Cost savings
+
+  # Network Configuration
+  network_cidr: "10.0.0.0/20"  # 4,096 node IPs
+  pods_cidr: "10.4.0.0/14"     # 262,144 pod IPs
+  services_cidr: "10.8.0.0/20" # 4,096 service IPs
+
+  # Features
+  workload_identity: "enabled"
+  binary_authorization: "disabled"
+  private_cluster: "false"
+  network_policy: "enabled"
+
+  # Maintenance Window
+  maintenance_day: "sunday"
+  maintenance_hour: "03:00"  # UTC
+
+  # Monitoring
+  monitoring: "SYSTEM_COMPONENTS"
+  logging: "SYSTEM_COMPONENTS"
+
+  # Cost Estimate
+  monthly_cost: "~$120"  # Nodes only (control plane FREE)

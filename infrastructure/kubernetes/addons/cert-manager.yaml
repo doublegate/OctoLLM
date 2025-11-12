@@ -1,0 +1,51 @@
+# cert-manager Installation
+# Automates TLS certificate management with Let's Encrypt
+
+# Install via Helm:
+# helm repo add jetstack https://charts.jetstack.io
+# helm repo update
+# helm install cert-manager jetstack/cert-manager \
+#   --namespace cert-manager \
+#   --create-namespace \
+#   --version v1.13.0 \
+#   --set installCRDs=true
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager
+
+---
+# ClusterIssuer for Let's Encrypt (Production)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: devops@octollm.com  # Change to your email
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+
+---
+# ClusterIssuer for Let's Encrypt (Staging - for testing)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: devops@octollm.com
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+    - http01:
+        ingress:
+          class: nginx

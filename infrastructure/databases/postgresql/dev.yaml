@@ -1,0 +1,63 @@
+# Development PostgreSQL Configuration
+# This file documents Cloud SQL config (actual provisioning via Terraform)
+
+database:
+  # Instance Configuration
+  instance_name: octollm-dev-postgres
+  version: POSTGRES_15
+  tier: db-f1-micro  # 1 vCPU, 2GB RAM
+  region: us-central1
+
+  # Storage
+  disk_type: PD_SSD
+  disk_size: 20  # GB
+  disk_autoresize: true
+  disk_autoresize_limit: 100  # GB max
+
+  # High Availability
+  availability_type: ZONAL  # No HA for dev
+  read_replicas: 0
+
+  # Backup
+  backup_enabled: true
+  backup_start_time: "03:00"  # UTC
+  backup_retention_days: 7
+  point_in_time_recovery: false
+  transaction_log_retention: 7  # days
+
+  # Network
+  ipv4_enabled: true  # Public IP for dev access
+  private_network: octollm-dev-vpc
+  require_ssl: true
+  authorized_networks:
+    - name: office
+      cidr: 0.0.0.0/0  # REPLACE with your office IP
+
+  # Database Settings
+  max_connections: 100
+  shared_buffers: 256MB
+  effective_cache_size: 1GB
+  work_mem: 4MB
+
+  # Maintenance
+  maintenance_window:
+    day: SUNDAY
+    hour: 3
+
+  # Monitoring
+  query_insights: true
+
+  # Cost
+  monthly_cost: ~$25
+
+# Connection Details
+connection:
+  host: <instance-ip>  # Filled after creation
+  port: 5432
+  database: octollm
+  user: octollm
+  password: <stored-in-secret-manager>
+
+  # Connection String Templates
+  postgres_url: "postgresql://octollm:<password>@<host>:5432/octollm?sslmode=require"
+  cloud_sql_proxy: "octollm-dev:us-central1:octollm-dev-postgres"
