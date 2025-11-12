@@ -6,7 +6,7 @@ Supports configuration from environment variables and direct parameters.
 
 import os
 from typing import Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass

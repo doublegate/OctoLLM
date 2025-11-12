@@ -94,7 +94,7 @@ async def main():
         print(f"   Task ID: {result['task_id']}")
 
         if result["success"]:
-            print(f"   Status: ✓ SUCCESS")
+            print("   Status: ✓ SUCCESS")
             if result.get("metadata"):
                 metadata = result["metadata"]
                 print(f"   Tokens: {metadata.tokens_used}")
@@ -102,7 +102,7 @@ async def main():
                 print(f"   Duration: {metadata.duration_seconds:.2f}s")
             successful += 1
         else:
-            print(f"   Status: ✗ FAILED")
+            print("   Status: ✗ FAILED")
             print(f"   Error: {result.get('error', 'Unknown')}")
             failed += 1
 

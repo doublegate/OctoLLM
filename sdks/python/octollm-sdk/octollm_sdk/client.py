@@ -4,7 +4,7 @@ Base HTTP client with retry logic for OctoLLM SDK.
 
 import asyncio
 import uuid
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 import httpx
 from .auth import get_auth_headers
 from .config import OctoLLMConfig
@@ -232,7 +232,7 @@ class BaseClient:
                     # Return successful response
                     return response.json()
 
-            except httpx.TimeoutException as e:
+            except httpx.TimeoutException:
                 last_exception = TimeoutError(
                     message=f"Request timeout after {request_timeout}s",
                     request_id=request_id,

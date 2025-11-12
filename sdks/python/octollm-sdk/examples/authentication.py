@@ -32,7 +32,7 @@ async def example_api_key_auth():
 
     print("Authenticating with API key...")
     health = await client.health()
-    print(f"✓ Authentication successful!")
+    print("✓ Authentication successful!")
     print(f"  Service: {health.status}")
     print(f"  Version: {health.version}")
     print()
@@ -52,7 +52,7 @@ async def example_env_var_auth():
 
     print("Authenticating using OCTOLLM_API_KEY environment variable...")
     health = await client.health()
-    print(f"✓ Authentication successful!")
+    print("✓ Authentication successful!")
     print(f"  Service: {health.status}")
     print()
 
@@ -71,7 +71,7 @@ async def example_config_object():
         verify_ssl=True,
     )
 
-    print(f"Configuration:")
+    print("Configuration:")
     print(f"  Base URL: {config.base_url}")
     print(f"  Timeout: {config.timeout}s")
     print(f"  Max retries: {config.max_retries}")
@@ -86,8 +86,8 @@ async def example_config_object():
     )
 
     print("Authenticating with config object...")
-    health = await client.health()
-    print(f"✓ Authentication successful!")
+    _health = await client.health()
+    print("✓ Authentication successful!")
     print()
 
 
@@ -120,8 +120,8 @@ async def example_config_from_env():
     )
 
     print("Authenticating...")
-    health = await client.health()
-    print(f"✓ Configuration and authentication successful!")
+    _health = await client.health()
+    print("✓ Configuration and authentication successful!")
     print()
 
 
@@ -136,7 +136,7 @@ async def example_bearer_token_auth():
     bearer_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."  # Your JWT token
 
     # Use bearer token instead of API key
-    client = CoderClient(
+    _client = CoderClient(
         base_url="http://localhost:8005",
         bearer_token=bearer_token,
     )
@@ -165,7 +165,7 @@ async def example_task_submission_with_auth():
     print("Verifying authentication...")
     try:
         health = await client.health()
-        print(f"✓ Authenticated successfully")
+        print("✓ Authenticated successfully")
         print(f"  Service version: {health.version}")
         print()
     except Exception as e:

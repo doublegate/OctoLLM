@@ -5,8 +5,8 @@ All request and response models match the OpenAPI 3.0 specifications.
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Literal, Optional, Union
-from pydantic import BaseModel, Field, field_validator
+from typing import Any, Dict, List, Literal, Optional
+from pydantic import BaseModel, Field
 
 
 # ============================================================================

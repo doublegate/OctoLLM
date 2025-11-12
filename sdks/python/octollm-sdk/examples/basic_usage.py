@@ -58,7 +58,7 @@ async def main():
     print(f"Goal: {task.goal}")
     try:
         response = await client.submit_task(task)
-        print(f"Task submitted successfully!")
+        print("Task submitted successfully!")
         print(f"Task ID: {response.task_id}")
         print(f"Status: {response.status}")
         print()
@@ -86,7 +86,7 @@ async def main():
                     print("=" * 80)
 
                 if status.metadata:
-                    print(f"\nMetadata:")
+                    print("\nMetadata:")
                     print(f"  Arms used: {', '.join(status.metadata.arms_used)}")
                     print(f"  Tokens used: {status.metadata.tokens_used}")
                     print(f"  Cost: ${status.metadata.cost_dollars:.4f}")
