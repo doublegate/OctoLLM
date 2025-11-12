@@ -4,6 +4,10 @@
 
 Inspired by the octopus's distributed nervous system, OctoLLM reimagines AI architecture through biological intelligence principles, achieving superior cost efficiency, security, and flexibility compared to monolithic LLM systems.
 
+<p align="center">
+  <img src="images/octollm-logo-dark.jpg" alt="OctoLLM Logo" width="600">
+</p>
+
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Lint](https://github.com/doublegate/OctoLLM/workflows/Lint/badge.svg)](https://github.com/doublegate/OctoLLM/actions?query=workflow%3ALint)
 [![Test](https://github.com/doublegate/OctoLLM/workflows/Test/badge.svg)](https://github.com/doublegate/OctoLLM/actions?query=workflow%3ATest)
