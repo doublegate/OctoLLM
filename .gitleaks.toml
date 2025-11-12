@@ -1,0 +1,38 @@
+# Gitleaks Configuration for OctoLLM
+# Prevents false positives in documentation while catching real secrets in source code
+
+title = "OctoLLM Gitleaks Config"
+
+# Allowlist paths that contain intentional example secrets in documentation
+[allowlist]
+  description = "Allowlist for documentation examples and test fixtures"
+
+  # Documentation directories with example tokens/keys
+  paths = [
+    '''docs/''',                                    # All documentation
+    '''ref-docs/''',                                # Reference documentation
+    '''tests/fixtures/''',                          # Test fixtures with example data
+    '''examples/'''                                 # Example code with sample tokens
+  ]
+
+  # Allowlist specific patterns that are clearly fake/example secrets
+  regexes = [
+    '''tok_abc123xyz''',                           # Example capability tokens
+    '''sk-abc123xyz''',                            # Example OpenAI-style keys
+    '''sk-test1234abcd5678efgh''',                 # Example API keys in threat model
+    '''Bearer tok_[a-z0-9]{8}''',                  # Example bearer tokens (short)
+    '''cap_[a-zA-Z0-9]{16}''',                     # Example capability tokens
+    '''example\.com''',                            # Example domains
+    '''localhost:[0-9]+''',                        # Localhost URLs
+    '''127\.0\.0\.1:[0-9]+''',                     # Localhost IPs
+  ]
+
+  # Allowlist commits (if needed for historical false positives)
+  commits = []
+
+# Custom rules can be added here if needed
+# [[rules]]
+#   id = "custom-rule-id"
+#   description = "Description of custom rule"
+#   regex = '''pattern'''
+#   tags = ["tag1", "tag2"]
