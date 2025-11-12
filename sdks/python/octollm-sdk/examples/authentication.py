@@ -199,9 +199,7 @@ async def example_multi_service_auth():
     api_key = "sk-your-api-key-here"
 
     # Each service client can use the same API key
-    orchestrator = OrchestratorClient(
-        base_url="http://localhost:8000", api_key=api_key
-    )
+    orchestrator = OrchestratorClient(base_url="http://localhost:8000", api_key=api_key)
 
     coder = CoderClient(base_url="http://localhost:8005", api_key=api_key)
 

@@ -21,7 +21,7 @@ class CoderClient(BaseClient):
         base_url: str = "http://localhost:8005",
         api_key: Optional[str] = None,
         bearer_token: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize Coder client.

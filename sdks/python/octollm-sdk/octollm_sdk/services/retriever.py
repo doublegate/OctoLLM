@@ -21,7 +21,7 @@ class RetrieverClient(BaseClient):
         base_url: str = "http://localhost:8004",
         api_key: Optional[str] = None,
         bearer_token: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize Retriever client.

@@ -29,7 +29,7 @@ class OrchestratorClient(BaseClient):
         base_url: str = "http://localhost:8000",
         api_key: Optional[str] = None,
         bearer_token: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize Orchestrator client.
@@ -87,9 +87,7 @@ class OrchestratorClient(BaseClient):
         async with self._make_plain_text_request("GET", "/metrics", timeout) as response:
             return response
 
-    async def list_arms(
-        self, timeout: Optional[float] = None
-    ) -> List[ArmCapability]:
+    async def list_arms(self, timeout: Optional[float] = None) -> List[ArmCapability]:
         """
         List registered arms and their capabilities.
 

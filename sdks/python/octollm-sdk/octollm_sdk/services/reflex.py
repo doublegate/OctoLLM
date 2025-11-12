@@ -28,7 +28,7 @@ class ReflexClient(BaseClient):
         base_url: str = "http://localhost:8001",
         api_key: Optional[str] = None,
         bearer_token: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize Reflex Layer client.
@@ -85,9 +85,7 @@ class ReflexClient(BaseClient):
         )
         return PreprocessResponse(**response)
 
-    async def get_cache_stats(
-        self, timeout: Optional[float] = None
-    ) -> CacheStats:
+    async def get_cache_stats(self, timeout: Optional[float] = None) -> CacheStats:
         """
         Get cache statistics.
 

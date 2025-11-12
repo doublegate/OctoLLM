@@ -42,9 +42,7 @@ class AuthenticationError(OctoLLMError):
 class AuthorizationError(OctoLLMError):
     """Raised when authorization fails (403)."""
 
-    def __init__(
-        self, message: str = "Insufficient permissions", **kwargs: Any
-    ):
+    def __init__(self, message: str = "Insufficient permissions", **kwargs: Any):
         super().__init__(message, status_code=403, **kwargs)
 
 
@@ -84,9 +82,7 @@ class RateLimitError(OctoLLMError):
 class ServiceUnavailableError(OctoLLMError):
     """Raised when a service is unavailable (503)."""
 
-    def __init__(
-        self, message: str = "Service temporarily unavailable", **kwargs: Any
-    ):
+    def __init__(self, message: str = "Service temporarily unavailable", **kwargs: Any):
         super().__init__(message, status_code=503, **kwargs)
 
 

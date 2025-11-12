@@ -21,7 +21,7 @@ class ExecutorClient(BaseClient):
         base_url: str = "http://localhost:8003",
         api_key: Optional[str] = None,
         bearer_token: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize Executor client.

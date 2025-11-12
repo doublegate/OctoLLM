@@ -104,9 +104,7 @@ def test_validation_request_minimal():
 
 def test_safety_request_check_types():
     """Test SafetyRequest check types."""
-    request = SafetyRequest(
-        content="test content", check_types=["pii", "injection"], sanitize=True
-    )
+    request = SafetyRequest(content="test content", check_types=["pii", "injection"], sanitize=True)
     assert len(request.check_types) == 2
     assert request.sanitize is True
 

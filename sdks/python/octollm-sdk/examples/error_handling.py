@@ -26,9 +26,7 @@ from octollm_sdk import (
 )
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -85,7 +83,7 @@ async def submit_task_with_retry(
             logger.warning(f"Rate limit exceeded: {e.message}")
             logger.warning(f"Request ID: {e.request_id}")
 
-            wait_time = e.retry_after or (2 ** attempt)
+            wait_time = e.retry_after or (2**attempt)
             logger.info(f"Waiting {wait_time} seconds before retry...")
             await asyncio.sleep(wait_time)
             attempt += 1
@@ -97,7 +95,7 @@ async def submit_task_with_retry(
             logger.warning(f"Request ID: {e.request_id}")
 
             if attempt < max_retries - 1:
-                wait_time = 2 ** attempt
+                wait_time = 2**attempt
                 logger.info(f"Retrying in {wait_time} seconds...")
                 await asyncio.sleep(wait_time)
                 attempt += 1
@@ -112,7 +110,7 @@ async def submit_task_with_retry(
             logger.warning(f"Request ID: {e.request_id}")
 
             if attempt < max_retries - 1:
-                wait_time = 2 ** attempt
+                wait_time = 2**attempt
                 logger.info(f"Retrying in {wait_time} seconds...")
                 await asyncio.sleep(wait_time)
                 attempt += 1
@@ -138,7 +136,7 @@ async def submit_task_with_retry(
             # Retry on 5xx errors
             if e.status_code and e.status_code >= 500:
                 if attempt < max_retries - 1:
-                    wait_time = 2 ** attempt
+                    wait_time = 2**attempt
                     logger.info(f"Server error, retrying in {wait_time} seconds...")
                     await asyncio.sleep(wait_time)
                     attempt += 1
@@ -155,9 +153,7 @@ async def submit_task_with_retry(
     return None
 
 
-async def check_task_with_error_handling(
-    client: OrchestratorClient, task_id: str
-) -> None:
+async def check_task_with_error_handling(client: OrchestratorClient, task_id: str) -> None:
     """
     Check task status with comprehensive error handling.
 

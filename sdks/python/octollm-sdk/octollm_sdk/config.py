@@ -75,8 +75,7 @@ class OctoLLMConfig:
             bearer_token=os.getenv("OCTOLLM_BEARER_TOKEN"),
             timeout=float(os.getenv("OCTOLLM_TIMEOUT", "30.0")),
             max_retries=int(os.getenv("OCTOLLM_MAX_RETRIES", "3")),
-            verify_ssl=os.getenv("OCTOLLM_VERIFY_SSL", "true").lower()
-            == "true",
+            verify_ssl=os.getenv("OCTOLLM_VERIFY_SSL", "true").lower() == "true",
         )
 
 

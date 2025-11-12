@@ -21,7 +21,7 @@ class SafetyGuardianClient(BaseClient):
         base_url: str = "http://localhost:8007",
         api_key: Optional[str] = None,
         bearer_token: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize Safety Guardian client.

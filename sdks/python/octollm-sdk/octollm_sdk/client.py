@@ -83,9 +83,7 @@ class BaseClient:
         """Generate unique request ID for tracing."""
         return f"req_{uuid.uuid4().hex[:16]}"
 
-    def _get_headers(
-        self, additional_headers: Optional[Dict[str, str]] = None
-    ) -> Dict[str, str]:
+    def _get_headers(self, additional_headers: Optional[Dict[str, str]] = None) -> Dict[str, str]:
         """
         Build request headers with authentication and tracing.
 
@@ -111,9 +109,7 @@ class BaseClient:
 
         return headers
 
-    def _handle_error_response(
-        self, response: httpx.Response, request_id: str
-    ) -> None:
+    def _handle_error_response(self, response: httpx.Response, request_id: str) -> None:
         """
         Handle HTTP error responses and raise appropriate exceptions.
 
