@@ -71,7 +71,7 @@ scrape_configs:
           service: 'executor-arm'
           component: 'arm'
 
-  # PostgreSQL metrics (if postgres_exporter is added)
+    # PostgreSQL metrics (if postgres_exporter is added)
   # - job_name: 'postgres'
   #   static_configs:
   #     - targets: ['postgres-exporter:9187']

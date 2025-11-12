@@ -1,5 +1,5 @@
 # CODEOWNERS file for OctoLLM
-# 
+#
 # This file defines code ownership and review requirements for the repository.
 # When a PR touches files in these paths, the specified owners will be automatically
 # requested for review.

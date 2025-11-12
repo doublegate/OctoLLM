@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Setup script for pre-commit hooks
-# 
+#
 # This script installs and configures pre-commit hooks for the OctoLLM repository.
 # It ensures all developers have consistent code quality checks.
 #
@@ -74,18 +74,18 @@ fi
 # Additional setup for Rust (if available)
 if command -v cargo &> /dev/null; then
     echo -e "\n${YELLOW}[Bonus]${NC} Rust detected, installing additional tools..."
-    
+
     # Install rustfmt and clippy if not present
     if ! rustup component list | grep -q 'rustfmt.*installed'; then
         rustup component add rustfmt
         echo -e "${GREEN}✓${NC} rustfmt installed"
     fi
-    
+
     if ! rustup component list | grep -q 'clippy.*installed'; then
         rustup component add clippy
         echo -e "${GREEN}✓${NC} clippy installed"
     fi
-    
+
     # Install cargo-tarpaulin for coverage (Linux only)
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         if ! command -v cargo-tarpaulin &> /dev/null; then

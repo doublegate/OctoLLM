@@ -95,7 +95,9 @@ services:
     container_name: octollm-orchestrator
     environment:
       # Database connections
-      DATABASE_URL: postgresql://${POSTGRES_USER:-octollm}:${POSTGRES_PASSWORD:-octollm_dev_password}@postgres:5432/${POSTGRES_DB:-octollm}
+      DATABASE_URL: >-
+        postgresql://${POSTGRES_USER:-octollm}:${POSTGRES_PASSWORD:-octollm_dev_password}
+        @postgres:5432/${POSTGRES_DB:-octollm}
       REDIS_URL: redis://redis:6379
       QDRANT_URL: http://qdrant:6333
 
