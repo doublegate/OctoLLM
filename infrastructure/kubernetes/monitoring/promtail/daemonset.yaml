@@ -1,0 +1,78 @@
+# Promtail DaemonSet
+# Log shipper that runs on every node to collect logs
+#
+# Features:
+# - Scrapes all pods in octollm-* namespaces
+# - Parses JSON logs (FastAPI structured logging)
+# - Extracts labels: namespace, pod, container, service, level
+# - Ships to Loki for centralized storage
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: promtail
+  namespace: octollm-monitoring
+  labels:
+    app: promtail
+    component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: promtail
+  template:
+    metadata:
+      labels:
+        app: promtail
+        component: monitoring
+    spec:
+      serviceAccountName: promtail
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+
+      containers:
+        - name: promtail
+          image: grafana/promtail:2.9.4
+          imagePullPolicy: IfNotPresent
+
+          args:
+            - '-config.file=/etc/promtail/promtail.yaml'
+
+          volumeMounts:
+            - name: promtail-config
+              mountPath: /etc/promtail/promtail.yaml
+              subPath: promtail.yaml
+              readOnly: true
+
+            - name: varlog
+              mountPath: /var/log
+              readOnly: true
+
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+
+      volumes:
+        - name: promtail-config
+          configMap:
+            name: promtail-config
+
+        - name: varlog
+          hostPath:
+            path: /var/log
+
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists

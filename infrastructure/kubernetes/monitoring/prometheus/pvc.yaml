@@ -1,0 +1,22 @@
+# Prometheus Persistent Volume Claim
+# Provides persistent storage for metrics with 30-day retention
+#
+# Storage: 50Gi (sufficient for 30 days of metrics from all services)
+# Retention: 30 days (configured in deployment.yaml)
+# Performance: Standard persistent disk (cost-optimized)
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-pvc
+  namespace: octollm-monitoring
+  labels:
+    app: prometheus
+    component: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: standard-rwo  # GCP standard persistent disk

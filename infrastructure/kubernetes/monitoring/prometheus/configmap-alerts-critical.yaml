@@ -1,0 +1,275 @@
+# Prometheus Critical Alerts ConfigMap
+# Contains high-severity alerts that require immediate attention (PagerDuty-level)
+#
+# Alert Severity: CRITICAL
+# Notification: PagerDuty, Slack #critical-alerts
+# Response Time: <15 minutes
+#
+# Total Alerts: 15
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-alerts-critical
+  namespace: octollm-monitoring
+  labels:
+    app: prometheus
+    component: monitoring
+data:
+  critical.yml: |
+    groups:
+      - name: octollm_critical_alerts
+        interval: 30s
+        rules:
+          # ============================================================
+          # Kubernetes Infrastructure Alerts (CRITICAL)
+          # ============================================================
+
+          - alert: PodCrashLoopBackOff
+            expr: |
+              rate(kube_pod_container_status_restarts_total{namespace=~"octollm.*"}[10m]) > 0.3
+            for: 5m
+            labels:
+              severity: critical
+              component: kubernetes
+            annotations:
+              summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash looping"
+              description: >-
+                Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted {{ $value }} times
+                in the last 10 minutes. This indicates a critical application failure.
+              runbook_url: "https://docs.octollm.dev/runbooks/pod-crash-loop"
+
+          - alert: NodeNotReady
+            expr: |
+              kube_node_status_condition{condition="Ready",status="true"} == 0
+            for: 5m
+            labels:
+              severity: critical
+              component: kubernetes
+            annotations:
+              summary: "Node {{ $labels.node }} is not ready"
+              description: >-
+                Kubernetes node {{ $labels.node }} has been in NotReady state for more than 5 minutes.
+                This may impact pod scheduling and availability.
+              runbook_url: "https://docs.octollm.dev/runbooks/node-not-ready"
+
+          - alert: PersistentVolumeClaimPending
+            expr: |
+              kube_persistentvolumeclaim_status_phase{namespace=~"octollm.*",phase="Pending"} == 1
+            for: 10m
+            labels:
+              severity: critical
+              component: kubernetes
+            annotations:
+              summary: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is pending"
+              description: >-
+                PersistentVolumeClaim {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }}
+                has been pending for more than 10 minutes. Check storage provisioner and quotas.
+              runbook_url: "https://docs.octollm.dev/runbooks/pvc-pending"
+
+          # ============================================================
+          # Application Health Alerts (CRITICAL)
+          # ============================================================
+
+          - alert: HighErrorRate
+            expr: |
+              (
+                sum(rate(http_requests_total{status=~"5..",namespace=~"octollm.*"}[5m])) by (job, namespace)
+                /
+                sum(rate(http_requests_total{namespace=~"octollm.*"}[5m])) by (job, namespace)
+              ) > 0.10
+            for: 5m
+            labels:
+              severity: critical
+              component: application
+            annotations:
+              summary: "High error rate (>10%) for {{ $labels.job }} in {{ $labels.namespace }}"
+              description: >-
+                Service {{ $labels.job }} in namespace {{ $labels.namespace }} has an error rate of
+                {{ $value | humanizePercentage }}. This indicates a critical application issue.
+              runbook_url: "https://docs.octollm.dev/runbooks/high-error-rate"
+
+          - alert: ServiceDown
+            expr: |
+              up{namespace=~"octollm.*"} == 0
+            for: 2m
+            labels:
+              severity: critical
+              component: application
+            annotations:
+              summary: "Service {{ $labels.job }} is down"
+              description: >-
+                Service {{ $labels.job }} in namespace {{ $labels.namespace }} has been unreachable
+                for more than 2 minutes. Immediate investigation required.
+              runbook_url: "https://docs.octollm.dev/runbooks/service-down"
+
+          - alert: DeploymentReplicaMismatch
+            expr: |
+              kube_deployment_spec_replicas{namespace=~"octollm.*"}
+              !=
+              kube_deployment_status_replicas_available{namespace=~"octollm.*"}
+            for: 10m
+            labels:
+              severity: critical
+              component: kubernetes
+            annotations:
+              summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has replica mismatch"
+              description: >-
+                Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has {{ $value }}
+                available replicas, but expects {{ $value }}. Pods may be failing to start.
+              runbook_url: "https://docs.octollm.dev/runbooks/deployment-replica-mismatch"
+
+          # ============================================================
+          # Database & Infrastructure Alerts (CRITICAL)
+          # ============================================================
+
+          - alert: DatabaseConnectionPoolExhausted
+            expr: |
+              (db_connections_active / (db_connections_active + db_connections_idle)) > 0.95
+            for: 5m
+            labels:
+              severity: critical
+              component: database
+            annotations:
+              summary: "Database connection pool exhausted for {{ $labels.job }}"
+              description: >-
+                Service {{ $labels.job }} is using {{ $value | humanizePercentage }} of available
+                database connections. Connection pool may be exhausted, leading to request failures.
+              runbook_url: "https://docs.octollm.dev/runbooks/db-pool-exhausted"
+
+          - alert: CertificateExpiringInSevenDays
+            expr: |
+              (cert_manager_certificate_expiration_timestamp_seconds - time()) / 86400 < 7
+            for: 1h
+            labels:
+              severity: critical
+              component: infrastructure
+            annotations:
+              summary: >-
+                Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in
+                {{ $value | humanizeDuration }}
+              description: >-
+                TLS certificate {{ $labels.name }} in namespace {{ $labels.namespace }} will expire
+                in less than 7 days. Renewal must happen immediately.
+              runbook_url: "https://docs.octollm.dev/runbooks/certificate-expiring"
+
+          # ============================================================
+          # Resource Exhaustion Alerts (CRITICAL)
+          # ============================================================
+
+          - alert: NodeMemoryPressure
+            expr: |
+              kube_node_status_condition{condition="MemoryPressure",status="true"} == 1
+            for: 5m
+            labels:
+              severity: critical
+              component: kubernetes
+            annotations:
+              summary: "Node {{ $labels.node }} is under memory pressure"
+              description: >-
+                Node {{ $labels.node }} is experiencing memory pressure. Pods may be evicted.
+                Add more nodes or scale down workloads.
+              runbook_url: "https://docs.octollm.dev/runbooks/node-memory-pressure"
+
+          - alert: NodeDiskPressure
+            expr: |
+              kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+            for: 5m
+            labels:
+              severity: critical
+              component: kubernetes
+            annotations:
+              summary: "Node {{ $labels.node }} is under disk pressure"
+              description: >-
+                Node {{ $labels.node }} is experiencing disk pressure. Pods may be evicted.
+                Clear disk space or add storage.
+              runbook_url: "https://docs.octollm.dev/runbooks/node-disk-pressure"
+
+          # ============================================================
+          # Critical Latency Alerts
+          # ============================================================
+
+          - alert: VeryHighLatency
+            expr: |
+              histogram_quantile(
+                0.99,
+                sum(rate(http_request_duration_seconds_bucket{namespace=~"octollm.*"}[5m])) by (job, le)
+              ) > 30
+            for: 5m
+            labels:
+              severity: critical
+              component: application
+            annotations:
+              summary: "P99 latency >30s for {{ $labels.job }}"
+              description: >-
+                Service {{ $labels.job }} has a P99 latency of {{ $value }}s, exceeding the 30s SLA.
+                This indicates severe performance degradation.
+              runbook_url: "https://docs.octollm.dev/runbooks/very-high-latency"
+
+          # ============================================================
+          # Data Integrity Alerts (CRITICAL)
+          # ============================================================
+
+          - alert: PostgreSQLReplicationLag
+            expr: |
+              pg_replication_lag_seconds > 300
+            for: 5m
+            labels:
+              severity: critical
+              component: database
+            annotations:
+              summary: "PostgreSQL replication lag >5 minutes"
+              description: >-
+                PostgreSQL replication is lagging by {{ $value }}s.
+                This may lead to data loss in case of failover.
+              runbook_url: "https://docs.octollm.dev/runbooks/postgres-replication-lag"
+
+          # ============================================================
+          # Security Alerts (CRITICAL)
+          # ============================================================
+
+          - alert: UnauthorizedAccessAttempts
+            expr: |
+              sum(rate(http_requests_total{status="401",namespace=~"octollm.*"}[5m])) by (job) > 10
+            for: 5m
+            labels:
+              severity: critical
+              component: security
+            annotations:
+              summary: "High rate of unauthorized access attempts for {{ $labels.job }}"
+              description: >-
+                Service {{ $labels.job }} is experiencing {{ $value }} unauthorized access attempts
+                per second. This may indicate a brute-force attack.
+              runbook_url: "https://docs.octollm.dev/runbooks/unauthorized-access"
+
+          - alert: PIILeakageDetected
+            expr: |
+              sum(rate(pii_redaction_failures_total[5m])) by (job) > 0
+            for: 1m
+            labels:
+              severity: critical
+              component: security
+            annotations:
+              summary: "PII leakage detected in {{ $labels.job }}"
+              description: >-
+                Service {{ $labels.job }} has failed to redact PII {{ $value }} times in the last minute.
+                Immediate investigation required for GDPR/CCPA compliance.
+              runbook_url: "https://docs.octollm.dev/runbooks/pii-leakage"
+
+          # ============================================================
+          # Container Resource Alerts (CRITICAL)
+          # ============================================================
+
+          - alert: ContainerOOMKilled
+            expr: |
+              (kube_pod_container_status_terminated_reason{reason="OOMKilled",namespace=~"octollm.*"} > 0)
+            labels:
+              severity: critical
+              component: kubernetes
+            annotations:
+              summary: >-
+                Container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} was OOMKilled
+              description: >-
+                Container {{ $labels.container }} in pod {{ $labels.pod }} was killed due to out-of-memory.
+                Increase memory limits or investigate memory leaks.
+              runbook_url: "https://docs.octollm.dev/runbooks/oom-killed"

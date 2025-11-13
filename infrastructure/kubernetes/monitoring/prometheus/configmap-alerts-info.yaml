@@ -1,0 +1,163 @@
+# Prometheus Info Alerts ConfigMap
+# Contains informational alerts (logging/notification only)
+# Total Alerts: 15
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-alerts-info
+  namespace: octollm-monitoring
+  labels:
+    app: prometheus
+    component: monitoring
+data:
+  info.yml: |
+    groups:
+      - name: octollm_info_alerts
+        interval: 120s
+        rules:
+          - alert: NewDeploymentDetected
+            expr: changes(kube_deployment_status_observed_generation{namespace=~"octollm.*"}[5m]) > 0
+            labels:
+              severity: info
+              component: deployment
+            annotations:
+              summary: "New deployment for {{ $labels.namespace }}/{{ $labels.deployment }}"
+              description: "Deployment {{ $labels.deployment }} has been updated."
+
+          - alert: HPAScaledUp
+            expr: changes(kube_horizontalpodautoscaler_status_current_replicas{namespace=~"octollm.*"}[5m]) > 0
+            labels:
+              severity: info
+              component: autoscaling
+            annotations:
+              summary: "HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler }} scaled up"
+              description: "HPA scaled to {{ $value }} replicas."
+
+          - alert: HPAScaledDown
+            expr: changes(kube_horizontalpodautoscaler_status_current_replicas{namespace=~"octollm.*"}[5m]) < 0
+            labels:
+              severity: info
+              component: autoscaling
+            annotations:
+              summary: "HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler }} scaled down"
+              description: "HPA scaled to {{ $value }} replicas."
+
+          - alert: ConfigMapChanged
+            expr: changes(kube_configmap_metadata_resource_version{namespace=~"octollm.*"}[10m]) > 0
+            labels:
+              severity: info
+              component: configuration
+            annotations:
+              summary: "ConfigMap {{ $labels.namespace }}/{{ $labels.configmap }} changed"
+              description: "ConfigMap has been updated. Pods may need restart."
+
+          - alert: SecretChanged
+            expr: changes(kube_secret_metadata_resource_version{namespace=~"octollm.*"}[10m]) > 0
+            labels:
+              severity: info
+              component: configuration
+            annotations:
+              summary: "Secret {{ $labels.namespace }}/{{ $labels.secret }} changed"
+              description: "Secret has been updated. Pods may need restart."
+
+          - alert: BackupJobCompleted
+            expr: kube_job_status_succeeded{namespace=~"octollm.*",job=~".*backup.*"} > 0
+            labels:
+              severity: info
+              component: backup
+            annotations:
+              summary: "Backup job {{ $labels.namespace }}/{{ $labels.job_name }} completed"
+              description: "Backup completed successfully."
+
+          - alert: CertificateRenewed
+            expr: changes(cert_manager_certificate_renewal_timestamp_seconds[1h]) > 0
+            labels:
+              severity: info
+              component: certificates
+            annotations:
+              summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} renewed"
+              description: "TLS certificate has been successfully renewed."
+
+          - alert: HighSuccessRate
+            expr: |
+              (sum(rate(http_requests_total{status=~"2..",namespace=~"octollm.*"}[1h])) by (job) /
+               sum(rate(http_requests_total{namespace=~"octollm.*"}[1h])) by (job)) > 0.99
+            for: 1h
+            labels:
+              severity: info
+              component: application
+            annotations:
+              summary: "Service {{ $labels.job }} has >99% success rate"
+              description: "Excellent service health with {{ $value | humanizePercentage }} success rate."
+
+          - alert: LowLatency
+            expr: |
+              histogram_quantile(
+                0.95,
+                sum(rate(http_request_duration_seconds_bucket{namespace=~"octollm.*"}[1h])) by (job, le)
+              ) < 0.5
+            for: 1h
+            labels:
+              severity: info
+              component: application
+            annotations:
+              summary: "Service {{ $labels.job }} has excellent latency (<500ms P95)"
+              description: "P95 latency is {{ $value }}s. Service performing well."
+
+          - alert: CacheHitRateExcellent
+            expr: |
+              (sum(rate(cache_hits_total[1h])) /
+               (sum(rate(cache_hits_total[1h])) + sum(rate(cache_misses_total[1h])))) > 0.85
+            for: 1h
+            labels:
+              severity: info
+              component: cache
+            annotations:
+              summary: "Excellent cache hit rate (>85%) for {{ $labels.job }}"
+              description: "Cache hit rate is {{ $value | humanizePercentage }}."
+
+          - alert: NodeJoined
+            expr: changes(kube_node_info[10m]) > 0
+            labels:
+              severity: info
+              component: kubernetes
+            annotations:
+              summary: "Node {{ $labels.node }} joined cluster"
+              description: "New node has been added to the cluster."
+
+          - alert: PodEvicted
+            expr: kube_pod_status_reason{reason="Evicted",namespace=~"octollm.*"} > 0
+            labels:
+              severity: info
+              component: kubernetes
+            annotations:
+              summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} was evicted"
+              description: "Pod was evicted due to resource pressure or policy."
+
+          - alert: IngressCreated
+            expr: changes(kube_ingress_metadata_resource_version{namespace=~"octollm.*"}[10m]) > 0
+            labels:
+              severity: info
+              component: networking
+            annotations:
+              summary: "Ingress {{ $labels.namespace }}/{{ $labels.ingress }} created/updated"
+              description: "Ingress configuration has changed."
+
+          - alert: ServiceCreated
+            expr: changes(kube_service_info{namespace=~"octollm.*"}[10m]) > 0
+            labels:
+              severity: info
+              component: networking
+            annotations:
+              summary: "Service {{ $labels.namespace }}/{{ $labels.service }} created/updated"
+              description: "Service configuration has changed."
+
+          - alert: PersistentVolumeClaimCreated
+            expr: changes(kube_persistentvolumeclaim_info{namespace=~"octollm.*"}[10m]) > 0
+            labels:
+              severity: info
+              component: storage
+            annotations:
+              summary: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} created"
+              description: "New persistent volume claim has been created."

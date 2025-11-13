@@ -1,0 +1,22 @@
+# Grafana Persistent Volume Claim
+# Provides persistent storage for Grafana dashboards, users, and configuration
+#
+# Storage: 10Gi (sufficient for hundreds of dashboards + user data)
+# Retention: Indefinite (backed up via GCP snapshots)
+# Performance: Standard persistent disk (cost-optimized)
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pvc
+  namespace: octollm-monitoring
+  labels:
+    app: grafana
+    component: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard-rwo  # GCP standard persistent disk

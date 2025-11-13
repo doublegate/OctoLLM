@@ -1,0 +1,251 @@
+# Prometheus Warning Alerts ConfigMap
+# Contains medium-severity alerts (Slack-level notifications)
+# Total Alerts: 20
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-alerts-warning
+  namespace: octollm-monitoring
+  labels:
+    app: prometheus
+    component: monitoring
+data:
+  warning.yml: |
+    groups:
+      - name: octollm_warning_alerts
+        interval: 60s
+        rules:
+          # Node Resource Warnings
+          - alert: HighNodeCPUUsage
+            expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+            for: 10m
+            labels:
+              severity: warning
+              component: infrastructure
+            annotations:
+              summary: "Node {{ $labels.instance }} CPU usage >80%"
+              description: >-
+                Node CPU usage is {{ $value | humanizePercentage }}.
+                Consider scaling up or optimizing workloads.
+
+          - alert: HighNodeMemoryUsage
+            expr: 100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 85
+            for: 10m
+            labels:
+              severity: warning
+              component: infrastructure
+            annotations:
+              summary: "Node {{ $labels.instance }} memory usage >85%"
+              description: >-
+                Node memory usage is {{ $value | humanizePercentage }}.
+                Memory pressure may occur soon.
+
+          - alert: HighDiskUsage
+            expr: >-
+              100 * (1 - (node_filesystem_avail_bytes{mountpoint="/"}
+              / node_filesystem_size_bytes{mountpoint="/"})) > 85
+            for: 10m
+            labels:
+              severity: warning
+              component: infrastructure
+            annotations:
+              summary: "Disk usage >85% on {{ $labels.instance }}"
+              description: "Disk space is {{ $value | humanizePercentage }} full. Clear space or expand volume."
+
+          # Pod Resource Warnings
+          - alert: PodMemoryNearLimit
+            expr: |
+              (container_memory_working_set_bytes{namespace=~"octollm.*"} /
+               kube_pod_container_resource_limits{resource="memory",namespace=~"octollm.*"}) > 0.90
+            for: 5m
+            labels:
+              severity: warning
+              component: kubernetes
+            annotations:
+              summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} using >90% memory limit"
+              description: "Pod is using {{ $value | humanizePercentage }} of memory limit. May be OOMKilled soon."
+
+          - alert: PodCPUThrottling
+            expr: |
+              rate(container_cpu_cfs_throttled_seconds_total{namespace=~"octollm.*"}[5m]) > 0.5
+            for: 10m
+            labels:
+              severity: warning
+              component: kubernetes
+            annotations:
+              summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is being CPU throttled"
+              description: "Pod CPU is being throttled {{ $value }}s/s. Consider increasing CPU limits."
+
+          # Application Performance Warnings
+          - alert: HighRequestLatency
+            expr: >-
+              histogram_quantile(0.95,
+              sum(rate(http_request_duration_seconds_bucket{namespace=~"octollm.*"}[5m]))
+              by (job, le)) > 1
+            for: 10m
+            labels:
+              severity: warning
+              component: application
+            annotations:
+              summary: "P95 latency >1s for {{ $labels.job }}"
+              description: "P95 latency is {{ $value }}s. Investigate performance bottlenecks."
+
+          - alert: ElevatedErrorRate
+            expr: |
+              (sum(rate(http_requests_total{status=~"5..",namespace=~"octollm.*"}[5m])) by (job) /
+               sum(rate(http_requests_total{namespace=~"octollm.*"}[5m])) by (job)) > 0.05
+            for: 10m
+            labels:
+              severity: warning
+              component: application
+            annotations:
+              summary: "Error rate >5% for {{ $labels.job }}"
+              description: "Error rate is {{ $value | humanizePercentage }}. Monitor for further increases."
+
+          # Database Warnings
+          - alert: HighDatabaseConnections
+            expr: (db_connections_active / (db_connections_active + db_connections_idle)) > 0.80
+            for: 10m
+            labels:
+              severity: warning
+              component: database
+            annotations:
+              summary: "Database connection pool >80% for {{ $labels.job }}"
+              description: "Using {{ $value | humanizePercentage }} of database connections."
+
+          - alert: SlowDatabaseQueries
+            expr: rate(db_query_duration_seconds_sum[5m]) / rate(db_query_duration_seconds_count[5m]) > 1
+            for: 10m
+            labels:
+              severity: warning
+              component: database
+            annotations:
+              summary: "Slow database queries for {{ $labels.job }}"
+              description: "Average query time is {{ $value }}s. Investigate query performance."
+
+          # Certificate Warnings
+          - alert: CertificateExpiringInThirtyDays
+            expr: (cert_manager_certificate_expiration_timestamp_seconds - time()) / 86400 < 30
+            for: 1h
+            labels:
+              severity: warning
+              component: infrastructure
+            annotations:
+              summary: "Certificate {{ $labels.name }} expires in {{ $value | humanizeDuration }}"
+              description: "TLS certificate will expire soon. Ensure cert-manager renewal is working."
+
+          # Restart Warnings
+          - alert: FrequentPodRestarts
+            expr: rate(kube_pod_container_status_restarts_total{namespace=~"octollm.*"}[1h]) > 0.1
+            for: 10m
+            labels:
+              severity: warning
+              component: kubernetes
+            annotations:
+              summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} restarting frequently"
+              description: "Pod has restarted {{ $value }} times per hour. Investigate stability issues."
+
+          # HPA Warnings
+          - alert: HPAScalingLimited
+            expr: |
+              (kube_horizontalpodautoscaler_status_current_replicas{namespace=~"octollm.*"} ==
+               kube_horizontalpodautoscaler_spec_max_replicas{namespace=~"octollm.*"})
+            for: 15m
+            labels:
+              severity: warning
+              component: kubernetes
+            annotations:
+              summary: "HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler }} at max replicas"
+              description: "HPA has reached maximum replicas. Increase max or add more capacity."
+
+          # Storage Warnings
+          - alert: PersistentVolumeFillingUp
+            expr: |
+              100 * (kubelet_volume_stats_used_bytes{namespace=~"octollm.*"} /
+                     kubelet_volume_stats_capacity_bytes{namespace=~"octollm.*"}) > 80
+            for: 10m
+            labels:
+              severity: warning
+              component: storage
+            annotations:
+              summary: "PV {{ $labels.persistentvolumeclaim }} >80% full"
+              description: "Volume is {{ $value | humanizePercentage }} full. Consider expanding."
+
+          # Cache Warnings
+          - alert: LowCacheHitRate
+            expr: |
+              (sum(rate(cache_hits_total[5m])) /
+               (sum(rate(cache_hits_total[5m])) + sum(rate(cache_misses_total[5m])))) < 0.50
+            for: 15m
+            labels:
+              severity: warning
+              component: application
+            annotations:
+              summary: "Low cache hit rate (<50%) for {{ $labels.job }}"
+              description: "Cache hit rate is {{ $value | humanizePercentage }}. Review caching strategy."
+
+          # Redis Warnings
+          - alert: RedisMemoryHigh
+            expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.85
+            for: 10m
+            labels:
+              severity: warning
+              component: cache
+            annotations:
+              summary: "Redis memory usage >85%"
+              description: "Redis is using {{ $value | humanizePercentage }} of max memory."
+
+          # Network Warnings
+          - alert: HighNetworkErrors
+            expr: rate(node_network_receive_errs_total[5m]) + rate(node_network_transmit_errs_total[5m]) > 10
+            for: 10m
+            labels:
+              severity: warning
+              component: network
+            annotations:
+              summary: "High network errors on {{ $labels.instance }}"
+              description: "Network interface {{ $labels.device }} has {{ $value }} errors/s."
+
+          # LLM API Warnings
+          - alert: HighLLMAPILatency
+            expr: rate(llm_api_request_duration_seconds_sum[5m]) / rate(llm_api_request_duration_seconds_count[5m]) > 5
+            for: 10m
+            labels:
+              severity: warning
+              component: llm
+            annotations:
+              summary: "High LLM API latency for {{ $labels.provider }}"
+              description: "Average LLM API latency is {{ $value }}s. Check provider status."
+
+          - alert: LLMAPIRateLimited
+            expr: rate(llm_api_rate_limit_errors_total[5m]) > 0.1
+            for: 5m
+            labels:
+              severity: warning
+              component: llm
+            annotations:
+              summary: "LLM API rate limiting for {{ $labels.provider }}"
+              description: "Experiencing {{ $value }} rate limit errors/s. Implement backoff or increase quota."
+
+          # Cost Warnings
+          - alert: HighLLMTokenUsage
+            expr: sum(rate(llm_tokens_used_total[1h])) by (provider, model) > 1000000
+            for: 1h
+            labels:
+              severity: warning
+              component: cost
+            annotations:
+              summary: "High token usage for {{ $labels.provider }}/{{ $labels.model }}"
+              description: "Using {{ $value }} tokens/hour. Monitor costs and optimize prompts."
+
+          # Backup Warnings
+          - alert: BackupJobFailed
+            expr: kube_job_status_failed{namespace=~"octollm.*",job=~".*backup.*"} > 0
+            for: 1m
+            labels:
+              severity: warning
+              component: backup
+            annotations:
+              summary: "Backup job {{ $labels.namespace }}/{{ $labels.job_name }} failed"
+              description: "Backup job has failed. Check logs and retry."

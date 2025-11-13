@@ -1,0 +1,138 @@
+# Prometheus Deployment for OctoLLM GKE Monitoring
+# Provides metrics collection, storage, and alerting
+#
+# Features:
+# - Persistent storage for metrics (30-day retention)
+# - Service discovery via ServiceMonitors
+# - Alert rule evaluation
+# - Remote write to Google Cloud Monitoring (optional)
+#
+# Usage:
+#   kubectl apply -f deployment.yaml
+#   kubectl apply -f service.yaml
+#   kubectl apply -f servicemonitors/
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: octollm-monitoring
+  labels:
+    app: prometheus
+    component: monitoring
+    tier: metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+        component: monitoring
+        tier: metrics
+    spec:
+      serviceAccountName: prometheus
+      securityContext:
+        fsGroup: 65534
+        runAsUser: 65534
+        runAsNonRoot: true
+
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v2.49.0
+          imagePullPolicy: IfNotPresent
+
+          args:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path=/prometheus'
+            - '--storage.tsdb.retention.time=30d'
+            - '--web.console.libraries=/etc/prometheus/console_libraries'
+            - '--web.console.templates=/etc/prometheus/consoles'
+            - '--web.enable-lifecycle'
+            - '--web.enable-admin-api'
+
+          ports:
+            - name: http
+              containerPort: 9090
+              protocol: TCP
+
+          volumeMounts:
+            # Persistent storage for metrics
+            - name: prometheus-storage
+              mountPath: /prometheus
+
+            # Prometheus configuration
+            - name: prometheus-config
+              mountPath: /etc/prometheus/prometheus.yml
+              subPath: prometheus.yml
+              readOnly: true
+
+            # Alert rules
+            - name: prometheus-alerts-critical
+              mountPath: /etc/prometheus/alerts/critical.yml
+              subPath: critical.yml
+              readOnly: true
+
+            - name: prometheus-alerts-warning
+              mountPath: /etc/prometheus/alerts/warning.yml
+              subPath: warning.yml
+              readOnly: true
+
+            - name: prometheus-alerts-info
+              mountPath: /etc/prometheus/alerts/info.yml
+              subPath: info.yml
+              readOnly: true
+
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+      volumes:
+        # Persistent volume for metrics
+        - name: prometheus-storage
+          persistentVolumeClaim:
+            claimName: prometheus-pvc
+
+        # ConfigMap for Prometheus configuration
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
+
+        # ConfigMaps for alert rules
+        - name: prometheus-alerts-critical
+          configMap:
+            name: prometheus-alerts-critical
+
+        - name: prometheus-alerts-warning
+          configMap:
+            name: prometheus-alerts-warning
+
+        - name: prometheus-alerts-info
+          configMap:
+            name: prometheus-alerts-info
+
+      restartPolicy: Always

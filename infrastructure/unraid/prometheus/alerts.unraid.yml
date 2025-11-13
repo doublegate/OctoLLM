@@ -20,7 +20,9 @@ groups:
           description: "CPU usage is above 80% for more than 5 minutes on {{ $labels.instance }}"
 
       - alert: HighMemoryUsage
-        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        expr: |
+          (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) /
+          node_memory_MemTotal_bytes * 100 > 85
         for: 5m
         labels:
           severity: warning
@@ -30,7 +32,9 @@ groups:
           description: "Memory usage is above 85% on {{ $labels.instance }}"
 
       - alert: CriticalMemoryUsage
-        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 95
+        expr: |
+          (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) /
+          node_memory_MemTotal_bytes * 100 > 95
         for: 2m
         labels:
           severity: critical
@@ -40,7 +44,9 @@ groups:
           description: "Memory usage is above 95% on {{ $labels.instance }} - OOM risk!"
 
       - alert: LowDiskSpace
-        expr: (node_filesystem_avail_bytes{mountpoint="/mnt/user"} / node_filesystem_size_bytes{mountpoint="/mnt/user"}) * 100 < 10
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/mnt/user"} /
+          node_filesystem_size_bytes{mountpoint="/mnt/user"}) * 100 < 10
         for: 5m
         labels:
           severity: warning
@@ -50,7 +56,9 @@ groups:
           description: "Disk space is below 10% on /mnt/user"
 
       - alert: CriticalDiskSpace
-        expr: (node_filesystem_avail_bytes{mountpoint="/mnt/user"} / node_filesystem_size_bytes{mountpoint="/mnt/user"}) * 100 < 5
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/mnt/user"} /
+          node_filesystem_size_bytes{mountpoint="/mnt/user"}) * 100 < 5
         for: 2m
         labels:
           severity: critical
@@ -211,7 +219,9 @@ groups:
           description: "Redis memory usage is above 90%"
 
       - alert: RedisLowHitRate
-        expr: rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m])) < 0.80
+        expr: |
+          rate(redis_keyspace_hits_total[5m]) /
+          (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m])) < 0.80
         for: 10m
         labels:
           severity: warning
@@ -238,7 +248,9 @@ groups:
           description: "Container {{ $labels.name }} CPU usage is above 80%"
 
       - alert: ContainerHighMemory
-        expr: container_memory_usage_bytes{name=~"octollm-.*"} / container_spec_memory_limit_bytes{name=~"octollm-.*"} * 100 > 90
+        expr: |
+          container_memory_usage_bytes{name=~"octollm-.*"} /
+          container_spec_memory_limit_bytes{name=~"octollm-.*"} * 100 > 90
         for: 5m
         labels:
           severity: warning

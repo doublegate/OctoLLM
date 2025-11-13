@@ -1,0 +1,10 @@
+# Namespace for OctoLLM monitoring components
+# Creates a dedicated namespace to isolate monitoring infrastructure
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: octollm-monitoring
+  labels:
+    name: octollm-monitoring
+    component: monitoring
+    managed-by: kubectl

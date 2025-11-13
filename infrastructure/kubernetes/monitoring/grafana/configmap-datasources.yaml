@@ -1,0 +1,69 @@
+# Grafana Datasources Auto-Provisioning
+# Automatically configures Prometheus, Loki, and Jaeger as datasources
+#
+# Datasources:
+# - Prometheus (default): Metrics from all OctoLLM services
+# - Loki: Centralized log aggregation
+# - Jaeger: Distributed tracing
+#
+# This eliminates manual datasource configuration in the Grafana UI
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: octollm-monitoring
+  labels:
+    app: grafana
+    component: monitoring
+data:
+  datasources.yaml: |
+    apiVersion: 1
+
+    datasources:
+      # Prometheus - Primary metrics datasource
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus.octollm-monitoring.svc.cluster.local:9090
+        isDefault: true
+        editable: false
+        jsonData:
+          timeInterval: "30s"
+          queryTimeout: "60s"
+          httpMethod: "POST"
+        version: 1
+
+      # Loki - Log aggregation
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki.octollm-monitoring.svc.cluster.local:3100
+        editable: false
+        jsonData:
+          maxLines: 1000
+          timeout: 60
+        version: 1
+
+      # Jaeger - Distributed tracing
+      - name: Jaeger
+        type: jaeger
+        access: proxy
+        url: http://jaeger-query.octollm-monitoring.svc.cluster.local:16686
+        editable: false
+        jsonData:
+          tracesToLogs:
+            datasourceUid: 'loki'
+            tags: ['trace_id', 'span_id']
+            mappedTags: [{ key: 'service.name', value: 'service' }]
+        version: 1
+
+      # GKE/GCP Monitoring (optional - for cluster-level metrics)
+      - name: Google Cloud Monitoring
+        type: stackdriver
+        access: proxy
+        editable: false
+        jsonData:
+          authenticationType: "gce"
+          defaultProject: "${GCP_PROJECT_ID}"
+        version: 1

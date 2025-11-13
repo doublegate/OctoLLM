@@ -1,0 +1,97 @@
+# ServiceMonitor for OctoLLM Services
+# Enables Prometheus to automatically discover and scrape OctoLLM services
+#
+# This ServiceMonitor configuration uses label selectors to discover services
+# across all OctoLLM namespaces (octollm-dev, octollm-staging, octollm-prod)
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: octollm-services
+  namespace: octollm-monitoring
+  labels:
+    app: octollm
+    component: monitoring
+spec:
+  # Select services with the label monitoring: "enabled"
+  selector:
+    matchLabels:
+      monitoring: "enabled"
+
+  # Discover services across all octollm-* namespaces
+  namespaceSelector:
+    matchNames:
+      - octollm-dev
+      - octollm-staging
+      - octollm-prod
+
+  # Scrape configuration
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      relabelings:
+        # Add environment label from namespace
+        - sourceLabels: [__meta_kubernetes_namespace]
+          regex: "octollm-(.*)"
+          targetLabel: environment
+          replacement: "$1"
+
+        # Add service name label
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+
+        # Add pod label
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+
+---
+# ServiceMonitor for Orchestrator (high-frequency scraping)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: octollm-orchestrator
+  namespace: octollm-monitoring
+  labels:
+    app: octollm
+    component: orchestrator
+spec:
+  selector:
+    matchLabels:
+      app: orchestrator
+  namespaceSelector:
+    matchNames:
+      - octollm-dev
+      - octollm-staging
+      - octollm-prod
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s  # More frequent for orchestrator
+      scrapeTimeout: 10s
+
+---
+# ServiceMonitor for Reflex Layer (very high-frequency scraping)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: octollm-reflex-layer
+  namespace: octollm-monitoring
+  labels:
+    app: octollm
+    component: reflex-layer
+spec:
+  selector:
+    matchLabels:
+      app: reflex-layer
+  namespaceSelector:
+    matchNames:
+      - octollm-dev
+      - octollm-staging
+      - octollm-prod
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 10s  # Most frequent for fast layer
+      scrapeTimeout: 5s

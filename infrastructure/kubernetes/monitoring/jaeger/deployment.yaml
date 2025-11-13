@@ -1,0 +1,87 @@
+# Jaeger All-in-One Deployment
+# Collector + Query + UI for distributed tracing
+#
+# Features:
+# - GCS storage backend for traces
+# - 10% sampling rate (prod), 100% (dev)
+# - 7-day retention
+# - OpenTelemetry GRPC endpoint
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger
+  namespace: octollm-monitoring
+  labels:
+    app: jaeger
+    component: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger
+  template:
+    metadata:
+      labels:
+        app: jaeger
+        component: monitoring
+    spec:
+      serviceAccountName: jaeger
+      containers:
+        - name: jaeger
+          image: jaegertracing/all-in-one:1.53
+          imagePullPolicy: IfNotPresent
+
+          env:
+            - name: COLLECTOR_OTLP_ENABLED
+              value: "true"
+            - name: SPAN_STORAGE_TYPE
+              value: "badger"
+            - name: BADGER_DIRECTORY_VALUE
+              value: "/badger/data"
+            - name: BADGER_DIRECTORY_KEY
+              value: "/badger/key"
+            - name: BADGER_SPAN_STORE_TTL
+              value: "168h"  # 7 days
+
+          ports:
+            - name: ui
+              containerPort: 16686
+              protocol: TCP
+            - name: otlp-grpc
+              containerPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              containerPort: 4318
+              protocol: TCP
+
+          volumeMounts:
+            - name: jaeger-storage
+              mountPath: /badger
+
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: ui
+            initialDelaySeconds: 60
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: ui
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+      volumes:
+        - name: jaeger-storage
+          persistentVolumeClaim:
+            claimName: jaeger-pvc

@@ -5,7 +5,6 @@ set -euo pipefail
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
-YELLOW='\033[1;33m'
 NC='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -14,6 +13,7 @@ cd "$SCRIPT_DIR/.."
 # Source environment
 if [ -f .env.unraid ]; then
     set -a
+    # shellcheck source=/dev/null
     source .env.unraid
     set +a
 else
@@ -43,7 +43,7 @@ PASS=0
 FAIL=0
 
 for service_info in "${SERVICES[@]}"; do
-    IFS=':' read -r name host port path <<< "$service_info"
+    IFS=':' read -r name host port path <<< "$service_info" || true
 
     if curl -sf "http://$host:$port$path" > /dev/null 2>&1; then
         echo -e "${GREEN}[PASS]${NC} $name is healthy"

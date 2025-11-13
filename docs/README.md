@@ -47,12 +47,12 @@ Detailed specifications for each system component.
 
 #### Specialized Arms
 
-- **[Planner Arm](./components/planner-arm.md)** - Task decomposition specialist
-- **[Retriever Arm](./components/retriever-arm.md)** - Knowledge retrieval specialist
-- **[Coder Arm](./components/coder-arm.md)** - Code generation and analysis
-- **[Executor Arm](./components/executor-arm.md)** - Tool execution in sandboxes
-- **[Judge Arm](./components/judge-arm.md)** - Validation and quality assurance
-- **[Safety Guardian Arm](./components/safety-guardian.md)** - PII and policy enforcement
+- **[Planner Arm](./components/arms/planner-arm.md)** - Task decomposition specialist
+- **[Retriever Arm](./components/arms/retriever-arm.md)** - Knowledge retrieval specialist
+- **[Coder Arm](./components/arms/coder-arm.md)** - Code generation and analysis
+- **[Executor Arm](./components/arms/executor-arm.md)** - Tool execution in sandboxes
+- **[Judge Arm](./components/arms/judge-arm.md)** - Validation and quality assurance
+- **[Safety Guardian Arm](./components/arms/guardian-arm.md)** - PII and policy enforcement
 
 ### 💻 [Implementation](./implementation/)
 
@@ -76,20 +76,20 @@ Software engineering best practices and standards.
 
 - **[Coding Standards](./engineering/coding-standards.md)** - Style and conventions
 - **[Error Handling](./engineering/error-handling.md)** - Error patterns and recovery
-- **[Logging Guide](./engineering/logging.md)** - Structured logging practices
-- **[Performance Optimization](./engineering/performance.md)** - Optimization techniques
+- **[Logging Guide](./engineering/logging-guide.md)** - Structured logging practices
+- **[Performance Optimization](./engineering/performance-optimization.md)** - Optimization techniques
 - **[Code Review Checklist](./engineering/code-review.md)** - Review guidelines
 
 ### 🧪 [Testing](./testing/)
 
 Testing strategies and implementation.
 
-- **[Testing Strategy](./testing/strategy.md)** - Overall testing approach
-- **[Unit Testing](./testing/unit-tests.md)** - Component testing patterns
-- **[Integration Testing](./testing/integration-tests.md)** - Multi-component tests
-- **[End-to-End Testing](./testing/e2e-tests.md)** - Full system tests
-- **[Performance Testing](./testing/performance-tests.md)** - Load and stress testing
-- **[Security Testing](./testing/security-tests.md)** - Vulnerability testing
+- **[Testing Strategy](./testing/testing-strategy.md)** - Overall testing approach
+- **[Unit Testing](./testing/unit-testing.md)** - Component testing patterns
+- **[Integration Testing](./testing/integration-testing.md)** - Multi-component tests
+- **[End-to-End Testing](./testing/e2e-testing.md)** - Full system tests
+- **[Performance Testing](./testing/performance-testing.md)** - Load and stress testing
+- **[Security Testing](./security/security-testing.md)** - Vulnerability testing
 
 ### 🔒 [Security](./security/)
 
@@ -121,14 +121,14 @@ API documentation and integration guides.
 
 #### Core API Documentation
 
-- **[REST API](./api/rest-api.md)** - HTTP API specification
+- **[REST API](./api/services/REST-API.md)** - HTTP API specification
 - **[Component Contracts](./api/component-contracts.md)** - Complete API contracts and schemas
-- **[Orchestrator API](./api/orchestrator-api.md)** - Brain interface
+- **[Orchestrator API](./api/services/orchestrator-api.md)** - Brain interface
 - **[Arm API Contracts](./api/arm-contracts.md)** - Arm interface standards
 
 #### Integration
 
-- **[WebSocket API](./api/websocket-api.md)** - Real-time updates
+- **[WebSocket API](./api/services/websocket-api.md)** - Real-time updates
 - **[Integration Examples](./api/integration-examples.md)** - Code samples
 
 ### 📚 [Guides](./guides/)

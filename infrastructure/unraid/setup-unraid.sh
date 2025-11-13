@@ -126,7 +126,7 @@ log_info "System resources: ${TOTAL_CPU} CPU cores, ${TOTAL_RAM}GB RAM"
 
 if [ "$TOTAL_RAM" -lt 16 ]; then
     log_warning "Less than 16GB RAM detected. OctoLLM requires at least 16GB."
-    read -p "Continue anyway? (y/N) " -n 1 -r
+    read -r -p "Continue anyway? (y/N) " -n 1 REPLY
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         exit 1
@@ -224,13 +224,13 @@ log_warning "Keep this file secure and never commit it to version control!"
 # Prompt for optional API keys
 echo ""
 log_info "Optional: Configure cloud LLM APIs (press Enter to skip)"
-read -p "OpenAI API Key (optional, for fallback): " OPENAI_KEY
+read -r -p "OpenAI API Key (optional, for fallback): " OPENAI_KEY
 if [ -n "$OPENAI_KEY" ]; then
     sed -i "s|OPENAI_API_KEY=|OPENAI_API_KEY=$OPENAI_KEY|g" "$ENV_FILE"
     log_success "OpenAI API key configured"
 fi
 
-read -p "Anthropic API Key (optional, for Claude): " ANTHROPIC_KEY
+read -r -p "Anthropic API Key (optional, for Claude): " ANTHROPIC_KEY
 if [ -n "$ANTHROPIC_KEY" ]; then
     sed -i "s|ANTHROPIC_API_KEY=|ANTHROPIC_API_KEY=$ANTHROPIC_KEY|g" "$ENV_FILE"
     log_success "Anthropic API key configured"

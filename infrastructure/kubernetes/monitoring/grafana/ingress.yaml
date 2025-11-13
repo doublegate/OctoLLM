@@ -1,0 +1,54 @@
+# Grafana Ingress with TLS
+# Exposes Grafana externally at https://grafana.octollm.dev
+#
+# Prerequisites:
+# - cert-manager installed in cluster
+# - ClusterIssuer configured (letsencrypt-prod)
+# - DNS record: grafana.octollm.dev -> Load Balancer IP
+#
+# Features:
+# - Automatic TLS certificate from Let's Encrypt
+# - HTTPS redirect (force SSL)
+# - Cloud Armor integration for DDoS protection
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-ingress
+  namespace: octollm-monitoring
+  labels:
+    app: grafana
+    component: monitoring
+  annotations:
+    # cert-manager: Automatic TLS certificate management
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+    # Force HTTPS redirect
+    kubernetes.io/ingress.allow-http: "false"
+
+    # GKE-specific annotations
+    kubernetes.io/ingress.class: "gce"
+
+    # Backend configuration (health check, timeout)
+    cloud.google.com/backend-config: "grafana-backend-config"
+
+    # Cloud Armor security policy (optional - enable for production)
+    # cloud.google.com/armor-config: "grafana-security-policy"
+
+spec:
+  tls:
+    - hosts:
+        - grafana.octollm.dev
+      secretName: grafana-tls-cert  # Managed by cert-manager
+
+  rules:
+    - host: grafana.octollm.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: 3000

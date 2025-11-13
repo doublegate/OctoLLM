@@ -12,6 +12,7 @@ cd "$SCRIPT_DIR/.."
 
 if [ -f .env.unraid ]; then
     set -a
+    # shellcheck source=/dev/null
     source .env.unraid
     set +a
 fi

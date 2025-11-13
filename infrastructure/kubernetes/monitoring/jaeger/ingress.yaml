@@ -1,0 +1,29 @@
+# Jaeger UI Ingress with TLS
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jaeger-ingress
+  namespace: octollm-monitoring
+  labels:
+    app: jaeger
+    component: monitoring
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.allow-http: "false"
+    kubernetes.io/ingress.class: "gce"
+spec:
+  tls:
+    - hosts:
+        - jaeger.octollm.dev
+      secretName: jaeger-tls-cert
+  rules:
+    - host: jaeger.octollm.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jaeger-query
+                port:
+                  number: 16686

@@ -1,0 +1,170 @@
+# Grafana Deployment for OctoLLM GKE Monitoring
+# Provides visualization dashboards for metrics, logs, and traces
+#
+# Features:
+# - Persistent storage for dashboards and configuration
+# - Auto-provisioned datasources (Prometheus, Loki, Jaeger)
+# - Resource limits for production stability
+# - Health checks and liveness probes
+# - Security context (non-root user)
+#
+# Usage:
+#   kubectl apply -f namespace.yaml
+#   kubectl apply -f deployment.yaml
+#   kubectl apply -f service.yaml
+#   kubectl apply -f ingress.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: octollm-monitoring
+  labels:
+    app: grafana
+    component: monitoring
+    tier: visualization
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+        component: monitoring
+        tier: visualization
+    spec:
+      securityContext:
+        fsGroup: 472
+        runAsUser: 472
+        runAsNonRoot: true
+
+      containers:
+        - name: grafana
+          image: grafana/grafana:10.3.3
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+
+          env:
+            # Security settings
+            - name: GF_SECURITY_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-credentials
+                  key: admin-user
+
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-credentials
+                  key: admin-password
+
+            # Server settings
+            - name: GF_SERVER_ROOT_URL
+              value: "https://grafana.octollm.dev"
+
+            - name: GF_SERVER_DOMAIN
+              value: "grafana.octollm.dev"
+
+            # Database settings (use SQLite for simplicity, upgrade to PostgreSQL for HA)
+            - name: GF_DATABASE_TYPE
+              value: "sqlite3"
+
+            # Analytics and telemetry (disabled for privacy)
+            - name: GF_ANALYTICS_REPORTING_ENABLED
+              value: "false"
+
+            - name: GF_ANALYTICS_CHECK_FOR_UPDATES
+              value: "false"
+
+            # Auth settings
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "false"
+
+            # Install plugins
+            - name: GF_INSTALL_PLUGINS
+              value: "grafana-piechart-panel,grafana-clock-panel"
+
+            # Provisioning paths
+            - name: GF_PATHS_PROVISIONING
+              value: "/etc/grafana/provisioning"
+
+            # Logging
+            - name: GF_LOG_MODE
+              value: "console"
+
+            - name: GF_LOG_LEVEL
+              value: "info"
+
+          volumeMounts:
+            # Persistent storage for Grafana data (dashboards, users, etc.)
+            - name: grafana-storage
+              mountPath: /var/lib/grafana
+
+            # Provisioning configuration (datasources, dashboards)
+            - name: grafana-datasources
+              mountPath: /etc/grafana/provisioning/datasources
+              readOnly: true
+
+            - name: grafana-dashboards-provisioning
+              mountPath: /etc/grafana/provisioning/dashboards
+              readOnly: true
+
+            # Dashboard JSON files
+            - name: grafana-dashboards
+              mountPath: /var/lib/grafana/dashboards
+              readOnly: true
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+      volumes:
+        # Persistent volume for Grafana data
+        - name: grafana-storage
+          persistentVolumeClaim:
+            claimName: grafana-pvc
+
+        # ConfigMap for datasource provisioning
+        - name: grafana-datasources
+          configMap:
+            name: grafana-datasources
+
+        # ConfigMap for dashboard provisioning configuration
+        - name: grafana-dashboards-provisioning
+          configMap:
+            name: grafana-dashboards-provisioning
+
+        # ConfigMap for dashboard JSON files
+        - name: grafana-dashboards
+          configMap:
+            name: grafana-dashboards
+
+      restartPolicy: Always

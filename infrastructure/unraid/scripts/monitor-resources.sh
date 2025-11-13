@@ -74,8 +74,8 @@ while true; do
     sleep 1
     RX_BYTES_NEW=$(cat /sys/class/net/bond0/statistics/rx_bytes 2>/dev/null || echo "0")
     TX_BYTES_NEW=$(cat /sys/class/net/bond0/statistics/tx_bytes 2>/dev/null || echo "0")
-    RX_RATE=$(( ($RX_BYTES_NEW - $RX_BYTES) / 1024 / 1024 ))
-    TX_RATE=$(( ($TX_BYTES_NEW - $TX_BYTES) / 1024 / 1024 ))
+    RX_RATE=$(( (RX_BYTES_NEW - RX_BYTES) / 1024 / 1024 ))
+    TX_RATE=$(( (TX_BYTES_NEW - TX_BYTES) / 1024 / 1024 ))
 
     # Clear screen and display
     tput cup 0 0
@@ -87,40 +87,40 @@ while true; do
     echo ""
 
     # CPU
-    printf "CPU (${CPU_CORES} cores): "
+    printf 'CPU (%s cores): ' "$CPU_CORES"
     if (( $(echo "$CPU_USAGE > $CPU_CRIT" | bc -l) )); then
-        printf "${RED}%.1f%%${NC} [CRITICAL]\n" "$CPU_USAGE"
+        printf '%b%.1f%%%b [CRITICAL]\n' "$RED" "$CPU_USAGE" "$NC"
         log_entry "ALERT: CPU usage critical: ${CPU_USAGE}%"
     elif (( $(echo "$CPU_USAGE > $CPU_WARN" | bc -l) )); then
-        printf "${YELLOW}%.1f%%${NC} [WARNING]\n" "$CPU_USAGE"
+        printf '%b%.1f%%%b [WARNING]\n' "$YELLOW" "$CPU_USAGE" "$NC"
     else
-        printf "${GREEN}%.1f%%${NC}\n" "$CPU_USAGE"
+        printf '%b%.1f%%%b\n' "$GREEN" "$CPU_USAGE" "$NC"
     fi
 
     # Progress bar for CPU
     printf "["
     FILLED=$(awk "BEGIN {printf \"%.0f\", $CPU_USAGE/2}")
     for ((i=0; i<50; i++)); do
-        if [ $i -lt $FILLED ]; then printf "█"; else printf "░"; fi
+        if [ "$i" -lt "$FILLED" ]; then printf "█"; else printf "░"; fi
     done
     printf "]\n\n"
 
     # Memory
-    printf "RAM (${MEM_TOTAL}GB): "
+    printf 'RAM (%sGB): ' "$MEM_TOTAL"
     if (( $(echo "$MEM_PERCENT > $MEM_CRIT" | bc -l) )); then
-        printf "${RED}${MEM_USED}GB / ${MEM_TOTAL}GB (${MEM_PERCENT}%%)${NC} [CRITICAL]\n"
+        printf '%b%sGB / %sGB (%s%%)%b [CRITICAL]\n' "$RED" "$MEM_USED" "$MEM_TOTAL" "$MEM_PERCENT" "$NC"
         log_entry "ALERT: Memory usage critical: ${MEM_PERCENT}%"
     elif (( $(echo "$MEM_PERCENT > $MEM_WARN" | bc -l) )); then
-        printf "${YELLOW}${MEM_USED}GB / ${MEM_TOTAL}GB (${MEM_PERCENT}%%)${NC} [WARNING]\n"
+        printf '%b%sGB / %sGB (%s%%)%b [WARNING]\n' "$YELLOW" "$MEM_USED" "$MEM_TOTAL" "$MEM_PERCENT" "$NC"
     else
-        printf "${GREEN}${MEM_USED}GB / ${MEM_TOTAL}GB (${MEM_PERCENT}%%)${NC}\n"
+        printf '%b%sGB / %sGB (%s%%)%b\n' "$GREEN" "$MEM_USED" "$MEM_TOTAL" "$MEM_PERCENT" "$NC"
     fi
 
     # Progress bar for Memory
     printf "["
     FILLED=$(awk "BEGIN {printf \"%.0f\", $MEM_PERCENT/2}")
     for ((i=0; i<50; i++)); do
-        if [ $i -lt $FILLED ]; then printf "█"; else printf "░"; fi
+        if [ "$i" -lt "$FILLED" ]; then printf "█"; else printf "░"; fi
     done
     printf "]\n\n"
 
@@ -130,20 +130,20 @@ while true; do
         echo "NVIDIA Tesla P40 GPU"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-        printf "Utilization:  ${BLUE}${GPU_UTIL}%%${NC}\n"
-        printf "VRAM:         ${BLUE}${GPU_MEM_USED}MB / ${GPU_MEM_TOTAL}MB (${GPU_MEM_PERCENT}%%)${NC}\n"
+        printf 'Utilization:  %b%s%%%b\n' "$BLUE" "$GPU_UTIL" "$NC"
+        printf 'VRAM:         %b%sMB / %sMB (%s%%)%b\n' "$BLUE" "$GPU_MEM_USED" "$GPU_MEM_TOTAL" "$GPU_MEM_PERCENT" "$NC"
 
         printf "Temperature:  "
         if [ "$GPU_TEMP" -gt "$GPU_TEMP_CRIT" ]; then
-            printf "${RED}${GPU_TEMP}°C${NC} [CRITICAL]\n"
+            printf '%b%s°C%b [CRITICAL]\n' "$RED" "$GPU_TEMP" "$NC"
             log_entry "ALERT: GPU temperature critical: ${GPU_TEMP}°C"
         elif [ "$GPU_TEMP" -gt "$GPU_TEMP_WARN" ]; then
-            printf "${YELLOW}${GPU_TEMP}°C${NC} [WARNING]\n"
+            printf '%b%s°C%b [WARNING]\n' "$YELLOW" "$GPU_TEMP" "$NC"
         else
-            printf "${GREEN}${GPU_TEMP}°C${NC}\n"
+            printf '%b%s°C%b\n' "$GREEN" "$GPU_TEMP" "$NC"
         fi
 
-        printf "Power:        ${BLUE}${GPU_POWER}${NC}\n"
+        printf 'Power:        %b%s%b\n' "$BLUE" "$GPU_POWER" "$NC"
         echo ""
     fi
 
@@ -154,10 +154,10 @@ while true; do
 
     printf "Usage: "
     if [ "$DISK_PERCENT" -gt "$DISK_WARN" ]; then
-        printf "${RED}${DISK_USED}GB / ${DISK_TOTAL}GB (${DISK_PERCENT}%%)${NC} [WARNING]\n"
+        printf '%b%sGB / %sGB (%s%%)%b [WARNING]\n' "$RED" "$DISK_USED" "$DISK_TOTAL" "$DISK_PERCENT" "$NC"
         log_entry "ALERT: Disk usage high: ${DISK_PERCENT}%"
     else
-        printf "${GREEN}${DISK_USED}GB / ${DISK_TOTAL}GB (${DISK_PERCENT}%%)${NC}\n"
+        printf '%b%sGB / %sGB (%s%%)%b\n' "$GREEN" "$DISK_USED" "$DISK_TOTAL" "$DISK_PERCENT" "$NC"
     fi
     echo ""
 
@@ -165,7 +165,7 @@ while true; do
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "Network (bond0 - 4Gbps)"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    printf "Download: ${BLUE}${RX_RATE} MB/s${NC}  |  Upload: ${BLUE}${TX_RATE} MB/s${NC}\n"
+    printf 'Download: %b%s MB/s%b  |  Upload: %b%s MB/s%b\n' "$BLUE" "$RX_RATE" "$NC" "$BLUE" "$TX_RATE" "$NC"
     echo ""
 
     # Docker containers

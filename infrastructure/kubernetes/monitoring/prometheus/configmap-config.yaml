@@ -1,0 +1,134 @@
+# Prometheus Configuration ConfigMap
+# Defines scrape configurations and alert rule files
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: octollm-monitoring
+  labels:
+    app: prometheus
+    component: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 30s
+      evaluation_interval: 30s
+      external_labels:
+        cluster: 'octollm-gke'
+        environment: 'production'
+
+    # Alertmanager configuration
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+                - alertmanager.octollm-monitoring.svc.cluster.local:9093
+
+    # Load rules from mounted ConfigMaps
+    rule_files:
+      - '/etc/prometheus/alerts/*.yml'
+
+    # Scrape configurations
+    scrape_configs:
+      # Prometheus itself
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      # Kubernetes API server
+      - job_name: 'kubernetes-apiservers'
+        kubernetes_sd_configs:
+          - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels:
+              - __meta_kubernetes_namespace
+              - __meta_kubernetes_service_name
+              - __meta_kubernetes_endpoint_port_name
+            action: keep
+            regex: default;kubernetes;https
+
+      # Kubernetes nodes (kubelet)
+      - job_name: 'kubernetes-nodes'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+
+      # Kubernetes pods (via ServiceMonitor)
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+
+      # OctoLLM services (explicit configuration for Phase 1+)
+      - job_name: 'orchestrator'
+        static_configs:
+          - targets: ['orchestrator.octollm-dev.svc.cluster.local:8000']
+            labels:
+              environment: 'dev'
+          - targets: ['orchestrator.octollm-staging.svc.cluster.local:8000']
+            labels:
+              environment: 'staging'
+          - targets: ['orchestrator.octollm-prod.svc.cluster.local:8000']
+            labels:
+              environment: 'prod'
+        metrics_path: '/metrics'
+        scrape_interval: 15s
+
+      - job_name: 'reflex-layer'
+        static_configs:
+          - targets: ['reflex-layer.octollm-dev.svc.cluster.local:8080']
+            labels:
+              environment: 'dev'
+          - targets: ['reflex-layer.octollm-staging.svc.cluster.local:8080']
+            labels:
+              environment: 'staging'
+          - targets: ['reflex-layer.octollm-prod.svc.cluster.local:8080']
+            labels:
+              environment: 'prod'
+        metrics_path: '/metrics'
+        scrape_interval: 10s  # More frequent for fast layer
+
+      - job_name: 'arms'
+        static_configs:
+          - targets:
+              - 'planner-arm.octollm-prod.svc.cluster.local:8100'
+              - 'executor-arm.octollm-prod.svc.cluster.local:8101'
+              - 'coder-arm.octollm-prod.svc.cluster.local:8102'
+              - 'judge-arm.octollm-prod.svc.cluster.local:8103'
+              - 'guardian-arm.octollm-prod.svc.cluster.local:8104'
+              - 'retriever-arm.octollm-prod.svc.cluster.local:8105'
+            labels:
+              environment: 'prod'
+        metrics_path: '/metrics'
+        scrape_interval: 20s

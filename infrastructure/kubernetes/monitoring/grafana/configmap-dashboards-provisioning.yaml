@@ -1,0 +1,29 @@
+# Grafana Dashboard Provisioning Configuration
+# Automatically loads dashboard JSON files from ConfigMap
+#
+# This configuration tells Grafana where to find dashboard JSON files
+# and how to organize them in folders
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-provisioning
+  namespace: octollm-monitoring
+  labels:
+    app: grafana
+    component: monitoring
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+
+    providers:
+      - name: 'OctoLLM GKE Dashboards'
+        orgId: 1
+        folder: 'OctoLLM'
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 30
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana/dashboards
+          foldersFromFilesStructure: false

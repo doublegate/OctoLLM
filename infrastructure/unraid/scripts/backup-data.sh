@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-APPDATA="/mnt/user/appdata/octollm"
+export APPDATA="/mnt/user/appdata/octollm"
 BACKUP_DIR="/mnt/user/backups/octollm"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 BACKUP_NAME="octollm_backup_${TIMESTAMP}"
