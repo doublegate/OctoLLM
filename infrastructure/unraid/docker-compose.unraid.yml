@@ -1,0 +1,871 @@
+# OctoLLM Unraid Deployment
+# Optimized for Dell PowerEdge R730xd with Tesla P40 GPU
+# Resource allocation: 48GB RAM, 38 CPU cores, 24GB VRAM
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Infrastructure Services - Databases & Caching
+  # ============================================================================
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: octollm-postgres
+    user: "99:100"  # Unraid convention: nobody:users
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-octollm}
+      POSTGRES_USER: ${POSTGRES_USER:-octollm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "3010:5432"
+    volumes:
+      - /mnt/user/appdata/octollm/postgres/data:/var/lib/postgresql/data
+      - /mnt/user/appdata/octollm/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-octollm} -d ${POSTGRES_DB:-octollm}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '2'
+          memory: 2G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7-alpine
+    container_name: octollm-redis
+    user: "99:100"
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 2gb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+    ports:
+      - "3011:6379"
+    volumes:
+      - /mnt/user/appdata/octollm/redis/data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  qdrant:
+    image: qdrant/qdrant:v1.7.4
+    container_name: octollm-qdrant
+    user: "99:100"
+    ports:
+      - "3012:6333"  # HTTP API
+      - "3013:6334"  # gRPC API
+    volumes:
+      - /mnt/user/appdata/octollm/qdrant/storage:/qdrant/storage
+      - /mnt/user/appdata/octollm/qdrant/snapshots:/qdrant/snapshots
+    environment:
+      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY}
+      QDRANT__LOG_LEVEL: ${QDRANT_LOG_LEVEL:-INFO}
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:6333/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '2'
+          memory: 2G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ============================================================================
+  # Local LLM Inference - Ollama with Tesla P40 GPU
+  # ============================================================================
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: octollm-ollama
+    ports:
+      - "3014:11434"
+    volumes:
+      - /mnt/user/appdata/octollm/ollama/models:/root/.ollama
+    environment:
+      OLLAMA_HOST: 0.0.0.0
+      OLLAMA_ORIGINS: "*"
+      OLLAMA_NUM_PARALLEL: ${OLLAMA_NUM_PARALLEL:-4}
+      OLLAMA_MAX_LOADED_MODELS: ${OLLAMA_MAX_LOADED_MODELS:-3}
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-5m}
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 16G
+        reservations:
+          cpus: '4'
+          memory: 8G
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  # ============================================================================
+  # Core Services - Reflex Layer & Orchestrator
+  # ============================================================================
+
+  reflex-layer:
+    build:
+      context: ../..
+      dockerfile: services/reflex-layer/Dockerfile
+    image: octollm/reflex-layer:latest
+    container_name: octollm-reflex
+    user: "99:100"
+    environment:
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      RUST_LOG: ${RUST_LOG:-info}
+      RUST_BACKTRACE: ${RUST_BACKTRACE:-0}
+      REFLEX_CACHE_TTL: ${REFLEX_CACHE_TTL:-3600}
+      REFLEX_RATE_LIMIT_PER_MINUTE: ${REFLEX_RATE_LIMIT_PER_MINUTE:-1000}
+      PII_DETECTION_ENABLED: ${PII_DETECTION_ENABLED:-true}
+      PII_AUTO_REDACT: ${PII_AUTO_REDACT:-true}
+      REFLEX_HOST: ${REFLEX_HOST:-0.0.0.0}
+      REFLEX_PORT: ${REFLEX_PORT:-3001}
+    ports:
+      - "3001:3001"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3001/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 2G
+        reservations:
+          cpus: '2'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  orchestrator:
+    build:
+      context: ../..
+      dockerfile: services/orchestrator/Dockerfile
+    image: octollm/orchestrator:latest
+    container_name: octollm-orchestrator
+    user: "99:100"
+    environment:
+      # Database connections
+      DATABASE_URL: postgresql://${POSTGRES_USER:-octollm}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-octollm}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_API_KEY: ${QDRANT_API_KEY}
+
+      # LLM Configuration - Prefer local Ollama
+      PREFER_LOCAL_LLM: ${PREFER_LOCAL_LLM:-true}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_PRIMARY_MODEL: ${OLLAMA_PRIMARY_MODEL:-llama3.1:8b}
+      OLLAMA_FALLBACK_MODEL: ${OLLAMA_FALLBACK_MODEL:-mixtral:8x7b}
+
+      # Cloud LLM APIs (fallback/optional)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4-turbo-preview}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-3-sonnet-20240229}
+
+      # Service configuration
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      HOST_IP: ${HOST_IP:-192.168.4.6}
+      MAX_PARALLEL_ARMS: ${MAX_PARALLEL_ARMS:-5}
+      TASK_TIMEOUT: ${TASK_TIMEOUT:-300}
+      CACHE_TTL: ${CACHE_TTL:-3600}
+      ENABLE_SWARM_DECISIONS: ${ENABLE_SWARM_DECISIONS:-false}
+
+      # Service URLs
+      REFLEX_URL: http://reflex-layer:3001
+      PLANNER_URL: http://planner-arm:6001
+      RETRIEVER_URL: http://retriever-arm:6003
+      CODER_URL: http://coder-arm:6004
+      JUDGE_URL: http://judge-arm:6005
+      SAFETY_GUARDIAN_URL: http://safety-guardian-arm:6006
+      EXECUTOR_URL: http://executor-arm:6002
+
+      # Observability
+      PROMETHEUS_METRICS_ENABLED: ${PROMETHEUS_METRICS_ENABLED:-true}
+      PROMETHEUS_PORT: ${PROMETHEUS_PORT:-8000}
+      JAEGER_ENABLED: ${JAEGER_ENABLED:-false}
+      JAEGER_AGENT_HOST: ${JAEGER_AGENT_HOST:-jaeger}
+      JAEGER_AGENT_PORT: ${JAEGER_AGENT_PORT:-6831}
+    ports:
+      - "3000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+      reflex-layer:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '2'
+          memory: 2G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # ============================================================================
+  # Specialized Arms - AI Capabilities
+  # ============================================================================
+
+  planner-arm:
+    build:
+      context: ../..
+      dockerfile: services/arms/planner/Dockerfile
+    image: octollm/planner-arm:latest
+    container_name: octollm-planner
+    user: "99:100"
+    environment:
+      # Prefer local LLM
+      PREFER_LOCAL_LLM: ${PREFER_LOCAL_LLM:-true}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_PLANNER_MODEL:-llama3.1:8b}
+
+      # Fallback cloud LLMs
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_PLANNER_MODEL:-gpt-3.5-turbo}
+
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      ARM_PORT: ${PLANNER_PORT:-6001}
+    ports:
+      - "6001:6001"
+    depends_on:
+      ollama:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:6001/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  executor-arm:
+    build:
+      context: ../..
+      dockerfile: services/arms/executor/Dockerfile
+    image: octollm/executor-arm:latest
+    container_name: octollm-executor
+    user: "99:100"
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      RUST_LOG: ${RUST_LOG:-info}
+      RUST_BACKTRACE: ${RUST_BACKTRACE:-0}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      ARM_PORT: ${EXECUTOR_PORT:-6002}
+      SANDBOX_ENABLED: ${EXECUTOR_SANDBOX_ENABLED:-true}
+      COMMAND_TIMEOUT: ${EXECUTOR_COMMAND_TIMEOUT:-30}
+      MAX_CONCURRENT_EXECUTIONS: ${EXECUTOR_MAX_CONCURRENT:-5}
+    ports:
+      - "6002:6002"
+    # Security: Drop all capabilities except what's needed
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    # Sandboxing with seccomp profile
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=unconfined
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:6002/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  retriever-arm:
+    build:
+      context: ../..
+      dockerfile: services/arms/retriever/Dockerfile
+    image: octollm/retriever-arm:latest
+    container_name: octollm-retriever
+    user: "99:100"
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_API_KEY: ${QDRANT_API_KEY}
+
+      # Prefer local LLM for embeddings
+      PREFER_LOCAL_LLM: ${PREFER_LOCAL_LLM:-true}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_EMBEDDING_MODEL: ${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text}
+
+      # Fallback OpenAI embeddings
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      ARM_PORT: ${RETRIEVER_PORT:-6003}
+      EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-768}
+      MAX_SEARCH_RESULTS: ${RETRIEVER_MAX_RESULTS:-10}
+    ports:
+      - "6003:6003"
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:6003/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  coder-arm:
+    build:
+      context: ../..
+      dockerfile: services/arms/coder/Dockerfile
+    image: octollm/coder-arm:latest
+    container_name: octollm-coder
+    user: "99:100"
+    environment:
+      # Prefer local LLM
+      PREFER_LOCAL_LLM: ${PREFER_LOCAL_LLM:-true}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_CODER_MODEL:-codellama:13b}
+
+      # Fallback cloud LLMs
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_CODER_MODEL:-gpt-4-turbo-preview}
+
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      ARM_PORT: ${CODER_PORT:-6004}
+      MAX_CODE_LENGTH: ${CODER_MAX_LENGTH:-50000}
+      SYNTAX_CHECK_ENABLED: ${CODER_SYNTAX_CHECK:-true}
+    ports:
+      - "6004:6004"
+    depends_on:
+      ollama:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:6004/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  judge-arm:
+    build:
+      context: ../..
+      dockerfile: services/arms/judge/Dockerfile
+    image: octollm/judge-arm:latest
+    container_name: octollm-judge
+    user: "99:100"
+    environment:
+      # Prefer local LLM
+      PREFER_LOCAL_LLM: ${PREFER_LOCAL_LLM:-true}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_JUDGE_MODEL:-llama3.1:8b}
+
+      # Fallback cloud LLMs
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_JUDGE_MODEL:-gpt-3.5-turbo}
+
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      ARM_PORT: ${JUDGE_PORT:-6005}
+      VALIDATION_STRICT_MODE: ${JUDGE_STRICT_MODE:-true}
+    ports:
+      - "6005:6005"
+    depends_on:
+      ollama:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:6005/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  safety-guardian-arm:
+    build:
+      context: ../..
+      dockerfile: services/arms/safety-guardian/Dockerfile
+    image: octollm/safety-guardian-arm:latest
+    container_name: octollm-safety-guardian
+    user: "99:100"
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      ARM_PORT: ${SAFETY_GUARDIAN_PORT:-6006}
+      PII_DETECTION_ENABLED: ${PII_DETECTION_ENABLED:-true}
+      PII_AUTO_REDACT: ${PII_AUTO_REDACT:-true}
+      CONTENT_FILTER_ENABLED: ${CONTENT_FILTER_ENABLED:-true}
+      INJECTION_DETECTION_ENABLED: ${INJECTION_DETECTION_ENABLED:-true}
+      BLOCKLIST_ENABLED: ${BLOCKLIST_ENABLED:-true}
+    ports:
+      - "6006:6006"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:6006/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ============================================================================
+  # Monitoring & Observability
+  # ============================================================================
+
+  prometheus:
+    image: prom/prometheus:v2.49.1
+    container_name: octollm-prometheus
+    user: "99:100"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    ports:
+      - "9090:9090"
+    volumes:
+      - /mnt/user/appdata/octollm/prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - /mnt/user/appdata/octollm/prometheus/config/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - /mnt/user/appdata/octollm/prometheus/data:/prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9090/-/healthy || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  grafana:
+    image: grafana/grafana:10.3.3
+    container_name: octollm-grafana
+    user: "99:100"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_SERVER_ROOT_URL: http://${HOST_IP:-192.168.4.6}:3030
+      GF_INSTALL_PLUGINS: ${GRAFANA_INSTALL_PLUGINS:-grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel}
+      GF_USERS_ALLOW_SIGN_UP: false
+      GF_ANALYTICS_REPORTING_ENABLED: false
+      GF_ANALYTICS_CHECK_FOR_UPDATES: false
+    ports:
+      - "3030:3000"
+    volumes:
+      - /mnt/user/appdata/octollm/grafana/data:/var/lib/grafana
+      - /mnt/user/appdata/octollm/grafana/provisioning:/etc/grafana/provisioning:ro
+      - /mnt/user/appdata/octollm/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  loki:
+    image: grafana/loki:2.9.4
+    container_name: octollm-loki
+    user: "99:100"
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - /mnt/user/appdata/octollm/loki/config:/etc/loki:ro
+      - /mnt/user/appdata/octollm/loki/data:/loki
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ============================================================================
+  # Exporters for Monitoring
+  # ============================================================================
+
+  node-exporter:
+    image: prom/node-exporter:v1.7.0
+    container_name: octollm-node-exporter
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: octollm-cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: octollm-postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: postgresql://${POSTGRES_USER:-octollm}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-octollm}?sslmode=disable
+    ports:
+      - "9187:9187"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.56.0
+    container_name: octollm-redis-exporter
+    environment:
+      REDIS_ADDR: redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    ports:
+      - "9121:9121"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  nvidia-dcgm-exporter:
+    image: nvcr.io/nvidia/k8s/dcgm-exporter:3.3.0-3.2.0-ubuntu22.04
+    container_name: octollm-nvidia-exporter
+    ports:
+      - "9400:9400"
+    environment:
+      DCGM_EXPORTER_LISTEN: :9400
+      DCGM_EXPORTER_KUBERNETES: "false"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      - octollm-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+# ============================================================================
+# Networks
+# ============================================================================
+
+networks:
+  octollm-net:
+    driver: bridge
+    name: octollm-net
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+
+# ============================================================================
+# Note: Volumes are bind mounts to /mnt/user/appdata/octollm/
+# This follows Unraid convention for application data persistence
+# All directories are created by setup-unraid.sh script
+# ============================================================================

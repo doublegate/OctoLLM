@@ -1,0 +1,399 @@
+# OctoLLM Prometheus Alert Rules for Unraid Deployment
+# These alerts monitor system health, resource usage, and service availability
+
+groups:
+  # ============================================================================
+  # System Resource Alerts
+  # ============================================================================
+
+  - name: system_resources
+    interval: 30s
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for more than 5 minutes on {{ $labels.instance }}"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85% on {{ $labels.instance }}"
+
+      - alert: CriticalMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Memory usage is above 95% on {{ $labels.instance }} - OOM risk!"
+
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/mnt/user"} / node_filesystem_size_bytes{mountpoint="/mnt/user"}) * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "Low disk space on Unraid array"
+          description: "Disk space is below 10% on /mnt/user"
+
+      - alert: CriticalDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/mnt/user"} / node_filesystem_size_bytes{mountpoint="/mnt/user"}) * 100 < 5
+        for: 2m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Critical disk space on Unraid array"
+          description: "Disk space is below 5% on /mnt/user - immediate action required!"
+
+  # ============================================================================
+  # GPU Monitoring Alerts
+  # ============================================================================
+
+  - name: gpu_monitoring
+    interval: 30s
+    rules:
+      - alert: HighGPUTemperature
+        expr: DCGM_FI_DEV_GPU_TEMP > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: gpu
+        annotations:
+          summary: "High GPU temperature detected"
+          description: "GPU {{ $labels.gpu }} temperature is above 80°C ({{ $value }}°C)"
+
+      - alert: CriticalGPUTemperature
+        expr: DCGM_FI_DEV_GPU_TEMP > 90
+        for: 1m
+        labels:
+          severity: critical
+          component: gpu
+        annotations:
+          summary: "Critical GPU temperature detected"
+          description: "GPU {{ $labels.gpu }} temperature is above 90°C ({{ $value }}°C) - thermal throttling risk!"
+
+      - alert: HighGPUMemoryUsage
+        expr: (DCGM_FI_DEV_FB_USED / DCGM_FI_DEV_FB_FREE) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          component: gpu
+        annotations:
+          summary: "High GPU memory usage"
+          description: "GPU {{ $labels.gpu }} memory usage is above 90%"
+
+      - alert: GPUUtilizationLow
+        expr: DCGM_FI_DEV_GPU_UTIL < 5
+        for: 15m
+        labels:
+          severity: info
+          component: gpu
+        annotations:
+          summary: "Low GPU utilization"
+          description: "GPU {{ $labels.gpu }} utilization is below 5% for 15 minutes - check if models are loaded"
+
+  # ============================================================================
+  # Service Health Alerts
+  # ============================================================================
+
+  - name: service_health
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: service
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} on {{ $labels.instance }} has been down for more than 2 minutes"
+
+      - alert: HighServiceErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: service
+        annotations:
+          summary: "High error rate on {{ $labels.job }}"
+          description: "Service {{ $labels.job }} has error rate above 5%"
+
+      - alert: SlowServiceResponse
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: service
+        annotations:
+          summary: "Slow response time on {{ $labels.job }}"
+          description: "P95 latency is above 10 seconds for {{ $labels.job }}"
+
+  # ============================================================================
+  # Database Alerts
+  # ============================================================================
+
+  - name: database_monitoring
+    interval: 30s
+    rules:
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database has been down for more than 1 minute"
+
+      - alert: PostgreSQLHighConnections
+        expr: sum(pg_stat_database_numbackends) / max(pg_settings_max_connections) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "PostgreSQL connection pool nearly exhausted"
+          description: "PostgreSQL connection usage is above 80% ({{ $value }}%)"
+
+      - alert: PostgreSQLSlowQueries
+        expr: rate(pg_stat_statements_mean_exec_time[5m]) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "PostgreSQL slow queries detected"
+          description: "Average query execution time is above 1 second"
+
+      - alert: PostgreSQLCacheHitRateLow
+        expr: avg(pg_stat_database_blks_hit / (pg_stat_database_blks_hit + pg_stat_database_blks_read)) < 0.90
+        for: 10m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "PostgreSQL low cache hit rate"
+          description: "Cache hit rate is below 90% - consider increasing shared_buffers"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: cache
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache has been down for more than 1 minute"
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is above 90%"
+
+      - alert: RedisLowHitRate
+        expr: rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m])) < 0.80
+        for: 10m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Redis low hit rate"
+          description: "Redis cache hit rate is below 80% - check cache strategy"
+
+  # ============================================================================
+  # Container Resource Alerts
+  # ============================================================================
+
+  - name: container_resources
+    interval: 30s
+    rules:
+      - alert: ContainerHighCPU
+        expr: rate(container_cpu_usage_seconds_total{name=~"octollm-.*"}[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: container
+        annotations:
+          summary: "Container {{ $labels.name }} high CPU usage"
+          description: "Container {{ $labels.name }} CPU usage is above 80%"
+
+      - alert: ContainerHighMemory
+        expr: container_memory_usage_bytes{name=~"octollm-.*"} / container_spec_memory_limit_bytes{name=~"octollm-.*"} * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          component: container
+        annotations:
+          summary: "Container {{ $labels.name }} high memory usage"
+          description: "Container {{ $labels.name }} memory usage is above 90% of limit"
+
+      - alert: ContainerRestarting
+        expr: rate(container_last_seen{name=~"octollm-.*"}[5m]) > 2
+        for: 5m
+        labels:
+          severity: warning
+          component: container
+        annotations:
+          summary: "Container {{ $labels.name }} restarting frequently"
+          description: "Container {{ $labels.name }} has restarted more than 2 times in 5 minutes"
+
+      - alert: ContainerOOMKilled
+        expr: container_oom_events_total{name=~"octollm-.*"} > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: container
+        annotations:
+          summary: "Container {{ $labels.name }} OOM killed"
+          description: "Container {{ $labels.name }} was killed due to out-of-memory"
+
+  # ============================================================================
+  # Network Alerts
+  # ============================================================================
+
+  - name: network_monitoring
+    interval: 30s
+    rules:
+      - alert: HighNetworkReceive
+        expr: rate(node_network_receive_bytes_total{device="bond0"}[5m]) > 400000000  # 400MB/s (80% of 4Gbps)
+        for: 10m
+        labels:
+          severity: warning
+          component: network
+        annotations:
+          summary: "High network receive rate"
+          description: "Network receive rate on bond0 is above 400MB/s for 10 minutes"
+
+      - alert: HighNetworkTransmit
+        expr: rate(node_network_transmit_bytes_total{device="bond0"}[5m]) > 400000000  # 400MB/s (80% of 4Gbps)
+        for: 10m
+        labels:
+          severity: warning
+          component: network
+        annotations:
+          summary: "High network transmit rate"
+          description: "Network transmit rate on bond0 is above 400MB/s for 10 minutes"
+
+      - alert: NetworkPacketLoss
+        expr: rate(node_network_receive_drop_total{device="bond0"}[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: network
+        annotations:
+          summary: "Network packet loss detected"
+          description: "Network device bond0 is dropping packets"
+
+  # ============================================================================
+  # Ollama LLM Alerts
+  # ============================================================================
+
+  - name: ollama_monitoring
+    interval: 30s
+    rules:
+      - alert: OllamaHighLatency
+        expr: histogram_quantile(0.95, rate(ollama_request_duration_seconds_bucket[5m])) > 30
+        for: 5m
+        labels:
+          severity: warning
+          component: ollama
+        annotations:
+          summary: "Ollama high inference latency"
+          description: "P95 inference latency is above 30 seconds"
+
+      - alert: OllamaHighErrorRate
+        expr: rate(ollama_request_errors_total[5m]) / rate(ollama_requests_total[5m]) > 0.10
+        for: 5m
+        labels:
+          severity: warning
+          component: ollama
+        annotations:
+          summary: "Ollama high error rate"
+          description: "Ollama error rate is above 10%"
+
+      - alert: OllamaNoRequests
+        expr: rate(ollama_requests_total[15m]) == 0
+        for: 15m
+        labels:
+          severity: info
+          component: ollama
+        annotations:
+          summary: "Ollama receiving no requests"
+          description: "Ollama has not received any requests for 15 minutes - check service health"
+
+  # ============================================================================
+  # Application-Specific Alerts
+  # ============================================================================
+
+  - name: octollm_application
+    interval: 30s
+    rules:
+      - alert: HighTaskFailureRate
+        expr: rate(octollm_task_failures_total[5m]) / rate(octollm_tasks_total[5m]) > 0.20
+        for: 5m
+        labels:
+          severity: warning
+          component: orchestrator
+        annotations:
+          summary: "High task failure rate"
+          description: "Task failure rate is above 20%"
+
+      - alert: TaskQueueBacklog
+        expr: octollm_task_queue_size > 100
+        for: 10m
+        labels:
+          severity: warning
+          component: orchestrator
+        annotations:
+          summary: "Task queue backlog"
+          description: "Task queue has more than 100 pending tasks for 10 minutes"
+
+      - alert: ArmUnresponsive
+        expr: octollm_arm_health_check == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: arm
+        annotations:
+          summary: "Arm {{ $labels.arm_name }} unresponsive"
+          description: "Arm {{ $labels.arm_name }} failed health check for more than 2 minutes"
+
+      - alert: HighPIIDetectionRate
+        expr: rate(octollm_pii_detections_total[10m]) / rate(octollm_requests_total[10m]) > 0.10
+        for: 10m
+        labels:
+          severity: warning
+          component: safety-guardian
+        annotations:
+          summary: "High PII detection rate"
+          description: "More than 10% of requests contain PII - review data sources"
+
+      - alert: PromptInjectionDetected
+        expr: increase(octollm_prompt_injections_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: safety-guardian
+        annotations:
+          summary: "Prompt injection attempt detected"
+          description: "{{ $value }} prompt injection attempts detected in the last 5 minutes"

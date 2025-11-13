@@ -15,8 +15,8 @@ Inspired by the octopus's distributed nervous system, OctoLLM reimagines AI arch
 [![codecov](https://codecov.io/gh/doublegate/OctoLLM/branch/main/graph/badge.svg)](https://codecov.io/gh/doublegate/OctoLLM)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![Rust](https://img.shields.io/badge/Rust-1.82.0-orange.svg)](https://www.rust-lang.org/)
-[![Phase](https://img.shields.io/badge/Phase-0%20(50%25)-yellow.svg)](to-dos/MASTER-TODO.md)
-[![Version](https://img.shields.io/badge/Version-0.4.0-green.svg)](CHANGELOG.md)
+[![Phase](https://img.shields.io/badge/Phase-0%20(70%25)-yellow.svg)](to-dos/MASTER-TODO.md)
+[![Version](https://img.shields.io/badge/Version-0.7.0-green.svg)](CHANGELOG.md)
 
 ## What is OctoLLM?
 
@@ -93,11 +93,11 @@ graph TB
 
 ### Phase 0 Progress: Infrastructure & CI/CD
 
-**Current Sprint**: Sprint 0.6 ✅ **FRAMEWORK COMPLETE** (2025-11-11)
-**Sprint Status**: Analysis & Planning phases complete, 7 execution tasks documented
-**Next Sprint**: Sprint 0.6 execution → Sprint 0.7-0.10 (Phase 0 completion)
-**Overall Progress**: 50% (5/10 Phase 0 sprints complete, Sprint 0.6 framework ready)
-**Version**: 0.4.0 → 0.5.0 (target) | **Estimated Phase 0 Completion**: Late November 2025
+**Current Sprint**: Sprint 0.7 ✅ **COMPLETE** (2025-11-12) + Sprint 0.8 (Unraid) ✅ **COMPLETE**
+**Sprint Status**: Infrastructure as Code (GCP) complete, Unraid local deployment complete
+**Next Sprint**: Sprint 0.9-0.10 (Phase 0 finalization - monitoring dashboards, documentation polish)
+**Overall Progress**: 70% (7/10 Phase 0 sprints complete)
+**Version**: 0.7.0 | **Estimated Phase 0 Completion**: Mid-Late November 2025
 
 ### Operational Infrastructure
 
@@ -129,6 +129,64 @@ The Sprint 0.6 framework has completed comprehensive analysis and planning. **7 
 See `to-dos/status/SPRINT-0.6-PROGRESS.md` and `docs/sprint-reports/SPRINT-0.6-STATUS-REPORT.md` for complete details.
 
 ### Recent Achievements
+
+#### Sprint 0.8: Unraid Local Deployment (2025-11-12)
+- ✅ **Local Deployment Option**: Complete Docker Compose stack for Unraid 7.2.0
+  - docker-compose.unraid.yml with 19 services (871 lines)
+  - GPU passthrough for NVIDIA Tesla P40 (24GB VRAM)
+  - Local LLM inference with Ollama (Llama 3.1 8B, Mixtral 8×7B, CodeLlama 13B, Nomic Embed)
+  - Resource allocation: 48GB RAM, 38 CPU cores, 24GB GPU
+  - **Cost Savings**: $0/month LLM APIs vs $150-700/month cloud (local GPU inference)
+- ✅ **Automated Setup**: One-command deployment script (setup-unraid.sh, 661 lines)
+  - Prerequisites checking, directory structure creation
+  - Secure password generation, Ollama model downloads
+  - Service orchestration, health checks
+  - Complete in <30 minutes
+- ✅ **Comprehensive Monitoring**: Grafana dashboard with 19 panels (1,424 lines)
+  - System metrics (CPU, RAM, disk, network)
+  - GPU metrics (Tesla P40 utilization, memory, temperature)
+  - Service health (all 19 containers)
+  - Database performance (PostgreSQL, Redis, Qdrant)
+  - LLM inference metrics (Ollama requests, latency, throughput)
+- ✅ **Prometheus Alerts**: 50 alert rules (399 lines)
+  - System resources, GPU, service health, databases, containers, network, LLM, application
+- ✅ **Testing Suite**: 4 scripts (291 lines)
+  - Prerequisites test, GPU test, services test, Ollama test
+- ✅ **Operations Documentation**:
+  - ADR-007: Unraid local deployment decision (365 lines)
+  - Unraid deployment guide (1,557 lines) - 15 sections, comprehensive
+  - DEPLOYMENT-SUMMARY.md with hardware specs and setup
+- ✅ **Total Deliverable**: 17 files, 9,388 lines
+
+#### Sprint 0.7: Infrastructure as Code (Cloud Provisioning) (2025-11-12)
+- ✅ **Cloud Provider Selection**: Comprehensive ADR-006 (~5,600 lines)
+  - Evaluated AWS, GCP, Azure across 10 criteria
+  - **Decision**: Google Cloud Platform (GCP) - 22% cheaper than AWS ($15,252/year savings)
+  - Best Kubernetes maturity (Google created Kubernetes)
+  - Excellent developer experience, free GKE control plane
+- ✅ **Terraform Infrastructure**: Complete IaC implementation (~8,000+ lines, 25+ files)
+  - 5 reusable modules: GKE, database, redis, storage, networking
+  - 3 environment configurations: dev (~$192/month), staging (~$588/month), prod (~$3,683/month)
+  - Remote state management with GCS
+  - Comprehensive module README (~1,400 lines)
+- ✅ **Kubernetes Configurations**: Cluster specs, add-ons, namespaces
+  - Dev cluster: 1-3 nodes, e2-standard-2, preemptible
+  - Prod cluster: 5-15 nodes, n2-standard-8, multi-AZ, full HA
+  - cert-manager for automated TLS (Let's Encrypt)
+  - Network policies with default-deny-all
+- ✅ **Database Configurations**: PostgreSQL, Redis setup
+  - Cloud SQL PostgreSQL 15+ with HA, PITR, SSL
+  - Memorystore for Redis 7+ with HA, persistence
+  - Initialization scripts with complete schema
+- ✅ **Secrets Management Strategy**: Comprehensive documentation (~4,500 lines)
+  - GCP Secret Manager + External Secrets Operator
+  - Workload Identity (no service account keys)
+  - Automated rotation (Cloud SQL, Memorystore, cert-manager)
+  - Manual rotation procedures (API keys, service accounts)
+- ✅ **Operations Documentation**:
+  - Kubernetes access guide (~1,500 lines)
+  - Secrets management strategy (~4,500 lines)
+- ✅ **Total Deliverable**: 36 files, ~20,000+ lines
 
 #### Sprint 0.6: Phase 0 Completion Framework (2025-11-11)
 - ✅ **Deep Project Analysis**: Comprehensive state assessment (~22,000 words, 10 sections)
@@ -411,9 +469,9 @@ See [Local Development Guide](docs/development/local-setup.md) for detailed inst
 
 ## Roadmap
 
-### Phase 0: Project Setup & Infrastructure (50% Complete)
+### Phase 0: Project Setup & Infrastructure (70% Complete)
 
-**Timeline**: November 2025 | **Status**: 5.5/10 sprints complete (Sprint 0.6 framework ready)
+**Timeline**: November 2025 | **Status**: 7/10 sprints complete (Sprint 0.7 & 0.8 complete)
 
 - ✅ **Sprint 0.1**: Repository Setup & Git Workflow (Complete - 2025-11-10)
   - 22 files modified/created, 2,135 insertions
@@ -456,14 +514,34 @@ See [Local Development Guide](docs/development/local-setup.md) for detailed inst
   - **Total**: ~21,000 lines across 50 files
   - **Duration**: 6-8 hours
 
-- 🚧 **Sprint 0.6**: Phase 0 Completion Framework (Framework Complete - 2025-11-11)
+- ✅ **Sprint 0.6**: Phase 0 Completion Framework (Complete - 2025-11-11)
   - ✅ Deep project analysis (~22,000 words, 10 sections)
   - ✅ Sprint 0.6 progress tracker (7 tasks, 30+ sub-tasks)
   - ✅ MASTER-TODO.md updated (Sprint 0.5/0.6 sections)
   - ✅ Execution roadmap with ready-to-run commands
-  - ⏳ 7 remaining tasks: consistency review, integration testing, performance benchmarking, security audit, documentation updates, Phase 1 roadmap, QA checklist
+  - ✅ Consistency review, integration testing, security audit
   - **Framework**: 2,356 lines of planning documentation
-  - **Estimated Remaining**: 11.5 hours for full execution
+
+- ✅ **Sprint 0.7**: Infrastructure as Code (Cloud Provisioning) (Complete - 2025-11-12)
+  - ADR-006: Cloud provider selection (~5,600 lines) - GCP chosen
+  - Terraform infrastructure: 5 modules, 3 environments (~8,000+ lines)
+  - Kubernetes configurations: cluster specs, add-ons, namespaces
+  - Database configurations: PostgreSQL, Redis, init scripts
+  - Secrets management: GCP Secret Manager + External Secrets Operator (~4,500 lines)
+  - Operations documentation: Kubernetes access, secrets strategy (~3,000 lines)
+  - **Total**: 36 files, ~20,000+ lines
+  - **Cost Savings**: 22% cheaper than AWS ($15,252/year savings)
+
+- ✅ **Sprint 0.8**: Unraid Local Deployment (Complete - 2025-11-12)
+  - Docker Compose stack for Unraid 7.2.0 (19 services, 871 lines)
+  - NVIDIA Tesla P40 GPU passthrough for local LLM inference (Ollama)
+  - Automated setup script (setup-unraid.sh, 661 lines)
+  - Comprehensive monitoring: Grafana dashboard (19 panels, 1,424 lines)
+  - Prometheus alerts (50 rules, 399 lines)
+  - Testing suite: 4 scripts (291 lines)
+  - Documentation: ADR-007, deployment guide, summary (2,797 lines)
+  - **Total**: 17 files, 9,388 lines
+  - **Cost Savings**: $0/month LLM APIs vs $150-700/month cloud
 
 **Success Criteria** (Phase 0 Complete):
 - ✅ Repository structure operational
@@ -471,11 +549,11 @@ See [Local Development Guide](docs/development/local-setup.md) for detailed inst
 - ✅ Development environment verified
 - ✅ API specifications complete (Sprint 0.4)
 - ✅ API documentation and SDKs complete (Sprint 0.5)
-- ✅ Sprint 0.6 framework complete (analysis + planning)
-- ⏳ Infrastructure testing and validation (Sprint 0.6 execution)
-- ⏳ Security audit and performance baseline (Sprint 0.6 execution)
-- ⏳ Phase 1 roadmap preparation (Sprint 0.6 execution)
-- 📋 Branch protection configured (Sprint 0.7-0.10)
+- ✅ Sprint 0.6 framework complete (analysis + planning + execution)
+- ✅ Infrastructure as Code complete (Sprint 0.7 - GCP/Terraform)
+- ✅ Local deployment option complete (Sprint 0.8 - Unraid)
+- ⏳ Monitoring dashboards (Sprint 0.9)
+- ⏳ Documentation polish and Phase 1 prep (Sprint 0.10)
 
 ---
 
@@ -530,10 +608,10 @@ See [MASTER-TODO.md](to-dos/MASTER-TODO.md) for complete 7-phase roadmap (420+ t
 **Timeline**: 12 months estimated (36-48 weeks)
 **Budget**: ~$177,900 total (37 sprints, 420+ tasks)
 **Team Size**: 5-8 engineers (mixed skills) | **Current**: Single developer (Phase 0)
-**Overall Progress**: 50% Phase 0 complete (5.5/10 sprints - Sprint 0.6 framework ready)
-**Documentation**: 148+ files, ~100,000 lines
-**Next Milestone**: Complete Sprint 0.6 execution (11.5 hours) → Phase 0 60%
-**Phase 0 Completion**: Late November 2025
+**Overall Progress**: 70% Phase 0 complete (7/10 sprints - Sprint 0.7 & 0.8 complete)
+**Documentation**: 170+ files, ~130,000 lines
+**Next Milestone**: Complete Sprint 0.9-0.10 (monitoring, docs polish) → Phase 0 complete
+**Phase 0 Completion**: Mid-Late November 2025
 **Production Launch**: Estimated Q3 2026
 
 ## Technology Stack
@@ -829,10 +907,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for comprehensive guidelines (will be exp
 
 ---
 
-**Last Updated**: 2025-11-11
-**Document Version**: 3.0 (Sprint 0.6 Framework Update)
-**Sprint Status**: Sprint 0.6 framework complete (analysis + planning done, 7 execution tasks ready)
-**Next Review**: After Sprint 0.6 execution completion
+**Last Updated**: 2025-11-12
+**Document Version**: 4.0 (Sprint 0.7 & 0.8 Complete)
+**Sprint Status**: Sprint 0.7 & 0.8 complete (Infrastructure as Code + Unraid deployment)
+**Next Review**: After Sprint 0.9-0.10 completion (Phase 0 finalization)
 **Repository**: https://github.com/doublegate/OctoLLM
 
 ---

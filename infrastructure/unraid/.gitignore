@@ -1,0 +1,33 @@
+# OctoLLM Unraid .gitignore
+# Never commit secrets or local configuration!
+
+# Environment files with secrets
+.env.unraid
+.env.unraid.backup
+*.env
+
+# Docker Compose overrides
+docker-compose.override.yml
+docker-compose.unraid.override.yml
+
+# Backup files
+backups/
+*.backup
+*.bak
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
