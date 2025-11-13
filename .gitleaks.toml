@@ -1,18 +1,39 @@
 # Gitleaks Configuration for OctoLLM
 # Prevents false positives in documentation while catching real secrets in source code
+# Last Updated: 2025-11-13
+# Version: 2.0
 
 title = "OctoLLM Gitleaks Config"
 
-# Allowlist paths that contain intentional example secrets in documentation
+# ============================================================================
+# Allowlist Configuration
+# ============================================================================
+
 [allowlist]
   description = "Allowlist for documentation examples and test fixtures"
 
   # Documentation directories with example tokens/keys
   paths = [
-    '''docs/''',                                    # All documentation
-    '''ref-docs/''',                                # Reference documentation
-    '''tests/fixtures/''',                          # Test fixtures with example data
-    '''examples/'''                                 # Example code with sample tokens
+    '''docs/.*''',                                  # All documentation
+    '''ref-docs/.*''',                              # Reference documentation
+    '''tests/.*''',                                 # Test files
+    '''examples/.*''',                              # Example code with sample tokens
+    '''.*\.example$''',                             # Example configuration files
+    '''.*\.template$''',                            # Template files
+    '''.*\.md$''',                                  # Markdown documentation (all locations)
+    '''infrastructure/.*\.yml$''',                  # Infrastructure YAML files (use env vars)
+    '''infrastructure/.*\.yaml$''',                 # Infrastructure YAML files (use env vars)
+    '''infrastructure/.*\.sh$''',                   # Infrastructure shell scripts (generate passwords)
+    '''infra/.*\.tf$''',                            # Terraform files (use variables)
+    '''\.github/workflows/.*\.yml$''',              # GitHub Actions (use secrets)
+    '''infrastructure/databases/.*\.yaml$''',       # Database config files (use env vars)
+    '''node_modules/.*''',                          # Node modules (third-party code)
+    '''sdks/.*/node_modules/.*''',                  # SDK node modules
+    '''.*\.lock$''',                                # Lock files (package-lock.json, Cargo.lock)
+    '''venv/.*''',                                  # Python virtual environments
+    '''\.venv/.*''',                                # Python virtual environments
+    '''target/.*''',                                # Rust build artifacts
+    '''.*\.egg-info/.*''',                          # Python package metadata
   ]
 
   # Allowlist specific patterns that are clearly fake/example secrets
@@ -20,19 +41,271 @@ title = "OctoLLM Gitleaks Config"
     '''tok_abc123xyz''',                           # Example capability tokens
     '''sk-abc123xyz''',                            # Example OpenAI-style keys
     '''sk-test1234abcd5678efgh''',                 # Example API keys in threat model
+    '''sk-1234567890abcdef1234567890abcdef1234567890abcdef''',  # Example 48-char API key
+    '''sk-proj-.*EXAMPLE''',                       # Example OpenAI project keys
+    '''sk-ant-.*EXAMPLE''',                        # Example Anthropic keys
     '''Bearer tok_[a-z0-9]{8}''',                  # Example bearer tokens (short)
     '''cap_[a-zA-Z0-9]{16}''',                     # Example capability tokens
     '''example\.com''',                            # Example domains
     '''localhost:[0-9]+''',                        # Localhost URLs
     '''127\.0\.0\.1:[0-9]+''',                     # Localhost IPs
+    '''192\.168\.\d+\.\d+''',                      # Local network IPs
+    '''password123''',                             # Obvious fake passwords
+    '''user:password''',                           # Generic user/password examples
+    '''AKIAIOSFODNN7EXAMPLE''',                    # AWS example key from documentation
+    '''ghp_abc\.\.\.xyz''',                        # GitHub token with ellipsis (documentation)
+    '''CHANGE_ME_.*''',                            # Template placeholders
+    '''your-.*-here''',                            # Template placeholders
+    '''XXXXXXXX''',                                # Redacted secrets
+    '''\[.*-REDACTED\]''',                         # PII redaction markers
+    '''\$\{[A-Z_]+\}''',                           # Environment variable references ${VAR}
+    '''\$\{[A-Z_]+:-[^}]+\}''',                    # Environment variable with default ${VAR:-default}
+    '''\$\([^)]+\)''',                             # Command substitution $(command)
+    '''var\.[a-z_]+''',                            # Terraform variables
+    '''random_[a-z]+\.[a-z_]+\.result''',          # Terraform random resources
+    '''octollm_dev_password''',                    # Development password placeholder
+    '''octollm_dev_pass''',                        # Development password placeholder
+    '''admin''',                                   # Default admin password (too short to be real)
   ]
 
   # Allowlist commits (if needed for historical false positives)
   commits = []
 
-# Custom rules can be added here if needed
-# [[rules]]
-#   id = "custom-rule-id"
-#   description = "Description of custom rule"
-#   regex = '''pattern'''
-#   tags = ["tag1", "tag2"]
+# ============================================================================
+# Custom Rules (Enhanced Detection)
+# ============================================================================
+
+# OpenAI API Keys (various formats)
+[[rules]]
+  id = "openai-api-key"
+  description = "OpenAI API Key"
+  regex = '''(?i)(openai[_-]?api[_-]?key|OPENAI_API_KEY)\s*[:=]\s*['"]?(sk-[a-zA-Z0-9]{48}|sk-proj-[a-zA-Z0-9_-]{100,})['"]?'''
+  tags = ["key", "openai", "api"]
+
+[[rules]]
+  id = "openai-api-key-raw"
+  description = "OpenAI API Key (raw format)"
+  regex = '''sk-proj-[a-zA-Z0-9_-]{100,}'''
+  tags = ["key", "openai", "api"]
+
+# Anthropic API Keys
+[[rules]]
+  id = "anthropic-api-key"
+  description = "Anthropic API Key"
+  regex = '''(?i)(anthropic[_-]?api[_-]?key|ANTHROPIC_API_KEY)\s*[:=]\s*['"]?sk-ant-[a-zA-Z0-9-]{95}['"]?'''
+  tags = ["key", "anthropic", "api"]
+
+[[rules]]
+  id = "anthropic-api-key-raw"
+  description = "Anthropic API Key (raw format)"
+  regex = '''sk-ant-api[0-9]{2}-[a-zA-Z0-9-]{95}'''
+  tags = ["key", "anthropic", "api"]
+
+# GitHub Personal Access Tokens
+[[rules]]
+  id = "github-pat"
+  description = "GitHub Personal Access Token"
+  regex = '''ghp_[a-zA-Z0-9]{36}'''
+  tags = ["key", "github", "token"]
+
+[[rules]]
+  id = "github-oauth"
+  description = "GitHub OAuth Token"
+  regex = '''gho_[a-zA-Z0-9]{36}'''
+  tags = ["key", "github", "token"]
+
+[[rules]]
+  id = "github-app-token"
+  description = "GitHub App Token"
+  regex = '''(ghu|ghs)_[a-zA-Z0-9]{36}'''
+  tags = ["key", "github", "token"]
+
+# AWS Access Keys
+[[rules]]
+  id = "aws-access-key-id"
+  description = "AWS Access Key ID"
+  regex = '''(?i)(aws[_-]?access[_-]?key[_-]?id|AWS_ACCESS_KEY_ID)\s*[:=]\s*['"]?(AKIA[0-9A-Z]{16})['"]?'''
+  tags = ["key", "aws", "access"]
+
+[[rules]]
+  id = "aws-secret-access-key"
+  description = "AWS Secret Access Key"
+  regex = '''(?i)(aws[_-]?secret[_-]?access[_-]?key|AWS_SECRET_ACCESS_KEY)\s*[:=]\s*['"]?([A-Za-z0-9/+=]{40})['"]?'''
+  tags = ["key", "aws", "secret"]
+
+# GCP Service Account Keys
+[[rules]]
+  id = "gcp-service-account"
+  description = "GCP Service Account Key"
+  regex = '''"type":\s*"service_account"'''
+  tags = ["key", "gcp", "service-account"]
+
+[[rules]]
+  id = "gcp-api-key"
+  description = "GCP API Key"
+  regex = '''AIza[0-9A-Za-z\\-_]{35}'''
+  tags = ["key", "gcp", "api"]
+
+# Azure Keys
+[[rules]]
+  id = "azure-client-secret"
+  description = "Azure Client Secret"
+  regex = '''(?i)(azure[_-]?client[_-]?secret|AZURE_CLIENT_SECRET)\s*[:=]\s*['"]?([a-zA-Z0-9~._-]{34,})['"]?'''
+  tags = ["key", "azure", "secret"]
+
+# Private Keys
+[[rules]]
+  id = "rsa-private-key"
+  description = "RSA Private Key"
+  regex = '''-----BEGIN RSA PRIVATE KEY-----'''
+  tags = ["key", "private", "rsa"]
+
+[[rules]]
+  id = "openssh-private-key"
+  description = "OpenSSH Private Key"
+  regex = '''-----BEGIN OPENSSH PRIVATE KEY-----'''
+  tags = ["key", "private", "ssh"]
+
+[[rules]]
+  id = "ec-private-key"
+  description = "EC Private Key"
+  regex = '''-----BEGIN EC PRIVATE KEY-----'''
+  tags = ["key", "private", "ec"]
+
+[[rules]]
+  id = "private-key-generic"
+  description = "Generic Private Key"
+  regex = '''-----BEGIN PRIVATE KEY-----'''
+  tags = ["key", "private"]
+
+# Database Connection Strings
+[[rules]]
+  id = "postgres-connection-string"
+  description = "PostgreSQL Connection String"
+  regex = '''postgres(?:ql)?://[^:\s]+:[^@\s]+@[^\s]+'''
+  tags = ["database", "postgres", "connection-string"]
+
+[[rules]]
+  id = "mysql-connection-string"
+  description = "MySQL Connection String"
+  regex = '''mysql://[^:\s]+:[^@\s]+@[^\s]+'''
+  tags = ["database", "mysql", "connection-string"]
+
+[[rules]]
+  id = "mongodb-connection-string"
+  description = "MongoDB Connection String"
+  regex = '''mongodb(\+srv)?://[^:\s]+:[^@\s]+@[^\s]+'''
+  tags = ["database", "mongodb", "connection-string"]
+
+# Generic Passwords
+[[rules]]
+  id = "generic-password"
+  description = "Generic Password"
+  regex = '''(?i)(password|passwd|pwd)\s*[:=]\s*['"]?([^\s'",]{12,})['"]?'''
+  tags = ["password", "generic"]
+
+  [rules.allowlist]
+    regexes = [
+      '''password.*CHANGE_ME''',
+      '''password.*example''',
+      '''password.*placeholder''',
+    ]
+
+# API Keys (Generic)
+[[rules]]
+  id = "generic-api-key"
+  description = "Generic API Key"
+  regex = '''(?i)(api[_-]?key|apikey)\s*[:=]\s*['"]?([a-zA-Z0-9_\-]{32,})['"]?'''
+  tags = ["key", "api", "generic"]
+
+  [rules.allowlist]
+    regexes = [
+      '''api[_-]?key.*CHANGE_ME''',
+      '''api[_-]?key.*example''',
+      '''api[_-]?key.*your-.*-here''',
+    ]
+
+# JWT Tokens
+[[rules]]
+  id = "jwt-token"
+  description = "JWT Token"
+  regex = '''eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'''
+  tags = ["token", "jwt"]
+
+# Slack Tokens
+[[rules]]
+  id = "slack-token"
+  description = "Slack Token"
+  regex = '''xox[baprs]-[0-9a-zA-Z]{10,72}'''
+  tags = ["key", "slack", "token"]
+
+# Stripe Keys
+[[rules]]
+  id = "stripe-api-key"
+  description = "Stripe API Key"
+  regex = '''(?i)(sk|pk)_(live|test)_[0-9a-zA-Z]{24,99}'''
+  tags = ["key", "stripe", "api"]
+
+# SendGrid API Keys
+[[rules]]
+  id = "sendgrid-api-key"
+  description = "SendGrid API Key"
+  regex = '''SG\.[a-zA-Z0-9_-]{22}\.[a-zA-Z0-9_-]{43}'''
+  tags = ["key", "sendgrid", "api"]
+
+# MailChimp API Keys
+[[rules]]
+  id = "mailchimp-api-key"
+  description = "MailChimp API Key"
+  regex = '''[a-f0-9]{32}-us[0-9]{1,2}'''
+  tags = ["key", "mailchimp", "api"]
+
+# Twilio API Keys
+[[rules]]
+  id = "twilio-api-key"
+  description = "Twilio API Key"
+  regex = '''SK[a-z0-9]{32}'''
+  tags = ["key", "twilio", "api"]
+
+# Docker Registry Auth
+[[rules]]
+  id = "docker-registry-auth"
+  description = "Docker Registry Auth"
+  regex = '''(?i)(docker[_-]?registry[_-]?auth|DOCKER_AUTH)\s*[:=]\s*['"]?([a-zA-Z0-9+/]{40,}={0,2})['"]?'''
+  tags = ["docker", "auth", "registry"]
+
+# NPM Tokens
+[[rules]]
+  id = "npm-token"
+  description = "NPM Access Token"
+  regex = '''npm_[a-zA-Z0-9]{36}'''
+  tags = ["key", "npm", "token"]
+
+# PyPI Tokens
+[[rules]]
+  id = "pypi-token"
+  description = "PyPI Access Token"
+  regex = '''pypi-[a-zA-Z0-9_-]{100,}'''
+  tags = ["key", "pypi", "token"]
+
+# Terraform Cloud Tokens
+[[rules]]
+  id = "terraform-token"
+  description = "Terraform Cloud Token"
+  regex = '''[a-zA-Z0-9]{14}\.atlasv1\.[a-zA-Z0-9_-]{60,}'''
+  tags = ["key", "terraform", "token"]
+
+# Generic Secrets
+[[rules]]
+  id = "generic-secret"
+  description = "Generic Secret"
+  regex = '''(?i)(secret|token)\s*[:=]\s*['"]?([a-zA-Z0-9_\-]{32,})['"]?'''
+  tags = ["secret", "generic"]
+
+  [rules.allowlist]
+    regexes = [
+      '''secret.*CHANGE_ME''',
+      '''secret.*example''',
+      '''secret.*your-.*-here''',
+      '''your-jwt-secret-here''',
+    ]
