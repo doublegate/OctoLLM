@@ -75,12 +75,10 @@ impl RedisClient {
                             "Failed to get Redis connection after {} retries: {}",
                             max_retries, e
                         );
-                        return Err(ReflexError::Redis(
-                            redis::RedisError::from((
-                                redis::ErrorKind::IoError,
-                                "Connection pool exhausted",
-                            )),
-                        ));
+                        return Err(ReflexError::Redis(redis::RedisError::from((
+                            redis::ErrorKind::IoError,
+                            "Connection pool exhausted",
+                        ))));
                     }
 
                     warn!(

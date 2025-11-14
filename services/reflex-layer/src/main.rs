@@ -2,17 +2,19 @@
 //!
 //! Fast preprocessing layer for common patterns without LLM involvement.
 
-mod config;
-mod error;
-mod redis_client;
+mod handlers;
+mod metrics;
+mod middleware;
 
 use axum::{
     extract::State,
     http::StatusCode,
+    middleware as axum_middleware,
     response::IntoResponse,
-    routing::get,
+    routing::{get, post},
     Json, Router,
 };
+use prometheus::TextEncoder;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::signal;
@@ -22,16 +24,25 @@ use tower_http::{
 };
 use tracing::Level;
 
-use crate::config::Config;
-use crate::error::{ReflexError, ReflexResult};
-use crate::redis_client::RedisClient;
+use reflex_layer::{
+    cache::RedisCache,
+    config::Config,
+    error::{ReflexError, ReflexResult},
+    injection::{DetectionMode, InjectionConfig, InjectionDetector, Severity},
+    pii::{PIIConfig, PIIDetector, PatternSet},
+    ratelimit::RedisRateLimiter,
+    redis_client::RedisClient,
+};
 
 /// Application state shared across all handlers
-#[derive(Clone)]
-struct AppState {
-    config: Arc<Config>,
-    redis: RedisClient,
-    start_time: std::time::Instant,
+pub struct AppState {
+    pub config: Arc<Config>,
+    pub redis: RedisClient,
+    pub pii_detector: Arc<PIIDetector>,
+    pub injection_detector: Arc<InjectionDetector>,
+    pub cache: Arc<RedisCache>,
+    pub rate_limiter: Arc<RedisRateLimiter>,
+    pub start_time: std::time::Instant,
 }
 
 /// Health check response
@@ -88,8 +99,14 @@ async fn main() -> ReflexResult<()> {
         config.server.port
     );
 
-    // Create Redis client
-    let redis_client = RedisClient::new(config.redis.clone())?;
+    // Create Redis client (wrapped in Arc for sharing)
+    let redis_client = Arc::new(RedisClient::new(config.redis.clone()).map_err(|e| {
+        ReflexError::Redis(redis::RedisError::from((
+            redis::ErrorKind::IoError,
+            "Failed to create Redis client",
+            e.to_string(),
+        )))
+    })?);
     tracing::info!("Redis client initialized");
 
     // Verify Redis connectivity
@@ -101,24 +118,58 @@ async fn main() -> ReflexResult<()> {
         }
     }
 
-    // Create application state
-    let state = AppState {
-        config: Arc::new(config.clone()),
-        redis: redis_client,
-        start_time: std::time::Instant::now(),
+    // Initialize PII detector
+    let pii_config = PIIConfig {
+        pattern_set: PatternSet::Standard,
+        enable_validation: true,
+        enable_context: false,
     };
+    let pii_detector = Arc::new(PIIDetector::new(pii_config));
+    tracing::info!("PII detector initialized with Standard pattern set");
+
+    // Initialize Injection detector
+    let injection_config = InjectionConfig {
+        detection_mode: DetectionMode::Standard,
+        enable_context_analysis: true,
+        enable_entropy_check: true,
+        severity_threshold: Severity::Low,
+    };
+    let injection_detector = Arc::new(InjectionDetector::new(injection_config));
+    tracing::info!("Injection detector initialized with Standard detection mode");
+
+    // Initialize Redis cache
+    let cache = Arc::new(RedisCache::new(redis_client.clone()));
+    tracing::info!("Redis cache initialized");
+
+    // Initialize Redis rate limiter
+    let rate_limiter = Arc::new(RedisRateLimiter::new(redis_client.clone()));
+    tracing::info!("Redis rate limiter initialized");
+
+    // Create application state
+    let state = Arc::new(AppState {
+        config: Arc::new(config.clone()),
+        redis: (*redis_client).clone(), // Clone the inner RedisClient
+        pii_detector,
+        injection_detector,
+        cache,
+        rate_limiter,
+        start_time: std::time::Instant::now(),
+    });
 
     // Build router with middleware
     let app = Router::new()
+        // Main processing endpoint
+        .route("/process", post(handlers::process_text))
         // Health and readiness endpoints
         .route("/health", get(health_handler))
         .route("/ready", get(readiness_handler))
-        // Metrics endpoint (placeholder for now)
+        // Metrics endpoint
         .route("/metrics", get(metrics_handler))
-        // Future endpoints
-        // .route("/process", post(process_handler))
-        .with_state(state)
+        .with_state(state.clone())
         // Middleware stack (applied in reverse order)
+        .layer(axum_middleware::from_fn(middleware::metrics_middleware))
+        .layer(axum_middleware::from_fn(middleware::logging_middleware))
+        .layer(axum_middleware::from_fn(middleware::request_id_middleware))
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
@@ -148,7 +199,7 @@ async fn main() -> ReflexResult<()> {
 /// Health check endpoint
 ///
 /// Returns basic service health information including version and uptime.
-async fn health_handler(State(state): State<AppState>) -> impl IntoResponse {
+async fn health_handler(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     let uptime = state.start_time.elapsed().as_secs();
 
     let response = HealthResponse {
@@ -163,7 +214,7 @@ async fn health_handler(State(state): State<AppState>) -> impl IntoResponse {
 /// Readiness check endpoint
 ///
 /// Returns service readiness status including dependency checks.
-async fn readiness_handler(State(state): State<AppState>) -> impl IntoResponse {
+async fn readiness_handler(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     // Check Redis connectivity
     let redis_ready = match state.redis.health_check().await {
         Ok(_) => true,
@@ -195,12 +246,23 @@ async fn readiness_handler(State(state): State<AppState>) -> impl IntoResponse {
     (status, Json(response))
 }
 
-/// Metrics endpoint (placeholder)
+/// Metrics endpoint
 ///
 /// Returns Prometheus-compatible metrics.
-async fn metrics_handler(State(_state): State<AppState>) -> impl IntoResponse {
-    // TODO(#4): Implement Prometheus metrics collection
-    (StatusCode::OK, "# Placeholder for Prometheus metrics\n")
+async fn metrics_handler(State(_state): State<Arc<AppState>>) -> impl IntoResponse {
+    let encoder = TextEncoder::new();
+    let metric_families = prometheus::gather();
+
+    match encoder.encode_to_string(&metric_families) {
+        Ok(metrics) => (StatusCode::OK, metrics),
+        Err(e) => {
+            tracing::error!("Failed to encode metrics: {}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "# Error encoding metrics\n".to_string(),
+            )
+        }
+    }
 }
 
 /// Parse log level string to tracing Level

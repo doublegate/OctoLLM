@@ -74,7 +74,7 @@ impl Cache for RedisCache {
         let result = match ttl.as_seconds() {
             Some(seconds) => {
                 // Set with expiration using SETEX
-                conn.set_ex::<_, _, ()>(key, value, seconds as u64).await
+                conn.set_ex::<_, _, ()>(key, value, seconds).await
             }
             None => {
                 // Set without expiration
@@ -216,7 +216,10 @@ mod tests {
         let key = generate_cache_key("test", "set_get").unwrap();
 
         // Set a value
-        cache.set(&key, "test_value", CacheTTL::Short).await.unwrap();
+        cache
+            .set(&key, "test_value", CacheTTL::Short)
+            .await
+            .unwrap();
 
         // Get the value
         let result = cache.get(&key).await.unwrap();
@@ -414,10 +417,7 @@ mod tests {
                 generate_cache_key("test", "medium").unwrap(),
                 CacheTTL::Medium,
             ),
-            (
-                generate_cache_key("test", "long").unwrap(),
-                CacheTTL::Long,
-            ),
+            (generate_cache_key("test", "long").unwrap(), CacheTTL::Long),
         ];
 
         // Set with different TTLs

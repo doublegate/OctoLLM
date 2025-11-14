@@ -9,11 +9,12 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use thiserror::Error;
 
 /// Time-to-live (TTL) configuration for cache entries
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum CacheTTL {
     /// Short-lived cache entry (60 seconds)
     Short,
     /// Medium-lived cache entry (300 seconds / 5 minutes) - Default
+    #[default]
     Medium,
     /// Long-lived cache entry (3600 seconds / 1 hour)
     Long,
@@ -48,12 +49,6 @@ impl CacheTTL {
             CacheTTL::Persistent => "No expiration".to_string(),
             CacheTTL::Custom(secs) => format!("{} seconds", secs),
         }
-    }
-}
-
-impl Default for CacheTTL {
-    fn default() -> Self {
-        CacheTTL::Medium
     }
 }
 

@@ -127,21 +127,18 @@ impl Config {
             .set_default("server.port", 8080)?
             .set_default("server.max_body_size", 10_485_760)? // 10MB
             .set_default("server.request_timeout_secs", 30)?
-
             // Redis defaults
             .set_default("redis.url", "redis://localhost:6379")?
             .set_default("redis.pool_size", 10)?
             .set_default("redis.connection_timeout_ms", 1000)?
             .set_default("redis.command_timeout_ms", 100)?
             .set_default("redis.cache_ttl_secs", 3600)?
-
             // Security defaults
             .set_default("security.enable_pii_detection", true)?
             .set_default("security.enable_injection_detection", true)?
             .set_default("security.block_on_high_risk", true)?
             .set_default("security.alert_on_critical", true)?
             .set_default("security.max_query_length", 10000)?
-
             // Rate limiting defaults
             .set_default("rate_limit.enabled", true)?
             .set_default("rate_limit.free_tier_rpm", 10)?
@@ -149,15 +146,12 @@ impl Config {
             .set_default("rate_limit.pro_tier_rpm", 300)?
             .set_default("rate_limit.capacity", 60)?
             .set_default("rate_limit.refill_rate", 1.0)?
-
             // Performance defaults
             .set_default("performance.max_concurrent_requests", 1000)?
             .set_default("performance.worker_threads", num_cpus::get() as i64)?
-
             // Logging defaults
             .set_default("logging.level", "info")?
             .set_default("logging.format", "json")?
-
             // Override with environment variables (prefix: REFLEX_)
             .add_source(config::Environment::with_prefix("REFLEX").separator("_"))
             .build()?;
@@ -203,7 +197,10 @@ mod tests {
     fn test_default_config() {
         // Test that default configuration loads
         let config = Config::from_env();
-        assert!(config.is_ok(), "Default configuration should load successfully");
+        assert!(
+            config.is_ok(),
+            "Default configuration should load successfully"
+        );
 
         let config = config.unwrap();
         assert_eq!(config.server.port, 8080);

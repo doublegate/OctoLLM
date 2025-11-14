@@ -288,9 +288,7 @@ mod tests {
         // Spawn 10 threads, each consuming 10 tokens
         for _ in 0..10 {
             let bucket_clone = Arc::clone(&bucket);
-            let handle = thread::spawn(move || {
-                bucket_clone.try_consume(10.0)
-            });
+            let handle = thread::spawn(move || bucket_clone.try_consume(10.0));
             handles.push(handle);
         }
 

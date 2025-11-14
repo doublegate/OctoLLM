@@ -227,3 +227,79 @@ mod tests {
         assert_eq!(err.client_message(), "Internal server error");
     }
 }
+
+/// API-specific error type for handlers
+///
+/// This is a simpler error type for use in API handlers that wraps ReflexError
+/// but provides additional context for HTTP responses.
+#[derive(Error, Debug)]
+pub enum ApiError {
+    /// Validation error (400 Bad Request)
+    #[error("Validation error: {0}")]
+    ValidationError(String),
+
+    /// Rate limit exceeded (429 Too Many Requests)
+    #[error("Rate limit exceeded: {0}")]
+    RateLimitError(String),
+
+    /// Cache error (500 Internal Server Error)
+    #[error("Cache error: {0}")]
+    CacheError(String),
+
+    /// Detection error (500 Internal Server Error)
+    #[error("Detection error: {0}")]
+    DetectionError(String),
+
+    /// Internal error (500 Internal Server Error)
+    #[error("Internal error: {0}")]
+    InternalError(String),
+}
+
+impl IntoResponse for ApiError {
+    fn into_response(self) -> Response {
+        let (status, message) = match &self {
+            ApiError::ValidationError(msg) => (StatusCode::BAD_REQUEST, msg.clone()),
+            ApiError::RateLimitError(_) => (
+                StatusCode::TOO_MANY_REQUESTS,
+                "Rate limit exceeded".to_string(),
+            ),
+            ApiError::CacheError(_) => {
+                (StatusCode::INTERNAL_SERVER_ERROR, "Cache error".to_string())
+            }
+            ApiError::DetectionError(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Detection error".to_string(),
+            ),
+            ApiError::InternalError(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal server error".to_string(),
+            ),
+        };
+
+        let detail = if cfg!(debug_assertions) {
+            Some(self.to_string())
+        } else {
+            None
+        };
+
+        let error_response = ErrorResponse {
+            code: status.as_u16(),
+            message,
+            detail,
+            request_id: None,
+            timestamp: Utc::now().to_rfc3339(),
+        };
+
+        // Log the error
+        match self {
+            ApiError::ValidationError(_) | ApiError::RateLimitError(_) => {
+                tracing::warn!(error = %self, "API request rejected");
+            }
+            _ => {
+                tracing::error!(error = %self, "API error");
+            }
+        }
+
+        (status, Json(error_response)).into_response()
+    }
+}

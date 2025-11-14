@@ -62,6 +62,9 @@ lazy_static = { workspace = true }
 # Async trait support
 async-trait = "0.1"
 
+# UUID
+uuid = { workspace = true }
+
 [dev-dependencies]
 mockall = { workspace = true }
 criterion = { workspace = true }

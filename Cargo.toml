@@ -77,6 +77,9 @@ jsonwebtoken = "9.3"
 argon2 = "0.5"
 sha2 = "0.10"
 
+# Static initialization
+lazy_static = "1.4"
+
 # Testing
 mockall = "0.13"
 criterion = { version = "0.5", features = ["html_reports"] }

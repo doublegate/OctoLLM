@@ -6,9 +6,10 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 /// Rate limit tier definitions
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum RateLimitTier {
     /// Free tier: 100 requests/hour, burst of 10
+    #[default]
     Free,
     /// Basic tier: 1,000 requests/hour, burst of 50
     Basic,
@@ -56,12 +57,6 @@ impl RateLimitTier {
             RateLimitTier::Enterprise => "100,000 requests/hour, burst 500",
             RateLimitTier::Unlimited => "No limits",
         }
-    }
-}
-
-impl Default for RateLimitTier {
-    fn default() -> Self {
-        RateLimitTier::Free
     }
 }
 
@@ -259,10 +254,7 @@ mod tests {
             RateLimitTier::Free.description(),
             "100 requests/hour, burst 10"
         );
-        assert_eq!(
-            RateLimitTier::Unlimited.description(),
-            "No limits"
-        );
+        assert_eq!(RateLimitTier::Unlimited.description(), "No limits");
     }
 
     #[test]

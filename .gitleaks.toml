@@ -17,6 +17,8 @@ title = "OctoLLM Gitleaks Config"
     '''docs/.*''',                                  # All documentation
     '''ref-docs/.*''',                              # Reference documentation
     '''tests/.*''',                                 # Test files
+    '''services/reflex-layer/src/.*/tests\.rs$''',  # Rust test modules with example patterns
+    '''services/reflex-layer/src/.*/patterns\.rs$''', # Rust pattern files with test data
     '''examples/.*''',                              # Example code with sample tokens
     '''.*\.example$''',                             # Example configuration files
     '''.*\.template$''',                            # Template files

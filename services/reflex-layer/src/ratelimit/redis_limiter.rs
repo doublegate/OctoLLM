@@ -191,10 +191,18 @@ impl MultiDimensionalRateLimiter {
         // Check user limit if user_id provided
         if let Some(uid) = user_id {
             let key = RateLimitKey::User(uid.to_string());
-            let result = self.limiter.check_rate_limit(&key, &self.user_config, 1.0).await?;
+            let result = self
+                .limiter
+                .check_rate_limit(&key, &self.user_config, 1.0)
+                .await?;
 
             if result.is_limited() {
-                if let RateLimitResult::Limited { retry_after_ms, current_tokens, .. } = result {
+                if let RateLimitResult::Limited {
+                    retry_after_ms,
+                    current_tokens,
+                    ..
+                } = result
+                {
                     return Ok(RateLimitResult::Limited {
                         reason: RateLimitReason::UserQuota,
                         retry_after_ms,
@@ -206,10 +214,18 @@ impl MultiDimensionalRateLimiter {
 
         // Check IP limit
         let ip_key = RateLimitKey::IP(ip.to_string());
-        let result = self.limiter.check_rate_limit(&ip_key, &self.ip_config, 1.0).await?;
+        let result = self
+            .limiter
+            .check_rate_limit(&ip_key, &self.ip_config, 1.0)
+            .await?;
 
         if result.is_limited() {
-            if let RateLimitResult::Limited { retry_after_ms, current_tokens, .. } = result {
+            if let RateLimitResult::Limited {
+                retry_after_ms,
+                current_tokens,
+                ..
+            } = result
+            {
                 return Ok(RateLimitResult::Limited {
                     reason: RateLimitReason::IPQuota,
                     retry_after_ms,
@@ -226,7 +242,12 @@ impl MultiDimensionalRateLimiter {
             .await?;
 
         if result.is_limited() {
-            if let RateLimitResult::Limited { retry_after_ms, current_tokens, .. } = result {
+            if let RateLimitResult::Limited {
+                retry_after_ms,
+                current_tokens,
+                ..
+            } = result
+            {
                 return Ok(RateLimitResult::Limited {
                     reason: RateLimitReason::EndpointQuota,
                     retry_after_ms,
@@ -243,7 +264,12 @@ impl MultiDimensionalRateLimiter {
             .await?;
 
         if result.is_limited() {
-            if let RateLimitResult::Limited { retry_after_ms, current_tokens, .. } = result {
+            if let RateLimitResult::Limited {
+                retry_after_ms,
+                current_tokens,
+                ..
+            } = result
+            {
                 return Ok(RateLimitResult::Limited {
                     reason: RateLimitReason::GlobalQuota,
                     retry_after_ms,
@@ -368,10 +394,18 @@ mod tests {
         }
 
         // key1 should be limited
-        assert!(limiter.check_rate_limit(&key1, &config, 1.0).await.unwrap().is_limited());
+        assert!(limiter
+            .check_rate_limit(&key1, &config, 1.0)
+            .await
+            .unwrap()
+            .is_limited());
 
         // key2 should still work
-        assert!(limiter.check_rate_limit(&key2, &config, 1.0).await.unwrap().is_allowed());
+        assert!(limiter
+            .check_rate_limit(&key2, &config, 1.0)
+            .await
+            .unwrap()
+            .is_allowed());
 
         // Cleanup
         limiter.reset(&key1).await.unwrap();
@@ -385,13 +419,28 @@ mod tests {
 
         let multi = MultiDimensionalRateLimiter::new(
             limiter,
-            RateLimitConfig { capacity: 10, refill_rate: 1.0 }, // User
-            RateLimitConfig { capacity: 50, refill_rate: 5.0 }, // IP
-            RateLimitConfig { capacity: 100, refill_rate: 10.0 }, // Endpoint
-            RateLimitConfig { capacity: 1000, refill_rate: 100.0 }, // Global
+            RateLimitConfig {
+                capacity: 10,
+                refill_rate: 1.0,
+            }, // User
+            RateLimitConfig {
+                capacity: 50,
+                refill_rate: 5.0,
+            }, // IP
+            RateLimitConfig {
+                capacity: 100,
+                refill_rate: 10.0,
+            }, // Endpoint
+            RateLimitConfig {
+                capacity: 1000,
+                refill_rate: 100.0,
+            }, // Global
         );
 
-        let result = multi.check_all(Some("user123"), "192.168.1.1", "/api/test").await.unwrap();
+        let result = multi
+            .check_all(Some("user123"), "192.168.1.1", "/api/test")
+            .await
+            .unwrap();
         assert!(result.is_allowed());
     }
 }

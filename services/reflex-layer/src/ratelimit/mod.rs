@@ -11,6 +11,5 @@ pub mod types;
 pub use redis_limiter::{MultiDimensionalRateLimiter, RedisRateLimiter};
 pub use token_bucket::TokenBucket;
 pub use types::{
-    RateLimitConfig, RateLimitError, RateLimitKey, RateLimitReason, RateLimitResult,
-    RateLimitTier,
+    RateLimitConfig, RateLimitError, RateLimitKey, RateLimitReason, RateLimitResult, RateLimitTier,
 };
