@@ -67,6 +67,8 @@ uuid = { version = "1.11", features = ["v4", "serde"] }
 
 # Environment
 dotenv = "0.15"
+config = "0.14"
+num_cpus = "1.16"
 
 # Security
 jsonwebtoken = "9.3"
