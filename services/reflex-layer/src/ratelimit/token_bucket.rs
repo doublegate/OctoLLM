@@ -199,7 +199,7 @@ mod tests {
         sleep(Duration::from_millis(100));
 
         let tokens = bucket.current_tokens();
-        assert!(tokens >= 0.9 && tokens <= 1.1); // Allow for timing variance
+        assert!((0.9..=1.1).contains(&tokens)); // Allow for timing variance
     }
 
     #[test]

@@ -207,6 +207,6 @@ mod tests {
 
         let result = client.health_check().await;
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), true);
+        assert!(result.unwrap());
     }
 }

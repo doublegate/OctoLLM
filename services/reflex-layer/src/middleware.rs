@@ -113,7 +113,7 @@ mod tests {
         routing::get,
         Router,
     };
-    use tower::{Service, ServiceExt};
+    use tower::ServiceExt;
 
     async fn test_handler() -> impl IntoResponse {
         (StatusCode::OK, "test response")

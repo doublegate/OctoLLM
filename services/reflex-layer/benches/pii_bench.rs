@@ -3,7 +3,7 @@
 // This benchmark suite validates that PII detection meets the <5ms P95 latency target.
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use reflex_layer::{redact, PIIConfig, PIIDetector, PIIType, PatternSet, RedactionStrategy};
+use reflex_layer::{redact, PIIConfig, PIIDetector, PatternSet, RedactionStrategy};
 
 /// Benchmark individual pattern detection
 fn bench_individual_patterns(c: &mut Criterion) {
