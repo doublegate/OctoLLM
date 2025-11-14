@@ -7,8 +7,8 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use std::fmt;
 use thiserror::Error;
 
 /// Main error type for the Reflex Layer
@@ -158,7 +158,7 @@ impl IntoResponse for ReflexError {
             message,
             detail,
             request_id: None, // TODO(#1): Extract request ID from middleware context
-            timestamp: chrono::Utc::now().to_rfc3339(),
+            timestamp: Utc::now().to_rfc3339(),
         };
 
         // Log the error

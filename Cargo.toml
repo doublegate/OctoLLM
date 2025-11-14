@@ -42,6 +42,8 @@ reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-feature
 
 # Redis
 redis = { version = "0.27", features = ["tokio-comp", "connection-manager"] }
+deadpool = "0.12"
+deadpool-redis = "0.18"
 
 # Error handling
 anyhow = "1.0"

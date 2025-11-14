@@ -4,7 +4,6 @@
 //! Supports environment-based overrides for development, staging, and production.
 
 use serde::Deserialize;
-use std::env;
 use std::time::Duration;
 
 /// Main configuration structure for the Reflex Layer
@@ -153,7 +152,7 @@ impl Config {
 
             // Performance defaults
             .set_default("performance.max_concurrent_requests", 1000)?
-            .set_default("performance.worker_threads", num_cpus::get())?
+            .set_default("performance.worker_threads", num_cpus::get() as i64)?
 
             // Logging defaults
             .set_default("logging.level", "info")?
