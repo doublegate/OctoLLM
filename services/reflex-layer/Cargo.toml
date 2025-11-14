@@ -54,8 +54,23 @@ num_cpus = { workspace = true }
 
 # Hashing
 sha2 = { workspace = true }
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
+
+# Static initialization
+lazy_static = { workspace = true }
+
+# Async trait support
+async-trait = "0.1"
 
 [dev-dependencies]
 mockall = { workspace = true }
 criterion = { workspace = true }
 fake = { workspace = true }
+
+[[bench]]
+name = "pii_bench"
+harness = false
+
+[[bench]]
+name = "injection_bench"
+harness = false
