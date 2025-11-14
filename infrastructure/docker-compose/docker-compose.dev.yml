@@ -7,7 +7,7 @@ services:
   # ============================================================================
 
   postgres:
-    image: postgres:15-alpine
+    image: postgres:17.7-alpine
     container_name: octollm-postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-octollm}
@@ -28,7 +28,7 @@ services:
       - octollm-network
 
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: octollm-redis
     command: redis-server --appendonly yes
     ports:
@@ -45,7 +45,7 @@ services:
       - octollm-network
 
   qdrant:
-    image: qdrant/qdrant:v1.7.0
+    image: qdrant/qdrant:v1.12.5
     container_name: octollm-qdrant
     ports:
       - "6333:6333"
@@ -252,7 +252,7 @@ services:
   # ============================================================================
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.2.1
     container_name: octollm-prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -271,7 +271,7 @@ services:
       - monitoring
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:11.4.0
     container_name: octollm-grafana
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}

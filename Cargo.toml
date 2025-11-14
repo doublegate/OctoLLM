@@ -12,7 +12,7 @@ resolver = "2"
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.82.0"
+rust-version = "1.91.1"
 authors = ["OctoLLM Team"]
 license = "Apache-2.0"
 repository = "https://github.com/doublegate/OctoLLM"
@@ -22,14 +22,14 @@ categories = ["web-programming", "development-tools"]
 
 [workspace.dependencies]
 # Async runtime
-tokio = { version = "1.35", features = ["full"] }
+tokio = { version = "1.48", features = ["full"] }
 tokio-util = "0.7"
 
 # Web framework
-axum = { version = "0.7", features = ["ws", "macros"] }
-tower = { version = "0.4", features = ["full"] }
-tower-http = { version = "0.5", features = ["fs", "trace", "cors", "compression-full"] }
-hyper = { version = "1.1", features = ["full"] }
+axum = { version = "0.8.6", features = ["ws", "macros"] }
+tower = { version = "0.5", features = ["full"] }
+tower-http = { version = "0.6", features = ["fs", "trace", "cors", "compression-full"] }
+hyper = { version = "1.5", features = ["full"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -38,19 +38,19 @@ serde_yaml = "0.9"
 toml = "0.8"
 
 # HTTP client
-reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
 
 # Redis
-redis = { version = "0.24", features = ["tokio-comp", "connection-manager"] }
+redis = { version = "0.27", features = ["tokio-comp", "connection-manager"] }
 
 # Error handling
 anyhow = "1.0"
-thiserror = "1.0"
+thiserror = "2.0"
 
 # Logging and tracing
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-tracing-opentelemetry = "0.22"
+tracing-opentelemetry = "0.28"
 
 # Metrics
 prometheus = { version = "0.13", features = ["process"] }
@@ -59,25 +59,25 @@ prometheus = { version = "0.13", features = ["process"] }
 chrono = { version = "0.4", features = ["serde"] }
 
 # Regex
-regex = "1.10"
-fancy-regex = "0.13"
+regex = "1.11"
+fancy-regex = "0.14"
 
 # UUID
-uuid = { version = "1.6", features = ["v4", "serde"] }
+uuid = { version = "1.11", features = ["v4", "serde"] }
 
 # Environment
 dotenv = "0.15"
 
 # Security
-jsonwebtoken = "9.2"
+jsonwebtoken = "9.3"
 argon2 = "0.5"
 sha2 = "0.10"
 
 # Testing
-mockall = "0.12"
+mockall = "0.13"
 criterion = { version = "0.5", features = ["html_reports"] }
-proptest = "1.4"
-fake = "2.9"
+proptest = "1.6"
+fake = "2.10"
 
 [profile.dev]
 opt-level = 0

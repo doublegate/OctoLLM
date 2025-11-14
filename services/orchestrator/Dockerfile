@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Orchestrator Service Dockerfile - Multi-stage build for production
-FROM python:3.11-slim as builder
+FROM python:3.13.7-slim as builder
 
 # Install system dependencies for building
 RUN apt-get update && apt-get install -y \
@@ -24,7 +24,7 @@ RUN poetry config virtualenvs.create false && \
     poetry install --only main --no-interaction --no-ansi
 
 # Runtime stage
-FROM python:3.11-slim
+FROM python:3.13.7-slim
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
@@ -40,7 +40,7 @@ RUN useradd -m -u 1000 octollm && \
 WORKDIR /app
 
 # Copy installed packages from builder
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code

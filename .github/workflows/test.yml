@@ -17,11 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.11', '3.12']
+        python-version: ['3.12', '3.13']
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -43,8 +43,8 @@ jobs:
         continue-on-error: true  # Don't fail if no tests exist
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        if: matrix.python-version == '3.11'  # Only upload once
+        uses: codecov/codecov-action@v5
+        if: matrix.python-version == '3.13'  # Only upload once
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
@@ -58,13 +58,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
-          override: true
 
       - name: Cache Rust dependencies
         uses: actions/cache@v4
@@ -98,7 +97,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: postgres:17.7-alpine
         env:
           POSTGRES_USER: octollm
           POSTGRES_PASSWORD: octollm_dev_pass
@@ -112,7 +111,7 @@ jobs:
           - 5432:5432
 
       redis:
-        image: redis:7
+        image: redis:8-alpine
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -123,12 +122,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.13'
           cache: 'pip'
 
       - name: Install dependencies

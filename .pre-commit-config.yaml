@@ -12,7 +12,7 @@ default_language_version:
 repos:
   # General file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
         exclude: '\.md$'
@@ -35,7 +35,7 @@ repos:
 
   # Python: Black (code formatting)
   - repo: https://github.com/psf/black
-    rev: 24.1.1
+    rev: 25.11.0
     hooks:
       - id: black
         language_version: python3.13
@@ -44,7 +44,7 @@ repos:
 
   # Python: Ruff (linting and import sorting)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.15
+    rev: v0.14.5
     hooks:
       - id: ruff
         args: ['--fix', '--exit-non-zero-on-fix']
@@ -52,7 +52,7 @@ repos:
 
   # Python: MyPy (type checking)
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
+    rev: v1.18.2
     hooks:
       - id: mypy
         additional_dependencies:
@@ -81,13 +81,13 @@ repos:
 
   # Secrets detection (GitLeaks)
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.18.2
+    rev: v8.29.0
     hooks:
       - id: gitleaks
 
   # YAML linting
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.35.1
+    rev: v1.37.1
     hooks:
       - id: yamllint
         args: ['-d', '{extends: default, rules: {line-length: {max: 120}, document-start: disable}}']
@@ -95,7 +95,7 @@ repos:
 
   # Dockerfile linting
   - repo: https://github.com/hadolint/hadolint
-    rev: v2.12.0
+    rev: v2.14.0
     hooks:
       - id: hadolint-docker
         args: ['--ignore', 'DL3008', '--ignore', 'DL3009', '--ignore', 'DL3015', '--ignore', 'DL4006']
@@ -112,21 +112,21 @@ repos:
 
   # Markdown linting
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.39.0
+    rev: v0.45.0
     hooks:
       - id: markdownlint
         args: ['--fix', '--disable', 'MD013', 'MD033', 'MD041']  # Disable line length, HTML, first line h1
 
   # Shell script linting
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.6
+    rev: v0.11.0.1
     hooks:
       - id: shellcheck
         args: ['-x']  # Follow source statements
 
   # Security: Bandit (Python security linter)
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.6
+    rev: 1.8.6
     hooks:
       - id: bandit
         args: ['-c', 'pyproject.toml', '-r']
@@ -144,7 +144,7 @@ repos:
 
   # Commit message linting (Conventional Commits)
   - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v3.0.0
+    rev: v4.3.0
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
