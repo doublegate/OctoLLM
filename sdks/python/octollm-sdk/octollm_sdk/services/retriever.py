@@ -5,6 +5,7 @@ The Retriever specializes in knowledge base search and document retrieval.
 """
 
 from typing import Optional
+
 from ..client import BaseClient
 from ..models import HealthResponse, SearchRequest, SearchResponse
 

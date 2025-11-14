@@ -5,6 +5,7 @@ The Judge specializes in output validation and quality assurance.
 """
 
 from typing import Optional
+
 from ..client import BaseClient
 from ..models import HealthResponse, ValidationRequest, ValidationResult
 

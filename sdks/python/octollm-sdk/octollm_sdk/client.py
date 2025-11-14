@@ -5,19 +5,15 @@ Base HTTP client with retry logic for OctoLLM SDK.
 import asyncio
 import uuid
 from typing import Any, Dict, Optional
+
 import httpx
+
 from .auth import get_auth_headers
 from .config import OctoLLMConfig
-from .exceptions import (
-    APIError,
-    AuthenticationError,
-    AuthorizationError,
-    NotFoundError,
-    RateLimitError,
-    ServiceUnavailableError,
-    TimeoutError,
-    ValidationError,
-)
+from .exceptions import (APIError, AuthenticationError, AuthorizationError,
+                         NotFoundError, RateLimitError,
+                         ServiceUnavailableError, TimeoutError,
+                         ValidationError)
 
 
 class BaseClient:

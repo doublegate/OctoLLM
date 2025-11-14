@@ -5,6 +5,7 @@ The Coder specializes in code generation, debugging, and refactoring.
 """
 
 from typing import Optional
+
 from ..client import BaseClient
 from ..models import CodeRequest, CodeResponse, HealthResponse
 

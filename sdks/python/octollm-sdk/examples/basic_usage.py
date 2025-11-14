@@ -9,12 +9,9 @@ This example demonstrates:
 """
 
 import asyncio
-from octollm_sdk import (
-    OrchestratorClient,
-    TaskRequest,
-    ResourceBudget,
-    OctoLLMError,
-)
+
+from octollm_sdk import (OctoLLMError, OrchestratorClient, ResourceBudget,
+                         TaskRequest)
 
 
 async def main():

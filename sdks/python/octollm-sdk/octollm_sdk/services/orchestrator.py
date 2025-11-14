@@ -6,14 +6,10 @@ arm delegation, and result integration.
 """
 
 from typing import List, Optional
+
 from ..client import BaseClient
-from ..models import (
-    ArmCapability,
-    HealthResponse,
-    TaskRequest,
-    TaskResponse,
-    TaskStatusResponse,
-)
+from ..models import (ArmCapability, HealthResponse, TaskRequest, TaskResponse,
+                      TaskStatusResponse)
 
 
 class OrchestratorClient(BaseClient):

@@ -11,19 +11,12 @@ This example demonstrates:
 import asyncio
 import logging
 from typing import Optional
-from octollm_sdk import (
-    OrchestratorClient,
-    TaskRequest,
-    ResourceBudget,
-    OctoLLMError,
-    AuthenticationError,
-    AuthorizationError,
-    ValidationError,
-    RateLimitError,
-    ServiceUnavailableError,
-    NotFoundError,
-    TimeoutError,
-)
+
+from octollm_sdk import (AuthenticationError, AuthorizationError,
+                         NotFoundError, OctoLLMError, OrchestratorClient,
+                         RateLimitError, ResourceBudget,
+                         ServiceUnavailableError, TaskRequest, TimeoutError,
+                         ValidationError)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")

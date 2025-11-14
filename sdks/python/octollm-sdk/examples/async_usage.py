@@ -9,13 +9,9 @@ This example demonstrates:
 """
 
 import asyncio
-from octollm_sdk import (
-    OrchestratorClient,
-    TaskRequest,
-    ResourceBudget,
-    CoderClient,
-    JudgeClient,
-)
+
+from octollm_sdk import (CoderClient, JudgeClient, OrchestratorClient,
+                         ResourceBudget, TaskRequest)
 
 
 async def submit_code_task(client: OrchestratorClient, task_description: str) -> dict:

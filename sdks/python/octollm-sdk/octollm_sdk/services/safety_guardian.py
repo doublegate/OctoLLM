@@ -5,6 +5,7 @@ The Safety Guardian specializes in PII detection and content filtering.
 """
 
 from typing import Optional
+
 from ..client import BaseClient
 from ..models import HealthResponse, SafetyRequest, SafetyResult
 
