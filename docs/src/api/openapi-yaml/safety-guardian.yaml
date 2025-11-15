@@ -1,0 +1,335 @@
+openapi: 3.0.3
+info:
+  title: OctoLLM Safety Guardian Arm API
+  description: |
+    Fast content filtering and policy enforcement using regex-based detection.
+    Detects PII, secrets, malicious content, and policy violations with <100ms latency.
+
+    **Technology**: Python 3.11+ / FastAPI
+    **Port**: 8007
+    **Cost Tier**: 1 (Low - no LLM calls, pure regex)
+    **Average Latency**: <100ms
+  version: 0.3.0
+
+servers:
+  - url: http://localhost:8007
+    description: Local development
+  - url: http://safety-guardian:8007
+    description: Docker Compose / Kubernetes internal
+
+tags:
+  - name: safety
+  - name: health
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      tags:
+        - health
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  version:
+                    type: string
+                  patterns_loaded:
+                    type: integer
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      operationId: getMetrics
+      tags:
+        - health
+      responses:
+        '200':
+          description: Metrics
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /capabilities:
+    get:
+      summary: Get capabilities
+      operationId: getCapabilities
+      tags:
+        - health
+      responses:
+        '200':
+          description: Capabilities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capabilities:
+                    type: array
+                    items:
+                      type: string
+                  detection_types:
+                    type: array
+                    items:
+                      type: string
+                example:
+                  capabilities:
+                    - pii_detection
+                    - secrets_detection
+                    - content_filtering
+                    - policy_enforcement
+                  detection_types:
+                    - ssn
+                    - credit_card
+                    - email
+                    - phone
+                    - ip_address
+                    - api_key
+                    - password
+                    - sql_injection
+                    - xss
+
+  /check:
+    post:
+      summary: Perform safety check
+      description: |
+        Performs fast safety checks on text content:
+        1. PII Detection - Find and redact SSN, credit cards, emails, phones
+        2. Secrets Detection - Find and redact API keys, tokens, passwords
+        3. Content Filtering - Block malicious content (SQL injection, XSS)
+        4. Policy Compliance - Verify organizational policy adherence
+
+        Returns sanitized text with all sensitive data redacted.
+      operationId: performSafetyCheck
+      tags:
+        - safety
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SafetyRequest'
+            examples:
+              clean_text:
+                summary: Clean text (no issues)
+                value:
+                  text: "Hello, this is a test message."
+                  check_types:
+                    - pii
+                    - secrets
+                  redact_pii: true
+                  block_on_high_risk: true
+              pii_detected:
+                summary: Text with PII
+                value:
+                  text: "My email is john.doe@example.com and my phone is 555-123-4567"
+                  check_types:
+                    - pii
+                  redact_pii: true
+              secrets_detected:
+                summary: Text with secrets
+                value:
+                  text: "My API key is sk-1234567890abcdef1234567890abcdef1234567890abcdef"
+                  check_types:
+                    - secrets
+                  redact_pii: true
+                  block_on_high_risk: true
+              malicious_content:
+                summary: Text with SQL injection
+                value:
+                  text: "SELECT * FROM users WHERE username='admin' OR '1'='1'"
+                  check_types:
+                    - content
+                  block_on_high_risk: true
+      responses:
+        '200':
+          description: Safety check complete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SafetyResult'
+              examples:
+                safe:
+                  summary: No issues detected
+                  value:
+                    safe: true
+                    risk_level: none
+                    issues: []
+                    sanitized_text: "Hello, this is a test message."
+                    blocked: false
+                    metadata:
+                      checks_performed:
+                        - pii
+                        - secrets
+                      processing_time_ms: 12.5
+                pii_redacted:
+                  summary: PII detected and redacted
+                  value:
+                    safe: true
+                    risk_level: medium
+                    issues:
+                      - type: pii
+                        risk_level: medium
+                        message: "PII detected: email"
+                        matched_pattern: email
+                        position: 12
+                        redaction: "[EMAIL-REDACTED]"
+                      - type: pii
+                        risk_level: medium
+                        message: "PII detected: phone"
+                        matched_pattern: phone
+                        position: 46
+                        redaction: "[PHONE-REDACTED]"
+                    sanitized_text: "My email is [EMAIL-REDACTED] and my phone is [PHONE-REDACTED]"
+                    blocked: false
+                    metadata:
+                      checks_performed:
+                        - pii
+                      pii_types_found:
+                        - email
+                        - phone
+                blocked:
+                  summary: High-risk content blocked
+                  value:
+                    safe: false
+                    risk_level: critical
+                    issues:
+                      - type: secret
+                        risk_level: critical
+                        message: "Secret detected: openai_api_key"
+                        matched_pattern: openai_api_key
+                        position: 15
+                        redaction: "[OPENAI-KEY-REDACTED]"
+                    sanitized_text: "My API key is [OPENAI-KEY-REDACTED]"
+                    blocked: true
+                    metadata:
+                      checks_performed:
+                        - secrets
+                      block_reason: critical_risk_level
+                      processing_time_ms: 18.3
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    SafetyRequest:
+      type: object
+      required:
+        - text
+        - check_types
+      properties:
+        text:
+          type: string
+          description: Text to check for safety issues
+          minLength: 1
+          maxLength: 50000
+        check_types:
+          type: array
+          items:
+            type: string
+            enum:
+              - pii
+              - content
+              - policy
+              - secrets
+              - all
+          description: Types of safety checks to perform
+        context:
+          type: object
+          additionalProperties: true
+          description: Additional context
+        redact_pii:
+          type: boolean
+          default: true
+          description: Whether to redact detected PII
+        block_on_high_risk:
+          type: boolean
+          default: true
+          description: Whether to block on high/critical risk
+
+    SafetyResult:
+      type: object
+      required:
+        - safe
+        - risk_level
+        - issues
+        - sanitized_text
+      properties:
+        safe:
+          type: boolean
+          description: Whether content is safe (no high/critical risks)
+        risk_level:
+          type: string
+          enum:
+            - none
+            - low
+            - medium
+            - high
+            - critical
+          description: Highest risk level detected
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/SafetyIssue'
+          description: List of detected issues
+        sanitized_text:
+          type: string
+          description: Text with PII/secrets redacted
+        blocked:
+          type: boolean
+          description: Whether request was blocked
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional metadata
+
+    SafetyIssue:
+      type: object
+      required:
+        - type
+        - risk_level
+        - message
+        - matched_pattern
+        - position
+      properties:
+        type:
+          type: string
+          enum:
+            - pii
+            - secret
+            - malicious_content
+            - inappropriate_content
+            - policy_violation
+          description: Issue type
+        risk_level:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+            - critical
+          description: Risk level for this issue
+        message:
+          type: string
+          description: Human-readable issue description
+        matched_pattern:
+          type: string
+          description: Pattern that matched (e.g., "email", "api_key")
+        position:
+          type: integer
+          description: Character position in text where issue was found
+        redaction:
+          type: string
+          description: Replacement text for redaction

@@ -1,0 +1,240 @@
+openapi: 3.0.3
+info:
+  title: OctoLLM Retriever Arm API
+  description: |
+    Knowledge search and synthesis specialist using hybrid search (vector + keyword).
+    Combines semantic and lexical search with reranking and citation.
+
+    **Technology**: Python 3.11+ / FastAPI
+    **Port**: 8004
+    **Cost Tier**: 1 (Low - no expensive LLM calls)
+    **Average Latency**: 100-500ms
+  version: 0.3.0
+
+servers:
+  - url: http://localhost:8004
+    description: Local development
+  - url: http://retriever:8004
+    description: Docker Compose / Kubernetes internal
+
+tags:
+  - name: search
+  - name: health
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      tags:
+        - health
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  version:
+                    type: string
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      operationId: getMetrics
+      tags:
+        - health
+      responses:
+        '200':
+          description: Metrics
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /capabilities:
+    get:
+      summary: Get capabilities
+      operationId: getCapabilities
+      tags:
+        - health
+      responses:
+        '200':
+          description: Capabilities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capabilities:
+                    type: array
+                    items:
+                      type: string
+                example:
+                  capabilities:
+                    - vector_search
+                    - keyword_search
+                    - hybrid_search
+                    - result_synthesis
+
+  /search:
+    post:
+      summary: Search knowledge base
+      description: |
+        Perform hybrid search across knowledge bases using vector and keyword methods.
+        Results are reranked and synthesized with citations.
+      operationId: searchKnowledgeBase
+      tags:
+        - search
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+            example:
+              query: "What are common nginx vulnerabilities?"
+              method: hybrid
+              limit: 10
+              min_relevance_score: 0.5
+              include_citations: true
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+              example:
+                results:
+                  - content: "Nginx is vulnerable to buffer overflow in HTTP/2 implementation (CVE-2024-12345)"
+                    source: "https://nvd.nist.gov/vuln/detail/CVE-2024-12345"
+                    relevance_score: 0.92
+                    rank: 1
+                    metadata:
+                      published_date: "2024-03-15"
+                      severity: high
+                  - content: "Remote code execution possible via malformed headers"
+                    source: "https://security.nginx.org/advisories/2024/001"
+                    relevance_score: 0.87
+                    rank: 2
+                query: "What are common nginx vulnerabilities?"
+                method_used: hybrid
+                total_results: 10
+                synthesis: "Nginx has several known vulnerabilities including buffer overflow in HTTP/2 [1] and remote code execution via malformed headers [2]."
+                citations:
+                  - "https://nvd.nist.gov/vuln/detail/CVE-2024-12345"
+                  - "https://security.nginx.org/advisories/2024/001"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    SearchRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: Search query
+        method:
+          type: string
+          enum:
+            - vector
+            - keyword
+            - hybrid
+          default: hybrid
+          description: Search method to use
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+          description: Maximum number of results
+        filters:
+          type: object
+          additionalProperties: true
+          description: Metadata filters
+        min_relevance_score:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          default: 0.5
+          description: Minimum relevance score threshold
+        include_citations:
+          type: boolean
+          default: true
+          description: Include citations in response
+
+    SearchResponse:
+      type: object
+      required:
+        - results
+        - query
+        - method_used
+        - total_results
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+        query:
+          type: string
+        method_used:
+          type: string
+          enum:
+            - vector
+            - keyword
+            - hybrid
+        total_results:
+          type: integer
+        synthesis:
+          type: string
+          description: Synthesized summary with citations
+        citations:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: Source URLs
+
+    SearchResult:
+      type: object
+      required:
+        - content
+        - source
+        - relevance_score
+        - rank
+      properties:
+        content:
+          type: string
+          description: Retrieved content
+        source:
+          type: string
+          description: Source URL or identifier
+        relevance_score:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Relevance score (0-1)
+        rank:
+          type: integer
+          minimum: 1
+          description: Result rank
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional metadata
