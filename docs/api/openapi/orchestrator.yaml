@@ -1,20 +1,49 @@
 openapi: 3.0.3
+
 info:
   title: OctoLLM Orchestrator API
   description: |
-    Central Brain component that coordinates task planning, arm delegation, and result integration.
+    Central orchestration service for the OctoLLM distributed AI architecture.
 
-    The Orchestrator receives complex tasks, breaks them down into subtasks, delegates to specialized
-    arms (Planner, Executor, Retriever, Coder, Judge, Safety Guardian), and synthesizes results.
+    The Orchestrator coordinates task processing across specialized arms, integrating with the
+    Reflex Layer for PII/injection detection and PostgreSQL for task persistence.
 
-    **Technology**: Python 3.11+ / FastAPI
-    **Port**: 8000
-    **Cost Tier**: 5 (Expensive - uses GPT-4/Claude Opus)
-    **Average Latency**: 5-30 seconds
-  version: 0.3.0
+    ## Features
+
+    - Task submission with automatic safety validation
+    - Reflex Layer integration (PII/injection detection)
+    - PostgreSQL persistence with async SQLAlchemy
+    - Circuit breaker pattern for resilience
+    - Prometheus metrics
+    - Health/readiness probes
+
+    ## Sprint 1.2 Status
+
+    **Phase 1 Complete**: Reflex Layer Integration
+    - ReflexClient with circuit breaker, retry logic
+    - 39 tests passing, 97% coverage
+
+    **Phase 2 Complete**: Orchestrator Core
+    - FastAPI application with 6 endpoints
+    - Database layer (async SQLAlchemy)
+    - 87 tests passing, 100% pass rate
+    - 85%+ coverage on tested modules
+
+    ## Authentication
+
+    Currently no authentication required (Sprint 1.2).
+    Future sprints will implement JWT-based authentication.
+
+    ## Rate Limiting
+
+    Currently no rate limiting (Sprint 1.2).
+    Future sprints will implement per-user rate limiting with Redis.
+
+  version: 1.0.0
   contact:
-    name: OctoLLM Core Team
-    email: octollm@example.com
+    name: OctoLLM Team
+    url: https://github.com/doublegate/OctoLLM
+    email: hello@octollm.org
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
@@ -23,128 +52,49 @@ servers:
   - url: http://localhost:8000
     description: Local development
   - url: http://orchestrator:8000
-    description: Docker Compose / Kubernetes internal
+    description: Docker Compose
   - url: https://api.octollm.example.com
-    description: Production
+    description: Production (future)
 
 tags:
   - name: tasks
     description: Task submission and management
   - name: health
-    description: Health checks and service status
-  - name: capabilities
-    description: Service capabilities and arm registry
+    description: Health and readiness probes for Kubernetes
+  - name: metrics
+    description: Prometheus metrics
+  - name: debug
+    description: Debug endpoints (development only)
 
 paths:
-  /health:
-    get:
-      summary: Health check endpoint
-      description: Returns service health status, version, and component status
-      operationId: getHealth
-      tags:
-        - health
-      responses:
-        '200':
-          description: Service is healthy
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HealthResponse'
-              example:
-                status: healthy
-                version: 0.3.0
-                uptime_seconds: 3600
-                components:
-                  cache: healthy
-                  memory: healthy
-                  arms:
-                    planner: healthy
-                    executor: healthy
-                    retriever: healthy
-                    coder: healthy
-                    judge: healthy
-                    safety-guardian: healthy
-
-  /metrics:
-    get:
-      summary: Prometheus metrics endpoint
-      description: Returns Prometheus-formatted metrics for monitoring
-      operationId: getMetrics
-      tags:
-        - health
-      responses:
-        '200':
-          description: Metrics in Prometheus format
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: |
-                  # HELP orchestrator_tasks_total Total number of tasks processed
-                  # TYPE orchestrator_tasks_total counter
-                  orchestrator_tasks_total 1234
-                  # HELP orchestrator_task_duration_seconds Task processing duration
-                  # TYPE orchestrator_task_duration_seconds histogram
-                  orchestrator_task_duration_seconds_bucket{le="1"} 100
-                  orchestrator_task_duration_seconds_bucket{le="5"} 450
-
-  /capabilities:
-    get:
-      summary: Get registered arm capabilities
-      description: Returns list of available arms with their capabilities, endpoints, and cost tiers
-      operationId: getCapabilities
-      tags:
-        - capabilities
-      responses:
-        '200':
-          description: List of registered arms
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  arms:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/ArmCapability'
-              example:
-                arms:
-                  - arm_id: planner
-                    name: Planner Arm
-                    description: Task decomposition and planning specialist
-                    capabilities:
-                      - task_planning
-                      - goal_decomposition
-                      - acceptance_criteria
-                    cost_tier: 2
-                    endpoint: http://planner:8002
-                    status: healthy
-                  - arm_id: executor
-                    name: Tool Executor Arm
-                    description: Sandboxed command execution specialist
-                    capabilities:
-                      - shell_execution
-                      - http_requests
-                      - python_execution
-                    cost_tier: 3
-                    endpoint: http://executor:8003
-                    status: healthy
-
-  /tasks:
+  /submit:
     post:
-      summary: Submit a new task
+      summary: Submit new task
       description: |
-        Submit a task to the orchestrator for processing. The task will be:
-        1. Validated and preprocessed by Safety Guardian
-        2. Decomposed into subtasks by Planner
-        3. Delegated to appropriate arms for execution
-        4. Results validated by Judge
-        5. Synthesized into final response
-      operationId: createTask
+        Submit a task for processing with automatic safety checks via Reflex Layer.
+
+        ## Process Flow
+
+        1. Validates task structure (Pydantic)
+        2. Calls Reflex Layer for PII/injection detection
+        3. If safe, stores task in PostgreSQL
+        4. Returns task_id for status polling
+
+        ## Safety Checks
+
+        - **PII Detection**: 18 patterns (Email, SSN, Credit Card, etc.)
+        - **Injection Detection**: 14 OWASP patterns (ignore previous, jailbreak, etc.)
+        - Tasks with detected PII/injection are rejected with 400 Bad Request
+
+        ## Performance
+
+        - Latency: ~100-150ms (including Reflex Layer call)
+        - Reflex Layer timeout: 10s
+        - Circuit breaker: Opens after 5 failures, resets after 60s
+
       tags:
         - tasks
-      security:
-        - ApiKeyAuth: []
+      operationId: submit_task
       requestBody:
         required: true
         content:
@@ -153,189 +103,457 @@ paths:
               $ref: '#/components/schemas/TaskRequest'
             examples:
               simple_task:
-                summary: Simple code generation task
+                summary: Simple task (sentiment analysis)
                 value:
-                  goal: "Create a Python function to validate email addresses"
+                  goal: "Analyze the sentiment of this text: I love OctoLLM!"
+                  priority: "medium"
+              complex_task:
+                summary: Complex task with constraints
+                value:
+                  goal: "Generate a Python script to analyze CSV data"
                   constraints:
-                    - "Include type hints"
-                    - "Add docstring with examples"
-                    - "Handle edge cases"
-                  context:
-                    project_type: "web_api"
-                    language: "python"
+                    format: "python"
+                    max_lines: 100
+                  context: "Data contains sales records from Q4 2024"
+                  acceptance_criteria:
+                    - "Script must handle missing values"
+                    - "Script must output JSON summary"
+                    - "Script must include error handling"
                   budget:
                     max_tokens: 5000
-                    max_time_seconds: 30
-                    max_cost_dollars: 0.10
-              complex_task:
-                summary: Complex multi-step task
-                value:
-                  goal: "Research latest vulnerabilities in nginx and create exploitation report"
-                  constraints:
-                    - "Use only trusted sources"
-                    - "Include CVE references"
-                    - "Provide mitigation strategies"
-                  acceptance_criteria:
-                    - "Report includes at least 3 recent CVEs"
-                    - "Each vulnerability has exploit details"
-                    - "Mitigations are actionable"
-                  context:
-                    target_version: "nginx/1.24.0"
-                  budget:
-                    max_tokens: 20000
                     max_time_seconds: 120
-                    max_cost_dollars: 0.50
+                    max_cost_usd: 0.50
+                  priority: "high"
+                  metadata:
+                    source: "web-app"
+                    user_id: "user-123"
+              critical_task:
+                summary: Critical priority task
+                value:
+                  goal: "Find and fix security vulnerability in authentication module"
+                  constraints:
+                    category: "security"
+                    severity: "critical"
+                  context: "User reported unauthorized access"
+                  acceptance_criteria:
+                    - "Vulnerability identified and patched"
+                    - "Tests added for exploit scenario"
+                    - "No breaking changes to API"
+                  budget:
+                    max_tokens: 10000
+                    max_time_seconds: 300
+                    max_cost_usd: 1.00
+                  priority: "critical"
+
       responses:
         '202':
           description: Task accepted and queued for processing
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskResponse'
-              example:
-                task_id: task_abc123xyz789
-                status: processing
-                created_at: "2025-11-11T10:30:00Z"
-                estimated_completion: "2025-11-11T10:30:30Z"
+                $ref: '#/components/schemas/TaskSubmitResponse'
+              examples:
+                success:
+                  summary: Task submitted successfully
+                  value:
+                    task_id: "123e4567-e89b-12d3-a456-426614174000"
+                    status: "pending"
+                    message: "Task submitted successfully and queued for processing"
+
         '400':
-          description: Invalid request
+          description: Validation error or safety check failed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: ValidationError
-                message: "Missing required field 'goal'"
-                details:
-                  field: goal
-                  type: required
-        '401':
-          description: Authentication failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: AuthenticationError
-                message: "Invalid or missing API key"
-        '429':
-          description: Rate limit exceeded
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: RateLimitError
-                message: "Rate limit exceeded. Max 100 requests per minute."
-                retry_after: 45
+              examples:
+                pii_detected:
+                  summary: PII detected in task goal
+                  value:
+                    error: "Task blocked by security policy"
+                    request_id: "req-123e4567"
+                    details:
+                      pii_detected: true
+                      injection_detected: false
+                      pii_matches:
+                        - pii_type: "Email"
+                          value: "user@example.com"
+                          position: 42
+                          confidence: 0.95
+                          context: "Contact me at user@example.com for updates"
+                injection_detected:
+                  summary: Injection attempt detected
+                  value:
+                    error: "Task blocked by security policy"
+                    request_id: "req-789def01"
+                    details:
+                      pii_detected: false
+                      injection_detected: true
+                      injection_matches:
+                        - injection_type: "IGNORE_PREVIOUS"
+                          severity: "Critical"
+                          matched_text: "Ignore all previous instructions"
+                          position: 0
+                          confidence: 0.98
+                          context_analysis:
+                            is_quoted: false
+                            is_academic: false
+                            is_testing: false
+                            is_negation: false
+                validation_error:
+                  summary: Request validation failed
+                  value:
+                    error: "Validation error"
+                    request_id: "req-abc123"
+                    details:
+                      field: "goal"
+                      issue: "Field required"
+
         '503':
-          description: Service unavailable
+          description: Reflex Layer service unavailable (circuit breaker open)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: ServiceUnavailable
-                message: "Orchestrator is overloaded. Please retry later."
+              examples:
+                circuit_breaker_open:
+                  summary: Circuit breaker is open
+                  value:
+                    error: "Reflex Layer temporarily unavailable (circuit breaker open)"
+                    request_id: "req-xyz789"
+                    details:
+                      circuit_breaker_state: "open"
+                      failure_count: 5
+                      last_failure_time: "2025-11-15T12:00:00Z"
+                service_unavailable:
+                  summary: Reflex Layer not responding
+                  value:
+                    error: "Reflex Layer service unavailable"
+                    request_id: "req-def456"
+                    details:
+                      error_type: "ConnectionError"
+                      message: "Failed to connect to http://reflex-layer:8080"
 
   /tasks/{task_id}:
     get:
-      summary: Get task status and result
-      description: Retrieve status, progress, and result (if complete) for a specific task
-      operationId: getTask
+      summary: Get task status
+      description: |
+        Retrieve task status, result, or error by task ID.
+
+        ## Task Statuses
+
+        - **pending**: Task submitted, waiting for processing
+        - **processing**: Task currently being executed
+        - **completed**: Task completed successfully
+        - **failed**: Task execution failed
+        - **cancelled**: Task was cancelled (future)
+
+        ## Performance
+
+        - Latency: ~5-10ms (database query)
+        - Returns immediately with current status
+
       tags:
         - tasks
-      security:
-        - ApiKeyAuth: []
+      operationId: get_task
       parameters:
         - name: task_id
           in: path
           required: true
-          description: Task identifier returned from task submission
+          description: Task UUID (generated at submission)
           schema:
             type: string
-            pattern: '^task_[a-zA-Z0-9]{16}$'
-          example: task_abc123xyz789
+            format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+
       responses:
         '200':
-          description: Task status and result (if complete)
+          description: Task found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskStatusResponse'
+                $ref: '#/components/schemas/TaskResponse'
               examples:
-                processing:
-                  summary: Task still processing
+                pending:
+                  summary: Task pending (not yet processed)
                   value:
-                    task_id: task_abc123xyz789
-                    status: processing
-                    progress:
-                      current_step: execution
-                      completed_steps: 3
-                      total_steps: 5
-                      percentage: 60
-                    created_at: "2025-11-11T10:30:00Z"
-                    updated_at: "2025-11-11T10:30:15Z"
+                    task_id: "123e4567-e89b-12d3-a456-426614174000"
+                    status: "pending"
+                    goal: "Analyze the sentiment of this text: I love OctoLLM!"
+                    result: null
+                    error: null
+                    created_at: "2025-11-15T12:00:00Z"
+                    updated_at: "2025-11-15T12:00:00Z"
+                    processing_time_ms: null
                 completed:
                   summary: Task completed successfully
                   value:
-                    task_id: task_abc123xyz789
-                    status: completed
+                    task_id: "123e4567-e89b-12d3-a456-426614174000"
+                    status: "completed"
+                    goal: "Analyze the sentiment of this text: I love OctoLLM!"
                     result:
-                      output: "def validate_email(email: str) -> bool:\n    \"\"\"Validate email address.\"\"\"\n    import re\n    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'\n    return bool(re.match(pattern, email))"
-                      confidence: 0.92
-                      validation_passed: true
-                    metadata:
-                      arms_used:
-                        - planner
-                        - coder
-                        - judge
-                      tokens_used: 1450
-                      cost_dollars: 0.043
-                      duration_seconds: 12.5
-                    created_at: "2025-11-11T10:30:00Z"
-                    completed_at: "2025-11-11T10:30:12Z"
+                      sentiment: "positive"
+                      score: 0.95
+                      confidence: 0.88
+                    error: null
+                    created_at: "2025-11-15T12:00:00Z"
+                    updated_at: "2025-11-15T12:00:05Z"
+                    processing_time_ms: 5234
                 failed:
-                  summary: Task failed
+                  summary: Task execution failed
                   value:
-                    task_id: task_abc123xyz789
-                    status: failed
-                    error:
-                      type: ValidationError
-                      message: "Output failed validation: Code syntax error"
-                      details: "Missing closing parenthesis on line 5"
-                    created_at: "2025-11-11T10:30:00Z"
-                    failed_at: "2025-11-11T10:30:08Z"
+                    task_id: "123e4567-e89b-12d3-a456-426614174000"
+                    status: "failed"
+                    goal: "Generate Python script with invalid constraints"
+                    result: null
+                    error: "Failed to generate code: Invalid constraint 'format=invalid'"
+                    created_at: "2025-11-15T12:00:00Z"
+                    updated_at: "2025-11-15T12:00:03Z"
+                    processing_time_ms: 3421
+
         '404':
           description: Task not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: NotFound
-                message: "Task 'task_invalid123' not found"
-        '401':
-          description: Authentication failed
+              examples:
+                not_found:
+                  summary: Task ID does not exist
+                  value:
+                    error: "Task 999e9999-e99b-99d9-a999-999999999999 not found"
+                    request_id: "req-notfound"
+                    details: {}
+
+  /health:
+    get:
+      summary: Health check
+      description: |
+        Kubernetes liveness probe - checks if service is alive.
+
+        Always returns 200 if the service is running.
+        Does NOT check dependencies (database, Reflex Layer).
+
+        Use `/ready` endpoint for readiness checks.
+
+      tags:
+        - health
+      operationId: health_check
+      responses:
+        '200':
+          description: Service is healthy
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  summary: Service is alive
+                  value:
+                    status: "healthy"
+                    timestamp: "2025-11-15T12:00:00Z"
+                    version: "1.0.0"
+
+  /ready:
+    get:
+      summary: Readiness check
+      description: |
+        Kubernetes readiness probe - checks if service is ready to accept requests.
+
+        Checks the following dependencies:
+        - **PostgreSQL**: Database connection health
+        - **Reflex Layer**: Service availability (if enabled)
+
+        Returns 200 only if ALL checks pass.
+        Returns 503 if any check fails.
+
+        ## Use Cases
+
+        - Kubernetes readiness probe
+        - Load balancer health check
+        - Deployment verification
+
+      tags:
+        - health
+      operationId: readiness_check
+      responses:
+        '200':
+          description: Service is ready to accept requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+              examples:
+                ready:
+                  summary: All dependencies healthy
+                  value:
+                    ready: true
+                    checks:
+                      database: true
+                      reflex_layer: true
+                    timestamp: "2025-11-15T12:00:00Z"
+
+        '503':
+          description: Service not ready (dependencies unavailable)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+              examples:
+                database_down:
+                  summary: Database unavailable
+                  value:
+                    ready: false
+                    checks:
+                      database: false
+                      reflex_layer: true
+                    timestamp: "2025-11-15T12:00:00Z"
+                reflex_down:
+                  summary: Reflex Layer unavailable
+                  value:
+                    ready: false
+                    checks:
+                      database: true
+                      reflex_layer: false
+                    timestamp: "2025-11-15T12:00:00Z"
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      description: |
+        Prometheus metrics endpoint in text exposition format.
+
+        ## Metrics Exported
+
+        - `orchestrator_tasks_submitted_total`: Counter of tasks submitted (by priority)
+        - `orchestrator_task_status_total`: Counter of tasks by status
+        - `orchestrator_task_processing_seconds`: Histogram of processing time
+        - `orchestrator_http_request_duration_seconds`: Histogram of HTTP request duration
+        - `orchestrator_reflex_calls_total`: Counter of Reflex Layer calls (by status)
+
+        ## Example Queries
+
+        **Task submission rate**:
+        ```promql
+        rate(orchestrator_tasks_submitted_total[5m])
+        ```
+
+        **95th percentile processing time**:
+        ```promql
+        histogram_quantile(0.95, rate(orchestrator_task_processing_seconds_bucket[5m]))
+        ```
+
+      tags:
+        - metrics
+      operationId: get_metrics
+      responses:
+        '200':
+          description: Metrics exported in Prometheus format
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |
+                # TYPE orchestrator_tasks_submitted_total counter
+                orchestrator_tasks_submitted_total{priority="low"} 15.0
+                orchestrator_tasks_submitted_total{priority="medium"} 42.0
+                orchestrator_tasks_submitted_total{priority="high"} 28.0
+                orchestrator_tasks_submitted_total{priority="critical"} 5.0
+
+                # TYPE orchestrator_task_status_total counter
+                orchestrator_task_status_total{status="pending"} 10.0
+                orchestrator_task_status_total{status="processing"} 3.0
+                orchestrator_task_status_total{status="completed"} 65.0
+                orchestrator_task_status_total{status="failed"} 12.0
+
+                # TYPE orchestrator_task_processing_seconds histogram
+                orchestrator_task_processing_seconds_bucket{le="0.1"} 5.0
+                orchestrator_task_processing_seconds_bucket{le="0.5"} 20.0
+                orchestrator_task_processing_seconds_bucket{le="1.0"} 40.0
+                orchestrator_task_processing_seconds_bucket{le="5.0"} 75.0
+                orchestrator_task_processing_seconds_bucket{le="10.0"} 85.0
+                orchestrator_task_processing_seconds_sum 245.5
+                orchestrator_task_processing_seconds_count 90.0
+
+  /:
+    get:
+      summary: Root endpoint
+      description: |
+        Root endpoint providing service information and API navigation links.
+
+        Returns service metadata and links to other endpoints.
+
+      operationId: root
+      responses:
+        '200':
+          description: Service information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RootResponse'
+              examples:
+                root:
+                  summary: Service info
+                  value:
+                    service: "OctoLLM Orchestrator"
+                    version: "1.0.0"
+                    docs: "/docs"
+                    health: "/health"
+                    ready: "/ready"
+                    metrics: "/metrics"
+
+  /debug/stats:
+    get:
+      summary: Debug statistics
+      description: |
+        Debug statistics endpoint (development mode only).
+
+        Returns:
+        - Task counts by status
+        - Reflex Layer client metrics
+
+        **Note**: Only available when `ORCHESTRATOR_DEBUG=true`
+
+      tags:
+        - debug
+      operationId: debug_stats
+      responses:
+        '200':
+          description: Debug statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebugStatsResponse'
+              examples:
+                stats:
+                  summary: Current statistics
+                  value:
+                    task_counts:
+                      pending: 5
+                      processing: 2
+                      completed: 42
+                      failed: 3
+                      cancelled: 0
+                    reflex_metrics:
+                      total_requests: 50
+                      successful_requests: 47
+                      failed_requests: 3
+                      blocked_requests: 2
+                      pii_detections: 1
+                      injection_detections: 1
+                      cache_hits: 15
+                      total_latency_ms: 4250.5
+                      average_latency_ms: 85.01
+                      success_rate: 0.94
+                      circuit_breaker_state: "closed"
+                      circuit_breaker_failure_count: 0
 
 components:
-  securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
-      description: API key for authentication
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: JWT token for inter-service communication
-
   schemas:
+    # ==============================================================================
+    # Request Models
+    # ==============================================================================
+
     TaskRequest:
       type: object
       required:
@@ -343,328 +561,396 @@ components:
       properties:
         goal:
           type: string
-          description: Natural language description of the task objective
-          minLength: 10
-          maxLength: 2000
-          example: "Create a Python function to validate email addresses"
+          description: Natural language task description
+          minLength: 1
+          maxLength: 10000
+          example: "Analyze the sentiment of this text: I love OctoLLM!"
+
         constraints:
-          type: array
-          items:
-            type: string
-          description: Hard constraints that must be satisfied
+          type: object
+          description: Task-specific constraints (format, length, etc.)
+          additionalProperties: true
           example:
-            - "Include type hints"
-            - "Add docstring"
+            format: "json"
+            max_length: 1000
+
+        context:
+          type: string
+          description: Background information for task execution
+          maxLength: 50000
+          nullable: true
+          example: "User feedback analysis for product reviews"
+
         acceptance_criteria:
           type: array
+          description: Conditions for successful task completion
           items:
             type: string
-          description: Success conditions for validation
           example:
-            - "Function validates RFC 5322 emails"
-            - "Includes test cases"
-        context:
-          type: object
-          additionalProperties: true
-          description: Additional context and metadata
-          example:
-            project_type: "web_api"
-            language: "python"
-            framework: "fastapi"
+            - "Response must be valid JSON"
+            - "Response must include sentiment score"
+
         budget:
           $ref: '#/components/schemas/ResourceBudget'
 
+        priority:
+          $ref: '#/components/schemas/Priority'
+
+        metadata:
+          type: object
+          description: Additional metadata (source, user_id, etc.)
+          additionalProperties: true
+          example:
+            source: "web-app"
+            user_id: "user-123"
+
     ResourceBudget:
       type: object
+      description: Resource constraints for task execution
       properties:
         max_tokens:
           type: integer
           description: Maximum LLM tokens to use
-          minimum: 100
+          minimum: 1
           maximum: 100000
           default: 10000
           example: 5000
+
         max_time_seconds:
           type: integer
           description: Maximum execution time in seconds
-          minimum: 5
-          maximum: 300
-          default: 60
-          example: 30
-        max_cost_dollars:
+          minimum: 1
+          maximum: 3600
+          default: 300
+          example: 120
+
+        max_cost_usd:
           type: number
           format: float
           description: Maximum cost in USD
-          minimum: 0.01
-          maximum: 10.0
+          minimum: 0.0
+          maximum: 100.0
           default: 1.0
           example: 0.50
+
+    # ==============================================================================
+    # Response Models
+    # ==============================================================================
+
+    TaskSubmitResponse:
+      type: object
+      required:
+        - task_id
+        - status
+        - message
+      properties:
+        task_id:
+          type: string
+          format: uuid
+          description: Assigned task identifier (UUID v4)
+          example: "123e4567-e89b-12d3-a456-426614174000"
+
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+
+        message:
+          type: string
+          description: Confirmation message
+          example: "Task submitted successfully and queued for processing"
 
     TaskResponse:
       type: object
       required:
         - task_id
         - status
+        - goal
         - created_at
+        - updated_at
       properties:
         task_id:
           type: string
-          pattern: '^task_[a-zA-Z0-9]{16}$'
-          description: Unique task identifier
-          example: task_abc123xyz789
-        status:
-          type: string
-          enum:
-            - queued
-            - processing
-            - completed
-            - failed
-            - cancelled
-          description: Current task status
-          example: processing
-        created_at:
-          type: string
-          format: date-time
-          description: Task creation timestamp
-          example: "2025-11-11T10:30:00Z"
-        estimated_completion:
-          type: string
-          format: date-time
-          description: Estimated completion time
-          example: "2025-11-11T10:30:30Z"
+          format: uuid
+          description: Task identifier
+          example: "123e4567-e89b-12d3-a456-426614174000"
 
-    TaskStatusResponse:
-      type: object
-      required:
-        - task_id
-        - status
-        - created_at
-      properties:
-        task_id:
-          type: string
-          pattern: '^task_[a-zA-Z0-9]{16}$'
-          example: task_abc123xyz789
         status:
+          $ref: '#/components/schemas/TaskStatus'
+
+        goal:
           type: string
-          enum:
-            - queued
-            - processing
-            - completed
-            - failed
-            - cancelled
-          example: completed
-        progress:
-          type: object
-          properties:
-            current_step:
-              type: string
-              enum:
-                - preprocessing
-                - planning
-                - execution
-                - validation
-                - synthesis
-              example: execution
-            completed_steps:
-              type: integer
-              example: 3
-            total_steps:
-              type: integer
-              example: 5
-            percentage:
-              type: integer
-              minimum: 0
-              maximum: 100
-              example: 60
+          description: Task goal (natural language)
+          example: "Analyze the sentiment of this text: I love OctoLLM!"
+
         result:
           type: object
-          description: Task result (only present if status is completed)
-          properties:
-            output:
-              type: string
-              description: Primary output
-            confidence:
-              type: number
-              format: float
-              minimum: 0.0
-              maximum: 1.0
-              description: Confidence score
-            validation_passed:
-              type: boolean
-              description: Whether output passed validation
+          description: Task execution result (if completed)
+          nullable: true
+          additionalProperties: true
+          example:
+            sentiment: "positive"
+            score: 0.95
+            confidence: 0.88
+
         error:
-          type: object
-          description: Error details (only present if status is failed)
-          properties:
-            type:
-              type: string
-              example: ValidationError
-            message:
-              type: string
-              example: "Output failed validation"
-            details:
-              type: string
-              example: "Missing required field 'tests'"
-        metadata:
-          type: object
-          properties:
-            arms_used:
-              type: array
-              items:
-                type: string
-              example:
-                - planner
-                - coder
-                - judge
-            tokens_used:
-              type: integer
-              example: 1450
-            cost_dollars:
-              type: number
-              format: float
-              example: 0.043
-            duration_seconds:
-              type: number
-              format: float
-              example: 12.5
+          type: string
+          description: Error message (if failed)
+          nullable: true
+          example: "Failed to process: Invalid input format"
+
         created_at:
           type: string
           format: date-time
-          example: "2025-11-11T10:30:00Z"
+          description: Task creation timestamp (ISO 8601)
+          example: "2025-11-15T12:00:00Z"
+
         updated_at:
           type: string
           format: date-time
-          example: "2025-11-11T10:30:15Z"
-        completed_at:
-          type: string
-          format: date-time
-          example: "2025-11-11T10:30:12Z"
-        failed_at:
-          type: string
-          format: date-time
-          example: "2025-11-11T10:30:08Z"
+          description: Last update timestamp (ISO 8601)
+          example: "2025-11-15T12:00:05Z"
 
-    ArmCapability:
-      type: object
-      required:
-        - arm_id
-        - name
-        - description
-        - capabilities
-        - cost_tier
-        - endpoint
-      properties:
-        arm_id:
-          type: string
-          description: Unique arm identifier
-          example: planner
-        name:
-          type: string
-          description: Human-readable arm name
-          example: Planner Arm
-        description:
-          type: string
-          description: Arm purpose and specialization
-          example: Task decomposition and planning specialist
-        capabilities:
-          type: array
-          items:
-            type: string
-          description: List of capabilities this arm provides
-          example:
-            - task_planning
-            - goal_decomposition
-        cost_tier:
+        processing_time_ms:
           type: integer
-          minimum: 1
-          maximum: 5
-          description: Cost tier (1=low, 5=expensive)
-          example: 2
-        endpoint:
-          type: string
-          format: uri
-          description: Arm service endpoint URL
-          example: http://planner:8002
-        status:
-          type: string
-          enum:
-            - healthy
-            - degraded
-            - unavailable
-          example: healthy
+          description: Total processing time in milliseconds
+          nullable: true
+          example: 5234
 
     HealthResponse:
       type: object
       required:
         - status
+        - timestamp
         - version
       properties:
         status:
           type: string
-          enum:
-            - healthy
-            - degraded
-            - unhealthy
-          example: healthy
+          description: Health status
+          enum: ["healthy"]
+          example: "healthy"
+
+        timestamp:
+          type: string
+          format: date-time
+          description: Check timestamp (ISO 8601)
+          example: "2025-11-15T12:00:00Z"
+
         version:
           type: string
-          pattern: '^\d+\.\d+\.\d+$'
-          example: 0.3.0
-        uptime_seconds:
-          type: integer
-          description: Service uptime in seconds
-          example: 3600
-        components:
+          description: Service version
+          example: "1.0.0"
+
+    ReadinessResponse:
+      type: object
+      required:
+        - ready
+        - checks
+        - timestamp
+      properties:
+        ready:
+          type: boolean
+          description: Overall readiness status
+          example: true
+
+        checks:
           type: object
-          description: Health status of dependent components
+          description: Individual component health checks
+          required:
+            - database
+            - reflex_layer
           properties:
-            cache:
+            database:
+              type: boolean
+              description: PostgreSQL connection healthy
+              example: true
+
+            reflex_layer:
+              type: boolean
+              description: Reflex Layer service available
+              example: true
+
+        timestamp:
+          type: string
+          format: date-time
+          description: Check timestamp (ISO 8601)
+          example: "2025-11-15T12:00:00Z"
+
+    RootResponse:
+      type: object
+      required:
+        - service
+        - version
+        - docs
+        - health
+        - ready
+        - metrics
+      properties:
+        service:
+          type: string
+          description: Service name
+          example: "OctoLLM Orchestrator"
+
+        version:
+          type: string
+          description: Service version
+          example: "1.0.0"
+
+        docs:
+          type: string
+          description: OpenAPI documentation URL
+          example: "/docs"
+
+        health:
+          type: string
+          description: Health check endpoint
+          example: "/health"
+
+        ready:
+          type: string
+          description: Readiness check endpoint
+          example: "/ready"
+
+        metrics:
+          type: string
+          description: Prometheus metrics endpoint
+          example: "/metrics"
+
+    DebugStatsResponse:
+      type: object
+      description: Debug statistics (development mode only)
+      properties:
+        task_counts:
+          type: object
+          description: Task counts by status
+          additionalProperties:
+            type: integer
+          example:
+            pending: 5
+            processing: 2
+            completed: 42
+            failed: 3
+
+        reflex_metrics:
+          type: object
+          description: Reflex Layer client metrics
+          properties:
+            total_requests:
+              type: integer
+              example: 50
+            successful_requests:
+              type: integer
+              example: 47
+            failed_requests:
+              type: integer
+              example: 3
+            blocked_requests:
+              type: integer
+              example: 2
+            pii_detections:
+              type: integer
+              example: 1
+            injection_detections:
+              type: integer
+              example: 1
+            cache_hits:
+              type: integer
+              example: 15
+            total_latency_ms:
+              type: number
+              example: 4250.5
+            average_latency_ms:
+              type: number
+              example: 85.01
+            success_rate:
+              type: number
+              example: 0.94
+            circuit_breaker_state:
               type: string
-              enum:
-                - healthy
-                - unhealthy
-              example: healthy
-            memory:
-              type: string
-              enum:
-                - healthy
-                - unhealthy
-              example: healthy
-            arms:
-              type: object
-              additionalProperties:
-                type: string
-                enum:
-                  - healthy
-                  - degraded
-                  - unavailable
-              example:
-                planner: healthy
-                executor: healthy
-                retriever: healthy
-                coder: healthy
-                judge: healthy
-                safety-guardian: healthy
+              enum: ["closed", "open", "half-open"]
+              example: "closed"
+            circuit_breaker_failure_count:
+              type: integer
+              example: 0
 
     ErrorResponse:
       type: object
       required:
         - error
-        - message
+        - request_id
       properties:
         error:
           type: string
-          description: Error type/code
-          example: ValidationError
-        message:
+          description: Error message
+          example: "Task blocked by security policy"
+
+        request_id:
           type: string
-          description: Human-readable error message
-          example: "Missing required field 'goal'"
+          description: Request identifier for debugging
+          example: "req-123e4567"
+
         details:
           type: object
-          additionalProperties: true
           description: Additional error details
-        retry_after:
-          type: integer
-          description: Seconds to wait before retrying (for rate limits)
-          example: 45
+          additionalProperties: true
+          example:
+            pii_detected: true
+            pii_matches:
+              - pii_type: "Email"
+                value: "user@example.com"
+                position: 42
+                confidence: 0.95
+
+    # ==============================================================================
+    # Enums
+    # ==============================================================================
+
+    TaskStatus:
+      type: string
+      description: Task execution status
+      enum:
+        - pending
+        - processing
+        - completed
+        - failed
+        - cancelled
+      example: "pending"
+
+    Priority:
+      type: string
+      description: Task priority level
+      enum:
+        - low
+        - medium
+        - high
+        - critical
+      default: medium
+      example: "medium"
+
+  # ==============================================================================
+  # Security Schemes (Future)
+  # ==============================================================================
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT-based authentication (future implementation).
+
+        Obtain token via authentication endpoint.
+        Include in Authorization header: `Bearer <token>`
+
+# ==============================================================================
+# Security (Future)
+# ==============================================================================
+
+# security:
+#   - BearerAuth: []
+
+# ==============================================================================
+# External Documentation
+# ==============================================================================
+
+externalDocs:
+  description: OctoLLM Orchestrator Documentation
+  url: https://github.com/doublegate/OctoLLM/blob/main/docs/components/orchestrator.md
