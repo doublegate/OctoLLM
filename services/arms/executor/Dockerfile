@@ -21,7 +21,7 @@ COPY services/reflex-layer ./services/reflex-layer
 RUN cargo build --release --package executor-arm
 
 # Runtime stage
-FROM debian:bookworm-slim
+FROM debian:13.1-slim
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
