@@ -13,6 +13,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Set minimal required permissions
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   sast-bandit:
     name: SAST - Bandit (Python)

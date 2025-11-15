@@ -12,6 +12,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Set minimal required permissions
+permissions:
+  contents: read
+
 jobs:
   lint-python:
     name: Lint Python Code

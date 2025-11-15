@@ -51,5 +51,8 @@
     "dist",
     "README.md",
     "LICENSE"
-  ]
+  ],
+  "overrides": {
+    "js-yaml": "^4.1.1"
+  }
 }

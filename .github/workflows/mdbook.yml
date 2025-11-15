@@ -2,6 +2,8 @@
 #
 # To get started with mdBook see: https://rust-lang.github.io/mdBook/index.html
 #
+# NOTE: Disabled in Phase 0 - No mdBook structure exists yet
+# Will be enabled in Phase 1 when documentation is structured for mdBook
 name: Deploy mdBook site to Pages
 
 on:
@@ -28,6 +30,7 @@ jobs:
   # Build job
   build:
     runs-on: ubuntu-latest
+    if: false  # Disabled in Phase 0 - No mdBook structure exists yet (will enable in Phase 1)
     env:
       MDBOOK_VERSION: 0.4.36
     steps:
@@ -53,6 +56,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    if: false  # Disabled in Phase 0 - No mdBook structure exists yet (will enable in Phase 1)
     needs: build
     steps:
       - name: Deploy to GitHub Pages
