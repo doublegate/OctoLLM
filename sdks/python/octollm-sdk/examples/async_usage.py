@@ -10,8 +10,7 @@ This example demonstrates:
 
 import asyncio
 
-from octollm_sdk import (CoderClient, JudgeClient, OrchestratorClient,
-                         ResourceBudget, TaskRequest)
+from octollm_sdk import CoderClient, JudgeClient, OrchestratorClient, ResourceBudget, TaskRequest
 
 
 async def submit_code_task(client: OrchestratorClient, task_description: str) -> dict:

@@ -32,7 +32,7 @@ def test_settings_defaults():
     assert settings.version == "0.1.0"
     assert settings.environment == "development"
     assert settings.debug is False
-    assert settings.host == "0.0.0.0"
+    assert settings.host == "0.0.0.0"  # nosec B104  # Test assertion for default config value
     assert settings.port == 8000
     assert settings.workers == 1
     assert settings.database_url == "postgresql://octollm:octollm@localhost:5432/octollm"

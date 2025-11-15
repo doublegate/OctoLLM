@@ -11,8 +11,7 @@ This example demonstrates:
 import asyncio
 import os
 
-from octollm_sdk import (CoderClient, OctoLLMConfig, OrchestratorClient,
-                         ResourceBudget, TaskRequest)
+from octollm_sdk import CoderClient, OctoLLMConfig, OrchestratorClient, ResourceBudget, TaskRequest
 
 
 async def example_api_key_auth():
