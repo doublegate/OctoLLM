@@ -1,0 +1,26 @@
+[book]
+title = "OctoLLM Documentation"
+authors = ["OctoLLM Contributors"]
+description = "Distributed AI Architecture for Offensive Security and Developer Tooling"
+language = "en"
+
+[build]
+build-dir = "book"
+
+[output.html]
+git-repository-url = "https://github.com/doublegate/OctoLLM"
+git-repository-icon = "fa-github"
+edit-url-template = "https://github.com/doublegate/OctoLLM/edit/main/docs/{path}"
+site-url = "/OctoLLM/"
+default-theme = "rust"
+preferred-dark-theme = "navy"
+
+[output.html.print]
+enable = true
+
+[output.html.fold]
+enable = true
+level = 1
+
+[preprocessor.links]
+# Enable link checking
