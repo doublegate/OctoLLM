@@ -15,7 +15,7 @@ Inspired by the octopus's distributed nervous system, OctoLLM reimagines AI arch
 [![codecov](https://codecov.io/gh/doublegate/OctoLLM/branch/main/graph/badge.svg)](https://codecov.io/gh/doublegate/OctoLLM)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![Rust](https://img.shields.io/badge/Rust-1.82.0-orange.svg)](https://www.rust-lang.org/)
-[![Phase](https://img.shields.io/badge/Phase-1%20Sprint%201.2%20(Phase%202%20COMPLETE)-brightgreen.svg)](to-dos/MASTER-TODO.md)
+[![Phase](https://img.shields.io/badge/Phase-1%20Sprint%201.2%20COMPLETE-brightgreen.svg)](to-dos/MASTER-TODO.md)
 [![Version](https://img.shields.io/badge/Version-1.2.0-brightgreen.svg)](CHANGELOG.md)
 
 ## What is OctoLLM?
@@ -93,11 +93,29 @@ graph TB
 
 ### Phase 1 Progress: Proof of Concept
 
-**Current Sprint**: Sprint 1.2 ✅ **PHASE 2 COMPLETE** (2025-11-15)
+**Current Sprint**: Sprint 1.2 ✅ **COMPLETE** (2025-11-15)
 **Sprint Status**: Orchestrator Core complete - production-ready
-**Next Sprint**: Phase 1 Sprint 1.3 (Planner Arm Integration)
-**Overall Progress**: Phase 0: 100% ✅ | Phase 1: ~40% (2/5 sprints Phase 2 complete)
+**Next Sprint**: Phase 1 Sprint 1.3 (Planner Arm Integration) - Ready to start
+**Overall Progress**: Phase 0: 100% ✅ | Phase 1: ~22% (2/9 sprints complete: Reflex Layer + Orchestrator)
 **Version**: 1.2.0 | **Sprint 1.2 Completion**: November 15, 2025 | **Sprint 1.3 Start**: TBD
+
+### Recent Achievements
+
+**Documentation Reorganization** (2025-11-16):
+- ✅ **Comprehensive mdBook Site**: 134 pages across 12 major sections deployed to GitHub Pages
+  - **Live Site**: [https://doublegate.github.io/OctoLLM/](https://doublegate.github.io/OctoLLM/)
+  - Full-text search with 17.1MB search index
+  - Hierarchical navigation with breadcrumbs
+  - Complete OpenAPI specifications for all 8 components
+- ✅ **Phase 0 Archive**: Historical record preserved at [docs/phases/PHASE-0-README-ARCHIVE.md](docs/phases/PHASE-0-README-ARCHIVE.md)
+- ✅ **README Streamlined**: Reduced by 291 lines (26.5%) by archiving Phase 0 content
+- ✅ **100% Documentation Coverage**: All project content integrated into searchable mdBook format
+
+**Sprint 1.2 Completion** (2025-11-15):
+- ✅ Orchestrator Core: 1,776 lines Python, 87 tests passing, 85%+ coverage
+- ✅ Reflex Layer Integration: Circuit breaker pattern, retry logic, health checks
+- ✅ Database Layer: Async SQLAlchemy 2.0 + PostgreSQL with connection pooling
+- ✅ Complete OpenAPI specification and comprehensive documentation
 
 ### Operational Infrastructure
 
@@ -699,11 +717,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for comprehensive guidelines (will be exp
 
 ---
 
-**Last Updated**: 2025-11-13
-**Document Version**: 6.0 (Phase 0 Complete)
-**Sprint Status**: Sprint 0.10 complete (Documentation Polish & Phase 1 Preparation) | **Phase 0 100% COMPLETE** ✅
-**Next Review**: After Phase 1 Sprint 1.1 completion (Reflex Layer)
+**Last Updated**: 2025-11-16
+**Document Version**: 7.0 (Sprint 1.2 Complete + mdBook Documentation Deployed)
+**Sprint Status**: Sprint 1.2 complete (Orchestrator Core) | **Phase 1 SPRINT 1.3 NEXT** ✅
+**Next Review**: After Phase 1 Sprint 1.3 completion (Planner Arm Integration)
 **Repository**: https://github.com/doublegate/OctoLLM
+**Documentation Site**: https://doublegate.github.io/OctoLLM/
 
 ---
 

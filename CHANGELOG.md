@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Comprehensive mdBook documentation with 134 pages across 12 major sections
+- Phase 0 archive document for historical reference (docs/phases/PHASE-0-README-ARCHIVE.md)
+- Complete OpenAPI specifications for all 8 components (Orchestrator, Reflex Layer, 6 Arms)
+- Architecture Decision Records (7 ADRs covering technology stack, deployment, security)
+- Operations runbooks (12 comprehensive guides for deployment, monitoring, scaling)
+- Security documentation (10 pages including threat model, compliance, PII protection)
+
+### Changed
+- Streamlined README.md by archiving Phase 0 content (reduced by 291 lines/26.5%)
+- Reorganized documentation structure into hierarchical mdBook format
+- Enhanced mdBook site with full-text search (17.1MB search index)
+- Updated navigation with clear links between archived and active phases
+- Fixed Ruff configuration deprecation warnings (migrated to tool.ruff.lint format)
+
+### Fixed
+- Fixed pyproject.toml Ruff configuration (moved select, ignore, per-file-ignores to tool.ruff.lint)
+- All code quality checks passing (Black, Ruff, mypy, pylint, bandit)
+
+### Documentation
+- Live mdBook site: https://doublegate.github.io/OctoLLM/
+- Phase 0 historical record: docs/phases/PHASE-0-README-ARCHIVE.md
+- 100% documentation coverage of all project content
+
 ## [1.2.0] - 2025-11-15 - Sprint 1.2: Orchestrator Integration (Phase 2 Complete) ✅
 
 ### Added - Orchestrator Core (Production-Ready)
