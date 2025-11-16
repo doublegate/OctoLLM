@@ -1,0 +1,695 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>ADR-003: Memory Architecture - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/architecture/adr/003-memory-architecture.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="adr-003-memory-architecture"><a class="header" href="#adr-003-memory-architecture">ADR-003: Memory Architecture</a></h1>
+<p><strong>Status</strong>: Accepted
+<strong>Date</strong>: 2025-11-10
+<strong>Decision Makers</strong>: Architecture Team, ML Engineers
+<strong>Consulted</strong>: Database Team, Security Team</p>
+<h2 id="context"><a class="header" href="#context">Context</a></h2>
+<p>OctoLLM needs a memory system that supports:</p>
+<ul>
+<li><strong>Global Knowledge</strong>: Facts, entities, relationships shared across all tasks</li>
+<li><strong>Episodic Memory</strong>: Task-specific examples, code patterns, solutions</li>
+<li><strong>Short-term Cache</strong>: Frequently accessed data for performance</li>
+<li><strong>Provenance Tracking</strong>: Audit trail of all operations</li>
+<li><strong>Security Isolation</strong>: Prevent data leakage between security contexts</li>
+<li><strong>Vector Search</strong>: Similarity-based retrieval for examples</li>
+<li><strong>Relational Queries</strong>: Complex joins for knowledge graph</li>
+<li><strong>High Performance</strong>: Low latency for memory operations</li>
+</ul>
+<p>Memory requirements vary by use case:</p>
+<ul>
+<li>Knowledge graph queries: Need SQL joins, ACID guarantees</li>
+<li>Code example retrieval: Need vector similarity search</li>
+<li>Recent task lookup: Need fast key-value access</li>
+<li>Cross-task learning: Need shared knowledge repository</li>
+</ul>
+<h2 id="decision"><a class="header" href="#decision">Decision</a></h2>
+<p>We will implement a <strong>three-tier memory architecture</strong> with routing and security isolation:</p>
+<h3 id="1-global-memory-postgresql"><a class="header" href="#1-global-memory-postgresql">1. Global Memory (PostgreSQL)</a></h3>
+<p><strong>Purpose</strong>: Shared knowledge graph across all tasks
+<strong>Storage</strong>: PostgreSQL with JSONB for flexible properties
+<strong>Access</strong>: SQL queries via SQLAlchemy ORM</p>
+<p><strong>Schema</strong>:</p>
+<pre><code class="language-sql">CREATE TABLE entities (
+    id UUID PRIMARY KEY,
+    entity_type VARCHAR(100) NOT NULL,
+    name VARCHAR(500) NOT NULL,
+    properties JSONB,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE relationships (
+    id UUID PRIMARY KEY,
+    from_entity_id UUID REFERENCES entities(id),
+    to_entity_id UUID REFERENCES entities(id),
+    relationship_type VARCHAR(100) NOT NULL,
+    properties JSONB,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE task_history (
+    id UUID PRIMARY KEY,
+    task_id UUID NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    input TEXT,
+    output TEXT,
+    provenance JSONB,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+</code></pre>
+<p><strong>Use Cases</strong>:</p>
+<ul>
+<li>Storing discovered facts and entities</li>
+<li>Tracking relationships between concepts</li>
+<li>Maintaining task history and audit logs</li>
+<li>Querying for related knowledge</li>
+</ul>
+<h3 id="2-episodic-memory-qdrant"><a class="header" href="#2-episodic-memory-qdrant">2. Episodic Memory (Qdrant)</a></h3>
+<p><strong>Purpose</strong>: Task-specific examples and patterns
+<strong>Storage</strong>: Qdrant vector database
+<strong>Access</strong>: Vector similarity search</p>
+<p><strong>Collections</strong>:</p>
+<ul>
+<li><code>coder_memory</code>: Code examples with embeddings</li>
+<li><code>planner_memory</code>: Successful task decompositions</li>
+<li><code>judge_memory</code>: Validation patterns</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python"># Store code example
+await qdrant_client.upsert(
+    collection_name="coder_memory",
+    points=[
+        {
+            "id": example_id,
+            "vector": embedding,  # 1536-dim vector
+            "payload": {
+                "code": code_snippet,
+                "language": "python",
+                "task_description": description,
+                "success": True,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        }
+    ]
+)
+
+# Retrieve similar examples
+results = await qdrant_client.search(
+    collection_name="coder_memory",
+    query_vector=query_embedding,
+    limit=5,
+    query_filter={
+        "must": [
+            {"key": "language", "match": {"value": "python"}},
+            {"key": "success", "match": {"value": True}}
+        ]
+    }
+)
+</code></pre>
+<p><strong>Use Cases</strong>:</p>
+<ul>
+<li>Finding similar code examples</li>
+<li>Retrieving relevant task patterns</li>
+<li>Learning from past successes</li>
+<li>Context for LLM prompts</li>
+</ul>
+<h3 id="3-cache-layer-redis--in-memory"><a class="header" href="#3-cache-layer-redis--in-memory">3. Cache Layer (Redis + In-Memory)</a></h3>
+<p><strong>L1 Cache (In-Memory)</strong>:</p>
+<ul>
+<li>Library: cachetools TTLCache</li>
+<li>Size: 1,000 items per service</li>
+<li>TTL: 60 seconds</li>
+<li>Use: Hot data, arm capabilities</li>
+</ul>
+<p><strong>L2 Cache (Redis)</strong>:</p>
+<ul>
+<li>Size: Unlimited (eviction policy: LRU)</li>
+<li>TTL: 1-3600 seconds (configurable)</li>
+<li>Use: Shared cache across services</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">class MultiLevelCache:
+    def __init__(self):
+        self.l1 = TTLCache(maxsize=1000, ttl=60)
+        self.l2 = redis.Redis()
+
+    async def get(self, key: str) -&gt; Optional[str]:
+        # Try L1
+        if key in self.l1:
+            return self.l1[key]
+
+        # Try L2
+        value = await self.l2.get(key)
+        if value:
+            self.l1[key] = value  # Promote to L1
+            return value
+
+        return None
+</code></pre>
+<h3 id="4-memory-router"><a class="header" href="#4-memory-router">4. Memory Router</a></h3>
+<p><strong>Purpose</strong>: Route queries to appropriate memory system
+<strong>Logic</strong>: Based on query type and requirements</p>
+<pre><code class="language-python">class MemoryRouter:
+    async def query(self, query: MemoryQuery) -&gt; List[Any]:
+        if query.type == "vector_search":
+            return await self.episodic_memory.search(query)
+        elif query.type == "graph_query":
+            return await self.global_memory.query(query)
+        elif query.type == "recent_lookup":
+            cached = await self.cache.get(query.key)
+            if cached:
+                return cached
+            result = await self.global_memory.query(query)
+            await self.cache.set(query.key, result)
+            return result
+</code></pre>
+<h3 id="5-data-diodes-security-isolation"><a class="header" href="#5-data-diodes-security-isolation">5. Data Diodes (Security Isolation)</a></h3>
+<p><strong>Purpose</strong>: Enforce security boundaries between memory contexts
+<strong>Implementation</strong>: Filtering layer before memory access</p>
+<pre><code class="language-python">class DataDiode:
+    async def filter_read(
+        self,
+        data: Any,
+        capability: CapabilityToken
+    ) -&gt; Any:
+        """Filter data based on capability scope."""
+        if capability.scope == "task:read:own":
+            # Only return data from user's tasks
+            return [
+                item for item in data
+                if item.user_id == capability.user_id
+            ]
+        elif capability.scope == "task:read:all":
+            # Admin can read all
+            return data
+        else:
+            raise AuthorizationError("Insufficient permissions")
+
+    async def filter_write(
+        self,
+        data: Any,
+        capability: CapabilityToken
+    ) -&gt; None:
+        """Validate write operations."""
+        # Check for PII
+        if contains_pii(data):
+            raise SecurityViolation("PII detected in write")
+
+        # Check authorization
+        if not capability.can_write:
+            raise AuthorizationError("No write permission")
+</code></pre>
+<h2 id="consequences"><a class="header" href="#consequences">Consequences</a></h2>
+<h3 id="positive"><a class="header" href="#positive">Positive</a></h3>
+<ol>
+<li>
+<p><strong>Performance</strong>:</p>
+<ul>
+<li>L1 cache: sub-millisecond lookups</li>
+<li>L2 cache: &lt;5ms for common queries</li>
+<li>Vector search: optimized for similarity</li>
+<li>SQL: optimized for relations</li>
+</ul>
+</li>
+<li>
+<p><strong>Flexibility</strong>:</p>
+<ul>
+<li>Right tool for each use case</li>
+<li>Can optimize each layer independently</li>
+<li>Easy to add new memory types</li>
+<li>Supports diverse query patterns</li>
+</ul>
+</li>
+<li>
+<p><strong>Security</strong>:</p>
+<ul>
+<li>Data diodes enforce boundaries</li>
+<li>Capability-based access control</li>
+<li>PII detection before storage</li>
+<li>Audit trail in PostgreSQL</li>
+</ul>
+</li>
+<li>
+<p><strong>Scalability</strong>:</p>
+<ul>
+<li>PostgreSQL: vertical + replication</li>
+<li>Qdrant: horizontal scaling</li>
+<li>Redis: cluster mode</li>
+<li>Independent scaling per layer</li>
+</ul>
+</li>
+<li>
+<p><strong>Rich Queries</strong>:</p>
+<ul>
+<li>SQL for complex joins</li>
+<li>Vector search for similarity</li>
+<li>Hybrid queries combining both</li>
+<li>Full-text search in PostgreSQL</li>
+</ul>
+</li>
+</ol>
+<h3 id="negative"><a class="header" href="#negative">Negative</a></h3>
+<ol>
+<li>
+<p><strong>Complexity</strong>:</p>
+<ul>
+<li>Three databases to manage</li>
+<li>Data consistency challenges</li>
+<li>More failure modes</li>
+<li>Complex debugging</li>
+</ul>
+</li>
+<li>
+<p><strong>Data Synchronization</strong>:</p>
+<ul>
+<li>No automatic sync between layers</li>
+<li>Manual cache invalidation</li>
+<li>Potential staleness issues</li>
+<li>Consistency is eventual</li>
+</ul>
+</li>
+<li>
+<p><strong>Resource Usage</strong>:</p>
+<ul>
+<li>Higher memory footprint</li>
+<li>More infrastructure cost</li>
+<li>Development environment heavier</li>
+<li>Backup complexity</li>
+</ul>
+</li>
+<li>
+<p><strong>Operational Burden</strong>:</p>
+<ul>
+<li>Three systems to monitor</li>
+<li>Three backup strategies</li>
+<li>More moving parts</li>
+<li>Complex recovery procedures</li>
+</ul>
+</li>
+</ol>
+<h3 id="mitigation-strategies"><a class="header" href="#mitigation-strategies">Mitigation Strategies</a></h3>
+<ol>
+<li>
+<p><strong>Complexity</strong>:</p>
+<ul>
+<li>Abstract behind unified API</li>
+<li>Comprehensive documentation</li>
+<li>Clear routing logic</li>
+<li>Automated testing</li>
+</ul>
+</li>
+<li>
+<p><strong>Synchronization</strong>:</p>
+<ul>
+<li>Well-defined TTLs</li>
+<li>Event-driven invalidation</li>
+<li>Version tracking</li>
+<li>Monitoring for staleness</li>
+</ul>
+</li>
+<li>
+<p><strong>Resource Usage</strong>:</p>
+<ul>
+<li>Resource limits in Kubernetes</li>
+<li>Optimize cache sizes</li>
+<li>Efficient data models</li>
+<li>Regular cleanup jobs</li>
+</ul>
+</li>
+<li>
+<p><strong>Operations</strong>:</p>
+<ul>
+<li>Unified monitoring dashboards</li>
+<li>Automated backups</li>
+<li>Runbooks for common issues</li>
+<li>Health checks for all layers</li>
+</ul>
+</li>
+</ol>
+<h2 id="alternatives-considered"><a class="header" href="#alternatives-considered">Alternatives Considered</a></h2>
+<h3 id="1-single-database-postgresql-with-pgvector"><a class="header" href="#1-single-database-postgresql-with-pgvector">1. Single Database (PostgreSQL) with pgvector</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Simpler architecture</li>
+<li>Single source of truth</li>
+<li>ACID guarantees everywhere</li>
+<li>Easier operations</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>Vector search not as optimized</li>
+<li>Performance trade-offs</li>
+<li>Single point of failure</li>
+<li>Harder to scale independently</li>
+</ul>
+<p><strong>Why Rejected</strong>: Vector search performance insufficient for production scale.</p>
+<h3 id="2-graph-database-neo4j-for-global-memory"><a class="header" href="#2-graph-database-neo4j-for-global-memory">2. Graph Database (Neo4j) for Global Memory</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Optimized for relationships</li>
+<li>Native graph queries</li>
+<li>Good visualization tools</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>Less familiar to team</li>
+<li>Higher operational complexity</li>
+<li>More expensive</li>
+<li>Cypher learning curve</li>
+</ul>
+<p><strong>Why Rejected</strong>: PostgreSQL with JSONB provides sufficient graph capabilities with familiar SQL.</p>
+<h3 id="3-elasticsearch-for-all-memory"><a class="header" href="#3-elasticsearch-for-all-memory">3. Elasticsearch for All Memory</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Full-text search excellent</li>
+<li>Horizontal scaling</li>
+<li>Rich query DSL</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>Not optimized for vectors</li>
+<li>Resource intensive</li>
+<li>Complex to operate</li>
+<li>Overkill for our needs</li>
+</ul>
+<p><strong>Why Rejected</strong>: Qdrant better for vectors, PostgreSQL better for structured data.</p>
+<h3 id="4-single-tier-cache-redis-only"><a class="header" href="#4-single-tier-cache-redis-only">4. Single-Tier Cache (Redis only)</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Simpler caching</li>
+<li>No L1/L2 coordination</li>
+<li>Less memory usage</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>Network latency for every lookup</li>
+<li>Higher Redis load</li>
+<li>No in-process caching benefit</li>
+</ul>
+<p><strong>Why Rejected</strong>: L1 cache provides significant performance improvement for hot data.</p>
+<h2 id="implementation-guidelines"><a class="header" href="#implementation-guidelines">Implementation Guidelines</a></h2>
+<h3 id="global-memory-operations"><a class="header" href="#global-memory-operations">Global Memory Operations</a></h3>
+<pre><code class="language-python"># Store entity
+entity = Entity(
+    entity_type="file",
+    name="config.yaml",
+    properties={"path": "/etc/app/config.yaml", "size": 1024}
+)
+await global_memory.store_entity(entity)
+
+# Store relationship
+relationship = Relationship(
+    from_entity_id=file_entity.id,
+    to_entity_id=config_entity.id,
+    relationship_type="contains",
+    properties={"line": 42}
+)
+await global_memory.store_relationship(relationship)
+
+# Query entities
+files = await global_memory.query_entities(
+    entity_type="file",
+    filters={"properties.extension": "yaml"}
+)
+</code></pre>
+<h3 id="episodic-memory-operations"><a class="header" href="#episodic-memory-operations">Episodic Memory Operations</a></h3>
+<pre><code class="language-python"># Store example
+example = CodeExample(
+    code="def hello(): print('world')",
+    language="python",
+    task_description="Print hello world"
+)
+embedding = await get_embedding(example.code)
+await episodic_memory.store(example, embedding)
+
+# Retrieve similar
+query_embedding = await get_embedding("print greeting")
+examples = await episodic_memory.search(
+    query_embedding,
+    filter={"language": "python"},
+    limit=5
+)
+</code></pre>
+<h3 id="cache-operations"><a class="header" href="#cache-operations">Cache Operations</a></h3>
+<pre><code class="language-python"># Store in cache
+await cache.set(
+    key="arm:capabilities:coder",
+    value=json.dumps(capabilities),
+    ttl=3600
+)
+
+# Retrieve from cache
+cached = await cache.get("arm:capabilities:coder")
+if cached:
+    return json.loads(cached)
+
+# Invalidate cache
+await cache.delete("arm:capabilities:coder")
+</code></pre>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><a href="https://www.postgresql.org/docs/current/datatype-json.html">PostgreSQL JSONB</a></li>
+<li><a href="https://qdrant.tech/documentation/">Qdrant Documentation</a></li>
+<li><a href="https://redis.io/topics/lru-cache">Redis Caching Patterns</a></li>
+<li><a href="https://martinfowler.com/articles/patterns-of-distributed-systems/">Memory Architecture Patterns</a></li>
+</ul>
+<hr />
+<p><strong>Last Review</strong>: 2025-11-10
+<strong>Next Review</strong>: 2026-05-10 (6 months)
+<strong>Related ADRs</strong>: ADR-001, ADR-004</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../architecture/adr/002-communication-patterns.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../architecture/adr/004-security-model.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../architecture/adr/002-communication-patterns.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../architecture/adr/004-security-model.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

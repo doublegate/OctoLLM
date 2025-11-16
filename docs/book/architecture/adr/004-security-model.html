@@ -1,0 +1,707 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>ADR-004: Security Model - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/architecture/adr/004-security-model.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="adr-004-security-model"><a class="header" href="#adr-004-security-model">ADR-004: Security Model</a></h1>
+<p><strong>Status</strong>: Accepted
+<strong>Date</strong>: 2025-11-10
+<strong>Decision Makers</strong>: Security Team, Architecture Team
+<strong>Consulted</strong>: Compliance Team, Engineering Team</p>
+<h2 id="context"><a class="header" href="#context">Context</a></h2>
+<p>OctoLLM processes user tasks that may contain:</p>
+<ul>
+<li>Sensitive data (PII, credentials, proprietary information)</li>
+<li>Potentially malicious input (injections, exploits)</li>
+<li>Cross-user data that must be isolated</li>
+<li>LLM API requests that could be costly or unsafe</li>
+</ul>
+<p>Security requirements:</p>
+<ul>
+<li><strong>Prevent PII leakage</strong>: Detect and sanitize PII before storage</li>
+<li><strong>Isolation</strong>: Prevent data leakage between users/tasks</li>
+<li><strong>Input validation</strong>: Protect against injections and exploits</li>
+<li><strong>Least privilege</strong>: Limit component access to minimum needed</li>
+<li><strong>Auditability</strong>: Track all operations for compliance</li>
+<li><strong>Defense in depth</strong>: Multiple security layers</li>
+</ul>
+<p>Threat model:</p>
+<ul>
+<li>Malicious users attempting to access others' data</li>
+<li>Accidental PII exposure through LLM APIs</li>
+<li>Prompt injection attacks</li>
+<li>Resource exhaustion attacks</li>
+<li>Insider threats from compromised components</li>
+</ul>
+<h2 id="decision"><a class="header" href="#decision">Decision</a></h2>
+<p>We will implement a <strong>capability-based security model</strong> with multiple defensive layers:</p>
+<h3 id="1-capability-tokens-jwt"><a class="header" href="#1-capability-tokens-jwt">1. Capability Tokens (JWT)</a></h3>
+<p><strong>Purpose</strong>: Fine-grained authorization based on capabilities
+<strong>Format</strong>: JWT with capability scopes
+<strong>Issuance</strong>: Orchestrator issues tokens with specific scopes
+<strong>Validation</strong>: Each component validates tokens before processing</p>
+<p><strong>Token Structure</strong>:</p>
+<pre><code class="language-json">{
+  "sub": "user-123",
+  "iss": "octollm-orchestrator",
+  "exp": 1699999999,
+  "capabilities": {
+    "task:read": ["task-456"],
+    "task:execute": ["task-456"],
+    "arm:invoke": ["coder", "executor"],
+    "memory:read": ["global"],
+    "memory:write": []
+  },
+  "context": {
+    "task_id": "task-456",
+    "user_id": "user-123",
+    "session_id": "session-789"
+  }
+}
+</code></pre>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">from jose import jwt
+
+def create_capability_token(
+    user_id: str,
+    task_id: str,
+    capabilities: Dict[str, List[str]],
+    expiry_minutes: int = 30
+) -&gt; str:
+    """Create capability token for task execution."""
+    payload = {
+        "sub": user_id,
+        "iss": "octollm-orchestrator",
+        "exp": datetime.utcnow() + timedelta(minutes=expiry_minutes),
+        "capabilities": capabilities,
+        "context": {
+            "task_id": task_id,
+            "user_id": user_id
+        }
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+
+async def verify_capability(
+    token: str,
+    required_capability: str,
+    resource_id: Optional[str] = None
+) -&gt; bool:
+    """Verify token has required capability."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+
+        capabilities = payload.get("capabilities", {})
+        allowed = capabilities.get(required_capability, [])
+
+        if resource_id:
+            return resource_id in allowed
+        return len(allowed) &gt; 0
+
+    except jwt.JWTError:
+        return False
+</code></pre>
+<h3 id="2-pii-detection-reflex-layer"><a class="header" href="#2-pii-detection-reflex-layer">2. PII Detection (Reflex Layer)</a></h3>
+<p><strong>Purpose</strong>: Detect and sanitize PII before processing
+<strong>Location</strong>: Reflex Layer (first line of defense)
+<strong>Method</strong>: Regex patterns + optional ML model</p>
+<p><strong>Patterns</strong>:</p>
+<pre><code class="language-rust">lazy_static! {
+    static ref EMAIL: Regex = Regex::new(
+        r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+    ).unwrap();
+
+    static ref SSN: Regex = Regex::new(
+        r"\b\d{3}-\d{2}-\d{4}\b"
+    ).unwrap();
+
+    static ref CREDIT_CARD: Regex = Regex::new(
+        r"\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b"
+    ).unwrap();
+
+    static ref PHONE: Regex = Regex::new(
+        r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b"
+    ).unwrap();
+}
+
+pub struct PiiDetector {
+    patterns: Vec&lt;(String, Regex)&gt;,
+}
+
+impl PiiDetector {
+    pub fn detect(&amp;self, text: &amp;str) -&gt; Vec&lt;PiiMatch&gt; {
+        let mut matches = Vec::new();
+
+        for (name, pattern) in &amp;self.patterns {
+            for capture in pattern.captures_iter(text) {
+                matches.push(PiiMatch {
+                    pattern_name: name.clone(),
+                    matched_text: capture[0].to_string(),
+                    start: capture.get(0).unwrap().start(),
+                    end: capture.get(0).unwrap().end(),
+                });
+            }
+        }
+
+        matches
+    }
+
+    pub fn sanitize(&amp;self, text: &amp;str) -&gt; String {
+        let mut result = text.to_string();
+
+        for (_, pattern) in &amp;self.patterns {
+            result = pattern.replace_all(&amp;result, "[REDACTED]").to_string();
+        }
+
+        result
+    }
+}</code></pre>
+<h3 id="3-input-validation"><a class="header" href="#3-input-validation">3. Input Validation</a></h3>
+<p><strong>Layers</strong>:</p>
+<ol>
+<li>Schema validation (Pydantic)</li>
+<li>Business logic validation</li>
+<li>Security validation (injection detection)</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">from pydantic import BaseModel, Field, validator
+
+class TaskRequest(BaseModel):
+    """Validated task request."""
+
+    description: str = Field(
+        ...,
+        min_length=10,
+        max_length=10000,
+        description="Task description"
+    )
+    priority: int = Field(
+        default=5,
+        ge=1,
+        le=10,
+        description="Task priority (1-10)"
+    )
+    timeout: int = Field(
+        default=300,
+        gt=0,
+        le=3600,
+        description="Task timeout in seconds"
+    )
+
+    @validator('description')
+    def validate_description(cls, v: str) -&gt; str:
+        """Validate description for security."""
+        # Check for SQL injection patterns
+        sql_patterns = ["'; DROP TABLE", "-- ", "/*", "*/"]
+        for pattern in sql_patterns:
+            if pattern.lower() in v.lower():
+                raise ValueError("Potential SQL injection detected")
+
+        # Check for command injection
+        cmd_patterns = [";", "&amp;&amp;", "||", "|", "`", "$("]
+        for pattern in cmd_patterns:
+            if pattern in v:
+                raise ValueError("Potential command injection detected")
+
+        return v.strip()
+</code></pre>
+<h3 id="4-rate-limiting"><a class="header" href="#4-rate-limiting">4. Rate Limiting</a></h3>
+<p><strong>Purpose</strong>: Prevent resource exhaustion
+<strong>Implementation</strong>: Token bucket algorithm in Reflex Layer</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-rust">pub struct RateLimiter {
+    buckets: HashMap&lt;String, TokenBucket&gt;,
+    rate: u32,
+    capacity: u32,
+}
+
+impl RateLimiter {
+    pub fn check(&amp;mut self, key: &amp;str) -&gt; Result&lt;(), RateLimitError&gt; {
+        let bucket = self.buckets
+            .entry(key.to_string())
+            .or_insert_with(|| TokenBucket::new(self.capacity));
+
+        bucket.refill(self.rate);
+
+        if bucket.consume(1) {
+            Ok(())
+        } else {
+            Err(RateLimitError {
+                limit: self.rate,
+                retry_after: bucket.retry_after(),
+            })
+        }
+    }
+}</code></pre>
+<h3 id="5-audit-logging"><a class="header" href="#5-audit-logging">5. Audit Logging</a></h3>
+<p><strong>Purpose</strong>: Compliance and forensics
+<strong>Storage</strong>: PostgreSQL with immutable logs</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">async def log_security_event(
+    event_type: str,
+    user_id: str,
+    action: str,
+    resource: str,
+    outcome: str,
+    details: Dict[str, Any]
+):
+    """Log security event for audit trail."""
+    await db.execute("""
+        INSERT INTO security_audit_log (
+            event_type, user_id, action, resource, outcome, details
+        ) VALUES ($1, $2, $3, $4, $5, $6)
+    """, event_type, user_id, action, resource, outcome, json.dumps(details))
+
+# Usage
+await log_security_event(
+    event_type="authentication",
+    user_id="user-123",
+    action="login",
+    resource="api",
+    outcome="success",
+    details={"ip": "192.168.1.1", "user_agent": "..."}
+)
+</code></pre>
+<h3 id="6-defense-in-depth"><a class="header" href="#6-defense-in-depth">6. Defense in Depth</a></h3>
+<p><strong>Layers</strong>:</p>
+<ol>
+<li><strong>Network</strong>: Kubernetes Network Policies, TLS</li>
+<li><strong>Input</strong>: Reflex Layer PII detection, validation</li>
+<li><strong>Access</strong>: Capability tokens, RBAC</li>
+<li><strong>Data</strong>: Encryption at rest, data diodes</li>
+<li><strong>Output</strong>: Output validation, sanitization</li>
+<li><strong>Monitoring</strong>: Security metrics, alerts</li>
+<li><strong>Audit</strong>: Comprehensive logging</li>
+</ol>
+<h2 id="consequences"><a class="header" href="#consequences">Consequences</a></h2>
+<h3 id="positive"><a class="header" href="#positive">Positive</a></h3>
+<ol>
+<li>
+<p><strong>Fine-Grained Control</strong>:</p>
+<ul>
+<li>Capabilities limit access precisely</li>
+<li>Tokens expire automatically</li>
+<li>Scopes prevent over-privileging</li>
+<li>Easy to revoke access</li>
+</ul>
+</li>
+<li>
+<p><strong>PII Protection</strong>:</p>
+<ul>
+<li>Automatic detection in Reflex Layer</li>
+<li>Prevents accidental exposure</li>
+<li>Sanitization before LLM APIs</li>
+<li>Compliance-friendly</li>
+</ul>
+</li>
+<li>
+<p><strong>Defense in Depth</strong>:</p>
+<ul>
+<li>Multiple security layers</li>
+<li>Failure in one layer doesn't compromise system</li>
+<li>Comprehensive protection</li>
+<li>Audit trail for forensics</li>
+</ul>
+</li>
+<li>
+<p><strong>Performance</strong>:</p>
+<ul>
+<li>PII detection in fast Rust code</li>
+<li>JWT validation is local (no DB lookup)</li>
+<li>Rate limiting prevents overload</li>
+<li>Minimal overhead</li>
+</ul>
+</li>
+<li>
+<p><strong>Auditability</strong>:</p>
+<ul>
+<li>All operations logged</li>
+<li>Immutable audit trail</li>
+<li>Compliance requirements met</li>
+<li>Forensics support</li>
+</ul>
+</li>
+</ol>
+<h3 id="negative"><a class="header" href="#negative">Negative</a></h3>
+<ol>
+<li>
+<p><strong>Complexity</strong>:</p>
+<ul>
+<li>Capability tokens add overhead</li>
+<li>PII patterns need maintenance</li>
+<li>More code to test</li>
+<li>Learning curve for developers</li>
+</ul>
+</li>
+<li>
+<p><strong>False Positives</strong>:</p>
+<ul>
+<li>PII regex may over-detect</li>
+<li>Legitimate data may be redacted</li>
+<li>User experience impact</li>
+<li>Manual review needed</li>
+</ul>
+</li>
+<li>
+<p><strong>Performance Overhead</strong>:</p>
+<ul>
+<li>PII detection adds latency (&lt;5ms)</li>
+<li>JWT validation on every request</li>
+<li>Rate limiting checks</li>
+<li>Audit logging I/O</li>
+</ul>
+</li>
+<li>
+<p><strong>Operational Burden</strong>:</p>
+<ul>
+<li>Key management for JWT</li>
+<li>PII pattern updates</li>
+<li>Audit log retention</li>
+<li>Security monitoring</li>
+</ul>
+</li>
+</ol>
+<h3 id="mitigation-strategies"><a class="header" href="#mitigation-strategies">Mitigation Strategies</a></h3>
+<ol>
+<li>
+<p><strong>Complexity</strong>:</p>
+<ul>
+<li>Comprehensive documentation</li>
+<li>Helper libraries for common cases</li>
+<li>Automated testing</li>
+<li>Training for developers</li>
+</ul>
+</li>
+<li>
+<p><strong>False Positives</strong>:</p>
+<ul>
+<li>Tunable PII patterns</li>
+<li>Whitelist for known-safe data</li>
+<li>User feedback mechanism</li>
+<li>Regular pattern review</li>
+</ul>
+</li>
+<li>
+<p><strong>Performance</strong>:</p>
+<ul>
+<li>Optimize PII regex</li>
+<li>Cache JWT validations</li>
+<li>Batch audit logs</li>
+<li>Monitor overhead</li>
+</ul>
+</li>
+<li>
+<p><strong>Operations</strong>:</p>
+<ul>
+<li>Automated key rotation</li>
+<li>Monitoring dashboards</li>
+<li>Alerting for anomalies</li>
+<li>Runbooks for incidents</li>
+</ul>
+</li>
+</ol>
+<h2 id="alternatives-considered"><a class="header" href="#alternatives-considered">Alternatives Considered</a></h2>
+<h3 id="1-oauth-20--oidc"><a class="header" href="#1-oauth-20--oidc">1. OAuth 2.0 / OIDC</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Industry standard</li>
+<li>Rich ecosystem</li>
+<li>Identity federation</li>
+<li>Well-understood</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>More complex than needed</li>
+<li>External dependencies</li>
+<li>Token introspection overhead</li>
+<li>Capability model not native</li>
+</ul>
+<p><strong>Why Rejected</strong>: Capability tokens provide simpler, fine-grained control for internal services.</p>
+<h3 id="2-mtls-for-all-communication"><a class="header" href="#2-mtls-for-all-communication">2. mTLS for All Communication</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Strong authentication</li>
+<li>End-to-end encryption</li>
+<li>Certificate-based</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>Complex certificate management</li>
+<li>Higher operational burden</li>
+<li>Not necessary for internal services</li>
+<li>Overkill for current scale</li>
+</ul>
+<p><strong>Why Rejected</strong>: TLS with capability tokens sufficient for our threat model.</p>
+<h3 id="3-ml-based-pii-detection"><a class="header" href="#3-ml-based-pii-detection">3. ML-Based PII Detection</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Better accuracy</li>
+<li>Contextual understanding</li>
+<li>Fewer false positives</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>Higher latency</li>
+<li>Model management complexity</li>
+<li>Resource intensive</li>
+<li>Harder to explain decisions</li>
+</ul>
+<p><strong>Why Rejected</strong>: Regex patterns sufficient for current needs, can add ML later if needed.</p>
+<h3 id="4-role-based-access-control-rbac-only"><a class="header" href="#4-role-based-access-control-rbac-only">4. Role-Based Access Control (RBAC) Only</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Simpler than capabilities</li>
+<li>Familiar model</li>
+<li>Standard implementation</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>Coarser-grained access</li>
+<li>Can't limit to specific tasks</li>
+<li>Role explosion problem</li>
+<li>Less flexible</li>
+</ul>
+<p><strong>Why Rejected</strong>: Capabilities provide finer control needed for task-level isolation.</p>
+<h2 id="implementation-guidelines"><a class="header" href="#implementation-guidelines">Implementation Guidelines</a></h2>
+<p>See <a href="../security/overview.html">Security Overview</a> for detailed implementation guidance.</p>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><a href="https://owasp.org/www-project-top-ten/">OWASP Top 10</a></li>
+<li><a href="https://tools.ietf.org/html/rfc8725">JWT Best Practices</a></li>
+<li><a href="https://gdpr.eu/">GDPR Compliance</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Capability-based_security">Capability-Based Security</a></li>
+</ul>
+<hr />
+<p><strong>Last Review</strong>: 2025-11-10
+<strong>Next Review</strong>: 2026-02-10 (Quarterly - higher frequency for security)
+<strong>Related ADRs</strong>: ADR-001, ADR-002, ADR-003</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../architecture/adr/003-memory-architecture.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../architecture/adr/005-deployment-platform.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../architecture/adr/003-memory-architecture.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../architecture/adr/005-deployment-platform.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

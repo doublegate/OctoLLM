@@ -1,0 +1,2351 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Swarm Decision Making - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/architecture/swarm-decision-making.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="swarm-decision-making-architecture"><a class="header" href="#swarm-decision-making-architecture">Swarm Decision-Making Architecture</a></h1>
+<p><strong>Version</strong>: 1.0
+<strong>Last Updated</strong>: 2025-11-10
+<strong>Status</strong>: Phase 2 - Core Capabilities
+<strong>Difficulty</strong>: Advanced</p>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#swarm-concept-and-principles">Swarm Concept and Principles</a></li>
+<li><a href="#orchestration-flow">Orchestration Flow</a></li>
+<li><a href="#use-cases">Use Cases</a></li>
+<li><a href="#implementation-patterns">Implementation Patterns</a></li>
+<li><a href="#complete-python-implementation">Complete Python Implementation</a></li>
+<li><a href="#configuration-and-tuning">Configuration and Tuning</a></li>
+<li><a href="#performance-considerations">Performance Considerations</a></li>
+<li><a href="#example-scenarios">Example Scenarios</a></li>
+<li><a href="#testing-swarm-behavior">Testing Swarm Behavior</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ol>
+<hr />
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p><strong>Swarm decision-making</strong> is a critical Phase 2 capability that enables OctoLLM to leverage multiple specialized arms working in parallel to generate diverse solutions, which are then aggregated into a final, high-quality answer. This approach mirrors the biological octopus's ability to explore multiple strategies simultaneously.</p>
+<h3 id="key-benefits"><a class="header" href="#key-benefits">Key Benefits</a></h3>
+<ul>
+<li><strong>Higher Accuracy</strong>: Multiple perspectives reduce single-point-of-failure risks</li>
+<li><strong>Diverse Solutions</strong>: Different arms bring unique viewpoints and approaches</li>
+<li><strong>Robustness</strong>: System continues even if individual arms fail</li>
+<li><strong>Quality Assurance</strong>: Consensus mechanisms validate correctness</li>
+<li><strong>Risk Mitigation</strong>: Critical decisions benefit from multiple expert opinions</li>
+</ul>
+<h3 id="when-to-use-swarm"><a class="header" href="#when-to-use-swarm">When to Use Swarm</a></h3>
+<p>Swarm decision-making is <strong>expensive</strong> (multiple LLM calls, parallel processing) but valuable for:</p>
+<ul>
+<li><strong>High-stakes decisions</strong>: Security vulnerability assessments, production deployments</li>
+<li><strong>Complex problems</strong>: Multi-faceted issues requiring diverse expertise</li>
+<li><strong>Quality-critical outputs</strong>: Code reviews, documentation generation</li>
+<li><strong>Research tasks</strong>: Information synthesis from multiple sources</li>
+<li><strong>Creative solutions</strong>: Brainstorming, design alternatives</li>
+</ul>
+<h3 id="when-not-to-use-swarm"><a class="header" href="#when-not-to-use-swarm">When NOT to Use Swarm</a></h3>
+<ul>
+<li><strong>Simple queries</strong>: Single arm is faster and cheaper</li>
+<li><strong>Low-priority tasks</strong>: Cost doesn't justify quality gain</li>
+<li><strong>Time-sensitive operations</strong>: Latency overhead unacceptable</li>
+<li><strong>Resource-constrained environments</strong>: Limited parallel capacity</li>
+</ul>
+<hr />
+<h2 id="swarm-concept-and-principles"><a class="header" href="#swarm-concept-and-principles">Swarm Concept and Principles</a></h2>
+<h3 id="biological-inspiration"><a class="header" href="#biological-inspiration">Biological Inspiration</a></h3>
+<p>The octopus can explore multiple strategies in parallel:</p>
+<ul>
+<li>Each arm independently probes and evaluates options</li>
+<li>Arms communicate findings to the brain</li>
+<li>The brain synthesizes information and makes final decisions</li>
+<li>Disagreement between arms triggers deeper analysis</li>
+</ul>
+<h3 id="octollm-swarm-model"><a class="header" href="#octollm-swarm-model">OctoLLM Swarm Model</a></h3>
+<pre><code class="language-mermaid">graph TB
+    O[Orchestrator] --&gt;|Task| SA[Swarm Activator]
+    SA --&gt;|Identifies Swarm-Worthy Task| Sel[Arm Selector]
+
+    Sel --&gt;|Selects N Arms| A1[Arm 1]
+    Sel --&gt;|Selects N Arms| A2[Arm 2]
+    Sel --&gt;|Selects N Arms| A3[Arm 3]
+    Sel --&gt;|Selects N Arms| A4[Arm N]
+
+    A1 --&gt;|Proposal 1| Agg[Aggregator]
+    A2 --&gt;|Proposal 2| Agg
+    A3 --&gt;|Proposal 3| Agg
+    A4 --&gt;|Proposal N| Agg
+
+    Agg --&gt;|Applies Voting/Ranking| CR[Conflict Resolver]
+    CR --&gt;|Final Answer| Val[Validator]
+    Val --&gt;|Quality Check| O
+
+    style SA fill:#e1f5ff
+    style Agg fill:#ffe1e1
+    style CR fill:#fff4e1
+    style Val fill:#e1ffe1
+</code></pre>
+<h3 id="core-principles"><a class="header" href="#core-principles">Core Principles</a></h3>
+<ol>
+<li><strong>Diversity</strong>: Select arms with different specializations or prompting strategies</li>
+<li><strong>Independence</strong>: Arms work without knowing others' proposals (avoid groupthink)</li>
+<li><strong>Aggregation</strong>: Combine proposals using voting, ranking, or learned methods</li>
+<li><strong>Conflict Resolution</strong>: Handle disagreements with explicit rules</li>
+<li><strong>Confidence Weighting</strong>: High-confidence proposals carry more weight</li>
+<li><strong>Quality Validation</strong>: Final answer must pass acceptance criteria</li>
+</ol>
+<hr />
+<h2 id="orchestration-flow"><a class="header" href="#orchestration-flow">Orchestration Flow</a></h2>
+<h3 id="high-level-sequence"><a class="header" href="#high-level-sequence">High-Level Sequence</a></h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant U as User
+    participant O as Orchestrator
+    participant S as SwarmOrchestrator
+    participant A1 as Arm 1 (Coder)
+    participant A2 as Arm 2 (Coder Alt)
+    participant A3 as Arm 3 (Judge)
+    participant Agg as ProposalAggregator
+    participant CR as ConflictResolver
+
+    U-&gt;&gt;O: Submit Task (high priority)
+    O-&gt;&gt;O: Classify as swarm-worthy
+    O-&gt;&gt;S: Initialize Swarm
+
+    S-&gt;&gt;S: Select N=3 arms
+
+    par Parallel Execution
+        S-&gt;&gt;A1: Execute(task, seed=1)
+        S-&gt;&gt;A2: Execute(task, seed=2)
+        S-&gt;&gt;A3: Execute(task, seed=3)
+    end
+
+    A1--&gt;&gt;S: Proposal 1 (confidence=0.85)
+    A2--&gt;&gt;S: Proposal 2 (confidence=0.90)
+    A3--&gt;&gt;S: Proposal 3 (confidence=0.75)
+
+    S-&gt;&gt;Agg: Aggregate([P1, P2, P3])
+    Agg-&gt;&gt;Agg: Apply Voting Strategy
+    Agg-&gt;&gt;CR: Check for conflicts
+
+    alt No Conflict
+        CR--&gt;&gt;Agg: Majority consensus
+        Agg--&gt;&gt;S: Final Answer
+    else Conflict Detected
+        CR-&gt;&gt;CR: Resolve using rules
+        CR--&gt;&gt;S: Resolved Answer + Rationale
+    end
+
+    S--&gt;&gt;O: Swarm Result
+    O--&gt;&gt;U: Response + Provenance
+</code></pre>
+<h3 id="step-by-step-process"><a class="header" href="#step-by-step-process">Step-by-Step Process</a></h3>
+<h4 id="step-1-swarm-activation-decision"><a class="header" href="#step-1-swarm-activation-decision">Step 1: Swarm Activation Decision</a></h4>
+<p>The orchestrator determines if a task warrants swarm processing based on:</p>
+<pre><code class="language-python">def should_use_swarm(task: TaskContract) -&gt; bool:
+    """Determine if task benefits from swarm processing."""
+
+    # High-priority tasks
+    if task.priority in [Priority.HIGH, Priority.CRITICAL]:
+        return True
+
+    # Explicit swarm request
+    if task.context.get("force_swarm", False):
+        return True
+
+    # Complex tasks (estimated multiple steps)
+    if task.context.get("complexity_score", 0.0) &gt; 0.7:
+        return True
+
+    # Security-critical operations
+    if any(keyword in task.goal.lower() for keyword in [
+        "security", "vulnerability", "exploit", "penetration", "audit"
+    ]):
+        return True
+
+    # High-cost operations that justify swarm overhead
+    if task.budget.get("max_cost_usd", 0.0) &gt; 1.0:
+        return True
+
+    return False
+</code></pre>
+<h4 id="step-2-arm-selection"><a class="header" href="#step-2-arm-selection">Step 2: Arm Selection</a></h4>
+<p>Select N arms (typically 3-5) with diverse capabilities:</p>
+<pre><code class="language-python">def select_swarm_arms(
+    task: TaskContract,
+    registry: Dict[str, ArmCapability],
+    swarm_size: int = 3
+) -&gt; List[str]:
+    """Select diverse arms for swarm execution."""
+
+    # Score all arms for this task
+    arm_scores = {}
+    for arm_id, arm in registry.items():
+        score = calculate_arm_relevance(arm, task)
+        arm_scores[arm_id] = score
+
+    # Sort by relevance
+    sorted_arms = sorted(
+        arm_scores.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    # Select top N arms, ensuring diversity
+    selected = []
+    for arm_id, score in sorted_arms:
+        if len(selected) &gt;= swarm_size:
+            break
+
+        # Ensure diversity (e.g., don't select multiple same-type arms)
+        if is_diverse_from(arm_id, selected, registry):
+            selected.append(arm_id)
+
+    return selected
+</code></pre>
+<h4 id="step-3-parallel-execution"><a class="header" href="#step-3-parallel-execution">Step 3: Parallel Execution</a></h4>
+<p>Execute tasks in parallel using <code>asyncio.gather()</code>:</p>
+<pre><code class="language-python">async def execute_swarm(
+    task: TaskContract,
+    arms: List[str],
+    registry: Dict[str, ArmCapability]
+) -&gt; List[Proposal]:
+    """Execute task across multiple arms in parallel."""
+
+    # Create execution tasks with different seeds for diversity
+    tasks = []
+    for i, arm_id in enumerate(arms):
+        arm = registry[arm_id]
+
+        # Vary prompts slightly for diversity
+        task_variant = task.copy(deep=True)
+        task_variant.context["seed"] = i
+        task_variant.context["variant"] = f"approach_{i+1}"
+
+        # Create async task
+        coro = call_arm(arm, task_variant)
+        tasks.append(coro)
+
+    # Execute all in parallel
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    # Convert to Proposal objects
+    proposals = []
+    for i, result in enumerate(results):
+        if isinstance(result, Exception):
+            logger.warning(f"Arm {arms[i]} failed: {result}")
+            continue
+
+        proposals.append(Proposal(
+            arm_id=arms[i],
+            content=result.get("output"),
+            confidence=result.get("confidence", 0.5),
+            rationale=result.get("rationale", ""),
+            execution_time_ms=result.get("duration_ms", 0)
+        ))
+
+    return proposals
+</code></pre>
+<h4 id="step-4-proposal-aggregation"><a class="header" href="#step-4-proposal-aggregation">Step 4: Proposal Aggregation</a></h4>
+<p>Combine proposals using one of several strategies:</p>
+<p><strong>A. Majority Voting</strong> (for discrete choices):</p>
+<pre><code class="language-python">def majority_vote(proposals: List[Proposal]) -&gt; Proposal:
+    """Select most common proposal."""
+    from collections import Counter
+
+    # Count identical outputs
+    output_counts = Counter([p.content for p in proposals])
+    most_common = output_counts.most_common(1)[0][0]
+
+    # Return first proposal with that output
+    for p in proposals:
+        if p.content == most_common:
+            return p
+
+    return proposals[0]  # Fallback
+</code></pre>
+<p><strong>B. Confidence-Weighted Voting</strong>:</p>
+<pre><code class="language-python">def weighted_vote(proposals: List[Proposal]) -&gt; Proposal:
+    """Weight proposals by confidence scores."""
+
+    # Group by similar content
+    groups = group_similar_proposals(proposals, similarity_threshold=0.8)
+
+    # Calculate weighted score for each group
+    group_scores = {}
+    for group_id, group_proposals in groups.items():
+        total_weight = sum(p.confidence for p in group_proposals)
+        group_scores[group_id] = total_weight
+
+    # Select highest-weighted group
+    best_group = max(group_scores.items(), key=lambda x: x[1])[0]
+
+    # Return highest-confidence proposal from best group
+    best_proposals = sorted(
+        groups[best_group],
+        key=lambda p: p.confidence,
+        reverse=True
+    )
+
+    return best_proposals[0]
+</code></pre>
+<p><strong>C. Ranked Choice</strong> (Borda count):</p>
+<pre><code class="language-python">def ranked_choice(proposals: List[Proposal]) -&gt; Proposal:
+    """Use Borda count to rank proposals."""
+
+    # Each arm ranks all proposals (including its own)
+    rankings = []
+    for evaluator_arm in arms:
+        # Ask evaluator to rank all proposals
+        ranking = await ask_arm_to_rank(evaluator_arm, proposals)
+        rankings.append(ranking)
+
+    # Calculate Borda scores
+    scores = {p.arm_id: 0 for p in proposals}
+    num_proposals = len(proposals)
+
+    for ranking in rankings:
+        for position, arm_id in enumerate(ranking):
+            # Higher position = higher score
+            scores[arm_id] += (num_proposals - position - 1)
+
+    # Select highest-scoring proposal
+    best_arm_id = max(scores.items(), key=lambda x: x[1])[0]
+    return next(p for p in proposals if p.arm_id == best_arm_id)
+</code></pre>
+<h4 id="step-5-conflict-resolution"><a class="header" href="#step-5-conflict-resolution">Step 5: Conflict Resolution</a></h4>
+<p>Handle disagreements between arms:</p>
+<pre><code class="language-python">class ConflictResolver:
+    """Resolves conflicts between swarm proposals."""
+
+    def detect_conflict(self, proposals: List[Proposal]) -&gt; Optional[Conflict]:
+        """Check if proposals significantly disagree."""
+
+        # Calculate pairwise similarity
+        similarities = []
+        for i, p1 in enumerate(proposals):
+            for j, p2 in enumerate(proposals[i+1:], start=i+1):
+                sim = calculate_similarity(p1.content, p2.content)
+                similarities.append(sim)
+
+        avg_similarity = np.mean(similarities)
+
+        # Conflict if low average similarity
+        if avg_similarity &lt; 0.6:
+            return Conflict(
+                conflict_type="low_consensus",
+                severity="high" if avg_similarity &lt; 0.4 else "medium",
+                proposals=proposals,
+                similarity_score=avg_similarity
+            )
+
+        # Check for contradictions
+        contradictions = self._find_contradictions(proposals)
+        if contradictions:
+            return Conflict(
+                conflict_type="contradiction",
+                severity="high",
+                proposals=proposals,
+                details=contradictions
+            )
+
+        return None
+
+    def resolve_conflict(
+        self,
+        conflict: Conflict,
+        task: TaskContract
+    ) -&gt; Resolution:
+        """Apply resolution strategy based on conflict type."""
+
+        if conflict.conflict_type == "low_consensus":
+            # Use confidence weighting
+            return self._resolve_by_confidence(conflict.proposals)
+
+        elif conflict.conflict_type == "contradiction":
+            # Escalate to Judge arm for arbitration
+            return self._escalate_to_judge(conflict, task)
+
+        else:
+            # Default: select highest confidence
+            return self._select_highest_confidence(conflict.proposals)
+
+    def _escalate_to_judge(
+        self,
+        conflict: Conflict,
+        task: TaskContract
+    ) -&gt; Resolution:
+        """Have Judge arm arbitrate between conflicting proposals."""
+
+        judge_task = TaskContract(
+            task_id=f"{task.task_id}-judge",
+            goal=f"Evaluate and select the best proposal for: {task.goal}",
+            context={
+                "original_task": task.dict(),
+                "proposals": [p.dict() for p in conflict.proposals],
+                "conflict_details": conflict.details
+            },
+            acceptance_criteria=[
+                "Provides clear rationale for selection",
+                "Identifies strengths and weaknesses of each proposal"
+            ]
+        )
+
+        # Call Judge arm
+        judge_result = await call_arm(judge_arm, judge_task)
+
+        return Resolution(
+            selected_proposal=judge_result["selected_proposal"],
+            resolution_method="judge_arbitration",
+            rationale=judge_result["rationale"],
+            confidence=judge_result["confidence"]
+        )
+</code></pre>
+<hr />
+<h2 id="use-cases"><a class="header" href="#use-cases">Use Cases</a></h2>
+<h3 id="1-security-vulnerability-assessment"><a class="header" href="#1-security-vulnerability-assessment">1. Security Vulnerability Assessment</a></h3>
+<p><strong>Scenario</strong>: Analyze a codebase for security vulnerabilities</p>
+<p><strong>Swarm Configuration</strong>:</p>
+<ul>
+<li><strong>Arm 1</strong>: Code Analyzer (static analysis focused)</li>
+<li><strong>Arm 2</strong>: Security Specialist (OWASP Top 10 focused)</li>
+<li><strong>Arm 3</strong>: Penetration Tester (exploit-focused)</li>
+<li><strong>Arm 4</strong>: Code Reviewer (best practices focused)</li>
+</ul>
+<p><strong>Aggregation Strategy</strong>: Weighted voting + Judge arbitration for disagreements</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">task = TaskContract(
+    task_id="sec-audit-001",
+    goal="Identify security vulnerabilities in user authentication module",
+    context={
+        "code_path": "/src/auth/",
+        "frameworks": ["Flask", "SQLAlchemy"],
+        "threat_model": "OWASP Top 10"
+    },
+    priority=Priority.CRITICAL,
+    constraints=[
+        "Focus on authentication and authorization",
+        "Provide exploit scenarios for each finding"
+    ]
+)
+
+# Execute swarm
+swarm_result = await swarm_orchestrator.execute(
+    task=task,
+    swarm_size=4,
+    aggregation_strategy="weighted_vote_with_judge"
+)
+
+# Result includes:
+# - Vulnerabilities found by majority (high confidence)
+# - Unique findings from individual arms (flagged for review)
+# - Confidence scores for each vulnerability
+# - Recommended mitigations
+</code></pre>
+<p><strong>Benefits</strong>:</p>
+<ul>
+<li>Catches vulnerabilities that single-arm might miss</li>
+<li>Diverse perspectives (static analysis + pentesting + code review)</li>
+<li>Higher confidence in findings through consensus</li>
+</ul>
+<h3 id="2-code-review-and-quality-assurance"><a class="header" href="#2-code-review-and-quality-assurance">2. Code Review and Quality Assurance</a></h3>
+<p><strong>Scenario</strong>: Review pull request for code quality</p>
+<p><strong>Swarm Configuration</strong>:</p>
+<ul>
+<li><strong>Arm 1</strong>: Code Style Reviewer (PEP 8, linting)</li>
+<li><strong>Arm 2</strong>: Performance Analyzer (algorithmic efficiency)</li>
+<li><strong>Arm 3</strong>: Security Reviewer (injection, XSS, etc.)</li>
+<li><strong>Arm 4</strong>: Test Coverage Analyzer</li>
+</ul>
+<p><strong>Aggregation Strategy</strong>: Merge all feedback, rank by severity</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">task = TaskContract(
+    task_id="pr-review-456",
+    goal="Review pull request #456 for quality and correctness",
+    context={
+        "pr_url": "https://github.com/org/repo/pull/456",
+        "diff": pr_diff_content,
+        "test_coverage_delta": -2.5  # Coverage decreased
+    },
+    priority=Priority.HIGH
+)
+
+# Swarm review
+reviews = await swarm_orchestrator.execute(
+    task=task,
+    swarm_size=4,
+    aggregation_strategy="merge_and_rank"
+)
+
+# Result:
+# {
+#   "critical_issues": [
+#     {"type": "security", "severity": "high", "description": "SQL injection in line 42", ...},
+#     {"type": "performance", "severity": "high", "description": "N+1 query pattern", ...}
+#   ],
+#   "warnings": [...],
+#   "suggestions": [...],
+#   "overall_verdict": "NEEDS_CHANGES",
+#   "consensus_confidence": 0.92
+# }
+</code></pre>
+<h3 id="3-research-and-information-synthesis"><a class="header" href="#3-research-and-information-synthesis">3. Research and Information Synthesis</a></h3>
+<p><strong>Scenario</strong>: Research a complex technical topic</p>
+<p><strong>Swarm Configuration</strong>:</p>
+<ul>
+<li><strong>Arm 1</strong>: Academic Paper Retriever (arXiv, Google Scholar)</li>
+<li><strong>Arm 2</strong>: Documentation Searcher (official docs, Stack Overflow)</li>
+<li><strong>Arm 3</strong>: Code Example Finder (GitHub, GitLab)</li>
+<li><strong>Arm 4</strong>: Expert Q&amp;A (Reddit, HackerNews, forums)</li>
+</ul>
+<p><strong>Aggregation Strategy</strong>: Merge information, de-duplicate, rank by source quality</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">task = TaskContract(
+    task_id="research-ml-001",
+    goal="Research state-of-the-art techniques for few-shot learning",
+    context={
+        "domain": "machine_learning",
+        "sub_domain": "few_shot_learning",
+        "recency": "last_2_years"
+    },
+    acceptance_criteria=[
+        "At least 5 peer-reviewed papers",
+        "2+ production implementations",
+        "Comparison of different approaches"
+    ]
+)
+
+# Swarm research
+synthesis = await swarm_orchestrator.execute(
+    task=task,
+    swarm_size=4,
+    aggregation_strategy="information_merge"
+)
+
+# Result:
+# {
+#   "summary": "Comprehensive overview of few-shot learning...",
+#   "key_papers": [
+#     {"title": "...", "authors": [...], "year": 2024, "citations": 142, ...}
+#   ],
+#   "implementations": [
+#     {"name": "Pytorch Meta-Learning", "github": "...", "stars": 3200}
+#   ],
+#   "comparative_analysis": {...},
+#   "sources_consulted": 47,
+#   "confidence": 0.88
+# }
+</code></pre>
+<h3 id="4-creative-problem-solving"><a class="header" href="#4-creative-problem-solving">4. Creative Problem Solving</a></h3>
+<p><strong>Scenario</strong>: Generate multiple approaches to a design problem</p>
+<p><strong>Swarm Configuration</strong>:</p>
+<ul>
+<li><strong>Arm 1</strong>: Traditional approach (established patterns)</li>
+<li><strong>Arm 2</strong>: Innovative approach (novel techniques)</li>
+<li><strong>Arm 3</strong>: Performance-optimized approach</li>
+<li><strong>Arm 4</strong>: Simplicity-first approach (KISS principle)</li>
+</ul>
+<p><strong>Aggregation Strategy</strong>: Present all diverse solutions, rank by criteria</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">task = TaskContract(
+    task_id="design-cache-001",
+    goal="Design a distributed caching layer for microservices",
+    context={
+        "scale": "1000+ req/sec",
+        "latency_requirement": "&lt; 10ms P99",
+        "consistency": "eventual"
+    },
+    constraints=[
+        "Must integrate with Kubernetes",
+        "Cost-effective at scale"
+    ]
+)
+
+# Swarm brainstorm
+designs = await swarm_orchestrator.execute(
+    task=task,
+    swarm_size=4,
+    aggregation_strategy="diversity_ranking"
+)
+
+# Result: Multiple distinct designs
+# {
+#   "proposals": [
+#     {
+#       "approach": "Redis Cluster with Sentinel",
+#       "pros": [...],
+#       "cons": [...],
+#       "estimated_cost": "$X/month",
+#       "confidence": 0.9
+#     },
+#     {
+#       "approach": "Hazelcast IMDG",
+#       ...
+#     },
+#     ...
+#   ],
+#   "recommendation": "Redis Cluster",
+#   "rationale": "Best balance of performance, cost, and operational maturity"
+# }
+</code></pre>
+<hr />
+<h2 id="implementation-patterns"><a class="header" href="#implementation-patterns">Implementation Patterns</a></h2>
+<h3 id="pattern-1-simple-swarm-synchronous-voting"><a class="header" href="#pattern-1-simple-swarm-synchronous-voting">Pattern 1: Simple Swarm (Synchronous Voting)</a></h3>
+<p><strong>Use When</strong>: Fast decisions, discrete choices (yes/no, A/B/C)</p>
+<pre><code class="language-python">class SimpleSwarmOrchestrator:
+    """Basic swarm with majority voting."""
+
+    async def execute(
+        self,
+        task: TaskContract,
+        swarm_size: int = 3
+    ) -&gt; SwarmResult:
+        # Select arms
+        arms = self.select_arms(task, swarm_size)
+
+        # Execute in parallel
+        proposals = await asyncio.gather(*[
+            self.call_arm(arm, task) for arm in arms
+        ])
+
+        # Majority vote
+        result = self.majority_vote(proposals)
+
+        return SwarmResult(
+            final_answer=result,
+            all_proposals=proposals,
+            aggregation_method="majority_vote"
+        )
+</code></pre>
+<h3 id="pattern-2-weighted-swarm-confidence-based"><a class="header" href="#pattern-2-weighted-swarm-confidence-based">Pattern 2: Weighted Swarm (Confidence-Based)</a></h3>
+<p><strong>Use When</strong>: Proposals have varying quality, arms have different expertise</p>
+<pre><code class="language-python">class WeightedSwarmOrchestrator:
+    """Swarm with confidence-weighted voting."""
+
+    async def execute(
+        self,
+        task: TaskContract,
+        swarm_size: int = 3
+    ) -&gt; SwarmResult:
+        arms = self.select_arms(task, swarm_size)
+
+        # Get proposals with confidence scores
+        proposals = await asyncio.gather(*[
+            self.call_arm_with_confidence(arm, task)
+            for arm in arms
+        ])
+
+        # Weight by confidence
+        weights = [p.confidence for p in proposals]
+        result = self.weighted_average(proposals, weights)
+
+        return SwarmResult(
+            final_answer=result,
+            all_proposals=proposals,
+            weights=weights,
+            aggregation_method="confidence_weighted"
+        )
+</code></pre>
+<h3 id="pattern-3-judge-mediated-swarm"><a class="header" href="#pattern-3-judge-mediated-swarm">Pattern 3: Judge-Mediated Swarm</a></h3>
+<p><strong>Use When</strong>: Complex outputs, need expert arbitration</p>
+<pre><code class="language-python">class JudgeMediatedSwarmOrchestrator:
+    """Swarm with Judge arm for final decision."""
+
+    async def execute(
+        self,
+        task: TaskContract,
+        swarm_size: int = 3
+    ) -&gt; SwarmResult:
+        # Get diverse proposals
+        arms = self.select_arms(task, swarm_size)
+        proposals = await asyncio.gather(*[
+            self.call_arm(arm, task) for arm in arms
+        ])
+
+        # Have Judge evaluate all proposals
+        judge_task = self.create_judge_task(task, proposals)
+        judge_result = await self.call_arm(
+            self.judge_arm,
+            judge_task
+        )
+
+        return SwarmResult(
+            final_answer=judge_result["selected_proposal"],
+            all_proposals=proposals,
+            judge_rationale=judge_result["rationale"],
+            aggregation_method="judge_mediated"
+        )
+</code></pre>
+<h3 id="pattern-4-iterative-refinement-swarm"><a class="header" href="#pattern-4-iterative-refinement-swarm">Pattern 4: Iterative Refinement Swarm</a></h3>
+<p><strong>Use When</strong>: Need multiple rounds of improvement</p>
+<pre><code class="language-python">class IterativeRefinementSwarm:
+    """Swarm that refines answer over multiple rounds."""
+
+    async def execute(
+        self,
+        task: TaskContract,
+        swarm_size: int = 3,
+        max_iterations: int = 3
+    ) -&gt; SwarmResult:
+        current_answer = None
+
+        for iteration in range(max_iterations):
+            # Generate proposals (or refinements)
+            if current_answer:
+                task.context["previous_answer"] = current_answer
+                task.goal = f"Improve upon: {current_answer}"
+
+            arms = self.select_arms(task, swarm_size)
+            proposals = await asyncio.gather(*[
+                self.call_arm(arm, task) for arm in arms
+            ])
+
+            # Aggregate
+            current_answer = self.aggregate(proposals)
+
+            # Check if converged
+            if self.has_converged(proposals):
+                break
+
+        return SwarmResult(
+            final_answer=current_answer,
+            iterations=iteration + 1,
+            aggregation_method="iterative_refinement"
+        )
+</code></pre>
+<hr />
+<h2 id="complete-python-implementation"><a class="header" href="#complete-python-implementation">Complete Python Implementation</a></h2>
+<h3 id="core-data-models"><a class="header" href="#core-data-models">Core Data Models</a></h3>
+<pre><code class="language-python">from pydantic import BaseModel, Field
+from typing import List, Optional, Dict, Any
+from enum import Enum
+import hashlib
+
+class ProposalStatus(str, Enum):
+    """Status of a proposal in the swarm."""
+    PENDING = "pending"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    REJECTED = "rejected"
+
+class Proposal(BaseModel):
+    """A single proposal from an arm."""
+
+    arm_id: str = Field(..., description="Which arm generated this")
+    content: Any = Field(..., description="The proposed solution")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Arm's confidence")
+    rationale: str = Field("", description="Why this proposal")
+    execution_time_ms: int = Field(..., ge=0)
+    status: ProposalStatus = Field(default=ProposalStatus.COMPLETED)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+    def content_hash(self) -&gt; str:
+        """Generate hash of content for deduplication."""
+        content_str = str(self.content)
+        return hashlib.sha256(content_str.encode()).hexdigest()[:16]
+
+class SwarmConfig(BaseModel):
+    """Configuration for swarm execution."""
+
+    swarm_size: int = Field(3, ge=2, le=10, description="Number of arms")
+    aggregation_strategy: str = Field(
+        "weighted_vote",
+        description="How to combine proposals"
+    )
+    timeout_seconds: int = Field(60, ge=10, le=600)
+    require_consensus: bool = Field(False, description="All arms must agree")
+    consensus_threshold: float = Field(0.7, ge=0.5, le=1.0)
+    enable_judge: bool = Field(True, description="Use Judge for conflicts")
+    diversity_requirement: float = Field(0.5, ge=0.0, le=1.0)
+
+class SwarmResult(BaseModel):
+    """Result from swarm execution."""
+
+    final_answer: Any = Field(..., description="Aggregated result")
+    all_proposals: List[Proposal] = Field(..., description="All proposals")
+    aggregation_method: str
+    consensus_score: float = Field(..., ge=0.0, le=1.0)
+    execution_time_ms: int
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+</code></pre>
+<h3 id="swarm-orchestrator"><a class="header" href="#swarm-orchestrator">Swarm Orchestrator</a></h3>
+<pre><code class="language-python">import asyncio
+from typing import List, Dict, Optional, Callable
+import numpy as np
+from datetime import datetime
+import structlog
+
+logger = structlog.get_logger()
+
+class SwarmOrchestrator:
+    """
+    Coordinates swarm decision-making across multiple arms.
+
+    Features:
+    - Parallel arm execution
+    - Multiple aggregation strategies
+    - Conflict detection and resolution
+    - Performance tracking
+    """
+
+    def __init__(
+        self,
+        arm_registry: Dict[str, ArmCapability],
+        judge_arm_id: str = "judge",
+        default_config: Optional[SwarmConfig] = None
+    ):
+        self.registry = arm_registry
+        self.judge_arm_id = judge_arm_id
+        self.default_config = default_config or SwarmConfig()
+        self.aggregator = ProposalAggregator()
+        self.conflict_resolver = ConflictResolver()
+
+    async def execute(
+        self,
+        task: TaskContract,
+        config: Optional[SwarmConfig] = None
+    ) -&gt; SwarmResult:
+        """
+        Execute task across swarm of arms and aggregate results.
+
+        Args:
+            task: Task to execute
+            config: Swarm configuration (uses default if None)
+
+        Returns:
+            SwarmResult with final answer and metadata
+        """
+        config = config or self.default_config
+        start_time = datetime.utcnow()
+
+        logger.info(
+            "swarm.execute.start",
+            task_id=task.task_id,
+            swarm_size=config.swarm_size,
+            strategy=config.aggregation_strategy
+        )
+
+        # Step 1: Select diverse arms
+        selected_arms = self._select_diverse_arms(task, config.swarm_size)
+        logger.info("swarm.arms_selected", arms=selected_arms)
+
+        # Step 2: Execute in parallel
+        proposals = await self._execute_parallel(
+            task, selected_arms, config.timeout_seconds
+        )
+        logger.info(
+            "swarm.proposals_received",
+            count=len(proposals),
+            successful=sum(1 for p in proposals if p.status == ProposalStatus.COMPLETED)
+        )
+
+        # Step 3: Filter failed proposals
+        valid_proposals = [
+            p for p in proposals if p.status == ProposalStatus.COMPLETED
+        ]
+
+        if len(valid_proposals) &lt; 2:
+            raise InsufficientProposalsError(
+                f"Only {len(valid_proposals)} valid proposals (minimum 2 required)"
+            )
+
+        # Step 4: Aggregate proposals
+        aggregation_result = await self._aggregate_proposals(
+            valid_proposals,
+            config.aggregation_strategy,
+            task
+        )
+
+        # Step 5: Check for conflicts
+        conflict = self.conflict_resolver.detect_conflict(valid_proposals)
+        if conflict and config.enable_judge:
+            logger.warning("swarm.conflict_detected", conflict_type=conflict.conflict_type)
+            resolution = await self.conflict_resolver.resolve_conflict(
+                conflict, task, self.registry[self.judge_arm_id]
+            )
+            final_answer = resolution.selected_proposal
+            aggregation_method = f"{config.aggregation_strategy}_with_judge"
+        else:
+            final_answer = aggregation_result["answer"]
+            aggregation_method = config.aggregation_strategy
+
+        # Step 6: Calculate consensus score
+        consensus_score = self._calculate_consensus(valid_proposals)
+
+        # Step 7: Validate against acceptance criteria
+        if config.require_consensus and consensus_score &lt; config.consensus_threshold:
+            logger.warning(
+                "swarm.low_consensus",
+                score=consensus_score,
+                threshold=config.consensus_threshold
+            )
+
+        execution_time = (datetime.utcnow() - start_time).total_seconds() * 1000
+
+        result = SwarmResult(
+            final_answer=final_answer,
+            all_proposals=valid_proposals,
+            aggregation_method=aggregation_method,
+            consensus_score=consensus_score,
+            execution_time_ms=int(execution_time),
+            metadata={
+                "selected_arms": selected_arms,
+                "conflict_detected": conflict is not None,
+                "proposal_count": len(valid_proposals)
+            }
+        )
+
+        logger.info(
+            "swarm.execute.complete",
+            task_id=task.task_id,
+            consensus_score=consensus_score,
+            execution_time_ms=result.execution_time_ms
+        )
+
+        return result
+
+    def _select_diverse_arms(
+        self,
+        task: TaskContract,
+        swarm_size: int
+    ) -&gt; List[str]:
+        """Select diverse arms for swarm execution."""
+
+        # Score all arms for relevance
+        arm_scores = {}
+        for arm_id, arm in self.registry.items():
+            if arm_id == self.judge_arm_id:
+                continue  # Don't include judge in swarm
+
+            relevance_score = self._calculate_arm_relevance(arm, task)
+            arm_scores[arm_id] = relevance_score
+
+        # Sort by relevance
+        sorted_arms = sorted(
+            arm_scores.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )
+
+        # Select top N, ensuring diversity
+        selected = []
+        for arm_id, score in sorted_arms:
+            if len(selected) &gt;= swarm_size:
+                break
+
+            # Check diversity
+            if not selected or self._is_diverse_from(arm_id, selected):
+                selected.append(arm_id)
+
+        # If not enough diverse arms, fill with top-scoring
+        while len(selected) &lt; swarm_size and len(selected) &lt; len(sorted_arms):
+            for arm_id, _ in sorted_arms:
+                if arm_id not in selected:
+                    selected.append(arm_id)
+                    break
+
+        return selected
+
+    def _calculate_arm_relevance(
+        self,
+        arm: ArmCapability,
+        task: TaskContract
+    ) -&gt; float:
+        """Calculate how relevant an arm is for this task."""
+
+        # Extract keywords from task goal
+        goal_keywords = set(task.goal.lower().split())
+
+        # Match against arm capabilities
+        capability_keywords = set()
+        for cap in arm.capabilities:
+            capability_keywords.update(cap.lower().split())
+
+        # Calculate overlap
+        overlap = len(goal_keywords &amp; capability_keywords)
+        total = len(goal_keywords | capability_keywords)
+
+        keyword_score = overlap / total if total &gt; 0 else 0.0
+
+        # Factor in historical success rate
+        success_score = arm.success_rate
+
+        # Combine scores
+        relevance = 0.6 * keyword_score + 0.4 * success_score
+
+        return relevance
+
+    def _is_diverse_from(
+        self,
+        arm_id: str,
+        selected_arms: List[str]
+    ) -&gt; bool:
+        """Check if arm brings diversity to selection."""
+
+        arm = self.registry[arm_id]
+
+        for selected_id in selected_arms:
+            selected_arm = self.registry[selected_id]
+
+            # Check capability overlap
+            overlap = len(
+                set(arm.capabilities) &amp; set(selected_arm.capabilities)
+            )
+            total = len(
+                set(arm.capabilities) | set(selected_arm.capabilities)
+            )
+
+            similarity = overlap / total if total &gt; 0 else 0.0
+
+            # If too similar, not diverse
+            if similarity &gt; 0.7:
+                return False
+
+        return True
+
+    async def _execute_parallel(
+        self,
+        task: TaskContract,
+        arms: List[str],
+        timeout_seconds: int
+    ) -&gt; List[Proposal]:
+        """Execute task across multiple arms in parallel."""
+
+        # Create tasks with variation for diversity
+        async_tasks = []
+        for i, arm_id in enumerate(arms):
+            # Vary the task slightly for each arm
+            task_variant = task.copy(deep=True)
+            task_variant.context["swarm_variant"] = i
+            task_variant.context["swarm_seed"] = i + 1
+
+            # Create execution coroutine
+            coro = self._execute_single_arm(
+                arm_id, task_variant, timeout_seconds
+            )
+            async_tasks.append(coro)
+
+        # Execute all in parallel with timeout
+        results = await asyncio.gather(*async_tasks, return_exceptions=True)
+
+        # Convert results to Proposal objects
+        proposals = []
+        for i, result in enumerate(results):
+            arm_id = arms[i]
+
+            if isinstance(result, Exception):
+                logger.error(
+                    "swarm.arm_failed",
+                    arm_id=arm_id,
+                    error=str(result)
+                )
+                proposals.append(Proposal(
+                    arm_id=arm_id,
+                    content=None,
+                    confidence=0.0,
+                    rationale=f"Execution failed: {str(result)}",
+                    execution_time_ms=0,
+                    status=ProposalStatus.FAILED
+                ))
+            else:
+                proposals.append(result)
+
+        return proposals
+
+    async def _execute_single_arm(
+        self,
+        arm_id: str,
+        task: TaskContract,
+        timeout_seconds: int
+    ) -&gt; Proposal:
+        """Execute task on a single arm with timeout."""
+
+        arm = self.registry[arm_id]
+        start_time = datetime.utcnow()
+
+        try:
+            # Call arm with timeout
+            result = await asyncio.wait_for(
+                self._call_arm(arm, task),
+                timeout=timeout_seconds
+            )
+
+            execution_time = (datetime.utcnow() - start_time).total_seconds() * 1000
+
+            return Proposal(
+                arm_id=arm_id,
+                content=result.get("output"),
+                confidence=result.get("confidence", 0.5),
+                rationale=result.get("rationale", ""),
+                execution_time_ms=int(execution_time),
+                status=ProposalStatus.COMPLETED,
+                metadata=result.get("metadata", {})
+            )
+
+        except asyncio.TimeoutError:
+            logger.warning("swarm.arm_timeout", arm_id=arm_id, timeout=timeout_seconds)
+            return Proposal(
+                arm_id=arm_id,
+                content=None,
+                confidence=0.0,
+                rationale=f"Timeout after {timeout_seconds}s",
+                execution_time_ms=timeout_seconds * 1000,
+                status=ProposalStatus.FAILED
+            )
+
+        except Exception as e:
+            logger.error("swarm.arm_error", arm_id=arm_id, error=str(e))
+            raise
+
+    async def _call_arm(
+        self,
+        arm: ArmCapability,
+        task: TaskContract
+    ) -&gt; Dict[str, Any]:
+        """Make HTTP call to arm endpoint."""
+
+        import aiohttp
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                arm.endpoint,
+                json=task.dict(),
+                timeout=aiohttp.ClientTimeout(total=60)
+            ) as response:
+                response.raise_for_status()
+                return await response.json()
+
+    async def _aggregate_proposals(
+        self,
+        proposals: List[Proposal],
+        strategy: str,
+        task: TaskContract
+    ) -&gt; Dict[str, Any]:
+        """Aggregate proposals using specified strategy."""
+
+        if strategy == "majority_vote":
+            return self.aggregator.majority_vote(proposals)
+        elif strategy == "weighted_vote":
+            return self.aggregator.weighted_vote(proposals)
+        elif strategy == "ranked_choice":
+            return await self.aggregator.ranked_choice(proposals)
+        elif strategy == "confidence_max":
+            return self.aggregator.select_highest_confidence(proposals)
+        else:
+            raise ValueError(f"Unknown aggregation strategy: {strategy}")
+
+    def _calculate_consensus(self, proposals: List[Proposal]) -&gt; float:
+        """Calculate consensus score (0.0-1.0) among proposals."""
+
+        if len(proposals) &lt; 2:
+            return 1.0
+
+        # Calculate pairwise similarities
+        similarities = []
+        for i, p1 in enumerate(proposals):
+            for p2 in proposals[i+1:]:
+                sim = self._calculate_similarity(p1.content, p2.content)
+                similarities.append(sim)
+
+        # Average similarity is consensus score
+        return np.mean(similarities) if similarities else 0.0
+
+    def _calculate_similarity(self, content1: Any, content2: Any) -&gt; float:
+        """Calculate similarity between two proposal contents."""
+
+        # Simple string-based similarity for now
+        # TODO: Use embedding-based similarity for better results
+
+        str1 = str(content1).lower()
+        str2 = str(content2).lower()
+
+        # Jaccard similarity on words
+        words1 = set(str1.split())
+        words2 = set(str2.split())
+
+        intersection = len(words1 &amp; words2)
+        union = len(words1 | words2)
+
+        return intersection / union if union &gt; 0 else 0.0
+</code></pre>
+<h3 id="proposal-aggregator"><a class="header" href="#proposal-aggregator">Proposal Aggregator</a></h3>
+<pre><code class="language-python">class ProposalAggregator:
+    """Aggregates proposals using various strategies."""
+
+    def majority_vote(self, proposals: List[Proposal]) -&gt; Dict[str, Any]:
+        """Select most common proposal (for discrete choices)."""
+        from collections import Counter
+
+        # Hash proposals to group identical ones
+        proposal_hashes = [p.content_hash() for p in proposals]
+        hash_counts = Counter(proposal_hashes)
+
+        # Find most common
+        most_common_hash = hash_counts.most_common(1)[0][0]
+
+        # Return first proposal with that hash
+        for p in proposals:
+            if p.content_hash() == most_common_hash:
+                return {
+                    "answer": p.content,
+                    "method": "majority_vote",
+                    "vote_count": hash_counts[most_common_hash],
+                    "total_votes": len(proposals)
+                }
+
+        # Fallback
+        return {"answer": proposals[0].content, "method": "majority_vote"}
+
+    def weighted_vote(self, proposals: List[Proposal]) -&gt; Dict[str, Any]:
+        """Weight proposals by confidence scores."""
+
+        # Group similar proposals
+        groups = self._group_similar_proposals(proposals, threshold=0.8)
+
+        # Calculate weighted score for each group
+        group_scores = {}
+        for group_id, group_proposals in groups.items():
+            # Sum of confidences
+            total_weight = sum(p.confidence for p in group_proposals)
+            group_scores[group_id] = total_weight
+
+        # Select highest-weighted group
+        best_group_id = max(group_scores.items(), key=lambda x: x[1])[0]
+        best_group = groups[best_group_id]
+
+        # Within best group, select highest-confidence proposal
+        best_proposal = max(best_group, key=lambda p: p.confidence)
+
+        return {
+            "answer": best_proposal.content,
+            "method": "weighted_vote",
+            "total_weight": group_scores[best_group_id],
+            "group_size": len(best_group)
+        }
+
+    async def ranked_choice(self, proposals: List[Proposal]) -&gt; Dict[str, Any]:
+        """Use Borda count ranking."""
+
+        # For simplicity, rank by confidence (in production, could ask arms to rank each other)
+        sorted_proposals = sorted(
+            proposals,
+            key=lambda p: p.confidence,
+            reverse=True
+        )
+
+        # Borda count: first place gets N-1 points, second gets N-2, etc.
+        n = len(proposals)
+        scores = {p.arm_id: 0 for p in proposals}
+
+        for position, proposal in enumerate(sorted_proposals):
+            scores[proposal.arm_id] = n - position - 1
+
+        # Select highest-scoring
+        best_arm_id = max(scores.items(), key=lambda x: x[1])[0]
+        best_proposal = next(p for p in proposals if p.arm_id == best_arm_id)
+
+        return {
+            "answer": best_proposal.content,
+            "method": "ranked_choice",
+            "borda_score": scores[best_arm_id],
+            "ranking": [p.arm_id for p in sorted_proposals]
+        }
+
+    def select_highest_confidence(
+        self,
+        proposals: List[Proposal]
+    ) -&gt; Dict[str, Any]:
+        """Simply select proposal with highest confidence."""
+
+        best = max(proposals, key=lambda p: p.confidence)
+
+        return {
+            "answer": best.content,
+            "method": "confidence_max",
+            "confidence": best.confidence,
+            "arm_id": best.arm_id
+        }
+
+    def _group_similar_proposals(
+        self,
+        proposals: List[Proposal],
+        threshold: float = 0.8
+    ) -&gt; Dict[int, List[Proposal]]:
+        """Group proposals by similarity."""
+
+        groups = {}
+        next_group_id = 0
+
+        for proposal in proposals:
+            # Check if similar to any existing group
+            assigned = False
+            for group_id, group_proposals in groups.items():
+                # Compare to first proposal in group
+                representative = group_proposals[0]
+                similarity = self._calculate_similarity(
+                    proposal.content,
+                    representative.content
+                )
+
+                if similarity &gt;= threshold:
+                    groups[group_id].append(proposal)
+                    assigned = True
+                    break
+
+            # Create new group if not assigned
+            if not assigned:
+                groups[next_group_id] = [proposal]
+                next_group_id += 1
+
+        return groups
+
+    def _calculate_similarity(self, content1: Any, content2: Any) -&gt; float:
+        """Calculate similarity (same as in SwarmOrchestrator)."""
+        str1 = str(content1).lower()
+        str2 = str(content2).lower()
+        words1 = set(str1.split())
+        words2 = set(str2.split())
+        intersection = len(words1 &amp; words2)
+        union = len(words1 | words2)
+        return intersection / union if union &gt; 0 else 0.0
+</code></pre>
+<h3 id="conflict-resolver"><a class="header" href="#conflict-resolver">Conflict Resolver</a></h3>
+<pre><code class="language-python">class Conflict(BaseModel):
+    """Represents a conflict between proposals."""
+    conflict_type: str  # "low_consensus", "contradiction", "high_variance"
+    severity: str  # "low", "medium", "high"
+    proposals: List[Proposal]
+    similarity_score: Optional[float] = None
+    details: Optional[Dict[str, Any]] = None
+
+class Resolution(BaseModel):
+    """Resolution of a conflict."""
+    selected_proposal: Any
+    resolution_method: str
+    rationale: str
+    confidence: float
+
+class ConflictResolver:
+    """Detects and resolves conflicts between swarm proposals."""
+
+    def detect_conflict(
+        self,
+        proposals: List[Proposal],
+        similarity_threshold: float = 0.6
+    ) -&gt; Optional[Conflict]:
+        """Detect if proposals are in conflict."""
+
+        if len(proposals) &lt; 2:
+            return None
+
+        # Calculate all pairwise similarities
+        similarities = []
+        for i, p1 in enumerate(proposals):
+            for p2 in proposals[i+1:]:
+                sim = self._calculate_similarity(p1.content, p2.content)
+                similarities.append(sim)
+
+        avg_similarity = np.mean(similarities)
+
+        # Low consensus = conflict
+        if avg_similarity &lt; similarity_threshold:
+            severity = "high" if avg_similarity &lt; 0.4 else "medium"
+            return Conflict(
+                conflict_type="low_consensus",
+                severity=severity,
+                proposals=proposals,
+                similarity_score=avg_similarity
+            )
+
+        # Check for logical contradictions
+        contradictions = self._find_contradictions(proposals)
+        if contradictions:
+            return Conflict(
+                conflict_type="contradiction",
+                severity="high",
+                proposals=proposals,
+                details={"contradictions": contradictions}
+            )
+
+        return None
+
+    async def resolve_conflict(
+        self,
+        conflict: Conflict,
+        task: TaskContract,
+        judge_arm: ArmCapability
+    ) -&gt; Resolution:
+        """Resolve conflict using appropriate strategy."""
+
+        if conflict.conflict_type == "low_consensus":
+            # Use confidence weighting
+            return self._resolve_by_confidence(conflict.proposals)
+
+        elif conflict.conflict_type == "contradiction":
+            # Escalate to Judge
+            return await self._escalate_to_judge(conflict, task, judge_arm)
+
+        else:
+            # Default: highest confidence
+            return self._resolve_by_confidence(conflict.proposals)
+
+    def _resolve_by_confidence(
+        self,
+        proposals: List[Proposal]
+    ) -&gt; Resolution:
+        """Select highest-confidence proposal."""
+
+        best = max(proposals, key=lambda p: p.confidence)
+
+        return Resolution(
+            selected_proposal=best.content,
+            resolution_method="confidence_selection",
+            rationale=f"Selected highest confidence ({best.confidence:.2f}) from {best.arm_id}",
+            confidence=best.confidence
+        )
+
+    async def _escalate_to_judge(
+        self,
+        conflict: Conflict,
+        task: TaskContract,
+        judge_arm: ArmCapability
+    ) -&gt; Resolution:
+        """Have Judge arm arbitrate."""
+
+        judge_task = TaskContract(
+            task_id=f"{task.task_id}-judge-arbitration",
+            goal=f"Evaluate and select best proposal for: {task.goal}",
+            context={
+                "original_task": task.dict(),
+                "proposals": [
+                    {
+                        "arm_id": p.arm_id,
+                        "content": p.content,
+                        "confidence": p.confidence,
+                        "rationale": p.rationale
+                    }
+                    for p in conflict.proposals
+                ],
+                "conflict_details": conflict.dict()
+            },
+            acceptance_criteria=[
+                "Provides clear selection rationale",
+                "Identifies strengths/weaknesses of each proposal",
+                "Explains why selected proposal is best"
+            ]
+        )
+
+        # Call Judge arm
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                judge_arm.endpoint,
+                json=judge_task.dict(),
+                timeout=aiohttp.ClientTimeout(total=60)
+            ) as response:
+                response.raise_for_status()
+                result = await response.json()
+
+        return Resolution(
+            selected_proposal=result["selected_proposal"],
+            resolution_method="judge_arbitration",
+            rationale=result["rationale"],
+            confidence=result.get("confidence", 0.7)
+        )
+
+    def _calculate_similarity(self, content1: Any, content2: Any) -&gt; float:
+        """Calculate similarity (reuse from aggregator)."""
+        str1 = str(content1).lower()
+        str2 = str(content2).lower()
+        words1 = set(str1.split())
+        words2 = set(str2.split())
+        intersection = len(words1 &amp; words2)
+        union = len(words1 | words2)
+        return intersection / union if union &gt; 0 else 0.0
+
+    def _find_contradictions(
+        self,
+        proposals: List[Proposal]
+    ) -&gt; Optional[List[Dict[str, Any]]]:
+        """Find logical contradictions between proposals."""
+
+        # Simple contradiction detection (could be enhanced with NLP)
+        contradiction_keywords = [
+            ("yes", "no"),
+            ("true", "false"),
+            ("safe", "unsafe"),
+            ("valid", "invalid"),
+            ("secure", "insecure")
+        ]
+
+        contradictions = []
+        for i, p1 in enumerate(proposals):
+            for p2 in proposals[i+1:]:
+                content1 = str(p1.content).lower()
+                content2 = str(p2.content).lower()
+
+                for kw1, kw2 in contradiction_keywords:
+                    if kw1 in content1 and kw2 in content2:
+                        contradictions.append({
+                            "proposal_1": p1.arm_id,
+                            "proposal_2": p2.arm_id,
+                            "keyword_1": kw1,
+                            "keyword_2": kw2
+                        })
+
+        return contradictions if contradictions else None
+</code></pre>
+<hr />
+<h2 id="configuration-and-tuning"><a class="header" href="#configuration-and-tuning">Configuration and Tuning</a></h2>
+<h3 id="swarm-size-selection"><a class="header" href="#swarm-size-selection">Swarm Size Selection</a></h3>
+<pre><code class="language-python">def determine_optimal_swarm_size(task: TaskContract) -&gt; int:
+    """Determine optimal number of arms for this task."""
+
+    # Default: 3 arms
+    swarm_size = 3
+
+    # High-priority tasks: 5 arms
+    if task.priority in [Priority.HIGH, Priority.CRITICAL]:
+        swarm_size = 5
+
+    # Complex tasks: 4-5 arms
+    complexity = task.context.get("complexity_score", 0.5)
+    if complexity &gt; 0.7:
+        swarm_size = max(swarm_size, 4)
+
+    # Budget-constrained: 2 arms
+    if task.budget.get("max_cost_usd", float('inf')) &lt; 0.5:
+        swarm_size = 2
+
+    # Time-sensitive: 3 arms (parallel overhead)
+    if task.budget.get("max_time_seconds", float('inf')) &lt; 30:
+        swarm_size = min(swarm_size, 3)
+
+    return swarm_size
+</code></pre>
+<h3 id="aggregation-strategy-selection"><a class="header" href="#aggregation-strategy-selection">Aggregation Strategy Selection</a></h3>
+<pre><code class="language-python">def select_aggregation_strategy(
+    task: TaskContract,
+    proposals: List[Proposal]
+) -&gt; str:
+    """Select best aggregation strategy for this task."""
+
+    # Discrete choices: majority vote
+    if task.context.get("output_type") == "discrete":
+        return "majority_vote"
+
+    # High variance in confidence: weighted vote
+    confidences = [p.confidence for p in proposals]
+    if max(confidences) - min(confidences) &gt; 0.3:
+        return "weighted_vote"
+
+    # Complex evaluation needed: ranked choice with judge
+    if task.priority == Priority.CRITICAL:
+        return "ranked_choice"
+
+    # Default: weighted vote
+    return "weighted_vote"
+</code></pre>
+<h3 id="performance-vs-quality-tradeoffs"><a class="header" href="#performance-vs-quality-tradeoffs">Performance vs. Quality Tradeoffs</a></h3>
+<pre><code class="language-python">class SwarmTuningConfig(BaseModel):
+    """Tuning parameters for swarm performance."""
+
+    # Quality settings
+    min_swarm_size: int = Field(2, description="Minimum arms for swarm")
+    max_swarm_size: int = Field(10, description="Maximum arms for swarm")
+    consensus_threshold: float = Field(0.7, description="Minimum consensus required")
+
+    # Performance settings
+    parallel_timeout_seconds: int = Field(60, description="Max wait for all arms")
+    enable_early_termination: bool = Field(
+        True,
+        description="Stop if consensus reached early"
+    )
+    early_termination_threshold: float = Field(
+        0.9,
+        description="Consensus needed for early stop"
+    )
+
+    # Cost settings
+    max_cost_per_task_usd: float = Field(5.0, description="Maximum spend per task")
+    prefer_cheap_arms: bool = Field(
+        False,
+        description="Bias toward lower-cost arms"
+    )
+</code></pre>
+<hr />
+<h2 id="performance-considerations"><a class="header" href="#performance-considerations">Performance Considerations</a></h2>
+<h3 id="latency-analysis"><a class="header" href="#latency-analysis">Latency Analysis</a></h3>
+<p><strong>Single Arm</strong>: 1-5 seconds (typical)
+<strong>Swarm (3 arms)</strong>: 1-5 seconds (parallel execution, minimal overhead)
+<strong>Swarm (5 arms)</strong>: 1-5 seconds (still parallel)
+<strong>Swarm with Judge</strong>: +2-4 seconds (judge evaluation)
+<strong>Swarm with Conflict Resolution</strong>: +3-6 seconds (additional round)</p>
+<h3 id="cost-analysis"><a class="header" href="#cost-analysis">Cost Analysis</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Scenario</th><th>Arms</th><th>LLM Calls</th><th>Relative Cost</th><th>Use When</th></tr></thead><tbody>
+<tr><td>Single Arm</td><td>1</td><td>1</td><td>1x (baseline)</td><td>Routine tasks</td></tr>
+<tr><td>Simple Swarm</td><td>3</td><td>3</td><td>3x</td><td>Important tasks</td></tr>
+<tr><td>Swarm + Judge</td><td>3</td><td>4</td><td>4x</td><td>Critical decisions</td></tr>
+<tr><td>Large Swarm</td><td>5</td><td>5</td><td>5x</td><td>Highest priority</td></tr>
+<tr><td>Iterative Swarm</td><td>3</td><td>9 (3 rounds)</td><td>9x</td><td>Quality-critical</td></tr>
+</tbody></table>
+</div>
+<h3 id="optimization-strategies"><a class="header" href="#optimization-strategies">Optimization Strategies</a></h3>
+<h4 id="1-early-termination"><a class="header" href="#1-early-termination">1. Early Termination</a></h4>
+<pre><code class="language-python">async def execute_with_early_termination(
+    self,
+    task: TaskContract,
+    config: SwarmConfig
+) -&gt; SwarmResult:
+    """Stop swarm execution early if consensus reached."""
+
+    proposals = []
+    for arm_id in selected_arms:
+        # Execute one arm at a time
+        proposal = await self._execute_single_arm(arm_id, task, timeout)
+        proposals.append(proposal)
+
+        # Check consensus after each new proposal
+        if len(proposals) &gt;= 2:
+            consensus = self._calculate_consensus(proposals)
+            if consensus &gt;= config.early_termination_threshold:
+                logger.info(
+                    "swarm.early_termination",
+                    consensus=consensus,
+                    proposals_used=len(proposals)
+                )
+                break
+
+    # Continue with aggregation...
+</code></pre>
+<h4 id="2-cached-swarm-results"><a class="header" href="#2-cached-swarm-results">2. Cached Swarm Results</a></h4>
+<pre><code class="language-python">async def execute_with_cache(
+    self,
+    task: TaskContract,
+    config: SwarmConfig
+) -&gt; SwarmResult:
+    """Cache swarm results for similar tasks."""
+
+    # Generate cache key from task
+    cache_key = self._generate_cache_key(task)
+
+    # Check cache
+    cached = await self.cache.get(cache_key)
+    if cached:
+        logger.info("swarm.cache_hit", task_id=task.task_id)
+        return cached
+
+    # Execute swarm
+    result = await self.execute(task, config)
+
+    # Store in cache (1 hour TTL)
+    await self.cache.set(cache_key, result, ttl=3600)
+
+    return result
+</code></pre>
+<h4 id="3-adaptive-swarm-size"><a class="header" href="#3-adaptive-swarm-size">3. Adaptive Swarm Size</a></h4>
+<pre><code class="language-python">def adaptive_swarm_size(
+    task: TaskContract,
+    budget: Dict[str, float]
+) -&gt; int:
+    """Dynamically adjust swarm size based on budget."""
+
+    available_budget_usd = budget.get("remaining_usd", 1.0)
+    estimated_cost_per_arm = 0.02  # $0.02 per LLM call
+
+    max_affordable_arms = int(available_budget_usd / estimated_cost_per_arm)
+
+    # Clamp to reasonable range
+    return max(2, min(10, max_affordable_arms))
+</code></pre>
+<hr />
+<h2 id="example-scenarios"><a class="header" href="#example-scenarios">Example Scenarios</a></h2>
+<h3 id="scenario-1-security-vulnerability-assessment"><a class="header" href="#scenario-1-security-vulnerability-assessment">Scenario 1: Security Vulnerability Assessment</a></h3>
+<pre><code class="language-python"># Task: Analyze authentication module for vulnerabilities
+task = TaskContract(
+    task_id="sec-001",
+    goal="Identify security vulnerabilities in Flask authentication module",
+    context={
+        "code_path": "/app/auth.py",
+        "frameworks": ["Flask", "SQLAlchemy"],
+        "threat_model": "OWASP Top 10 2024"
+    },
+    priority=Priority.CRITICAL,
+    acceptance_criteria=[
+        "Identifies all SQL injection vectors",
+        "Checks for XSS vulnerabilities",
+        "Validates session management",
+        "Provides exploit scenarios"
+    ]
+)
+
+# Swarm configuration
+config = SwarmConfig(
+    swarm_size=4,
+    aggregation_strategy="weighted_vote",
+    enable_judge=True,
+    require_consensus=True,
+    consensus_threshold=0.75
+)
+
+# Execute swarm
+swarm = SwarmOrchestrator(arm_registry, judge_arm_id="judge")
+result = await swarm.execute(task, config)
+
+# Result:
+# {
+#   "final_answer": {
+#     "vulnerabilities": [
+#       {
+#         "type": "SQL Injection",
+#         "severity": "CRITICAL",
+#         "location": "auth.py:142",
+#         "description": "Unsanitized user input in SQL query",
+#         "exploit_scenario": "Attacker can bypass authentication with payload: ' OR '1'='1",
+#         "confidence": 0.95,
+#         "supporting_arms": ["coder", "security_specialist", "pentester"]
+#       },
+#       {
+#         "type": "Session Fixation",
+#         "severity": "HIGH",
+#         "location": "auth.py:78",
+#         "confidence": 0.87,
+#         "supporting_arms": ["security_specialist", "coder"]
+#       }
+#     ],
+#     "total_issues": 7,
+#     "critical": 1,
+#     "high": 2,
+#     "medium": 4
+#   },
+#   "consensus_score": 0.82,
+#   "aggregation_method": "weighted_vote_with_judge",
+#   "all_proposals": [...],  # 4 proposals from arms
+#   "execution_time_ms": 4250
+# }
+</code></pre>
+<h3 id="scenario-2-code-review-with-swarm"><a class="header" href="#scenario-2-code-review-with-swarm">Scenario 2: Code Review with Swarm</a></h3>
+<pre><code class="language-python"># Task: Review pull request
+task = TaskContract(
+    task_id="pr-review-123",
+    goal="Review pull request #123 for code quality and correctness",
+    context={
+        "pr_url": "https://github.com/org/repo/pull/123",
+        "diff": pr_diff,
+        "files_changed": 8,
+        "lines_added": 342,
+        "lines_deleted": 87
+    },
+    priority=Priority.HIGH,
+    acceptance_criteria=[
+        "Identifies code style violations",
+        "Checks for performance regressions",
+        "Validates test coverage",
+        "Assesses security implications"
+    ]
+)
+
+config = SwarmConfig(
+    swarm_size=4,
+    aggregation_strategy="merge_and_rank",
+    enable_judge=False  # Don't need judge for code review
+)
+
+result = await swarm.execute(task, config)
+
+# Result: Merged feedback from all reviewers
+# {
+#   "final_answer": {
+#     "approval_status": "NEEDS_CHANGES",
+#     "blocking_issues": [
+#       {"type": "security", "severity": "high", "line": 42, "message": "..."},
+#       {"type": "performance", "severity": "high", "line": 156, "message": "..."}
+#     ],
+#     "warnings": [...],
+#     "suggestions": [...],
+#     "test_coverage_delta": -2.5,
+#     "estimated_review_time_hours": 2
+#   },
+#   "consensus_score": 0.91,
+#   "execution_time_ms": 3800
+# }
+</code></pre>
+<h3 id="scenario-3-research-task"><a class="header" href="#scenario-3-research-task">Scenario 3: Research Task</a></h3>
+<pre><code class="language-python"># Task: Research few-shot learning techniques
+task = TaskContract(
+    task_id="research-001",
+    goal="Research and summarize state-of-the-art few-shot learning techniques (2023-2024)",
+    context={
+        "domain": "machine_learning",
+        "recency": "last_2_years",
+        "depth": "comprehensive"
+    },
+    priority=Priority.MEDIUM,
+    acceptance_criteria=[
+        "At least 5 peer-reviewed papers",
+        "2+ production implementations",
+        "Comparative analysis of approaches"
+    ]
+)
+
+config = SwarmConfig(
+    swarm_size=4,  # Different research sources
+    aggregation_strategy="information_merge",
+    timeout_seconds=120  # Longer for research
+)
+
+result = await swarm.execute(task, config)
+
+# Result: Synthesized research from multiple sources
+# {
+#   "final_answer": {
+#     "summary": "Comprehensive overview of few-shot learning...",
+#     "key_papers": [
+#       {"title": "...", "authors": [...], "year": 2024, "citations": 142},
+#       ...
+#     ],
+#     "implementations": [
+#       {"name": "PyTorch Meta-Learning", "github": "...", "stars": 3200},
+#       ...
+#     ],
+#     "comparison_table": {...},
+#     "recommendations": [...],
+#     "sources_count": 47
+#   },
+#   "consensus_score": 0.88,
+#   "execution_time_ms": 8900
+# }
+</code></pre>
+<hr />
+<h2 id="testing-swarm-behavior"><a class="header" href="#testing-swarm-behavior">Testing Swarm Behavior</a></h2>
+<h3 id="unit-tests"><a class="header" href="#unit-tests">Unit Tests</a></h3>
+<pre><code class="language-python">import pytest
+from unittest.mock import Mock, AsyncMock
+
+@pytest.mark.asyncio
+async def test_swarm_majority_vote():
+    """Test majority voting aggregation."""
+
+    proposals = [
+        Proposal(arm_id="arm1", content="A", confidence=0.8, execution_time_ms=1000, status=ProposalStatus.COMPLETED),
+        Proposal(arm_id="arm2", content="A", confidence=0.9, execution_time_ms=1200, status=ProposalStatus.COMPLETED),
+        Proposal(arm_id="arm3", content="B", confidence=0.7, execution_time_ms=1100, status=ProposalStatus.COMPLETED),
+    ]
+
+    aggregator = ProposalAggregator()
+    result = aggregator.majority_vote(proposals)
+
+    assert result["answer"] == "A"
+    assert result["vote_count"] == 2
+    assert result["total_votes"] == 3
+
+@pytest.mark.asyncio
+async def test_swarm_conflict_detection():
+    """Test conflict detection between proposals."""
+
+    # Low consensus scenario
+    proposals = [
+        Proposal(arm_id="arm1", content="Solution A", confidence=0.8, execution_time_ms=1000, status=ProposalStatus.COMPLETED),
+        Proposal(arm_id="arm2", content="Solution B", confidence=0.9, execution_time_ms=1200, status=ProposalStatus.COMPLETED),
+        Proposal(arm_id="arm3", content="Solution C", confidence=0.7, execution_time_ms=1100, status=ProposalStatus.COMPLETED),
+    ]
+
+    resolver = ConflictResolver()
+    conflict = resolver.detect_conflict(proposals, similarity_threshold=0.6)
+
+    assert conflict is not None
+    assert conflict.conflict_type == "low_consensus"
+    assert conflict.severity in ["medium", "high"]
+
+@pytest.mark.asyncio
+async def test_swarm_execution():
+    """Test full swarm execution flow."""
+
+    # Mock arm registry
+    registry = {
+        "arm1": Mock(endpoint="http://arm1:8080", capabilities=["code"], success_rate=0.9),
+        "arm2": Mock(endpoint="http://arm2:8080", capabilities=["code", "review"], success_rate=0.85),
+        "arm3": Mock(endpoint="http://arm3:8080", capabilities=["security"], success_rate=0.95),
+        "judge": Mock(endpoint="http://judge:8080", capabilities=["validation"], success_rate=0.92),
+    }
+
+    swarm = SwarmOrchestrator(registry, judge_arm_id="judge")
+
+    # Mock arm calls
+    swarm._call_arm = AsyncMock(return_value={
+        "output": "Test result",
+        "confidence": 0.85,
+        "rationale": "Test rationale"
+    })
+
+    task = TaskContract(
+        task_id="test-001",
+        goal="Test swarm execution",
+        priority=Priority.MEDIUM
+    )
+
+    config = SwarmConfig(swarm_size=3, aggregation_strategy="weighted_vote")
+
+    result = await swarm.execute(task, config)
+
+    assert result.final_answer is not None
+    assert len(result.all_proposals) == 3
+    assert 0.0 &lt;= result.consensus_score &lt;= 1.0
+    assert result.execution_time_ms &gt; 0
+</code></pre>
+<h3 id="integration-tests"><a class="header" href="#integration-tests">Integration Tests</a></h3>
+<pre><code class="language-python">@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_swarm_with_real_arms():
+    """Test swarm with actual arm services."""
+
+    # Assumes arm services are running (e.g., via docker-compose)
+
+    registry = {
+        "coder": ArmCapability(
+            arm_id="coder",
+            name="Coder Arm",
+            endpoint="http://localhost:8100/code",
+            capabilities=["code_generation"],
+            success_rate=0.9
+        ),
+        "judge": ArmCapability(
+            arm_id="judge",
+            name="Judge Arm",
+            endpoint="http://localhost:8102/validate",
+            capabilities=["validation"],
+            success_rate=0.92
+        ),
+    }
+
+    swarm = SwarmOrchestrator(registry, judge_arm_id="judge")
+
+    task = TaskContract(
+        task_id="integration-test-001",
+        goal="Write a Python function to calculate Fibonacci numbers",
+        acceptance_criteria=["Includes docstring", "Has unit tests"]
+    )
+
+    config = SwarmConfig(swarm_size=2, aggregation_strategy="confidence_max")
+
+    result = await swarm.execute(task, config)
+
+    # Verify result structure
+    assert "final_answer" in result.dict()
+    assert result.consensus_score &gt;= 0.0
+
+    # Verify proposals were generated
+    assert len(result.all_proposals) == 2
+    for proposal in result.all_proposals:
+        assert proposal.status == ProposalStatus.COMPLETED
+        assert proposal.confidence &gt; 0.0
+</code></pre>
+<h3 id="performance-tests"><a class="header" href="#performance-tests">Performance Tests</a></h3>
+<pre><code class="language-python">@pytest.mark.asyncio
+@pytest.mark.performance
+async def test_swarm_latency():
+    """Verify swarm executes within acceptable latency bounds."""
+
+    import time
+
+    swarm = SwarmOrchestrator(mock_registry)
+
+    # Mock fast arms (100ms each)
+    swarm._execute_single_arm = AsyncMock(
+        side_effect=lambda *args, **kwargs: asyncio.sleep(0.1)
+    )
+
+    task = TaskContract(task_id="perf-001", goal="Performance test")
+    config = SwarmConfig(swarm_size=5)
+
+    start = time.time()
+    result = await swarm.execute(task, config)
+    elapsed = time.time() - start
+
+    # With 5 arms executing in parallel, total time should be ~100ms + overhead
+    # Allow 500ms for overhead
+    assert elapsed &lt; 0.6, f"Swarm took {elapsed}s (expected &lt; 0.6s)"
+
+@pytest.mark.asyncio
+async def test_swarm_handles_arm_failures():
+    """Verify swarm degrades gracefully when arms fail."""
+
+    swarm = SwarmOrchestrator(mock_registry)
+
+    # Mock arms: 2 succeed, 1 fails
+    call_count = 0
+    async def mock_execute(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        if call_count == 2:
+            raise Exception("Arm failed")
+        await asyncio.sleep(0.1)
+
+    swarm._execute_single_arm = AsyncMock(side_effect=mock_execute)
+
+    task = TaskContract(task_id="fail-001", goal="Failure test")
+    config = SwarmConfig(swarm_size=3)
+
+    # Should still succeed with 2/3 arms
+    result = await swarm.execute(task, config)
+
+    assert len(result.all_proposals) == 3
+    successful = [p for p in result.all_proposals if p.status == ProposalStatus.COMPLETED]
+    assert len(successful) == 2
+</code></pre>
+<hr />
+<h2 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h2>
+<h3 id="common-issues"><a class="header" href="#common-issues">Common Issues</a></h3>
+<h4 id="1-low-consensus-score"><a class="header" href="#1-low-consensus-score">1. Low Consensus Score</a></h4>
+<p><strong>Symptom</strong>: Swarm returns low consensus score (&lt; 0.5)</p>
+<p><strong>Causes</strong>:</p>
+<ul>
+<li>Arms are using very different approaches</li>
+<li>Task is ambiguous or underspecified</li>
+<li>Arms have divergent interpretations</li>
+</ul>
+<p><strong>Solutions</strong>:</p>
+<pre><code class="language-python"># Add more context to task
+task.context["approach_hint"] = "Use iterative approach"
+
+# Increase swarm size for more data points
+config.swarm_size = 5
+
+# Enable judge for arbitration
+config.enable_judge = True
+</code></pre>
+<h4 id="2-swarm-timeout"><a class="header" href="#2-swarm-timeout">2. Swarm Timeout</a></h4>
+<p><strong>Symptom</strong>: Some or all arms timeout</p>
+<p><strong>Causes</strong>:</p>
+<ul>
+<li>Arms are slow (complex LLM calls)</li>
+<li>Network issues</li>
+<li>Timeout set too low</li>
+</ul>
+<p><strong>Solutions</strong>:</p>
+<pre><code class="language-python"># Increase timeout
+config.timeout_seconds = 120
+
+# Use faster models for swarm
+task.context["prefer_fast_models"] = True
+
+# Reduce swarm size
+config.swarm_size = 3
+</code></pre>
+<h4 id="3-high-cost"><a class="header" href="#3-high-cost">3. High Cost</a></h4>
+<p><strong>Symptom</strong>: Swarm execution costs exceed budget</p>
+<p><strong>Causes</strong>:</p>
+<ul>
+<li>Too many arms</li>
+<li>Expensive models used</li>
+<li>Multiple swarm rounds</li>
+</ul>
+<p><strong>Solutions</strong>:</p>
+<pre><code class="language-python"># Reduce swarm size
+config.swarm_size = 2
+
+# Use cheaper models
+task.context["model"] = "gpt-3.5-turbo"
+
+# Disable judge if not critical
+config.enable_judge = False
+
+# Enable early termination
+config.enable_early_termination = True
+</code></pre>
+<h4 id="4-contradictory-results"><a class="header" href="#4-contradictory-results">4. Contradictory Results</a></h4>
+<p><strong>Symptom</strong>: Arms return contradictory answers</p>
+<p><strong>Causes</strong>:</p>
+<ul>
+<li>Task has multiple valid solutions</li>
+<li>Arms interpret differently</li>
+<li>Genuine disagreement</li>
+</ul>
+<p><strong>Solutions</strong>:</p>
+<pre><code class="language-python"># Enable conflict resolution
+config.enable_judge = True
+
+# Clarify task goal
+task.goal = "Identify THE MOST CRITICAL vulnerability (singular)"
+
+# Add tiebreaker criteria
+task.acceptance_criteria.append("Prioritize by OWASP severity ranking")
+</code></pre>
+<h3 id="debug-logging"><a class="header" href="#debug-logging">Debug Logging</a></h3>
+<pre><code class="language-python">import structlog
+
+logger = structlog.get_logger()
+
+# Enable detailed swarm logging
+logger.info(
+    "swarm.debug",
+    task_id=task.task_id,
+    selected_arms=selected_arms,
+    proposals=[
+        {
+            "arm": p.arm_id,
+            "confidence": p.confidence,
+            "content_preview": str(p.content)[:100]
+        }
+        for p in proposals
+    ],
+    consensus_score=consensus_score,
+    aggregation_strategy=config.aggregation_strategy
+)
+</code></pre>
+<hr />
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>Swarm decision-making is a powerful Phase 2 capability that enables OctoLLM to:</p>
+<ol>
+<li><strong>Leverage diversity</strong>: Multiple arms bring unique perspectives</li>
+<li><strong>Increase robustness</strong>: System continues even if individual arms fail</li>
+<li><strong>Improve quality</strong>: Consensus mechanisms validate correctness</li>
+<li><strong>Handle complexity</strong>: Parallel processing tackles multi-faceted problems</li>
+</ol>
+<p><strong>Key Takeaways</strong>:</p>
+<ul>
+<li>Use swarm for high-stakes, complex, or quality-critical tasks</li>
+<li>Choose swarm size based on task priority and budget</li>
+<li>Select aggregation strategy based on task characteristics</li>
+<li>Enable judge for conflict resolution when needed</li>
+<li>Monitor performance and costs carefully</li>
+<li>Test swarm behavior thoroughly before production</li>
+</ul>
+<p><strong>Next Steps</strong>:</p>
+<ul>
+<li>Review <a href="../operations/deployment-guide.html">Deployment Guide</a> for production setup</li>
+<li>See <a href="../security/security-testing.html">Security Testing</a> for swarm security patterns</li>
+<li>Consult <a href="../operations/performance-tuning.html">Performance Tuning</a> for optimization</li>
+</ul>
+<hr />
+<p><strong>Document Version</strong>: 1.0
+<strong>Last Updated</strong>: 2025-11-10
+<strong>Maintained By</strong>: OctoLLM Core Team</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../architecture/data-flow.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../architecture/adr.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../architecture/data-flow.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../architecture/adr.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

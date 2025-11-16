@@ -1,0 +1,878 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Phase 4: Engineering - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/project-tracking/phases/phase-4.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="phase-4-engineering--standards"><a class="header" href="#phase-4-engineering--standards">Phase 4: Engineering &amp; Standards</a></h1>
+<p><strong>Status</strong>: Not Started
+<strong>Duration</strong>: 3-4 weeks (parallel with Phase 3)
+<strong>Team Size</strong>: 2-3 engineers
+<strong>Prerequisites</strong>: Phase 2 complete
+<strong>Start Date</strong>: TBD
+<strong>Target Completion</strong>: TBD</p>
+<hr />
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Phase 4 establishes comprehensive engineering standards, testing infrastructure, documentation generation systems, and developer workflows to ensure code quality, maintainability, and contributor productivity.</p>
+<p><strong>Key Deliverables</strong>:</p>
+<ol>
+<li>Code Quality Standards - Python (Black, Ruff, mypy) and Rust (rustfmt, clippy)</li>
+<li>Testing Infrastructure - pytest, cargo test, coverage targets</li>
+<li>Documentation Generation - API docs, component diagrams, runbooks</li>
+<li>Developer Workflows - PR templates, code review automation, release process</li>
+<li>Performance Benchmarking - Profiling tools and regression detection</li>
+</ol>
+<p><strong>Success Criteria</strong>:</p>
+<ul>
+<li>✅ Code quality standards enforced in CI</li>
+<li>✅ Test coverage targets met (85% Python, 80% Rust)</li>
+<li>✅ Documentation auto-generated</li>
+<li>✅ Release process automated</li>
+<li>✅ All team members following standards</li>
+</ul>
+<p><strong>Reference</strong>: <code>docs/doc_phases/PHASE-4-COMPLETE-SPECIFICATIONS.md</code> (10,700+ lines)</p>
+<hr />
+<h2 id="sprint-41-code-quality-standards-week-17-18"><a class="header" href="#sprint-41-code-quality-standards-week-17-18">Sprint 4.1: Code Quality Standards [Week 17-18]</a></h2>
+<p><strong>Duration</strong>: 1-2 weeks
+<strong>Team</strong>: 2 engineers
+<strong>Prerequisites</strong>: Phase 2 complete
+<strong>Priority</strong>: HIGH</p>
+<h3 id="sprint-goals"><a class="header" href="#sprint-goals">Sprint Goals</a></h3>
+<ul>
+<li>Configure and enforce Python code quality tools (Black, Ruff, mypy)</li>
+<li>Configure and enforce Rust code quality tools (rustfmt, clippy)</li>
+<li>Set up pre-commit hooks for all standards</li>
+<li>Document coding standards and best practices</li>
+<li>Enforce standards in CI pipeline</li>
+</ul>
+<h3 id="tasks"><a class="header" href="#tasks">Tasks</a></h3>
+<h4 id="python-standards-configuration-6-hours"><a class="header" href="#python-standards-configuration-6-hours">Python Standards Configuration (6 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Configure Black Formatter</strong> (1 hour)</p>
+<ul>
+<li>Create pyproject.toml configuration</li>
+<li>Line length: 88 characters</li>
+<li>Target Python 3.11+</li>
+<li>Code example:
+<pre><code class="language-toml"># pyproject.toml
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | build
+  | dist
+)/
+'''
+</code></pre>
+</li>
+<li>Files to update: <code>pyproject.toml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Configure Ruff Linter</strong> (2 hours)</p>
+<ul>
+<li>Import sorting (isort compatibility)</li>
+<li>Code complexity checks</li>
+<li>Security checks (Bandit rules)</li>
+<li>Code example:
+<pre><code class="language-toml"># pyproject.toml
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "C",   # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "S",   # flake8-bandit
+]
+
+ignore = [
+    "E501",  # line too long (handled by Black)
+    "B008",  # function calls in argument defaults
+]
+
+[tool.ruff.per-file-ignores]
+"tests/*" = ["S101"]  # Allow assert in tests
+</code></pre>
+</li>
+<li>Files to update: <code>pyproject.toml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Configure mypy Type Checker</strong> (2 hours)</p>
+<ul>
+<li>Strict mode for all code</li>
+<li>Ignore missing imports (third-party)</li>
+<li>Code example:
+<pre><code class="language-toml"># pyproject.toml
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = [
+    "qdrant_client.*",
+    "sentence_transformers.*",
+]
+ignore_missing_imports = true
+</code></pre>
+</li>
+<li>Files to update: <code>pyproject.toml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create Pre-Commit Configuration</strong> (1 hour)</p>
+<ul>
+<li>Hook for Black, Ruff, mypy</li>
+<li>Run on all Python files</li>
+<li>Code example:
+<pre><code class="language-yaml"># .pre-commit-config.yaml (Python section)
+repos:
+  - repo: https://github.com/psf/black
+    rev: 23.11.0
+    hooks:
+      - id: black
+        language_version: python3.11
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.5
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.7.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [pydantic, fastapi, types-redis]
+</code></pre>
+</li>
+<li>Files to update: <code>.pre-commit-config.yaml</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="rust-standards-configuration-4-hours"><a class="header" href="#rust-standards-configuration-4-hours">Rust Standards Configuration (4 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Configure rustfmt</strong> (1 hour)</p>
+<ul>
+<li>Create rustfmt.toml</li>
+<li>Edition 2021, max line width 100</li>
+<li>Code example:
+<pre><code class="language-toml"># rustfmt.toml
+edition = "2021"
+max_width = 100
+use_small_heuristics = "Default"
+reorder_imports = true
+reorder_modules = true
+remove_nested_parens = true
+</code></pre>
+</li>
+<li>Files to create: <code>rustfmt.toml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Configure Clippy</strong> (2 hours)</p>
+<ul>
+<li>Deny warnings in CI</li>
+<li>Enable pedantic lints</li>
+<li>Code example:
+<pre><code class="language-toml"># Cargo.toml
+[workspace.lints.clippy]
+all = "warn"
+pedantic = "warn"
+nursery = "warn"
+cargo = "warn"
+
+# Allow some pedantic lints
+module_name_repetitions = "allow"
+missing_errors_doc = "allow"
+</code></pre>
+</li>
+<li>Files to update: <code>Cargo.toml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Add Pre-Commit Hooks for Rust</strong> (1 hour)</p>
+<ul>
+<li>rustfmt check</li>
+<li>clippy check</li>
+<li>Files to update: <code>.pre-commit-config.yaml</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="documentation-standards-4-hours"><a class="header" href="#documentation-standards-4-hours">Documentation Standards (4 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Define Function Documentation Requirements</strong> (2 hours)</p>
+<ul>
+<li>
+<p>Google-style docstrings for Python</p>
+</li>
+<li>
+<p>Rustdoc comments for Rust</p>
+</li>
+<li>
+<p>Type hints required for all public APIs</p>
+</li>
+<li>
+<p>Examples:</p>
+<pre><code class="language-python"># Python example
+def calculate_score(
+    results: List[Dict[str, Any]],
+    weights: Dict[str, float]
+) -&gt; float:
+    """Calculate weighted score from results.
+
+    Args:
+        results: List of result dictionaries with scores
+        weights: Weight for each scoring dimension
+
+    Returns:
+        Weighted average score (0-100)
+
+    Raises:
+        ValueError: If weights don't sum to 1.0
+
+    Example:
+        &gt;&gt;&gt; results = [{"dimension": "quality", "score": 90}]
+        &gt;&gt;&gt; weights = {"quality": 1.0}
+        &gt;&gt;&gt; calculate_score(results, weights)
+        90.0
+    """
+    ...
+</code></pre>
+<pre><code class="language-rust">// Rust example
+/// Calculate weighted score from results.
+///
+/// # Arguments
+///
+/// * `results` - Vector of result scores
+/// * `weights` - Dimension weights (must sum to 1.0)
+///
+/// # Returns
+///
+/// Weighted average score (0-100)
+///
+/// # Errors
+///
+/// Returns `ScoreError` if weights don't sum to 1.0
+///
+/// # Example
+///
+/// ```
+/// let results = vec![90.0, 80.0];
+/// let weights = vec![0.6, 0.4];
+/// let score = calculate_score(&amp;results, &amp;weights)?;
+/// assert_eq!(score, 86.0);
+/// ```
+pub fn calculate_score(
+    results: &amp;[f64],
+    weights: &amp;[f64]
+) -&gt; Result&lt;f64, ScoreError&gt; {
+    ...
+}</code></pre>
+</li>
+<li>
+<p>Files to create: <code>docs/engineering/documentation-style.md</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create README Templates</strong> (1 hour)</p>
+<ul>
+<li>Component README template</li>
+<li>Service README template</li>
+<li>Files to create: <code>docs/templates/README-component.md</code>, <code>docs/templates/README-service.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Set Up API Documentation Generation</strong> (1 hour)</p>
+<ul>
+<li>FastAPI auto-generates OpenAPI at <code>/docs</code></li>
+<li>Configure Swagger UI theme</li>
+<li>Add API versioning strategy</li>
+<li>Files to update: All <code>main.py</code> files</li>
+</ul>
+</li>
+</ul>
+<h3 id="success-criteria"><a class="header" href="#success-criteria">Success Criteria</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Pre-commit hooks prevent non-compliant code</li>
+<li><input disabled="" type="checkbox"/>
+CI enforces standards on all PRs</li>
+<li><input disabled="" type="checkbox"/>
+All existing code passes linters</li>
+<li><input disabled="" type="checkbox"/>
+Documentation standards documented</li>
+<li><input disabled="" type="checkbox"/>
+Team trained on standards</li>
+</ul>
+<h3 id="estimated-effort"><a class="header" href="#estimated-effort">Estimated Effort</a></h3>
+<ul>
+<li>Development: 14 hours</li>
+<li>Testing: 2 hours</li>
+<li>Documentation: 2 hours</li>
+<li><strong>Total</strong>: 18 hours (~1 week for 2 engineers)</li>
+</ul>
+<hr />
+<h2 id="sprint-42-testing-infrastructure-week-18-19"><a class="header" href="#sprint-42-testing-infrastructure-week-18-19">Sprint 4.2: Testing Infrastructure [Week 18-19]</a></h2>
+<p><strong>Duration</strong>: 1-2 weeks
+<strong>Team</strong>: 2 engineers
+<strong>Prerequisites</strong>: Sprint 4.1 complete
+<strong>Priority</strong>: HIGH</p>
+<h3 id="sprint-goals-1"><a class="header" href="#sprint-goals-1">Sprint Goals</a></h3>
+<ul>
+<li>Set up pytest infrastructure with fixtures and plugins</li>
+<li>Configure cargo test for Rust</li>
+<li>Implement mocking strategies (LLMs, databases, external APIs)</li>
+<li>Achieve coverage targets (85% Python, 80% Rust)</li>
+<li>Create testing best practices guide</li>
+</ul>
+<h3 id="tasks-1"><a class="header" href="#tasks-1">Tasks</a></h3>
+<h4 id="python-testing-setup-8-hours"><a class="header" href="#python-testing-setup-8-hours">Python Testing Setup (8 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Configure pytest</strong> (2 hours)</p>
+<ul>
+<li>pytest.ini configuration</li>
+<li>Fixtures for database, Redis, Qdrant</li>
+<li>Markers for test categories (unit, integration, e2e)</li>
+<li>Code example:
+<pre><code class="language-ini"># pytest.ini
+[pytest]
+minversion = 7.0
+testpaths = tests
+python_files = test_*.py
+python_classes = Test*
+python_functions = test_*
+addopts =
+    --strict-markers
+    --verbose
+    --cov=orchestrator
+    --cov=arms
+    --cov-report=html
+    --cov-report=term-missing
+    --cov-fail-under=85
+markers =
+    unit: Unit tests (no external dependencies)
+    integration: Integration tests (require services)
+    e2e: End-to-end tests (full system)
+    slow: Slow tests (&gt;1 second)
+</code></pre>
+</li>
+<li>Files to create: <code>pytest.ini</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create Test Fixtures</strong> (3 hours)</p>
+<ul>
+<li>Database fixtures (clean state per test)</li>
+<li>Redis fixtures (isolated namespaces)</li>
+<li>Qdrant fixtures (test collections)</li>
+<li>LLM mock fixtures</li>
+<li>Code example:
+<pre><code class="language-python"># tests/conftest.py
+import pytest
+import asyncio
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from redis.asyncio import Redis
+from qdrant_client import QdrantClient
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """Create event loop for async tests."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+@pytest.fixture
+async def db_session():
+    """Provide clean database session for each test."""
+    engine = create_async_engine("postgresql+asyncpg://octollm:test@localhost/test_octollm")
+
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+
+    async with AsyncSession(engine) as session:
+        yield session
+
+    await engine.dispose()
+
+@pytest.fixture
+async def redis_client():
+    """Provide Redis client with test namespace."""
+    client = Redis.from_url("redis://localhost:6379/15")  # Test DB 15
+    yield client
+    await client.flushdb()  # Clean up after test
+    await client.close()
+
+@pytest.fixture
+def mock_llm(monkeypatch):
+    """Mock LLM API calls."""
+    async def mock_completion(*args, **kwargs):
+        return {
+            "choices": [{"message": {"content": "Mocked response"}}],
+            "usage": {"total_tokens": 100}
+        }
+
+    monkeypatch.setattr("openai.AsyncOpenAI.chat.completions.create", mock_completion)
+</code></pre>
+</li>
+<li>Files to create: <code>tests/conftest.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Mocking Strategies</strong> (2 hours)</p>
+<ul>
+<li>httpx-mock for external API calls</li>
+<li>pytest-mock for function mocking</li>
+<li>unittest.mock for class mocking</li>
+<li>Files to create: <code>tests/utils/mocks.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Set Up Coverage Reporting</strong> (1 hour)</p>
+<ul>
+<li>pytest-cov configuration</li>
+<li>HTML reports</li>
+<li>Codecov integration</li>
+<li>Files to update: <code>pytest.ini</code>, <code>.github/workflows/test.yml</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="rust-testing-setup-4-hours"><a class="header" href="#rust-testing-setup-4-hours">Rust Testing Setup (4 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Configure cargo test</strong> (1 hour)</p>
+<ul>
+<li>Test organization (unit tests inline, integration tests in tests/)</li>
+<li>Doctest examples</li>
+<li>Code example:
+<pre><code class="language-toml"># Cargo.toml
+[dev-dependencies]
+tokio-test = "0.4"
+mockall = "0.12"
+proptest = "1.4"
+</code></pre>
+</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create Test Utilities</strong> (2 hours)</p>
+<ul>
+<li>Mock Redis client</li>
+<li>Test fixtures</li>
+<li>Code example:
+<pre><code class="language-rust">// reflex-layer/tests/common/mod.rs
+use redis::{Client, Connection};
+use mockall::predicate::*;
+use mockall::mock;
+
+mock! {
+    pub RedisClient {}
+
+    impl redis::ConnectionLike for RedisClient {
+        fn req_command(&amp;mut self, cmd: &amp;redis::Cmd) -&gt; redis::RedisResult&lt;redis::Value&gt;;
+    }
+}
+
+pub fn setup_test_redis() -&gt; MockRedisClient {
+    let mut mock = MockRedisClient::new();
+    mock.expect_req_command()
+        .returning(|_| Ok(redis::Value::Okay));
+    mock
+}</code></pre>
+</li>
+<li>Files to create: <code>reflex-layer/tests/common/mod.rs</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Add Integration Tests</strong> (1 hour)</p>
+<ul>
+<li>Test full request processing pipeline</li>
+<li>Test PII detection accuracy</li>
+<li>Files to create: <code>reflex-layer/tests/integration_test.rs</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="success-criteria-1"><a class="header" href="#success-criteria-1">Success Criteria</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+All test suites run in CI</li>
+<li><input disabled="" type="checkbox"/>
+Coverage targets met (85% Python, 80% Rust)</li>
+<li><input disabled="" type="checkbox"/>
+Mocking strategies documented</li>
+<li><input disabled="" type="checkbox"/>
+Test fixtures reusable across projects</li>
+<li><input disabled="" type="checkbox"/>
+Testing best practices documented</li>
+</ul>
+<h3 id="estimated-effort-1"><a class="header" href="#estimated-effort-1">Estimated Effort</a></h3>
+<ul>
+<li>Development: 12 hours</li>
+<li>Testing: 2 hours</li>
+<li>Documentation: 2 hours</li>
+<li><strong>Total</strong>: 16 hours (~1 week for 2 engineers)</li>
+</ul>
+<hr />
+<h2 id="sprint-43-documentation-generation-week-19-20"><a class="header" href="#sprint-43-documentation-generation-week-19-20">Sprint 4.3: Documentation Generation [Week 19-20]</a></h2>
+<p><strong>(Abbreviated for space - full version would be 800-1,000 lines)</strong></p>
+<h3 id="sprint-goals-2"><a class="header" href="#sprint-goals-2">Sprint Goals</a></h3>
+<ul>
+<li>Auto-generate API documentation (OpenAPI for FastAPI)</li>
+<li>Generate Rust documentation (cargo doc)</li>
+<li>Create architecture diagrams (Mermaid in markdown)</li>
+<li>Generate component READMEs from templates</li>
+<li>Create runbook templates</li>
+</ul>
+<h3 id="key-tasks-summary"><a class="header" href="#key-tasks-summary">Key Tasks (Summary)</a></h3>
+<ol>
+<li>OpenAPI Documentation (Swagger UI, ReDoc)</li>
+<li>Rust Documentation (cargo doc, doc comments)</li>
+<li>Architecture Diagrams (Mermaid.js integration)</li>
+<li>Component README Generation</li>
+<li>Runbook Templates</li>
+</ol>
+<h3 id="estimated-effort-12-hours"><a class="header" href="#estimated-effort-12-hours">Estimated Effort: 12 hours</a></h3>
+<hr />
+<h2 id="sprint-44-developer-workflows-week-20-21"><a class="header" href="#sprint-44-developer-workflows-week-20-21">Sprint 4.4: Developer Workflows [Week 20-21]</a></h2>
+<p><strong>(Abbreviated for space - full version would be 800-1,000 lines)</strong></p>
+<h3 id="sprint-goals-3"><a class="header" href="#sprint-goals-3">Sprint Goals</a></h3>
+<ul>
+<li>Create PR templates with comprehensive checklists</li>
+<li>Set up code review automation (danger.js, reviewdog)</li>
+<li>Enforce branching strategy</li>
+<li>Automate release process (semantic versioning, changelog)</li>
+<li>Create developer onboarding guide</li>
+</ul>
+<h3 id="key-tasks-summary-1"><a class="header" href="#key-tasks-summary-1">Key Tasks (Summary)</a></h3>
+<ol>
+<li>PR Templates (checklist: testing, docs, changelog)</li>
+<li>Code Review Automation (automated checks, review comments)</li>
+<li>Branching Strategy Enforcement</li>
+<li>Release Automation (semantic-release, changelog generation)</li>
+<li>Developer Onboarding Guide</li>
+</ol>
+<h3 id="estimated-effort-14-hours"><a class="header" href="#estimated-effort-14-hours">Estimated Effort: 14 hours</a></h3>
+<hr />
+<h2 id="sprint-45-performance-benchmarking-week-21-22"><a class="header" href="#sprint-45-performance-benchmarking-week-21-22">Sprint 4.5: Performance Benchmarking [Week 21-22]</a></h2>
+<p><strong>(Abbreviated for space - full version would be 600-800 lines)</strong></p>
+<h3 id="sprint-goals-4"><a class="header" href="#sprint-goals-4">Sprint Goals</a></h3>
+<ul>
+<li>Set up benchmark suite (criterion for Rust, pytest-benchmark for Python)</li>
+<li>Integrate profiling tools (py-spy, perf, flamegraph)</li>
+<li>Implement performance regression detection</li>
+<li>Document critical performance paths</li>
+<li>Create performance optimization guide</li>
+</ul>
+<h3 id="key-tasks-summary-2"><a class="header" href="#key-tasks-summary-2">Key Tasks (Summary)</a></h3>
+<ol>
+<li>Benchmark Suite (criterion, pytest-benchmark)</li>
+<li>Profiling Tools Integration (py-spy, cargo flamegraph)</li>
+<li>Performance Regression Detection (track over time)</li>
+<li>Critical Path Documentation</li>
+<li>Optimization Guide</li>
+</ol>
+<h3 id="estimated-effort-10-hours"><a class="header" href="#estimated-effort-10-hours">Estimated Effort: 10 hours</a></h3>
+<hr />
+<h2 id="phase-4-summary"><a class="header" href="#phase-4-summary">Phase 4 Summary</a></h2>
+<p><strong>Total Tasks</strong>: 30+ engineering tasks across 5 sprints
+<strong>Estimated Duration</strong>: 3-4 weeks with 2-3 engineers
+<strong>Total Estimated Hours</strong>: ~70 hours development + ~10 hours testing + ~10 hours documentation = 90 hours</p>
+<p><strong>Deliverables</strong>:</p>
+<ul>
+<li>Code quality standards enforced (Python + Rust)</li>
+<li>Comprehensive testing infrastructure</li>
+<li>Auto-generated documentation</li>
+<li>Streamlined developer workflows</li>
+<li>Performance benchmarking suite</li>
+</ul>
+<p><strong>Completion Checklist</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Code quality standards enforced in CI</li>
+<li><input disabled="" type="checkbox"/>
+Test coverage targets met (85% Python, 80% Rust)</li>
+<li><input disabled="" type="checkbox"/>
+Documentation auto-generated</li>
+<li><input disabled="" type="checkbox"/>
+Release process automated</li>
+<li><input disabled="" type="checkbox"/>
+Performance benchmarks established</li>
+<li><input disabled="" type="checkbox"/>
+All team members trained on workflows</li>
+</ul>
+<p><strong>Next Phase</strong>: Phase 5 (Security Hardening)</p>
+<hr />
+<p><strong>Document Version</strong>: 1.0
+<strong>Last Updated</strong>: 2025-11-10
+<strong>Maintained By</strong>: OctoLLM Project Management Team</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../project-tracking/phases/phase-3.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../project-tracking/phases/phase-5.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../project-tracking/phases/phase-3.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../project-tracking/phases/phase-5.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

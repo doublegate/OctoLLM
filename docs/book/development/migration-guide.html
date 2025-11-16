@@ -1,0 +1,782 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Migration Guide - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/development/migration-guide.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="migration-guide"><a class="header" href="#migration-guide">Migration Guide</a></h1>
+<p><strong>Last Updated</strong>: 2025-11-10
+<strong>Target Audience</strong>: Developers, DevOps Engineers
+<strong>Purpose</strong>: Guide for migrating between OctoLLM versions</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This guide provides instructions for migrating OctoLLM installations between versions, including database schema changes, configuration updates, and code modifications required for breaking changes.</p>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ul>
+<li><a href="#general-migration-process">General Migration Process</a></li>
+<li><a href="#version-specific-migrations">Version-Specific Migrations</a></li>
+<li><a href="#database-migrations">Database Migrations</a></li>
+<li><a href="#configuration-migrations">Configuration Migrations</a></li>
+<li><a href="#api-migrations">API Migrations</a></li>
+<li><a href="#rollback-procedures">Rollback Procedures</a></li>
+</ul>
+<hr />
+<h2 id="general-migration-process"><a class="header" href="#general-migration-process">General Migration Process</a></h2>
+<h3 id="pre-migration-checklist"><a class="header" href="#pre-migration-checklist">Pre-Migration Checklist</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+<strong>Review release notes</strong> for version changes</li>
+<li><input disabled="" type="checkbox"/>
+<strong>Backup database</strong> and configuration</li>
+<li><input disabled="" type="checkbox"/>
+<strong>Test migration</strong> in staging environment</li>
+<li><input disabled="" type="checkbox"/>
+<strong>Plan maintenance window</strong> if needed</li>
+<li><input disabled="" type="checkbox"/>
+<strong>Prepare rollback plan</strong></li>
+<li><input disabled="" type="checkbox"/>
+<strong>Notify users</strong> of scheduled downtime</li>
+</ul>
+<h3 id="migration-steps"><a class="header" href="#migration-steps">Migration Steps</a></h3>
+<ol>
+<li>
+<p><strong>Backup Current State</strong></p>
+<pre><code class="language-bash"># Backup database
+pg_dump octollm &gt; octollm_backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Backup configuration
+cp .env .env.backup
+tar -czf config_backup_$(date +%Y%m%d_%H%M%S).tar.gz config/
+
+# Backup volumes
+docker run --rm -v octollm_postgres_data:/data \
+  -v $(pwd):/backup ubuntu \
+  tar czf /backup/postgres_data_backup.tar.gz /data
+</code></pre>
+</li>
+<li>
+<p><strong>Stop Services</strong></p>
+<pre><code class="language-bash"># Docker Compose
+docker compose down
+
+# Kubernetes
+kubectl scale deployment --all --replicas=0 -n octollm
+</code></pre>
+</li>
+<li>
+<p><strong>Update Code</strong></p>
+<pre><code class="language-bash"># Pull new version
+git fetch --tags
+git checkout v0.2.0
+
+# Update dependencies
+poetry lock
+poetry install
+
+# Build new images
+docker compose build
+</code></pre>
+</li>
+<li>
+<p><strong>Run Database Migrations</strong></p>
+<pre><code class="language-bash"># Review migration
+alembic history
+alembic current
+
+# Run migrations
+alembic upgrade head
+
+# Verify
+alembic current
+</code></pre>
+</li>
+<li>
+<p><strong>Update Configuration</strong></p>
+<pre><code class="language-bash"># Compare .env.example with your .env
+diff .env.example .env
+
+# Add new required variables
+vim .env
+</code></pre>
+</li>
+<li>
+<p><strong>Start Services</strong></p>
+<pre><code class="language-bash"># Docker Compose
+docker compose up -d
+
+# Kubernetes
+kubectl apply -f k8s/
+kubectl rollout status deployment -n octollm
+</code></pre>
+</li>
+<li>
+<p><strong>Verify Migration</strong></p>
+<pre><code class="language-bash"># Check service health
+curl http://localhost:8000/health
+
+# Run smoke tests
+pytest tests/smoke/ -v
+
+# Check logs for errors
+docker compose logs --tail=100
+</code></pre>
+</li>
+</ol>
+<hr />
+<h2 id="version-specific-migrations"><a class="header" href="#version-specific-migrations">Version-Specific Migrations</a></h2>
+<h3 id="v010--v020-example"><a class="header" href="#v010--v020-example">v0.1.0 → v0.2.0 (Example)</a></h3>
+<p><strong>Release Date</strong>: 2025-12-01
+<strong>Type</strong>: Minor (New features, backward compatible)</p>
+<h4 id="breaking-changes"><a class="header" href="#breaking-changes">Breaking Changes</a></h4>
+<p>None</p>
+<h4 id="new-features"><a class="header" href="#new-features">New Features</a></h4>
+<ul>
+<li>Parallel task execution</li>
+<li>Enhanced caching layer</li>
+<li>New performance metrics</li>
+</ul>
+<h4 id="migration-steps-1"><a class="header" href="#migration-steps-1">Migration Steps</a></h4>
+<ol>
+<li>
+<p><strong>Update Configuration</strong></p>
+<pre><code class="language-bash"># Add new cache configuration
+cat &gt;&gt; .env &lt;&lt;EOF
+# Cache Configuration (v0.2.0+)
+CACHE_L1_SIZE=1000
+CACHE_L1_TTL=60
+CACHE_L2_TTL=3600
+EOF
+</code></pre>
+</li>
+<li>
+<p><strong>Database Migration</strong></p>
+<pre><code class="language-bash"># New indexes for performance
+alembic upgrade head
+
+# This adds:
+# - idx_tasks_status_priority
+# - idx_task_history_created_brin
+</code></pre>
+</li>
+<li>
+<p><strong>Update Docker Compose</strong></p>
+<pre><code class="language-yaml"># docker-compose.yml - Update orchestrator service
+orchestrator:
+  image: octollm/orchestrator:0.2.0  # Updated version
+  environment:
+    - CACHE_L1_SIZE=1000  # New config
+    - CACHE_L1_TTL=60
+</code></pre>
+</li>
+<li>
+<p><strong>No Code Changes Required</strong></p>
+<ul>
+<li>API remains backward compatible</li>
+<li>Existing clients continue to work</li>
+</ul>
+</li>
+</ol>
+<h3 id="v010--v100-example---breaking-changes"><a class="header" href="#v010--v100-example---breaking-changes">v0.1.0 → v1.0.0 (Example - Breaking Changes)</a></h3>
+<p><strong>Release Date</strong>: 2026-01-01
+<strong>Type</strong>: Major (Breaking changes)</p>
+<h4 id="breaking-changes-1"><a class="header" href="#breaking-changes-1">Breaking Changes</a></h4>
+<ul>
+<li>⚠️ API endpoint paths changed (<code>/tasks</code> → <code>/api/v1/tasks</code>)</li>
+<li>⚠️ Task priority scale changed (1-5 → 1-10)</li>
+<li>⚠️ Removed deprecated <code>/execute</code> endpoint</li>
+</ul>
+<h4 id="migration-steps-2"><a class="header" href="#migration-steps-2">Migration Steps</a></h4>
+<ol>
+<li>
+<p><strong>Update Client Code</strong></p>
+<pre><code class="language-python"># Before (v0.x)
+response = await client.post(
+    "http://localhost:8000/tasks",
+    json={"description": "...", "priority": 3}
+)
+
+# After (v1.0)
+response = await client.post(
+    "http://localhost:8000/api/v1/tasks",
+    json={"description": "...", "priority": 6}  # 3 * 2
+)
+</code></pre>
+</li>
+<li>
+<p><strong>Database Migration</strong></p>
+<pre><code class="language-bash"># Migrate priority values
+alembic upgrade head
+
+# This runs:
+# UPDATE tasks SET priority = priority * 2;
+</code></pre>
+</li>
+<li>
+<p><strong>Update Configuration</strong></p>
+<pre><code class="language-bash"># Update webhook URLs
+vim .env
+# WEBHOOK_URL=https://example.com/octollm/v1/webhook
+</code></pre>
+</li>
+<li>
+<p><strong>Update Integration Tests</strong></p>
+<pre><code class="language-python"># Update all API endpoint URLs
+find tests/ -name "*.py" -exec sed -i 's|/tasks|/api/v1/tasks|g' {} \;
+</code></pre>
+</li>
+</ol>
+<hr />
+<h2 id="database-migrations"><a class="header" href="#database-migrations">Database Migrations</a></h2>
+<h3 id="running-migrations"><a class="header" href="#running-migrations">Running Migrations</a></h3>
+<pre><code class="language-bash"># Check current version
+alembic current
+
+# View migration history
+alembic history --verbose
+
+# Upgrade to specific version
+alembic upgrade &lt;revision&gt;
+
+# Upgrade to latest
+alembic upgrade head
+
+# Downgrade one version
+alembic downgrade -1
+
+# Downgrade to specific version
+alembic downgrade &lt;revision&gt;
+</code></pre>
+<h3 id="creating-migrations"><a class="header" href="#creating-migrations">Creating Migrations</a></h3>
+<pre><code class="language-bash"># Auto-generate migration from model changes
+alembic revision --autogenerate -m "add_task_priority_index"
+
+# Create empty migration
+alembic revision -m "custom_data_migration"
+
+# Edit migration
+vim alembic/versions/xxx_add_task_priority_index.py
+</code></pre>
+<h3 id="example-migration"><a class="header" href="#example-migration">Example Migration</a></h3>
+<pre><code class="language-python">"""add_task_priority_index
+
+Revision ID: abc123
+Revises: def456
+Create Date: 2025-11-10 10:00:00
+"""
+from alembic import op
+import sqlalchemy as sa
+
+# revision identifiers
+revision = 'abc123'
+down_revision = 'def456'
+branch_labels = None
+depends_on = None
+
+def upgrade():
+    """Upgrade database schema."""
+    # Create index concurrently (doesn't block reads/writes)
+    op.execute("""
+        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_tasks_status_priority
+        ON tasks(status, priority DESC)
+    """)
+
+def downgrade():
+    """Rollback database schema."""
+    op.execute("""
+        DROP INDEX IF EXISTS idx_tasks_status_priority
+    """)
+</code></pre>
+<h3 id="large-data-migrations"><a class="header" href="#large-data-migrations">Large Data Migrations</a></h3>
+<p>For large datasets, use batching:</p>
+<pre><code class="language-python">def upgrade():
+    """Migrate task priority from 1-5 to 1-10 scale."""
+    connection = op.get_bind()
+
+    # Process in batches to avoid long locks
+    batch_size = 1000
+    offset = 0
+
+    while True:
+        result = connection.execute(
+            sa.text("""
+                UPDATE tasks
+                SET priority = priority * 2
+                WHERE id IN (
+                    SELECT id FROM tasks
+                    WHERE priority &lt; 6  -- Old scale
+                    LIMIT :batch_size OFFSET :offset
+                )
+            """),
+            {"batch_size": batch_size, "offset": offset}
+        )
+
+        if result.rowcount == 0:
+            break
+
+        offset += batch_size
+        print(f"Migrated {offset} tasks...")
+</code></pre>
+<hr />
+<h2 id="configuration-migrations"><a class="header" href="#configuration-migrations">Configuration Migrations</a></h2>
+<h3 id="environment-variables"><a class="header" href="#environment-variables">Environment Variables</a></h3>
+<p><strong>Deprecated Variables</strong>:</p>
+<pre><code class="language-bash"># v0.1.0 (deprecated in v0.2.0)
+CACHE_ENABLED=true
+CACHE_TTL=3600
+
+# v0.2.0+ (new format)
+CACHE_L1_ENABLED=true
+CACHE_L1_SIZE=1000
+CACHE_L1_TTL=60
+CACHE_L2_ENABLED=true
+CACHE_L2_TTL=3600
+</code></pre>
+<p><strong>Migration Script</strong>:</p>
+<pre><code class="language-bash">#!/bin/bash
+# migrate_env.sh - Migrate .env from v0.1.0 to v0.2.0
+
+# Backup
+cp .env .env.v010.backup
+
+# Add new variables
+if grep -q "CACHE_ENABLED" .env; then
+    CACHE_ENABLED=$(grep CACHE_ENABLED .env | cut -d '=' -f2)
+    CACHE_TTL=$(grep CACHE_TTL .env | cut -d '=' -f2)
+
+    cat &gt;&gt; .env &lt;&lt;EOF
+
+# Cache Configuration (v0.2.0+)
+CACHE_L1_ENABLED=${CACHE_ENABLED}
+CACHE_L1_SIZE=1000
+CACHE_L1_TTL=60
+CACHE_L2_ENABLED=${CACHE_ENABLED}
+CACHE_L2_TTL=${CACHE_TTL}
+EOF
+
+    # Comment out old variables
+    sed -i 's/^CACHE_ENABLED/#CACHE_ENABLED (deprecated)/' .env
+    sed -i 's/^CACHE_TTL/#CACHE_TTL (deprecated)/' .env
+
+    echo "✅ Migrated cache configuration"
+fi
+</code></pre>
+<h3 id="docker-compose"><a class="header" href="#docker-compose">Docker Compose</a></h3>
+<p><strong>v0.1.0</strong>:</p>
+<pre><code class="language-yaml">services:
+  orchestrator:
+    image: octollm/orchestrator:0.1.0
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+</code></pre>
+<p><strong>v0.2.0</strong>:</p>
+<pre><code class="language-yaml">services:
+  orchestrator:
+    image: octollm/orchestrator:0.2.0
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - CACHE_L1_SIZE=${CACHE_L1_SIZE}  # New
+      - CACHE_L1_TTL=${CACHE_L1_TTL}    # New
+</code></pre>
+<hr />
+<h2 id="api-migrations"><a class="header" href="#api-migrations">API Migrations</a></h2>
+<h3 id="client-code-updates"><a class="header" href="#client-code-updates">Client Code Updates</a></h3>
+<p><strong>SDK Updates</strong>:</p>
+<pre><code class="language-bash"># Update OctoLLM SDK
+pip install --upgrade octollm-sdk
+
+# Or with specific version
+pip install octollm-sdk==1.0.0
+</code></pre>
+<p><strong>API Changes</strong>:</p>
+<p><strong>Before (v0.x)</strong>:</p>
+<pre><code class="language-python">from octollm import Client
+
+client = Client(base_url="http://localhost:8000")
+
+# Submit task
+task = client.tasks.create(
+    description="Write Python code",
+    priority=3  # 1-5 scale
+)
+
+# Get status
+status = client.tasks.get(task.id)
+</code></pre>
+<p><strong>After (v1.0)</strong>:</p>
+<pre><code class="language-python">from octollm import Client
+
+client = Client(
+    base_url="http://localhost:8000/api/v1"  # Updated path
+)
+
+# Submit task
+task = client.tasks.create(
+    description="Write Python code",
+    priority=6  # 1-10 scale (3 * 2)
+)
+
+# Get status
+status = client.tasks.get(task.id)
+</code></pre>
+<hr />
+<h2 id="rollback-procedures"><a class="header" href="#rollback-procedures">Rollback Procedures</a></h2>
+<h3 id="database-rollback"><a class="header" href="#database-rollback">Database Rollback</a></h3>
+<pre><code class="language-bash"># Rollback to previous version
+alembic downgrade -1
+
+# Rollback to specific version
+alembic downgrade abc123
+
+# Verify rollback
+alembic current
+</code></pre>
+<h3 id="application-rollback"><a class="header" href="#application-rollback">Application Rollback</a></h3>
+<p><strong>Docker Compose</strong>:</p>
+<pre><code class="language-bash"># Stop current version
+docker compose down
+
+# Restore backup
+docker run --rm -v octollm_postgres_data:/data \
+  -v $(pwd):/backup ubuntu \
+  tar xzf /backup/postgres_data_backup.tar.gz -C /
+
+# Restore configuration
+cp .env.backup .env
+
+# Start previous version
+git checkout v0.1.0
+docker compose up -d
+</code></pre>
+<p><strong>Kubernetes</strong>:</p>
+<pre><code class="language-bash"># Rollback deployment
+kubectl rollout undo deployment orchestrator -n octollm
+
+# Rollback to specific revision
+kubectl rollout undo deployment orchestrator --to-revision=2 -n octollm
+
+# Check status
+kubectl rollout status deployment orchestrator -n octollm
+</code></pre>
+<h3 id="data-rollback"><a class="header" href="#data-rollback">Data Rollback</a></h3>
+<pre><code class="language-bash"># Restore database from backup
+docker compose down
+docker volume rm octollm_postgres_data
+
+# Restore from backup
+psql octollm &lt; octollm_backup_20251110_120000.sql
+
+# Verify
+psql octollm -c "SELECT COUNT(*) FROM tasks;"
+</code></pre>
+<hr />
+<h2 id="testing-migrations"><a class="header" href="#testing-migrations">Testing Migrations</a></h2>
+<h3 id="staging-environment"><a class="header" href="#staging-environment">Staging Environment</a></h3>
+<pre><code class="language-bash"># 1. Clone production data to staging
+pg_dump production_db | psql staging_db
+
+# 2. Run migration on staging
+alembic upgrade head
+
+# 3. Run integration tests
+pytest tests/integration/ -v
+
+# 4. Performance test
+k6 run tests/load/migration_test.js
+
+# 5. Verify data integrity
+python scripts/verify_migration.py
+</code></pre>
+<h3 id="verification-script"><a class="header" href="#verification-script">Verification Script</a></h3>
+<pre><code class="language-python"># scripts/verify_migration.py
+import asyncio
+from octollm.database import Database
+
+async def verify_migration():
+    """Verify migration completed successfully."""
+    db = Database()
+
+    # Check task counts
+    before_count = 1000  # Known value before migration
+    after_count = await db.fetch_one(
+        "SELECT COUNT(*) FROM tasks"
+    )
+    assert after_count == before_count, "Task count mismatch"
+
+    # Check priority values
+    invalid_priorities = await db.fetch_one("""
+        SELECT COUNT(*) FROM tasks
+        WHERE priority &lt; 1 OR priority &gt; 10
+    """)
+    assert invalid_priorities == 0, "Invalid priorities found"
+
+    # Check indexes exist
+    indexes = await db.fetch_all("""
+        SELECT indexname FROM pg_indexes
+        WHERE tablename = 'tasks'
+    """)
+    required = ['idx_tasks_status_priority']
+    for idx in required:
+        assert any(i['indexname'] == idx for i in indexes), \
+            f"Missing index: {idx}"
+
+    print("✅ Migration verified successfully")
+
+if __name__ == "__main__":
+    asyncio.run(verify_migration())
+</code></pre>
+<hr />
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<ol>
+<li><strong>Always backup</strong> before migration</li>
+<li><strong>Test in staging</strong> first</li>
+<li><strong>Plan maintenance window</strong> for large migrations</li>
+<li><strong>Monitor closely</strong> during and after migration</li>
+<li><strong>Document rollback</strong> procedure before starting</li>
+<li><strong>Communicate</strong> with users about downtime</li>
+<li><strong>Keep backups</strong> for at least 30 days</li>
+<li><strong>Run verification</strong> scripts after migration</li>
+</ol>
+<hr />
+<h2 id="support"><a class="header" href="#support">Support</a></h2>
+<p>For migration help:</p>
+<ul>
+<li><strong>Documentation</strong>: https://docs.octollm.com</li>
+<li><strong>Issues</strong>: https://github.com/octollm/octollm/issues</li>
+<li><strong>Discord</strong>: https://discord.gg/octollm</li>
+<li><strong>Email</strong>: support@octollm.com</li>
+</ul>
+<hr />
+<p><strong>Last Review</strong>: 2025-11-10
+<strong>Next Review</strong>: 2026-02-10 (Quarterly)
+<strong>Owner</strong>: Engineering Team</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../development/contributing.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../operations/deployment.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../development/contributing.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../operations/deployment.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

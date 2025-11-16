@@ -1,0 +1,1156 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Performance Tuning - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/operations/performance-tuning.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="performance-tuning-guide"><a class="header" href="#performance-tuning-guide">Performance Tuning Guide</a></h1>
+<p><strong>Estimated Time</strong>: 2-4 hours
+<strong>Difficulty</strong>: Advanced
+<strong>Prerequisites</strong>: OctoLLM running, access to metrics, profiling tools</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This guide covers systematic performance optimization for OctoLLM across all layers:</p>
+<ul>
+<li>Database query optimization</li>
+<li>Application-level tuning</li>
+<li>Resource allocation and scaling</li>
+<li>Network and I/O optimization</li>
+<li>LLM API optimization</li>
+</ul>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#performance-baseline">Performance Baseline</a></li>
+<li><a href="#database-optimization">Database Optimization</a></li>
+<li><a href="#application-tuning">Application Tuning</a></li>
+<li><a href="#cache-optimization">Cache Optimization</a></li>
+<li><a href="#llm-api-optimization">LLM API Optimization</a></li>
+<li><a href="#resource-allocation">Resource Allocation</a></li>
+<li><a href="#network-optimization">Network Optimization</a></li>
+<li><a href="#load-testing">Load Testing</a></li>
+<li><a href="#profiling">Profiling</a></li>
+<li><a href="#best-practices">Best Practices</a></li>
+</ol>
+<hr />
+<h2 id="performance-baseline"><a class="header" href="#performance-baseline">Performance Baseline</a></h2>
+<h3 id="target-performance-metrics"><a class="header" href="#target-performance-metrics">Target Performance Metrics</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Metric</th><th>Target</th><th>Acceptable</th><th>Critical</th></tr></thead><tbody>
+<tr><td><strong>API Latency (P95)</strong></td><td>&lt; 500ms</td><td>&lt; 1s</td><td>&gt; 2s</td></tr>
+<tr><td><strong>API Latency (P99)</strong></td><td>&lt; 1s</td><td>&lt; 2s</td><td>&gt; 5s</td></tr>
+<tr><td><strong>Task Throughput</strong></td><td>&gt; 100/min</td><td>&gt; 50/min</td><td>&lt; 25/min</td></tr>
+<tr><td><strong>Database Query Time</strong></td><td>&lt; 10ms</td><td>&lt; 50ms</td><td>&gt; 100ms</td></tr>
+<tr><td><strong>Cache Hit Rate</strong></td><td>&gt; 80%</td><td>&gt; 60%</td><td>&lt; 40%</td></tr>
+<tr><td><strong>CPU Usage</strong></td><td>&lt; 60%</td><td>&lt; 80%</td><td>&gt; 90%</td></tr>
+<tr><td><strong>Memory Usage</strong></td><td>&lt; 70%</td><td>&lt; 85%</td><td>&gt; 95%</td></tr>
+<tr><td><strong>Error Rate</strong></td><td>&lt; 0.1%</td><td>&lt; 1%</td><td>&gt; 5%</td></tr>
+</tbody></table>
+</div>
+<h3 id="establish-baseline"><a class="header" href="#establish-baseline">Establish Baseline</a></h3>
+<pre><code class="language-bash"># Run baseline load test
+docker run --rm -it \
+  -v $(pwd)/load-tests:/tests \
+  grafana/k6 run /tests/baseline.js
+
+# Collect baseline metrics
+curl -G 'http://localhost:9090/api/v1/query' \
+  --data-urlencode 'query=histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))'
+</code></pre>
+<h3 id="k6-load-test-script"><a class="header" href="#k6-load-test-script">K6 Load Test Script</a></h3>
+<pre><code class="language-javascript">// load-tests/baseline.js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { Rate, Trend } from 'k6/metrics';
+
+export let options = {
+  stages: [
+    { duration: '2m', target: 10 },   // Ramp up to 10 users
+    { duration: '5m', target: 10 },   // Stay at 10 users
+    { duration: '2m', target: 50 },   // Ramp up to 50 users
+    { duration: '5m', target: 50 },   // Stay at 50 users
+    { duration: '2m', target: 0 },    // Ramp down
+  ],
+  thresholds: {
+    http_req_duration: ['p(95)&lt;1000'],  // 95% of requests &lt; 1s
+    http_req_failed: ['rate&lt;0.01'],     // Error rate &lt; 1%
+  },
+};
+
+const BASE_URL = 'http://localhost:8000';
+
+export default function() {
+  // Test task creation
+  let payload = JSON.stringify({
+    goal: 'Write a Python function to calculate fibonacci',
+    constraints: ['Include docstring', 'Add type hints'],
+    priority: 'medium'
+  });
+
+  let params = {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+
+  let res = http.post(`${BASE_URL}/api/v1/tasks`, payload, params);
+
+  check(res, {
+    'status is 200': (r) =&gt; r.status === 200,
+    'response time &lt; 1s': (r) =&gt; r.timings.duration &lt; 1000,
+  });
+
+  sleep(1);
+}
+</code></pre>
+<hr />
+<h2 id="database-optimization"><a class="header" href="#database-optimization">Database Optimization</a></h2>
+<h3 id="index-optimization"><a class="header" href="#index-optimization">Index Optimization</a></h3>
+<pre><code class="language-sql">-- Analyze current index usage
+SELECT
+    schemaname,
+    tablename,
+    indexname,
+    idx_scan,
+    idx_tup_read,
+    idx_tup_fetch
+FROM pg_stat_user_indexes
+ORDER BY idx_scan;
+
+-- Find missing indexes
+SELECT
+    schemaname,
+    tablename,
+    attname,
+    n_distinct,
+    correlation
+FROM pg_stats
+WHERE schemaname = 'public'
+  AND n_distinct &gt; 100
+ORDER BY abs(correlation) DESC;
+
+-- Create recommended indexes
+CREATE INDEX CONCURRENTLY idx_tasks_status_created
+ON tasks(status, created_at DESC);
+
+CREATE INDEX CONCURRENTLY idx_tasks_priority
+ON tasks(priority)
+WHERE status = 'pending';
+
+CREATE INDEX CONCURRENTLY idx_entities_type_name
+ON entities(entity_type, name);
+
+CREATE INDEX CONCURRENTLY idx_relationships_from_type
+ON relationships(from_entity_id, relationship_type);
+
+-- GIN index for full-text search
+CREATE INDEX CONCURRENTLY idx_entities_name_gin
+ON entities USING GIN(to_tsvector('english', name));
+
+-- BRIN index for timestamp columns (efficient for large tables)
+CREATE INDEX CONCURRENTLY idx_action_log_timestamp_brin
+ON action_log USING BRIN(timestamp);
+</code></pre>
+<h3 id="query-optimization"><a class="header" href="#query-optimization">Query Optimization</a></h3>
+<pre><code class="language-sql">-- Identify slow queries
+SELECT
+    query,
+    calls,
+    total_exec_time,
+    mean_exec_time,
+    max_exec_time
+FROM pg_stat_statements
+ORDER BY mean_exec_time DESC
+LIMIT 20;
+
+-- Analyze specific query
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT * FROM tasks
+WHERE status = 'pending'
+ORDER BY priority DESC, created_at ASC
+LIMIT 10;
+</code></pre>
+<p><strong>Common optimizations:</strong></p>
+<pre><code class="language-sql">-- Bad: SELECT *
+SELECT * FROM entities WHERE entity_type = 'person';
+
+-- Good: Select only needed columns
+SELECT entity_id, name, properties
+FROM entities
+WHERE entity_type = 'person';
+
+-- Bad: OR conditions
+SELECT * FROM tasks
+WHERE priority = 'high' OR priority = 'critical';
+
+-- Good: IN clause
+SELECT * FROM tasks
+WHERE priority IN ('high', 'critical');
+
+-- Bad: Function in WHERE clause
+SELECT * FROM tasks
+WHERE DATE(created_at) = '2024-01-01';
+
+-- Good: Range comparison
+SELECT * FROM tasks
+WHERE created_at &gt;= '2024-01-01'
+  AND created_at &lt; '2024-01-02';
+
+-- Bad: LIKE with leading wildcard
+SELECT * FROM entities
+WHERE name LIKE '%Smith%';
+
+-- Good: GIN index with full-text search
+SELECT * FROM entities
+WHERE to_tsvector('english', name) @@ to_tsquery('Smith');
+</code></pre>
+<h3 id="connection-pooling"><a class="header" href="#connection-pooling">Connection Pooling</a></h3>
+<pre><code class="language-python"># orchestrator/app/database/pool.py
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool, QueuePool
+
+# Development: Simple pool
+engine = create_async_engine(
+    DATABASE_URL,
+    pool_size=5,
+    max_overflow=10,
+    pool_timeout=30,
+    pool_recycle=3600,
+    pool_pre_ping=True,
+    echo=False
+)
+
+# Production: Optimized pool
+engine = create_async_engine(
+    DATABASE_URL,
+    poolclass=QueuePool,
+    pool_size=20,              # Base connections
+    max_overflow=40,            # Additional connections under load
+    pool_timeout=30,            # Wait 30s for connection
+    pool_recycle=3600,          # Recycle connections after 1 hour
+    pool_pre_ping=True,         # Test connection before use
+    echo=False,
+    connect_args={
+        "server_settings": {
+            "application_name": "octollm-orchestrator",
+            "jit": "on",        # Enable JIT compilation
+        },
+        "timeout": 10,
+        "command_timeout": 60,
+    }
+)
+
+async_session = sessionmaker(
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False
+)
+</code></pre>
+<h3 id="postgresql-configuration"><a class="header" href="#postgresql-configuration">PostgreSQL Configuration</a></h3>
+<pre><code class="language-ini"># postgresql.conf optimizations
+
+# Memory
+shared_buffers = 4GB                    # 25% of system RAM
+effective_cache_size = 12GB             # 75% of system RAM
+work_mem = 128MB                        # Per operation
+maintenance_work_mem = 1GB              # For VACUUM, CREATE INDEX
+
+# Checkpoints
+checkpoint_completion_target = 0.9
+wal_buffers = 16MB
+default_statistics_target = 100
+
+# Query Planning
+random_page_cost = 1.1                  # Lower for SSD
+effective_io_concurrency = 200          # Higher for SSD
+
+# Connections
+max_connections = 200
+
+# Logging
+log_min_duration_statement = 100        # Log queries &gt; 100ms
+log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d '
+log_checkpoints = on
+log_lock_waits = on
+
+# Autovacuum
+autovacuum_max_workers = 4
+autovacuum_naptime = 15s
+</code></pre>
+<hr />
+<h2 id="application-tuning"><a class="header" href="#application-tuning">Application Tuning</a></h2>
+<h3 id="async-optimization"><a class="header" href="#async-optimization">Async Optimization</a></h3>
+<pre><code class="language-python"># Bad: Sequential operations
+async def process_task_sequential(task_id: str):
+    task = await db.get_task(task_id)
+    capabilities = await db.get_arm_capabilities()
+    context = await memory.get_context(task_id)
+
+    # Total time: sum of all operations
+
+# Good: Concurrent operations
+async def process_task_concurrent(task_id: str):
+    task, capabilities, context = await asyncio.gather(
+        db.get_task(task_id),
+        db.get_arm_capabilities(),
+        memory.get_context(task_id)
+    )
+
+    # Total time: max of all operations
+</code></pre>
+<h3 id="batching-requests"><a class="header" href="#batching-requests">Batching Requests</a></h3>
+<pre><code class="language-python"># Bad: Individual requests in loop
+async def get_entities(entity_ids: List[str]):
+    entities = []
+    for entity_id in entity_ids:
+        entity = await db.get_entity(entity_id)
+        entities.append(entity)
+    return entities
+
+# Good: Batch request
+async def get_entities(entity_ids: List[str]):
+    query = select(Entity).where(Entity.entity_id.in_(entity_ids))
+    result = await db.execute(query)
+    return result.scalars().all()
+</code></pre>
+<h3 id="n1-query-prevention"><a class="header" href="#n1-query-prevention">N+1 Query Prevention</a></h3>
+<pre><code class="language-python"># Bad: N+1 queries
+async def get_tasks_with_arms():
+    tasks = await db.query(Task).all()
+    for task in tasks:
+        task.arm = await db.query(Arm).filter(
+            Arm.arm_id == task.arm_id
+        ).first()
+    return tasks
+
+# Good: Join or eager loading
+async def get_tasks_with_arms():
+    tasks = await db.query(Task).options(
+        selectinload(Task.arm)
+    ).all()
+    return tasks
+
+# Or with raw SQL join
+async def get_tasks_with_arms():
+    query = """
+        SELECT t.*, a.name as arm_name, a.url as arm_url
+        FROM tasks t
+        LEFT JOIN arms a ON t.arm_id = a.arm_id
+        WHERE t.status = 'completed'
+    """
+    result = await db.execute(query)
+    return result.fetchall()
+</code></pre>
+<h3 id="response-compression"><a class="header" href="#response-compression">Response Compression</a></h3>
+<pre><code class="language-python"># orchestrator/app/main.py
+from fastapi import FastAPI
+from fastapi.middleware.gzip import GZipMiddleware
+
+app = FastAPI()
+
+# Enable gzip compression for responses &gt; 1KB
+app.add_middleware(
+    GZipMiddleware,
+    minimum_size=1000,
+    compresslevel=6  # 1-9, higher = more compression, slower
+)
+</code></pre>
+<h3 id="request-deduplication"><a class="header" href="#request-deduplication">Request Deduplication</a></h3>
+<pre><code class="language-python"># Prevent duplicate requests from racing
+from asyncio import Lock
+from typing import Dict, Any
+
+class RequestDeduplicator:
+    def __init__(self):
+        self.locks: Dict[str, Lock] = {}
+        self.cache: Dict[str, Any] = {}
+
+    async def get_or_compute(self, key: str, compute_fn):
+        """Get cached result or compute (only once for concurrent requests)"""
+
+        # Fast path: check cache
+        if key in self.cache:
+            return self.cache[key]
+
+        # Get or create lock for this key
+        if key not in self.locks:
+            self.locks[key] = Lock()
+
+        lock = self.locks[key]
+
+        async with lock:
+            # Double-check cache (another request may have computed)
+            if key in self.cache:
+                return self.cache[key]
+
+            # Compute value
+            result = await compute_fn()
+
+            # Cache result
+            self.cache[key] = result
+
+            return result
+</code></pre>
+<hr />
+<h2 id="cache-optimization"><a class="header" href="#cache-optimization">Cache Optimization</a></h2>
+<h3 id="multi-level-caching"><a class="header" href="#multi-level-caching">Multi-Level Caching</a></h3>
+<pre><code class="language-python"># Implement L1 (in-memory) and L2 (Redis) cache
+from cachetools import TTLCache
+import json
+
+class MultiLevelCache:
+    def __init__(self, redis_client):
+        self.l1_cache = TTLCache(maxsize=1000, ttl=60)  # 1 minute
+        self.l2_cache = redis_client  # Redis
+        self.l1_hits = 0
+        self.l2_hits = 0
+        self.misses = 0
+
+    async def get(self, key: str):
+        """Get from L1, then L2, then return None"""
+
+        # Try L1 cache (in-memory)
+        if key in self.l1_cache:
+            self.l1_hits += 1
+            return self.l1_cache[key]
+
+        # Try L2 cache (Redis)
+        cached = await self.l2_cache.get(key)
+        if cached:
+            self.l2_hits += 1
+            value = json.loads(cached)
+            # Promote to L1
+            self.l1_cache[key] = value
+            return value
+
+        # Cache miss
+        self.misses += 1
+        return None
+
+    async def set(self, key: str, value: Any, ttl: int = 3600):
+        """Set in both L1 and L2 cache"""
+        self.l1_cache[key] = value
+        await self.l2_cache.setex(key, ttl, json.dumps(value))
+
+    def get_stats(self):
+        """Get cache statistics"""
+        total = self.l1_hits + self.l2_hits + self.misses
+        return {
+            "l1_hits": self.l1_hits,
+            "l2_hits": self.l2_hits,
+            "misses": self.misses,
+            "hit_rate": (self.l1_hits + self.l2_hits) / total if total &gt; 0 else 0
+        }
+</code></pre>
+<h3 id="cache-warming"><a class="header" href="#cache-warming">Cache Warming</a></h3>
+<pre><code class="language-python"># Warm cache on startup with frequently accessed data
+@app.on_event("startup")
+async def warm_cache():
+    """Pre-populate cache with hot data"""
+
+    # Load arm capabilities (accessed on every request)
+    arms = await db.query(Arm).filter(Arm.enabled == True).all()
+    for arm in arms:
+        await cache.set(
+            f"arm:capability:{arm.name}",
+            arm.capabilities,
+            ttl=3600
+        )
+
+    # Load frequently accessed entities
+    query = """
+        SELECT entity_id, name, entity_type, properties
+        FROM entities
+        WHERE access_count &gt; 100
+        ORDER BY access_count DESC
+        LIMIT 1000
+    """
+    entities = await db.execute(query)
+
+    for entity in entities:
+        await cache.set(
+            f"entity:{entity.entity_id}",
+            entity,
+            ttl=1800
+        )
+
+    logger.info(f"Cache warmed with {len(arms)} arms and {len(entities)} entities")
+</code></pre>
+<h3 id="cache-invalidation"><a class="header" href="#cache-invalidation">Cache Invalidation</a></h3>
+<pre><code class="language-python"># Implement cache invalidation on updates
+async def update_entity(entity_id: str, updates: dict):
+    """Update entity and invalidate cache"""
+
+    # Update database
+    await db.query(Entity).filter(
+        Entity.entity_id == entity_id
+    ).update(updates)
+
+    await db.commit()
+
+    # Invalidate cache
+    await cache.delete(f"entity:{entity_id}")
+
+    # Invalidate related caches
+    relationships = await db.query(Relationship).filter(
+        (Relationship.from_entity_id == entity_id) |
+        (Relationship.to_entity_id == entity_id)
+    ).all()
+
+    for rel in relationships:
+        await cache.delete(f"relationship:{rel.relationship_id}")
+</code></pre>
+<hr />
+<h2 id="llm-api-optimization"><a class="header" href="#llm-api-optimization">LLM API Optimization</a></h2>
+<h3 id="request-batching"><a class="header" href="#request-batching">Request Batching</a></h3>
+<pre><code class="language-python"># Batch multiple LLM requests
+class LLMBatcher:
+    def __init__(self, max_batch_size=5, max_wait_ms=100):
+        self.max_batch_size = max_batch_size
+        self.max_wait_ms = max_wait_ms
+        self.queue = []
+        self.batch_task = None
+
+    async def add_request(self, prompt: str) -&gt; str:
+        """Add request to batch and wait for response"""
+
+        future = asyncio.Future()
+        self.queue.append((prompt, future))
+
+        # Start batch processor if not running
+        if self.batch_task is None:
+            self.batch_task = asyncio.create_task(self._process_batch())
+
+        return await future
+
+    async def _process_batch(self):
+        """Process batch after delay or when full"""
+
+        # Wait for batch to fill or timeout
+        await asyncio.sleep(self.max_wait_ms / 1000)
+
+        if not self.queue:
+            self.batch_task = None
+            return
+
+        # Take batch
+        batch = self.queue[:self.max_batch_size]
+        self.queue = self.queue[self.max_batch_size:]
+
+        # Combine prompts
+        combined = "\n---\n".join([p for p, _ in batch])
+
+        # Single API call
+        response = await llm_client.generate(combined)
+
+        # Split and resolve futures
+        responses = response.split("\n---\n")
+        for (_, future), resp in zip(batch, responses):
+            future.set_result(resp)
+
+        # Process remaining
+        if self.queue:
+            self.batch_task = asyncio.create_task(self._process_batch())
+        else:
+            self.batch_task = None
+</code></pre>
+<h3 id="response-streaming"><a class="header" href="#response-streaming">Response Streaming</a></h3>
+<pre><code class="language-python"># Stream LLM responses for faster TTFB
+async def stream_llm_response(prompt: str):
+    """Stream LLM response chunks"""
+
+    async with httpx.AsyncClient() as client:
+        async with client.stream(
+            "POST",
+            "https://api.openai.com/v1/chat/completions",
+            json={
+                "model": "gpt-4",
+                "messages": [{"role": "user", "content": prompt}],
+                "stream": True
+            },
+            headers={"Authorization": f"Bearer {OPENAI_API_KEY}"},
+            timeout=60.0
+        ) as response:
+            async for line in response.aiter_lines():
+                if line.startswith("data: "):
+                    chunk = json.loads(line[6:])
+                    if chunk["choices"][0].get("delta", {}).get("content"):
+                        yield chunk["choices"][0]["delta"]["content"]
+</code></pre>
+<h3 id="model-selection"><a class="header" href="#model-selection">Model Selection</a></h3>
+<pre><code class="language-python"># Use appropriate model for task complexity
+def select_model(task: Task) -&gt; str:
+    """Select most cost-effective model for task"""
+
+    # Simple tasks: Use cheaper, faster model
+    if task.complexity == "simple":
+        return "gpt-3.5-turbo"
+
+    # Complex reasoning: Use advanced model
+    elif task.complexity == "complex":
+        return "gpt-4"
+
+    # Code generation: Use specialized model
+    elif task.domain == "coding":
+        return "gpt-4"  # or code-specific model
+
+    # Default
+    return "gpt-3.5-turbo"
+</code></pre>
+<hr />
+<h2 id="resource-allocation"><a class="header" href="#resource-allocation">Resource Allocation</a></h2>
+<h3 id="cpu-allocation"><a class="header" href="#cpu-allocation">CPU Allocation</a></h3>
+<pre><code class="language-yaml"># Kubernetes: Set CPU requests and limits
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestrator
+spec:
+  template:
+    spec:
+      containers:
+      - name: orchestrator
+        resources:
+          requests:
+            cpu: 1000m      # 1 CPU guaranteed
+            memory: 2Gi
+          limits:
+            cpu: 2000m      # Max 2 CPUs
+            memory: 4Gi
+</code></pre>
+<pre><code class="language-yaml"># Docker Compose: Set CPU limits
+services:
+  orchestrator:
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+</code></pre>
+<h3 id="memory-allocation"><a class="header" href="#memory-allocation">Memory Allocation</a></h3>
+<pre><code class="language-python"># Tune Python memory settings
+import gc
+
+# Disable automatic GC, run manually
+gc.disable()
+
+# Run GC periodically
+async def periodic_gc():
+    while True:
+        await asyncio.sleep(60)  # Every minute
+        gc.collect()
+
+asyncio.create_task(periodic_gc())
+
+# Or use generational GC tuning
+gc.set_threshold(700, 10, 5)  # (gen0, gen1, gen2)
+</code></pre>
+<h3 id="worker-configuration"><a class="header" href="#worker-configuration">Worker Configuration</a></h3>
+<pre><code class="language-python"># orchestrator/app/config.py
+
+# Development
+WORKER_COUNT = 2
+WORKER_THREADS = 2
+
+# Production
+import multiprocessing
+
+CPU_COUNT = multiprocessing.cpu_count()
+WORKER_COUNT = (CPU_COUNT * 2) + 1  # Rule of thumb
+WORKER_THREADS = 4
+</code></pre>
+<pre><code class="language-bash"># Start with optimal workers
+uvicorn app.main:app \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --workers 9 \
+  --loop uvloop \
+  --access-log \
+  --use-colors
+</code></pre>
+<hr />
+<h2 id="network-optimization"><a class="header" href="#network-optimization">Network Optimization</a></h2>
+<h3 id="http2-and-keep-alive"><a class="header" href="#http2-and-keep-alive">HTTP/2 and Keep-Alive</a></h3>
+<pre><code class="language-python"># Use HTTP/2 and connection pooling
+import httpx
+
+client = httpx.AsyncClient(
+    http2=True,  # Enable HTTP/2
+    limits=httpx.Limits(
+        max_keepalive_connections=20,
+        max_connections=100,
+        keepalive_expiry=30.0
+    ),
+    timeout=httpx.Timeout(
+        connect=5.0,
+        read=30.0,
+        write=5.0,
+        pool=5.0
+    )
+)
+</code></pre>
+<h3 id="request-compression"><a class="header" href="#request-compression">Request Compression</a></h3>
+<pre><code class="language-python"># Enable request compression
+async def post_with_compression(url: str, data: dict):
+    """POST request with gzip compression"""
+
+    json_data = json.dumps(data).encode('utf-8')
+    compressed = gzip.compress(json_data)
+
+    async with client.stream(
+        "POST",
+        url,
+        content=compressed,
+        headers={
+            "Content-Encoding": "gzip",
+            "Content-Type": "application/json"
+        }
+    ) as response:
+        return await response.json()
+</code></pre>
+<h3 id="dns-caching"><a class="header" href="#dns-caching">DNS Caching</a></h3>
+<pre><code class="language-python"># Configure DNS caching
+import aiodns
+
+resolver = aiodns.DNSResolver(
+    nameservers=["8.8.8.8", "8.8.4.4"],
+    timeout=5.0,
+    tries=2
+)
+
+# Cache DNS lookups
+dns_cache = TTLCache(maxsize=1000, ttl=300)  # 5 minutes
+</code></pre>
+<hr />
+<h2 id="load-testing"><a class="header" href="#load-testing">Load Testing</a></h2>
+<h3 id="progressive-load-testing"><a class="header" href="#progressive-load-testing">Progressive Load Testing</a></h3>
+<pre><code class="language-javascript">// load-tests/progressive.js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+
+export let options = {
+  stages: [
+    { duration: '1m', target: 10 },
+    { duration: '1m', target: 25 },
+    { duration: '1m', target: 50 },
+    { duration: '1m', target: 100 },
+    { duration: '1m', target: 200 },
+    { duration: '5m', target: 200 },  // Sustain
+    { duration: '1m', target: 0 },
+  ],
+};
+
+export default function() {
+  let res = http.get('http://localhost:8000/health');
+  check(res, {
+    'status is 200': (r) =&gt; r.status === 200,
+    'latency &lt; 500ms': (r) =&gt; r.timings.duration &lt; 500,
+  });
+  sleep(1);
+}
+</code></pre>
+<h3 id="stress-testing"><a class="header" href="#stress-testing">Stress Testing</a></h3>
+<pre><code class="language-javascript">// load-tests/stress.js
+export let options = {
+  stages: [
+    { duration: '2m', target: 100 },
+    { duration: '5m', target: 100 },
+    { duration: '2m', target: 200 },
+    { duration: '5m', target: 200 },
+    { duration: '2m', target: 300 },
+    { duration: '5m', target: 300 },
+    { duration: '10m', target: 0 },
+  ],
+};
+</code></pre>
+<hr />
+<h2 id="profiling"><a class="header" href="#profiling">Profiling</a></h2>
+<h3 id="python-profiling"><a class="header" href="#python-profiling">Python Profiling</a></h3>
+<pre><code class="language-python"># CPU profiling with cProfile
+import cProfile
+import pstats
+
+profiler = cProfile.Profile()
+profiler.enable()
+
+# Code to profile
+await process_task(task_id)
+
+profiler.disable()
+stats = pstats.Stats(profiler)
+stats.sort_stats('cumulative')
+stats.print_stats(20)
+</code></pre>
+<pre><code class="language-python"># Memory profiling
+from memory_profiler import profile
+
+@profile
+async def memory_intensive_function():
+    # Function code
+    pass
+</code></pre>
+<h3 id="request-tracing"><a class="header" href="#request-tracing">Request Tracing</a></h3>
+<pre><code class="language-python"># Add timing middleware
+from time import time
+
+@app.middleware("http")
+async def add_timing_header(request, call_next):
+    start_time = time()
+
+    response = await call_next(request)
+
+    process_time = time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+
+    return response
+</code></pre>
+<hr />
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<h3 id="1-database"><a class="header" href="#1-database">1. Database</a></h3>
+<ul>
+<li>✅ Use indexes on frequently queried columns</li>
+<li>✅ Avoid SELECT *, specify needed columns</li>
+<li>✅ Use connection pooling</li>
+<li>✅ Batch operations when possible</li>
+<li>✅ Use EXPLAIN ANALYZE for slow queries</li>
+<li>❌ Don't use LIKE with leading wildcard</li>
+<li>❌ Don't query in loops (N+1 problem)</li>
+</ul>
+<h3 id="2-application"><a class="header" href="#2-application">2. Application</a></h3>
+<ul>
+<li>✅ Use async/await for I/O operations</li>
+<li>✅ Batch LLM API requests</li>
+<li>✅ Implement multi-level caching</li>
+<li>✅ Use connection pooling for HTTP clients</li>
+<li>✅ Stream responses when possible</li>
+<li>❌ Don't block event loop</li>
+<li>❌ Don't create new clients per request</li>
+</ul>
+<h3 id="3-caching"><a class="header" href="#3-caching">3. Caching</a></h3>
+<ul>
+<li>✅ Cache frequently accessed data</li>
+<li>✅ Set appropriate TTLs</li>
+<li>✅ Warm cache on startup</li>
+<li>✅ Invalidate cache on updates</li>
+<li>❌ Don't cache everything</li>
+<li>❌ Don't use unbounded caches</li>
+</ul>
+<h3 id="4-monitoring"><a class="header" href="#4-monitoring">4. Monitoring</a></h3>
+<ul>
+<li>✅ Track all key metrics</li>
+<li>✅ Set up performance alerts</li>
+<li>✅ Profile regularly</li>
+<li>✅ Load test before deployment</li>
+<li>✅ Monitor resource usage</li>
+</ul>
+<hr />
+<h2 id="performance-checklist"><a class="header" href="#performance-checklist">Performance Checklist</a></h2>
+<p>Before going to production:</p>
+<h3 id="database"><a class="header" href="#database">Database</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Indexes created for all frequently queried columns</li>
+<li><input disabled="" type="checkbox"/>
+Query performance analyzed with EXPLAIN</li>
+<li><input disabled="" type="checkbox"/>
+Connection pool configured</li>
+<li><input disabled="" type="checkbox"/>
+PostgreSQL configuration tuned</li>
+<li><input disabled="" type="checkbox"/>
+Autovacuum configured</li>
+</ul>
+<h3 id="application"><a class="header" href="#application">Application</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Async operations used throughout</li>
+<li><input disabled="" type="checkbox"/>
+N+1 queries eliminated</li>
+<li><input disabled="" type="checkbox"/>
+Response compression enabled</li>
+<li><input disabled="" type="checkbox"/>
+Request batching implemented</li>
+<li><input disabled="" type="checkbox"/>
+Error handling doesn't block</li>
+</ul>
+<h3 id="caching"><a class="header" href="#caching">Caching</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Multi-level caching implemented</li>
+<li><input disabled="" type="checkbox"/>
+Cache hit rate &gt; 70%</li>
+<li><input disabled="" type="checkbox"/>
+TTLs set appropriately</li>
+<li><input disabled="" type="checkbox"/>
+Cache invalidation working</li>
+<li><input disabled="" type="checkbox"/>
+Cache warming on startup</li>
+</ul>
+<h3 id="resources"><a class="header" href="#resources">Resources</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+CPU/memory limits set</li>
+<li><input disabled="" type="checkbox"/>
+Worker count optimized</li>
+<li><input disabled="" type="checkbox"/>
+Connection pools sized correctly</li>
+<li><input disabled="" type="checkbox"/>
+Horizontal scaling configured</li>
+</ul>
+<h3 id="testing"><a class="header" href="#testing">Testing</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Load testing completed</li>
+<li><input disabled="" type="checkbox"/>
+Stress testing completed</li>
+<li><input disabled="" type="checkbox"/>
+Performance baselines established</li>
+<li><input disabled="" type="checkbox"/>
+Profiling identifies no bottlenecks</li>
+</ul>
+<hr />
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<p>After optimization:</p>
+<ol>
+<li><strong>Monitor results</strong> - Track metrics to validate improvements</li>
+<li><strong>Iterate</strong> - Continuously profile and optimize</li>
+<li><strong>Scale</strong> - Add resources as needed</li>
+<li><strong>Document</strong> - Record optimization decisions</li>
+</ol>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="monitoring-alerting.html">Monitoring and Alerting</a> - Track performance</li>
+<li><a href="troubleshooting-playbooks.html">Troubleshooting Playbooks</a> - Diagnose issues</li>
+<li><a href="kubernetes-deployment.html">Kubernetes Deployment</a> - Production deployment</li>
+<li><a href="docker-compose-setup.html">Docker Compose Setup</a> - Local development</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../operations/troubleshooting-playbooks.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../operations/scaling.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../operations/troubleshooting-playbooks.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../operations/scaling.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

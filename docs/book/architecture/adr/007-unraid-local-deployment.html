@@ -1,0 +1,661 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>ADR-007: Unraid Local Deployment - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/architecture/adr/007-unraid-local-deployment.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="adr-007-unraid-local-deployment-strategy"><a class="header" href="#adr-007-unraid-local-deployment-strategy">ADR-007: Unraid Local Deployment Strategy</a></h1>
+<p><strong>Status</strong>: Proposed
+<strong>Date</strong>: 2025-11-12
+<strong>Decision Makers</strong>: OctoLLM Architecture Team
+<strong>Consulted</strong>: DevOps, Infrastructure Team</p>
+<h2 id="context"><a class="header" href="#context">Context</a></h2>
+<p>OctoLLM is a distributed AI architecture for offensive security and developer tooling that requires significant computational resources, particularly GPU acceleration for LLM inference. The project needs a local development deployment strategy that:</p>
+<ol>
+<li><strong>Leverages Available Hardware</strong>: Dell PowerEdge R730xd with dual Xeon E5-2683 v4 (64 threads), 504GB RAM, and NVIDIA Tesla P40 (24GB VRAM)</li>
+<li><strong>Minimizes Cloud Costs</strong>: Reduce dependency on expensive cloud LLM APIs (OpenAI/Anthropic)</li>
+<li><strong>Matches Production Architecture</strong>: Stay as close as possible to Kubernetes production deployment</li>
+<li><strong>Supports Rapid Iteration</strong>: Enable fast development cycles without complex orchestration overhead</li>
+<li><strong>Runs on Unraid 7.2.0</strong>: Integrate seamlessly with existing Unraid server infrastructure</li>
+</ol>
+<h3 id="hardware-profile"><a class="header" href="#hardware-profile">Hardware Profile</a></h3>
+<p><strong>Dell PowerEdge R730xd Specifications:</strong></p>
+<ul>
+<li><strong>CPU</strong>: Dual Intel Xeon E5-2683 v4 @ 2.10GHz (32 physical cores, 64 threads with HT)</li>
+<li><strong>RAM</strong>: 503.8 GiB (492 GiB available)</li>
+<li><strong>GPU</strong>: NVIDIA Tesla P40 (24GB VRAM, CUDA 13.0, Driver 580.105.08)</li>
+<li><strong>Storage</strong>: 144TB array (51TB available), 1.8TB SSD cache</li>
+<li><strong>Network</strong>: 4× Gigabit NICs bonded to 4Gbps aggregate (bond0)</li>
+<li><strong>OS</strong>: Unraid 7.2.0 with Docker 27.5.1</li>
+<li><strong>NUMA</strong>: 2 NUMA nodes (optimal for memory-intensive workloads)</li>
+</ul>
+<h3 id="current-production-target"><a class="header" href="#current-production-target">Current Production Target</a></h3>
+<ul>
+<li><strong>Platform</strong>: Kubernetes (GKE/EKS) with multi-zone deployment</li>
+<li><strong>LLM Strategy</strong>: Cloud APIs (OpenAI GPT-4, Anthropic Claude 3)</li>
+<li><strong>Cost</strong>: $150-700/month for moderate development usage</li>
+<li><strong>Complexity</strong>: High (requires K8s knowledge, Helm, kubectl, cloud account setup)</li>
+</ul>
+<h2 id="decision"><a class="header" href="#decision">Decision</a></h2>
+<p>We will adopt a <strong>Hybrid Docker Compose + Local GPU Inference</strong> approach for Unraid local deployment:</p>
+<h3 id="architecture-components"><a class="header" href="#architecture-components">Architecture Components</a></h3>
+<ol>
+<li>
+<p><strong>Docker Compose Stack</strong>:</p>
+<ul>
+<li>All OctoLLM services (Orchestrator, Reflex, 6 Arms)</li>
+<li>Infrastructure (PostgreSQL, Redis, Qdrant)</li>
+<li>Monitoring (Prometheus, Grafana, Loki)</li>
+<li>Exporters (node, cAdvisor, postgres, redis, nvidia-dcgm)</li>
+</ul>
+</li>
+<li>
+<p><strong>Local LLM Inference (Ollama)</strong>:</p>
+<ul>
+<li>GPU-accelerated inference on Tesla P40</li>
+<li>Models: Llama 3.1 8B, Mixtral 8×7B, CodeLlama 13B, Nomic Embed Text</li>
+<li>Replaces OpenAI/Anthropic APIs for 95% of requests</li>
+<li>Cloud APIs available as fallback for edge cases</li>
+</ul>
+</li>
+<li>
+<p><strong>Unraid Integration</strong>:</p>
+<ul>
+<li>App data in <code>/mnt/user/appdata/octollm/</code> (standard Unraid location)</li>
+<li>Permissions: <code>nobody:users</code> (99:100) per Unraid convention</li>
+<li>Restart policy: <code>unless-stopped</code> (survives reboots)</li>
+<li>Custom Docker network: <code>octollm-net</code> (172.20.0.0/16)</li>
+</ul>
+</li>
+</ol>
+<h3 id="resource-allocation"><a class="header" href="#resource-allocation">Resource Allocation</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Service Category</th><th>CPU Cores</th><th>RAM</th><th>VRAM</th><th>Notes</th></tr></thead><tbody>
+<tr><td>PostgreSQL</td><td>4</td><td>4GB</td><td>-</td><td>Global memory, task history</td></tr>
+<tr><td>Redis</td><td>2</td><td>2GB</td><td>-</td><td>Caching, pub/sub</td></tr>
+<tr><td>Qdrant</td><td>4</td><td>4GB</td><td>-</td><td>Vector embeddings</td></tr>
+<tr><td>Orchestrator</td><td>4</td><td>4GB</td><td>-</td><td>Main coordinator</td></tr>
+<tr><td>Reflex Layer</td><td>4</td><td>2GB</td><td>-</td><td>Fast preprocessing</td></tr>
+<tr><td>6 Arms</td><td>2 each</td><td>2GB each</td><td>-</td><td>12 cores, 12GB total</td></tr>
+<tr><td>Ollama</td><td>8</td><td>16GB</td><td>24GB</td><td>GPU-accelerated LLM</td></tr>
+<tr><td>Monitoring</td><td>4</td><td>4GB</td><td>-</td><td>Prometheus, Grafana, Loki</td></tr>
+<tr><td><strong>Total Allocated</strong></td><td><strong>38</strong></td><td><strong>48GB</strong></td><td><strong>24GB</strong></td><td></td></tr>
+<tr><td><strong>Available Remaining</strong></td><td><strong>26</strong></td><td><strong>450GB</strong></td><td><strong>0GB</strong></td><td>For other Unraid services</td></tr>
+</tbody></table>
+</div>
+<p><strong>Utilization</strong>: 59% CPU, 9.5% RAM, 100% GPU during inference</p>
+<h3 id="port-mapping"><a class="header" href="#port-mapping">Port Mapping</a></h3>
+<pre><code>Core Services:
+  3000  - Orchestrator API (main entry point)
+  3001  - Reflex Layer API
+
+Infrastructure:
+  3010  - PostgreSQL
+  3011  - Redis
+  3012  - Qdrant HTTP API
+  3013  - Qdrant gRPC API
+  3014  - Ollama API
+
+Arms:
+  6001  - Planner Arm
+  6002  - Executor Arm
+  6003  - Retriever Arm
+  6004  - Coder Arm
+  6005  - Judge Arm
+  6006  - Safety Guardian Arm
+
+Monitoring:
+  3030  - Grafana UI
+  3100  - Loki (logs)
+  8080  - cAdvisor
+  9090  - Prometheus
+  9100  - Node Exporter
+  9121  - Redis Exporter
+  9187  - PostgreSQL Exporter
+  9400  - NVIDIA DCGM Exporter
+</code></pre>
+<h3 id="technology-stack"><a class="header" href="#technology-stack">Technology Stack</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Technology</th><th>Rationale</th></tr></thead><tbody>
+<tr><td>Orchestrator</td><td>Python 3.11, FastAPI</td><td>Matches production, easy debugging</td></tr>
+<tr><td>Reflex Layer</td><td>Rust, Axum</td><td>Performance-critical, optional initially</td></tr>
+<tr><td>Arms</td><td>Python (AI) / Rust (security)</td><td>Flexibility vs. safety trade-off</td></tr>
+<tr><td>LLM Inference</td><td>Ollama 0.1.x</td><td>GPU-optimized, simple API, model management</td></tr>
+<tr><td>Database</td><td>PostgreSQL 15</td><td>Production parity, robust</td></tr>
+<tr><td>Cache</td><td>Redis 7</td><td>Production parity, pub/sub support</td></tr>
+<tr><td>Vectors</td><td>Qdrant 1.7.4</td><td>Best-in-class vector DB</td></tr>
+<tr><td>Monitoring</td><td>Prometheus + Grafana</td><td>Industry standard, rich ecosystem</td></tr>
+</tbody></table>
+</div>
+<h2 id="alternatives-considered"><a class="header" href="#alternatives-considered">Alternatives Considered</a></h2>
+<h3 id="option-1-pure-docker-compose-no-gpu"><a class="header" href="#option-1-pure-docker-compose-no-gpu">Option 1: Pure Docker Compose (No GPU)</a></h3>
+<p><strong>Approach</strong>: Docker Compose with all services, use cloud LLM APIs exclusively.</p>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Simplest setup (no GPU drivers needed)</li>
+<li>Proven Docker Compose workflow</li>
+<li>Works on any hardware</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li><strong>Cost</strong>: $150-700/month in LLM API fees</li>
+<li>Wastes available Tesla P40 GPU</li>
+<li>Slower iteration (network latency to cloud APIs)</li>
+<li>API rate limits during development</li>
+</ul>
+<p><strong>Verdict</strong>: ❌ Rejected - Unnecessarily expensive, doesn't leverage available hardware</p>
+<h3 id="option-2-k3s-virtual-machines-lightweight-kubernetes"><a class="header" href="#option-2-k3s-virtual-machines-lightweight-kubernetes">Option 2: K3s Virtual Machines (Lightweight Kubernetes)</a></h3>
+<p><strong>Approach</strong>: Run k3s (lightweight K8s) in Unraid VMs, deploy with Helm charts.</p>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li><strong>Production parity</strong>: Near-identical to GKE/EKS deployment</li>
+<li>Kubernetes experience for team</li>
+<li>Could run multiple isolated environments</li>
+<li>GPU passthrough to VMs possible</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li><strong>Complexity overkill</strong>: Too heavy for single-developer local setup</li>
+<li>VM overhead (need 32GB+ RAM per VM for reasonable performance)</li>
+<li>Slower iteration (rebuild/deploy cycles)</li>
+<li>Requires Kubernetes expertise</li>
+<li>More failure points (VM networking, k3s networking, pod networking)</li>
+<li>Harder to debug (kubectl exec, logs aggregation)</li>
+</ul>
+<p><strong>Verdict</strong>: ⚠️ Deferred - Can add later for production testing, overkill for initial dev</p>
+<h3 id="option-3-hybrid-docker-compose--local-gpu-chosen"><a class="header" href="#option-3-hybrid-docker-compose--local-gpu-chosen">Option 3: Hybrid Docker Compose + Local GPU (CHOSEN)</a></h3>
+<p><strong>Approach</strong>: Docker Compose for services, Ollama for local GPU-accelerated LLM inference.</p>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li><strong>Cost savings</strong>: ~$0/month (electricity only vs. $150-700/month cloud APIs)</li>
+<li><strong>Fast iteration</strong>: <code>docker-compose up/down</code> in seconds</li>
+<li><strong>Leverages GPU</strong>: Tesla P40 runs Llama 3 70B, Mixtral 8×7B, CodeLlama 34B</li>
+<li><strong>Unraid-native</strong>: Uses standard Unraid Docker patterns</li>
+<li><strong>Production-similar</strong>: Services identical, only orchestration differs</li>
+<li><strong>Debuggable</strong>: Direct <code>docker logs</code>, <code>docker exec</code> access</li>
+<li><strong>Flexible</strong>: Can still use cloud APIs as fallback</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>Not 100% production-identical (Docker Compose vs. Kubernetes)</li>
+<li>Manual service management (no K8s auto-scaling, self-healing)</li>
+<li>Single-host limitations (no multi-node scheduling)</li>
+</ul>
+<p><strong>Mitigation</strong>:</p>
+<ul>
+<li>Services are containerized identically (Dockerfiles work in both)</li>
+<li>Can add k3s VMs later for Kubernetes testing</li>
+<li>Production deployment guide shows migration path</li>
+</ul>
+<p><strong>Verdict</strong>: ✅ <strong>CHOSEN</strong> - Best balance of cost, performance, and developer experience</p>
+<h3 id="option-4-docker-swarm"><a class="header" href="#option-4-docker-swarm">Option 4: Docker Swarm</a></h3>
+<p><strong>Approach</strong>: Docker Swarm for orchestration instead of Kubernetes.</p>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Native Docker clustering</li>
+<li>Simpler than Kubernetes</li>
+<li>Built into Docker Engine</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li><strong>Production divergence</strong>: No one uses Swarm in production anymore</li>
+<li>Limited ecosystem compared to K8s</li>
+<li>Harder migration path to GKE/EKS</li>
+<li>Less learning value for team</li>
+</ul>
+<p><strong>Verdict</strong>: ❌ Rejected - Dead-end technology, no production alignment</p>
+<h2 id="consequences"><a class="header" href="#consequences">Consequences</a></h2>
+<h3 id="positive"><a class="header" href="#positive">Positive</a></h3>
+<ol>
+<li>
+<p><strong>Dramatic Cost Reduction</strong>:</p>
+<ul>
+<li><strong>Before</strong>: $150-700/month in LLM API costs</li>
+<li><strong>After</strong>: ~$0/month (only electricity: ~$50/month for full server)</li>
+<li><strong>Annual Savings</strong>: $1,800-8,400</li>
+</ul>
+</li>
+<li>
+<p><strong>Faster Development Iteration</strong>:</p>
+<ul>
+<li>Local inference: 2-10s latency (GPU-bound)</li>
+<li>Cloud API: 5-30s latency (network + queue + inference)</li>
+<li>No rate limits or quota concerns</li>
+</ul>
+</li>
+<li>
+<p><strong>Full Hardware Utilization</strong>:</p>
+<ul>
+<li>Tesla P40 GPU: 100% utilized during inference</li>
+<li>64 CPU threads: 38 allocated (59%), 26 available for other services</li>
+<li>504GB RAM: 48GB allocated (9.5%), 450GB available</li>
+<li>Efficient use of enterprise hardware</li>
+</ul>
+</li>
+<li>
+<p><strong>Production-Ready Learning Path</strong>:</p>
+<ul>
+<li>Docker Compose → Docker images → Kubernetes deployment</li>
+<li>Same service code, only orchestration changes</li>
+<li>Team learns containerization first, orchestration second</li>
+</ul>
+</li>
+<li>
+<p><strong>Unraid Ecosystem Integration</strong>:</p>
+<ul>
+<li>Appears in Unraid Docker tab</li>
+<li>Uses standard appdata paths</li>
+<li>Works with existing backup strategies</li>
+<li>Compatible with Unraid Community Applications</li>
+</ul>
+</li>
+<li>
+<p><strong>Offline Development</strong>:</p>
+<ul>
+<li>No internet required after initial setup</li>
+<li>Works during cloud API outages</li>
+<li>Data privacy (no external API calls)</li>
+</ul>
+</li>
+</ol>
+<h3 id="negative"><a class="header" href="#negative">Negative</a></h3>
+<ol>
+<li>
+<p><strong>Production Divergence</strong>:</p>
+<ul>
+<li><strong>Docker Compose</strong> vs. <strong>Kubernetes</strong> orchestration</li>
+<li>Manual scaling vs. HorizontalPodAutoscaler</li>
+<li>Docker networks vs. K8s Services/Ingress</li>
+<li><strong>Mitigation</strong>: Identical Docker images, migration guide provided</li>
+</ul>
+</li>
+<li>
+<p><strong>Single-Host Limitations</strong>:</p>
+<ul>
+<li>No multi-node redundancy</li>
+<li>No automatic failover</li>
+<li><strong>Mitigation</strong>: Acceptable for development, not for production</li>
+</ul>
+</li>
+<li>
+<p><strong>GPU Contention</strong>:</p>
+<ul>
+<li>Only one GPU, shared by all arms</li>
+<li>Ollama queues requests (max 4 parallel)</li>
+<li><strong>Mitigation</strong>: Still faster than cloud APIs, acceptable for dev</li>
+</ul>
+</li>
+<li>
+<p><strong>Model Management Overhead</strong>:</p>
+<ul>
+<li>Need to pull/update models manually</li>
+<li>50-100GB model storage required</li>
+<li><strong>Mitigation</strong>: Setup script automates initial pull</li>
+</ul>
+</li>
+<li>
+<p><strong>Learning Curve for Ollama</strong>:</p>
+<ul>
+<li>Team needs to understand local LLM deployment</li>
+<li>Different prompt engineering vs. cloud APIs</li>
+<li><strong>Mitigation</strong>: Documentation provided, cloud APIs available as fallback</li>
+</ul>
+</li>
+</ol>
+<h3 id="migration-path-to-production"><a class="header" href="#migration-path-to-production">Migration Path to Production</a></h3>
+<p>When ready for cloud deployment:</p>
+<ol>
+<li>
+<p><strong>Phase 1: Same Images, Different Orchestration</strong></p>
+<ul>
+<li>Use same Docker images from local development</li>
+<li>Deploy to Kubernetes (GKE/EKS) with Helm charts</li>
+<li>Switch from Ollama to OpenAI/Anthropic APIs</li>
+</ul>
+</li>
+<li>
+<p><strong>Phase 2: Cloud Infrastructure</strong></p>
+<ul>
+<li>Replace PostgreSQL with Cloud SQL</li>
+<li>Replace Redis with Memorystore</li>
+<li>Replace Qdrant self-hosted with Qdrant Cloud</li>
+</ul>
+</li>
+<li>
+<p><strong>Phase 3: Production Hardening</strong></p>
+<ul>
+<li>Add Ingress with TLS (cert-manager)</li>
+<li>Configure HorizontalPodAutoscaler</li>
+<li>Set up multi-region redundancy</li>
+<li>Implement GitOps (ArgoCD/Flux)</li>
+</ul>
+</li>
+</ol>
+<p><strong>Estimated Migration Time</strong>: 2-3 days for experienced team</p>
+<h2 id="implementation-plan"><a class="header" href="#implementation-plan">Implementation Plan</a></h2>
+<h3 id="phase-1-infrastructure-setup-week-1"><a class="header" href="#phase-1-infrastructure-setup-week-1">Phase 1: Infrastructure Setup (Week 1)</a></h3>
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+Create <code>infrastructure/unraid/</code> directory structure</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Write <code>docker-compose.unraid.yml</code> (300-500 lines)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Write <code>.env.unraid.example</code> (100 lines)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Create <code>setup-unraid.sh</code> automated setup script (200-300 lines)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Configure Prometheus with Unraid-specific metrics</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Create Grafana dashboard for Dell PowerEdge R730xd</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Write test suite (<code>tests/*.sh</code>)</li>
+</ul>
+<h3 id="phase-2-documentation-week-1-2"><a class="header" href="#phase-2-documentation-week-1-2">Phase 2: Documentation (Week 1-2)</a></h3>
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+Write ADR-007 (this document)</li>
+<li><input disabled="" type="checkbox"/>
+Write comprehensive Unraid deployment guide (5,000 lines)</li>
+<li><input disabled="" type="checkbox"/>
+Document Ollama model management</li>
+<li><input disabled="" type="checkbox"/>
+Create troubleshooting playbook</li>
+<li><input disabled="" type="checkbox"/>
+Write migration guide (Unraid → GKE)</li>
+</ul>
+<h3 id="phase-3-service-implementation-week-2-4"><a class="header" href="#phase-3-service-implementation-week-2-4">Phase 3: Service Implementation (Week 2-4)</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Implement Orchestrator (Python FastAPI)</li>
+<li><input disabled="" type="checkbox"/>
+Implement Reflex Layer (Rust Axum) - optional</li>
+<li><input disabled="" type="checkbox"/>
+Implement 6 Arms (Planner, Executor, Retriever, Coder, Judge, Safety Guardian)</li>
+<li><input disabled="" type="checkbox"/>
+Add Prometheus metrics to all services</li>
+<li><input disabled="" type="checkbox"/>
+Integrate Ollama API calls</li>
+</ul>
+<h3 id="phase-4-testing--validation-week-4"><a class="header" href="#phase-4-testing--validation-week-4">Phase 4: Testing &amp; Validation (Week 4)</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Run full test suite</li>
+<li><input disabled="" type="checkbox"/>
+Performance benchmarking (latency, throughput)</li>
+<li><input disabled="" type="checkbox"/>
+Cost analysis (local vs. cloud)</li>
+<li><input disabled="" type="checkbox"/>
+Load testing with multiple concurrent requests</li>
+<li><input disabled="" type="checkbox"/>
+GPU utilization optimization</li>
+</ul>
+<h2 id="metrics-for-success"><a class="header" href="#metrics-for-success">Metrics for Success</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Metric</th><th>Target</th><th>Measurement</th></tr></thead><tbody>
+<tr><td>Monthly LLM API Cost</td><td>&lt; $50</td><td>OpenAI/Anthropic billing</td></tr>
+<tr><td>Local Inference Latency (P95)</td><td>&lt; 10s</td><td>Prometheus metrics</td></tr>
+<tr><td>GPU Utilization</td><td>&gt; 60%</td><td>nvidia-smi, DCGM exporter</td></tr>
+<tr><td>Service Uptime</td><td>&gt; 99%</td><td>Prometheus <code>up</code> metric</td></tr>
+<tr><td>Setup Time (Fresh Install)</td><td>&lt; 30 min</td><td>Setup script execution time</td></tr>
+<tr><td>Developer Satisfaction</td><td>&gt; 4/5</td><td>Team survey</td></tr>
+</tbody></table>
+</div>
+<h2 id="risks-and-mitigation"><a class="header" href="#risks-and-mitigation">Risks and Mitigation</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr></thead><tbody>
+<tr><td>GPU thermal throttling</td><td>Medium</td><td>High</td><td>Alert at 80°C, fans at 100%, monitor with DCGM</td></tr>
+<tr><td>Model inference OOM</td><td>Low</td><td>Medium</td><td>Queue requests, limit parallel inference</td></tr>
+<tr><td>Docker storage exhaustion</td><td>Low</td><td>High</td><td>Monitor disk usage, prune images, 200GB reserved</td></tr>
+<tr><td>Network port conflicts</td><td>Medium</td><td>Low</td><td>Use non-standard ports, document in setup</td></tr>
+<tr><td>Unraid kernel panics</td><td>Low</td><td>High</td><td>Regular backups, test on spare hardware first</td></tr>
+<tr><td>Team resistance to local LLM</td><td>Low</td><td>Medium</td><td>Provide cloud API fallback, document benefits</td></tr>
+</tbody></table>
+</div>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><a href="../../ref-docs/OctoLLM-Architecture-Implementation.html">OctoLLM Architecture</a></li>
+<li><a href="https://docs.docker.com/compose/production/">Docker Compose Best Practices</a></li>
+<li><a href="https://github.com/ollama/ollama">Ollama Documentation</a></li>
+<li><a href="https://www.nvidia.com/en-us/data-center/tesla-p40/">NVIDIA Tesla P40 Specifications</a></li>
+<li><a href="https://wiki.unraid.net/Docker_Management">Unraid Docker Documentation</a></li>
+<li><a href="https://prometheus.io/docs/instrumenting/exporters/">Prometheus Exporters</a></li>
+</ul>
+<h2 id="approval"><a class="header" href="#approval">Approval</a></h2>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Architecture Lead: ___________________  Date: __________</li>
+<li><input disabled="" type="checkbox"/>
+DevOps Lead: ___________________  Date: __________</li>
+<li><input disabled="" type="checkbox"/>
+Security Lead: ___________________  Date: __________</li>
+</ul>
+<h2 id="changelog"><a class="header" href="#changelog">Changelog</a></h2>
+<ul>
+<li><strong>2025-11-12</strong>: Initial proposal - Hybrid Docker Compose + Local GPU approach</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../architecture/adr/006-cloud-provider-selection.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../components/reflex-layer.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../architecture/adr/006-cloud-provider-selection.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../components/reflex-layer.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

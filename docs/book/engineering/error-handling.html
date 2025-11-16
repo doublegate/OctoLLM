@@ -1,0 +1,1138 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Error Handling - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/engineering/error-handling.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="error-handling-patterns"><a class="header" href="#error-handling-patterns">Error Handling Patterns</a></h1>
+<p><strong>Last Updated</strong>: 2025-11-10
+<strong>Status</strong>: Production Standard
+<strong>Applies To</strong>: All OctoLLM components</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This document defines error handling patterns and best practices for the OctoLLM project. Proper error handling ensures system reliability, debugging effectiveness, and graceful degradation under failure conditions.</p>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ul>
+<li><a href="#error-hierarchy">Error Hierarchy</a></li>
+<li><a href="#python-error-patterns">Python Error Patterns</a></li>
+<li><a href="#rust-error-patterns">Rust Error Patterns</a></li>
+<li><a href="#http-error-responses">HTTP Error Responses</a></li>
+<li><a href="#circuit-breaker-pattern">Circuit Breaker Pattern</a></li>
+<li><a href="#retry-logic">Retry Logic</a></li>
+<li><a href="#error-logging">Error Logging</a></li>
+<li><a href="#error-recovery">Error Recovery</a></li>
+</ul>
+<hr />
+<h2 id="error-hierarchy"><a class="header" href="#error-hierarchy">Error Hierarchy</a></h2>
+<h3 id="octollm-error-classification"><a class="header" href="#octollm-error-classification">OctoLLM Error Classification</a></h3>
+<pre><code>OctoLLMError (base)
+├── ValidationError (4xx client errors)
+│   ├── InvalidInputError
+│   ├── TaskNotFoundError
+│   ├── AuthenticationError
+│   └── AuthorizationError
+├── ResourceError (4xx resource issues)
+│   ├── ArmUnavailableError
+│   ├── CapacityExceededError
+│   └── RateLimitError
+├── SystemError (5xx server errors)
+│   ├── DatabaseError
+│   ├── CacheError
+│   ├── NetworkError
+│   └── TimeoutError
+└── ExternalError (5xx external service errors)
+    ├── LLMAPIError
+    ├── VectorDBError
+    └── ThirdPartyAPIError
+</code></pre>
+<h3 id="error-severity-levels"><a class="header" href="#error-severity-levels">Error Severity Levels</a></h3>
+<ol>
+<li><strong>DEBUG</strong>: Diagnostic information</li>
+<li><strong>INFO</strong>: Normal operation events</li>
+<li><strong>WARNING</strong>: Degraded operation, non-critical</li>
+<li><strong>ERROR</strong>: Operation failed, requires attention</li>
+<li><strong>CRITICAL</strong>: System failure, immediate action required</li>
+</ol>
+<hr />
+<h2 id="python-error-patterns"><a class="header" href="#python-error-patterns">Python Error Patterns</a></h2>
+<h3 id="custom-exception-hierarchy"><a class="header" href="#custom-exception-hierarchy">Custom Exception Hierarchy</a></h3>
+<pre><code class="language-python"># octollm/errors.py
+class OctoLLMError(Exception):
+    """Base exception for all OctoLLM errors."""
+
+    def __init__(
+        self,
+        message: str,
+        error_code: str = "UNKNOWN_ERROR",
+        details: Optional[Dict[str, Any]] = None,
+        retry_after: Optional[int] = None
+    ):
+        super().__init__(message)
+        self.message = message
+        self.error_code = error_code
+        self.details = details or {}
+        self.retry_after = retry_after
+
+    def to_dict(self) -&gt; Dict[str, Any]:
+        """Convert error to dictionary for API responses."""
+        result = {
+            "error": self.error_code,
+            "message": self.message,
+            "details": self.details
+        }
+        if self.retry_after:
+            result["retry_after"] = self.retry_after
+        return result
+
+
+# Validation errors (4xx)
+class ValidationError(OctoLLMError):
+    """Client provided invalid input."""
+
+    def __init__(self, message: str, field: Optional[str] = None, **kwargs):
+        super().__init__(
+            message,
+            error_code="VALIDATION_ERROR",
+            details={"field": field} if field else {},
+            **kwargs
+        )
+
+
+class InvalidInputError(ValidationError):
+    """Input failed validation."""
+    pass
+
+
+class TaskNotFoundError(ValidationError):
+    """Requested task does not exist."""
+
+    def __init__(self, task_id: str):
+        super().__init__(
+            f"Task {task_id} not found",
+            error_code="TASK_NOT_FOUND",
+            details={"task_id": task_id}
+        )
+
+
+# Resource errors (4xx)
+class ResourceError(OctoLLMError):
+    """Resource unavailable or exhausted."""
+    pass
+
+
+class ArmUnavailableError(ResourceError):
+    """No suitable arm available for task."""
+
+    def __init__(self, required_capabilities: List[str]):
+        super().__init__(
+            f"No arm available with capabilities: {', '.join(required_capabilities)}",
+            error_code="ARM_UNAVAILABLE",
+            details={"required_capabilities": required_capabilities}
+        )
+
+
+class RateLimitError(ResourceError):
+    """Rate limit exceeded."""
+
+    def __init__(self, limit: int, window: int, retry_after: int):
+        super().__init__(
+            f"Rate limit exceeded: {limit} requests per {window}s",
+            error_code="RATE_LIMIT_EXCEEDED",
+            details={"limit": limit, "window": window},
+            retry_after=retry_after
+        )
+
+
+# System errors (5xx)
+class SystemError(OctoLLMError):
+    """Internal system error."""
+    pass
+
+
+class DatabaseError(SystemError):
+    """Database operation failed."""
+
+    def __init__(self, operation: str, original_error: Exception):
+        super().__init__(
+            f"Database {operation} failed: {str(original_error)}",
+            error_code="DATABASE_ERROR",
+            details={"operation": operation, "error": str(original_error)}
+        )
+
+
+class TimeoutError(SystemError):
+    """Operation timed out."""
+
+    def __init__(self, operation: str, timeout: int):
+        super().__init__(
+            f"{operation} timed out after {timeout}s",
+            error_code="TIMEOUT_ERROR",
+            details={"operation": operation, "timeout": timeout}
+        )
+
+
+# External service errors (5xx)
+class ExternalError(OctoLLMError):
+    """External service error."""
+    pass
+
+
+class LLMAPIError(ExternalError):
+    """LLM API call failed."""
+
+    def __init__(
+        self,
+        provider: str,
+        status_code: Optional[int] = None,
+        error_message: Optional[str] = None
+    ):
+        super().__init__(
+            f"{provider} API error: {error_message or 'Unknown error'}",
+            error_code="LLM_API_ERROR",
+            details={
+                "provider": provider,
+                "status_code": status_code,
+                "error_message": error_message
+            }
+        )
+</code></pre>
+<h3 id="error-handling-patterns-1"><a class="header" href="#error-handling-patterns-1">Error Handling Patterns</a></h3>
+<p><strong>Pattern 1: Try-Except with Specific Exceptions</strong></p>
+<pre><code class="language-python">async def get_task(task_id: str) -&gt; TaskContract:
+    """Retrieve task with proper error handling."""
+    try:
+        task = await db.query("SELECT * FROM tasks WHERE id = $1", task_id)
+        if not task:
+            raise TaskNotFoundError(task_id)
+        return TaskContract(**task)
+
+    except asyncpg.PostgresConnectionError as e:
+        logger.error("Database connection failed", error=str(e))
+        raise DatabaseError("query", e) from e
+
+    except asyncpg.PostgresError as e:
+        logger.error("Database query failed", error=str(e))
+        raise DatabaseError("query", e) from e
+
+    except Exception as e:
+        logger.error("Unexpected error retrieving task", error=str(e), exc_info=True)
+        raise SystemError(f"Failed to retrieve task: {str(e)}") from e
+</code></pre>
+<p><strong>Pattern 2: Context Managers for Resource Cleanup</strong></p>
+<pre><code class="language-python">from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+
+@asynccontextmanager
+async def database_transaction(
+    db: Database
+) -&gt; AsyncGenerator[asyncpg.Connection, None]:
+    """Provide database transaction with automatic rollback on error."""
+    async with db.pool.acquire() as conn:
+        async with conn.transaction():
+            try:
+                yield conn
+            except Exception as e:
+                logger.error("Transaction failed, rolling back", error=str(e))
+                # Transaction automatically rolled back
+                raise
+
+# Usage
+async def update_task_status(task_id: str, status: str):
+    async with database_transaction(db) as conn:
+        await conn.execute(
+            "UPDATE tasks SET status = $1 WHERE id = $2",
+            status, task_id
+        )
+        await conn.execute(
+            "INSERT INTO task_history (task_id, status) VALUES ($1, $2)",
+            task_id, status
+        )
+</code></pre>
+<p><strong>Pattern 3: Validation with Early Returns</strong></p>
+<pre><code class="language-python">def validate_task_contract(task: TaskContract) -&gt; None:
+    """Validate task contract, raising specific errors."""
+    if not task.description:
+        raise InvalidInputError(
+            "Task description is required",
+            field="description"
+        )
+
+    if not task.description.strip():
+        raise InvalidInputError(
+            "Task description cannot be empty",
+            field="description"
+        )
+
+    if len(task.description) &gt; 10000:
+        raise InvalidInputError(
+            "Task description exceeds maximum length of 10000 characters",
+            field="description"
+        )
+
+    if task.priority &lt; 1 or task.priority &gt; 10:
+        raise InvalidInputError(
+            "Task priority must be between 1 and 10",
+            field="priority"
+        )
+
+    if task.timeout and task.timeout &lt;= 0:
+        raise InvalidInputError(
+            "Task timeout must be positive",
+            field="timeout"
+        )
+</code></pre>
+<p><strong>Pattern 4: Error Aggregation</strong></p>
+<pre><code class="language-python">from typing import List, Dict
+
+class ValidationErrors(ValidationError):
+    """Multiple validation errors."""
+
+    def __init__(self, errors: List[Dict[str, str]]):
+        message = f"Validation failed with {len(errors)} errors"
+        super().__init__(
+            message,
+            error_code="VALIDATION_ERRORS",
+            details={"errors": errors}
+        )
+
+
+def validate_task_comprehensive(task: TaskContract) -&gt; None:
+    """Collect all validation errors before raising."""
+    errors = []
+
+    if not task.description:
+        errors.append({
+            "field": "description",
+            "message": "Description is required"
+        })
+    elif len(task.description) &gt; 10000:
+        errors.append({
+            "field": "description",
+            "message": "Description exceeds maximum length"
+        })
+
+    if task.priority &lt; 1 or task.priority &gt; 10:
+        errors.append({
+            "field": "priority",
+            "message": "Priority must be between 1 and 10"
+        })
+
+    if task.timeout and task.timeout &lt;= 0:
+        errors.append({
+            "field": "timeout",
+            "message": "Timeout must be positive"
+        })
+
+    if errors:
+        raise ValidationErrors(errors)
+</code></pre>
+<hr />
+<h2 id="rust-error-patterns"><a class="header" href="#rust-error-patterns">Rust Error Patterns</a></h2>
+<h3 id="error-definition-with-thiserror"><a class="header" href="#error-definition-with-thiserror">Error Definition with thiserror</a></h3>
+<pre><code class="language-rust">use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum ReflexError {
+    #[error("PII detected: {pattern}")]
+    PiiDetected { pattern: String },
+
+    #[error("Rate limit exceeded: {limit} req/s")]
+    RateLimitExceeded { limit: u32 },
+
+    #[error("Invalid input: {message}")]
+    InvalidInput { message: String },
+
+    #[error("Cache error: {0}")]
+    CacheError(#[from] redis::RedisError),
+
+    #[error("Network error: {0}")]
+    NetworkError(#[from] reqwest::Error),
+
+    #[error("Serialization error: {0}")]
+    SerializationError(#[from] serde_json::Error),
+
+    #[error("Internal error: {0}")]
+    Internal(String),
+}
+
+// Implement conversion to HTTP status codes
+impl ReflexError {
+    pub fn status_code(&amp;self) -&gt; u16 {
+        match self {
+            ReflexError::PiiDetected { .. } =&gt; 400,
+            ReflexError::RateLimitExceeded { .. } =&gt; 429,
+            ReflexError::InvalidInput { .. } =&gt; 400,
+            ReflexError::CacheError(_) =&gt; 500,
+            ReflexError::NetworkError(_) =&gt; 502,
+            ReflexError::SerializationError(_) =&gt; 500,
+            ReflexError::Internal(_) =&gt; 500,
+        }
+    }
+
+    pub fn error_code(&amp;self) -&gt; &amp;str {
+        match self {
+            ReflexError::PiiDetected { .. } =&gt; "PII_DETECTED",
+            ReflexError::RateLimitExceeded { .. } =&gt; "RATE_LIMIT_EXCEEDED",
+            ReflexError::InvalidInput { .. } =&gt; "INVALID_INPUT",
+            ReflexError::CacheError(_) =&gt; "CACHE_ERROR",
+            ReflexError::NetworkError(_) =&gt; "NETWORK_ERROR",
+            ReflexError::SerializationError(_) =&gt; "SERIALIZATION_ERROR",
+            ReflexError::Internal(_) =&gt; "INTERNAL_ERROR",
+        }
+    }
+}</code></pre>
+<h3 id="error-handling-patterns-2"><a class="header" href="#error-handling-patterns-2">Error Handling Patterns</a></h3>
+<p><strong>Pattern 1: Result Propagation with ?</strong></p>
+<pre><code class="language-rust">async fn preprocess(input: &amp;str) -&gt; Result&lt;String, ReflexError&gt; {
+    // Detect PII - propagates error if found
+    let sanitized = detect_pii(input)?;
+
+    // Check rate limit - propagates error if exceeded
+    rate_limiter.check()?;
+
+    // Get from cache - propagates redis error
+    let cached = cache.get(&amp;sanitized).await?;
+
+    Ok(cached.unwrap_or_else(|| sanitized))
+}</code></pre>
+<p><strong>Pattern 2: Error Conversion with map_err</strong></p>
+<pre><code class="language-rust">async fn fetch_from_api(url: &amp;str) -&gt; Result&lt;String, ReflexError&gt; {
+    let response = reqwest::get(url)
+        .await
+        .map_err(|e| ReflexError::NetworkError(e))?;
+
+    let text = response
+        .text()
+        .await
+        .map_err(|e| ReflexError::NetworkError(e))?;
+
+    Ok(text)
+}</code></pre>
+<p><strong>Pattern 3: Error Recovery with or_else</strong></p>
+<pre><code class="language-rust">async fn get_with_fallback(key: &amp;str) -&gt; Result&lt;String, ReflexError&gt; {
+    // Try primary cache
+    match cache_primary.get(key).await {
+        Ok(value) =&gt; Ok(value),
+        Err(_) =&gt; {
+            // Fallback to secondary cache
+            cache_secondary.get(key).await
+                .map_err(|e| ReflexError::CacheError(e))
+        }
+    }
+}</code></pre>
+<p><strong>Pattern 4: Custom Error Context</strong></p>
+<pre><code class="language-rust">use anyhow::{Context, Result};
+
+async fn process_task(task_id: &amp;str) -&gt; Result&lt;String&gt; {
+    let task = db.get_task(task_id)
+        .await
+        .context(format!("Failed to fetch task {}", task_id))?;
+
+    let result = execute_task(&amp;task)
+        .await
+        .context(format!("Failed to execute task {}", task_id))?;
+
+    Ok(result)
+}</code></pre>
+<hr />
+<h2 id="http-error-responses"><a class="header" href="#http-error-responses">HTTP Error Responses</a></h2>
+<h3 id="fastapi-error-handling"><a class="header" href="#fastapi-error-handling">FastAPI Error Handling</a></h3>
+<pre><code class="language-python">from fastapi import FastAPI, Request, status
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+
+app = FastAPI()
+
+# Custom exception handler
+@app.exception_handler(OctoLLMError)
+async def octollm_error_handler(
+    request: Request,
+    exc: OctoLLMError
+) -&gt; JSONResponse:
+    """Handle all OctoLLM errors."""
+    status_code = get_status_code(exc)
+
+    return JSONResponse(
+        status_code=status_code,
+        content=exc.to_dict(),
+        headers=get_retry_headers(exc)
+    )
+
+
+def get_status_code(exc: OctoLLMError) -&gt; int:
+    """Map exception to HTTP status code."""
+    if isinstance(exc, ValidationError):
+        return status.HTTP_400_BAD_REQUEST
+    elif isinstance(exc, TaskNotFoundError):
+        return status.HTTP_404_NOT_FOUND
+    elif isinstance(exc, AuthenticationError):
+        return status.HTTP_401_UNAUTHORIZED
+    elif isinstance(exc, AuthorizationError):
+        return status.HTTP_403_FORBIDDEN
+    elif isinstance(exc, RateLimitError):
+        return status.HTTP_429_TOO_MANY_REQUESTS
+    elif isinstance(exc, (ResourceError, ArmUnavailableError)):
+        return status.HTTP_503_SERVICE_UNAVAILABLE
+    else:
+        return status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
+def get_retry_headers(exc: OctoLLMError) -&gt; Dict[str, str]:
+    """Get retry-related headers."""
+    headers = {}
+    if exc.retry_after:
+        headers["Retry-After"] = str(exc.retry_after)
+    return headers
+
+
+# Validation error handler
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(
+    request: Request,
+    exc: RequestValidationError
+) -&gt; JSONResponse:
+    """Handle Pydantic validation errors."""
+    errors = []
+    for error in exc.errors():
+        errors.append({
+            "field": ".".join(str(loc) for loc in error["loc"]),
+            "message": error["msg"],
+            "type": error["type"]
+        })
+
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "error": "VALIDATION_ERROR",
+            "message": "Request validation failed",
+            "details": {"errors": errors}
+        }
+    )
+
+
+# Generic exception handler (catch-all)
+@app.exception_handler(Exception)
+async def generic_error_handler(
+    request: Request,
+    exc: Exception
+) -&gt; JSONResponse:
+    """Handle unexpected errors."""
+    logger.error(
+        "Unhandled exception",
+        path=request.url.path,
+        error=str(exc),
+        exc_info=True
+    )
+
+    # Don't expose internal errors to clients
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "error": "INTERNAL_ERROR",
+            "message": "An internal error occurred",
+            "details": {}
+        }
+    )
+</code></pre>
+<h3 id="standard-error-response-format"><a class="header" href="#standard-error-response-format">Standard Error Response Format</a></h3>
+<pre><code class="language-json">{
+  "error": "ERROR_CODE",
+  "message": "Human-readable error message",
+  "details": {
+    "field": "task_id",
+    "additional_context": "value"
+  },
+  "retry_after": 60
+}
+</code></pre>
+<hr />
+<h2 id="circuit-breaker-pattern"><a class="header" href="#circuit-breaker-pattern">Circuit Breaker Pattern</a></h2>
+<h3 id="python-implementation"><a class="header" href="#python-implementation">Python Implementation</a></h3>
+<pre><code class="language-python">import asyncio
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Callable, Any
+
+class CircuitState(Enum):
+    CLOSED = "closed"      # Normal operation
+    OPEN = "open"          # Failing, reject requests
+    HALF_OPEN = "half_open"  # Testing if recovered
+
+
+class CircuitBreaker:
+    """Circuit breaker for external service calls."""
+
+    def __init__(
+        self,
+        failure_threshold: int = 5,
+        timeout: int = 60,
+        expected_exception: type = Exception
+    ):
+        self.failure_threshold = failure_threshold
+        self.timeout = timeout
+        self.expected_exception = expected_exception
+
+        self.failure_count = 0
+        self.last_failure_time: Optional[datetime] = None
+        self.state = CircuitState.CLOSED
+
+    async def call(
+        self,
+        func: Callable,
+        *args,
+        **kwargs
+    ) -&gt; Any:
+        """Execute function with circuit breaker protection."""
+        if self.state == CircuitState.OPEN:
+            if self._should_attempt_reset():
+                self.state = CircuitState.HALF_OPEN
+                logger.info("Circuit breaker entering half-open state")
+            else:
+                raise SystemError(
+                    f"Circuit breaker is open, retry after {self.timeout}s"
+                )
+
+        try:
+            result = await func(*args, **kwargs)
+            self._on_success()
+            return result
+
+        except self.expected_exception as e:
+            self._on_failure()
+            raise
+
+    def _should_attempt_reset(self) -&gt; bool:
+        """Check if enough time has passed to attempt reset."""
+        return (
+            self.last_failure_time is not None
+            and datetime.now() - self.last_failure_time
+            &gt; timedelta(seconds=self.timeout)
+        )
+
+    def _on_success(self):
+        """Handle successful call."""
+        self.failure_count = 0
+        if self.state == CircuitState.HALF_OPEN:
+            self.state = CircuitState.CLOSED
+            logger.info("Circuit breaker closed after successful test")
+
+    def _on_failure(self):
+        """Handle failed call."""
+        self.failure_count += 1
+        self.last_failure_time = datetime.now()
+
+        if self.failure_count &gt;= self.failure_threshold:
+            self.state = CircuitState.OPEN
+            logger.warning(
+                "Circuit breaker opened",
+                failure_count=self.failure_count,
+                threshold=self.failure_threshold
+            )
+
+
+# Usage
+llm_circuit_breaker = CircuitBreaker(
+    failure_threshold=5,
+    timeout=60,
+    expected_exception=LLMAPIError
+)
+
+async def call_llm_api(prompt: str) -&gt; str:
+    """Call LLM API with circuit breaker."""
+    return await llm_circuit_breaker.call(
+        _call_llm_api_internal,
+        prompt
+    )
+</code></pre>
+<hr />
+<h2 id="retry-logic"><a class="header" href="#retry-logic">Retry Logic</a></h2>
+<h3 id="python-retry-with-exponential-backoff"><a class="header" href="#python-retry-with-exponential-backoff">Python Retry with Exponential Backoff</a></h3>
+<pre><code class="language-python">import asyncio
+import random
+from typing import TypeVar, Callable, Optional
+
+T = TypeVar('T')
+
+async def retry_with_backoff(
+    func: Callable[..., T],
+    max_retries: int = 3,
+    base_delay: float = 1.0,
+    max_delay: float = 60.0,
+    exponential_base: float = 2.0,
+    jitter: bool = True,
+    retry_on: tuple = (Exception,),
+) -&gt; T:
+    """Retry function with exponential backoff."""
+    last_exception = None
+
+    for attempt in range(max_retries + 1):
+        try:
+            return await func()
+
+        except retry_on as e:
+            last_exception = e
+
+            if attempt == max_retries:
+                logger.error(
+                    "Max retries exceeded",
+                    attempt=attempt,
+                    error=str(e)
+                )
+                raise
+
+            # Calculate delay with exponential backoff
+            delay = min(
+                base_delay * (exponential_base ** attempt),
+                max_delay
+            )
+
+            # Add jitter to prevent thundering herd
+            if jitter:
+                delay = delay * (0.5 + random.random() * 0.5)
+
+            logger.warning(
+                "Retrying after failure",
+                attempt=attempt,
+                delay=delay,
+                error=str(e)
+            )
+
+            await asyncio.sleep(delay)
+
+    raise last_exception
+
+
+# Usage
+async def call_external_api():
+    return await retry_with_backoff(
+        lambda: httpx.get("https://api.example.com"),
+        max_retries=5,
+        base_delay=1.0,
+        retry_on=(httpx.HTTPError, httpx.TimeoutException)
+    )
+</code></pre>
+<h3 id="rust-retry-pattern"><a class="header" href="#rust-retry-pattern">Rust Retry Pattern</a></h3>
+<pre><code class="language-rust">use tokio::time::{sleep, Duration};
+use std::cmp::min;
+
+pub async fn retry_with_backoff&lt;F, Fut, T, E&gt;(
+    mut func: F,
+    max_retries: u32,
+    base_delay: Duration,
+) -&gt; Result&lt;T, E&gt;
+where
+    F: FnMut() -&gt; Fut,
+    Fut: Future&lt;Output = Result&lt;T, E&gt;&gt;,
+{
+    let mut attempts = 0;
+
+    loop {
+        match func().await {
+            Ok(result) =&gt; return Ok(result),
+            Err(e) =&gt; {
+                attempts += 1;
+
+                if attempts &gt; max_retries {
+                    return Err(e);
+                }
+
+                let delay = min(
+                    base_delay * 2_u32.pow(attempts - 1),
+                    Duration::from_secs(60),
+                );
+
+                tracing::warn!(
+                    "Retry attempt {} after {:?}",
+                    attempts,
+                    delay
+                );
+
+                sleep(delay).await;
+            }
+        }
+    }
+}</code></pre>
+<hr />
+<h2 id="error-logging"><a class="header" href="#error-logging">Error Logging</a></h2>
+<h3 id="structured-error-logging"><a class="header" href="#structured-error-logging">Structured Error Logging</a></h3>
+<pre><code class="language-python">import structlog
+
+logger = structlog.get_logger(__name__)
+
+async def process_task(task: TaskContract) -&gt; str:
+    """Process task with comprehensive error logging."""
+    try:
+        logger.info(
+            "task.processing.started",
+            task_id=task.task_id,
+            priority=task.priority
+        )
+
+        result = await execute_task(task)
+
+        logger.info(
+            "task.processing.completed",
+            task_id=task.task_id,
+            duration_ms=result.duration
+        )
+
+        return result.output
+
+    except TaskNotFoundError as e:
+        logger.warning(
+            "task.processing.not_found",
+            task_id=task.task_id,
+            error=str(e)
+        )
+        raise
+
+    except ArmUnavailableError as e:
+        logger.error(
+            "task.processing.arm_unavailable",
+            task_id=task.task_id,
+            required_capabilities=e.details.get("required_capabilities"),
+            error=str(e)
+        )
+        raise
+
+    except Exception as e:
+        logger.critical(
+            "task.processing.unexpected_error",
+            task_id=task.task_id,
+            error=str(e),
+            exc_info=True  # Include stack trace
+        )
+        raise
+</code></pre>
+<h3 id="error-metrics"><a class="header" href="#error-metrics">Error Metrics</a></h3>
+<pre><code class="language-python">from prometheus_client import Counter, Histogram
+
+# Error counters
+error_counter = Counter(
+    'octollm_errors_total',
+    'Total errors by type',
+    ['error_type', 'component']
+)
+
+# Error duration
+error_duration = Histogram(
+    'octollm_error_duration_seconds',
+    'Time to detect and handle error',
+    ['error_type']
+)
+
+async def track_errors(func):
+    """Decorator to track errors in metrics."""
+    start_time = time.time()
+
+    try:
+        return await func()
+    except OctoLLMError as e:
+        error_counter.labels(
+            error_type=e.error_code,
+            component="orchestrator"
+        ).inc()
+
+        error_duration.labels(
+            error_type=e.error_code
+        ).observe(time.time() - start_time)
+        raise
+</code></pre>
+<hr />
+<h2 id="error-recovery"><a class="header" href="#error-recovery">Error Recovery</a></h2>
+<h3 id="graceful-degradation"><a class="header" href="#graceful-degradation">Graceful Degradation</a></h3>
+<pre><code class="language-python">async def get_task_with_fallback(task_id: str) -&gt; TaskContract:
+    """Get task with fallback to read replica."""
+    try:
+        # Try primary database
+        return await db_primary.get_task(task_id)
+    except DatabaseError:
+        logger.warning(
+            "Primary database failed, trying read replica",
+            task_id=task_id
+        )
+        try:
+            # Fallback to read replica
+            return await db_replica.get_task(task_id)
+        except DatabaseError:
+            logger.error(
+                "Both primary and replica failed",
+                task_id=task_id
+            )
+            raise
+</code></pre>
+<h3 id="partial-success-handling"><a class="header" href="#partial-success-handling">Partial Success Handling</a></h3>
+<pre><code class="language-python">from typing import List, Tuple
+
+async def execute_batch_tasks(
+    tasks: List[TaskContract]
+) -&gt; Tuple[List[str], List[Dict[str, Any]]]:
+    """Execute batch of tasks, collecting successes and failures."""
+    successes = []
+    failures = []
+
+    for task in tasks:
+        try:
+            result = await execute_task(task)
+            successes.append(result)
+        except Exception as e:
+            logger.error(
+                "Task execution failed",
+                task_id=task.task_id,
+                error=str(e)
+            )
+            failures.append({
+                "task_id": task.task_id,
+                "error": str(e),
+                "error_code": getattr(e, 'error_code', 'UNKNOWN_ERROR')
+            })
+
+    return successes, failures
+</code></pre>
+<hr />
+<h2 id="best-practices-summary"><a class="header" href="#best-practices-summary">Best Practices Summary</a></h2>
+<ol>
+<li><strong>Use specific exceptions</strong>: Don't catch generic <code>Exception</code> unless necessary</li>
+<li><strong>Preserve error context</strong>: Use <code>raise ... from e</code> to maintain error chain</li>
+<li><strong>Log before raising</strong>: Log errors with context before propagating</li>
+<li><strong>Fail fast</strong>: Validate inputs early and fail with clear messages</li>
+<li><strong>Graceful degradation</strong>: Provide fallbacks for non-critical failures</li>
+<li><strong>Circuit breakers</strong>: Protect against cascading failures</li>
+<li><strong>Retry intelligently</strong>: Use exponential backoff with jitter</li>
+<li><strong>Monitor errors</strong>: Track error rates and types in metrics</li>
+<li><strong>Document errors</strong>: Document what errors functions can raise</li>
+<li><strong>Test error paths</strong>: Write tests for error conditions</li>
+</ol>
+<hr />
+<p><strong>Last Review</strong>: 2025-11-10
+<strong>Next Review</strong>: 2026-02-10 (Quarterly)
+<strong>Owner</strong>: Engineering Team</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../engineering/coding-standards.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../engineering/logging-observability.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../engineering/coding-standards.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../engineering/logging-observability.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

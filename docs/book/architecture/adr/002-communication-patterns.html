@@ -1,0 +1,680 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>ADR-002: Communication Patterns - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/architecture/adr/002-communication-patterns.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="adr-002-communication-patterns"><a class="header" href="#adr-002-communication-patterns">ADR-002: Communication Patterns</a></h1>
+<p><strong>Status</strong>: Accepted
+<strong>Date</strong>: 2025-11-10
+<strong>Decision Makers</strong>: Architecture Team
+<strong>Consulted</strong>: Engineering Team</p>
+<h2 id="context"><a class="header" href="#context">Context</a></h2>
+<p>OctoLLM has multiple components that need to communicate:</p>
+<ul>
+<li><strong>Reflex Layer</strong> → <strong>Orchestrator</strong> (request preprocessing)</li>
+<li><strong>Orchestrator</strong> → <strong>Arms</strong> (task execution)</li>
+<li><strong>Arms</strong> → <strong>Arms</strong> (collaborative tasks)</li>
+<li><strong>Arms</strong> → <strong>Memory Systems</strong> (knowledge retrieval/storage)</li>
+<li><strong>Components</strong> → <strong>External Services</strong> (LLM APIs, webhooks)</li>
+</ul>
+<p>Communication patterns must support:</p>
+<ul>
+<li>Synchronous request-response for task execution</li>
+<li>Asynchronous event notifications</li>
+<li>Low latency (&lt;100ms for internal calls)</li>
+<li>Reliability and fault tolerance</li>
+<li>Observability and tracing</li>
+<li>Flexible routing and load balancing</li>
+</ul>
+<h2 id="decision"><a class="header" href="#decision">Decision</a></h2>
+<p>We will use the following communication patterns:</p>
+<h3 id="1-httprest-for-synchronous-operations"><a class="header" href="#1-httprest-for-synchronous-operations">1. HTTP/REST for Synchronous Operations</a></h3>
+<p><strong>Use For</strong>:</p>
+<ul>
+<li>Reflex Layer → Orchestrator</li>
+<li>Orchestrator → Arms</li>
+<li>Arms → Memory Systems</li>
+<li>External API integrations</li>
+</ul>
+<p><strong>Protocol</strong>: HTTP/1.1 or HTTP/2
+<strong>Format</strong>: JSON
+<strong>Authentication</strong>: JWT tokens with capability scopes</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python"># Orchestrator calling Coder Arm
+async def execute_code_task(task: TaskContract) -&gt; str:
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "http://coder-arm:8102/execute",
+            json=task.dict(),
+            headers={
+                "Authorization": f"Bearer {capability_token}",
+                "X-Request-ID": request_id
+            },
+            timeout=30.0
+        )
+        return response.json()["output"]
+</code></pre>
+<p><strong>Reasons</strong>:</p>
+<ul>
+<li>Universal protocol, widely understood</li>
+<li>Excellent debugging tools</li>
+<li>Native HTTP client libraries</li>
+<li>OpenAPI documentation support</li>
+<li>Load balancer integration</li>
+<li>Request/response tracing</li>
+</ul>
+<h3 id="2-redis-pubsub-for-event-notifications"><a class="header" href="#2-redis-pubsub-for-event-notifications">2. Redis Pub/Sub for Event Notifications</a></h3>
+<p><strong>Use For</strong>:</p>
+<ul>
+<li>Task completion events</li>
+<li>System health events</li>
+<li>Audit log events</li>
+<li>Cache invalidation signals</li>
+</ul>
+<p><strong>Pattern</strong>: Publish-subscribe
+<strong>Channels</strong>: Topic-based routing</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python"># Publisher (Orchestrator)
+await redis.publish(
+    "events:task:completed",
+    json.dumps({
+        "task_id": task.task_id,
+        "status": "completed",
+        "timestamp": datetime.utcnow().isoformat()
+    })
+)
+
+# Subscriber (Monitoring Service)
+pubsub = redis.pubsub()
+pubsub.subscribe("events:task:*")
+
+async for message in pubsub.listen():
+    if message["type"] == "message":
+        event = json.loads(message["data"])
+        handle_task_event(event)
+</code></pre>
+<p><strong>Reasons</strong>:</p>
+<ul>
+<li>Decoupled producers and consumers</li>
+<li>No blocking on publisher side</li>
+<li>Multiple subscribers supported</li>
+<li>Built into existing Redis infrastructure</li>
+<li>Low latency (&lt;5ms)</li>
+<li>Simple implementation</li>
+</ul>
+<h3 id="3-direct-http-for-arm-to-arm-communication"><a class="header" href="#3-direct-http-for-arm-to-arm-communication">3. Direct HTTP for Arm-to-Arm Communication</a></h3>
+<p><strong>Use For</strong>:</p>
+<ul>
+<li>Coder Arm → Judge Arm (code validation)</li>
+<li>Planner Arm → Executor Arm (plan execution)</li>
+<li>Retriever Arm → other Arms (knowledge lookup)</li>
+</ul>
+<p><strong>Pattern</strong>: Direct service-to-service HTTP calls
+<strong>Discovery</strong>: Kubernetes DNS or service registry</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python"># Coder Arm requesting validation from Judge Arm
+async def validate_code(code: str) -&gt; bool:
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "http://judge-arm:8103/validate",
+            json={"code": code, "language": "python"},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        return response.json()["is_valid"]
+</code></pre>
+<p><strong>Reasons</strong>:</p>
+<ul>
+<li>Simple and direct</li>
+<li>Low latency</li>
+<li>Easy to trace with request IDs</li>
+<li>No message broker overhead</li>
+<li>Kubernetes service discovery</li>
+</ul>
+<h3 id="4-websocket-for-real-time-updates"><a class="header" href="#4-websocket-for-real-time-updates">4. WebSocket for Real-Time Updates</a></h3>
+<p><strong>Use For</strong>:</p>
+<ul>
+<li>Live task progress updates to clients</li>
+<li>Streaming LLM responses</li>
+<li>Real-time dashboard data</li>
+</ul>
+<p><strong>Protocol</strong>: WebSocket over HTTP
+<strong>Format</strong>: JSON messages</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python"># Server
+@app.websocket("/ws/tasks/{task_id}")
+async def task_updates(websocket: WebSocket, task_id: str):
+    await websocket.accept()
+    try:
+        while True:
+            update = await get_task_update(task_id)
+            await websocket.send_json(update)
+            await asyncio.sleep(1)
+    except WebSocketDisconnect:
+        logger.info("Client disconnected", task_id=task_id)
+
+# Client
+async with websocket_connect(f"ws://localhost:8000/ws/tasks/{task_id}") as ws:
+    async for message in ws:
+        update = json.loads(message)
+        print(f"Task progress: {update['progress']}%")
+</code></pre>
+<p><strong>Reasons</strong>:</p>
+<ul>
+<li>Bi-directional communication</li>
+<li>Lower overhead than polling</li>
+<li>Native browser support</li>
+<li>Streaming responses</li>
+<li>Real-time updates</li>
+</ul>
+<h2 id="consequences"><a class="header" href="#consequences">Consequences</a></h2>
+<h3 id="positive"><a class="header" href="#positive">Positive</a></h3>
+<ol>
+<li>
+<p><strong>Simplicity</strong>:</p>
+<ul>
+<li>HTTP/REST is familiar to all developers</li>
+<li>No complex message broker to manage</li>
+<li>Standard debugging tools work</li>
+<li>Easy to test and mock</li>
+</ul>
+</li>
+<li>
+<p><strong>Performance</strong>:</p>
+<ul>
+<li>HTTP/2 multiplexing reduces overhead</li>
+<li>Direct calls minimize latency</li>
+<li>Redis pub/sub is very fast</li>
+<li>Connection pooling improves efficiency</li>
+</ul>
+</li>
+<li>
+<p><strong>Observability</strong>:</p>
+<ul>
+<li>HTTP requests easily traced</li>
+<li>Standard headers for correlation</li>
+<li>OpenTelemetry integration</li>
+<li>Request/response logging</li>
+</ul>
+</li>
+<li>
+<p><strong>Flexibility</strong>:</p>
+<ul>
+<li>Can add message broker later if needed</li>
+<li>Easy to switch between sync and async</li>
+<li>Support for multiple communication styles</li>
+<li>Cloud-native patterns</li>
+</ul>
+</li>
+<li>
+<p><strong>Reliability</strong>:</p>
+<ul>
+<li>HTTP retries well-understood</li>
+<li>Circuit breakers easy to implement</li>
+<li>Timeout handling straightforward</li>
+<li>Failure modes are clear</li>
+</ul>
+</li>
+</ol>
+<h3 id="negative"><a class="header" href="#negative">Negative</a></h3>
+<ol>
+<li>
+<p><strong>No Native Message Queue</strong>:</p>
+<ul>
+<li>No guaranteed delivery</li>
+<li>No persistent queuing</li>
+<li>Manual retry logic needed</li>
+<li>No dead letter queue</li>
+</ul>
+</li>
+<li>
+<p><strong>Pub/Sub Limitations</strong>:</p>
+<ul>
+<li>Messages not persisted</li>
+<li>No acknowledgment mechanism</li>
+<li>Subscribers must be online</li>
+<li>No ordering guarantees</li>
+</ul>
+</li>
+<li>
+<p><strong>Service Discovery</strong>:</p>
+<ul>
+<li>Requires DNS or service registry</li>
+<li>Hard-coded URLs in development</li>
+<li>More complex in multi-cluster setup</li>
+<li>Need health checks</li>
+</ul>
+</li>
+<li>
+<p><strong>Scalability Concerns</strong>:</p>
+<ul>
+<li>HTTP connection overhead at very high scale</li>
+<li>May need connection pooling tuning</li>
+<li>Pub/sub doesn't scale horizontally well</li>
+<li>Load balancing configuration required</li>
+</ul>
+</li>
+</ol>
+<h3 id="mitigation-strategies"><a class="header" href="#mitigation-strategies">Mitigation Strategies</a></h3>
+<ol>
+<li>
+<p><strong>Reliability</strong>:</p>
+<ul>
+<li>Implement retry logic with exponential backoff</li>
+<li>Use circuit breakers for external calls</li>
+<li>Add request timeouts</li>
+<li>Idempotent operations where possible</li>
+</ul>
+</li>
+<li>
+<p><strong>Message Durability</strong>:</p>
+<ul>
+<li>Use database for critical events</li>
+<li>Add audit log for important operations</li>
+<li>Implement task queue for background jobs</li>
+<li>Consider Kafka for high-volume events (future)</li>
+</ul>
+</li>
+<li>
+<p><strong>Service Discovery</strong>:</p>
+<ul>
+<li>Use Kubernetes DNS for production</li>
+<li>Environment variables for URLs</li>
+<li>Service mesh for advanced routing (future)</li>
+<li>Health checks and readiness probes</li>
+</ul>
+</li>
+<li>
+<p><strong>Performance</strong>:</p>
+<ul>
+<li>HTTP/2 for multiplexing</li>
+<li>Connection pooling</li>
+<li>Response compression</li>
+<li>Caching where appropriate</li>
+</ul>
+</li>
+</ol>
+<h2 id="alternatives-considered"><a class="header" href="#alternatives-considered">Alternatives Considered</a></h2>
+<h3 id="1-grpc-for-all-communication"><a class="header" href="#1-grpc-for-all-communication">1. gRPC for All Communication</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Better performance than REST</li>
+<li>Strong typing with protobuf</li>
+<li>Bi-directional streaming</li>
+<li>Code generation</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>More complex than HTTP/REST</li>
+<li>Requires protobuf definitions</li>
+<li>Harder to debug</li>
+<li>Less universal tooling</li>
+<li>Steeper learning curve</li>
+</ul>
+<p><strong>Why Rejected</strong>: HTTP/REST simplicity outweighs gRPC performance benefits for our use case.</p>
+<h3 id="2-message-broker-rabbitmqkafka"><a class="header" href="#2-message-broker-rabbitmqkafka">2. Message Broker (RabbitMQ/Kafka)</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Guaranteed delivery</li>
+<li>Persistent queuing</li>
+<li>Complex routing</li>
+<li>Horizontal scaling</li>
+<li>Decoupling</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>Another component to manage</li>
+<li>More operational complexity</li>
+<li>Higher latency</li>
+<li>Resource overhead</li>
+<li>Overkill for current scale</li>
+</ul>
+<p><strong>Why Rejected</strong>: HTTP/REST with Redis pub/sub sufficient for current needs. Can add later if needed.</p>
+<h3 id="3-service-mesh-istiolinkerd"><a class="header" href="#3-service-mesh-istiolinkerd">3. Service Mesh (Istio/Linkerd)</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Advanced routing</li>
+<li>Automatic retries</li>
+<li>Circuit breakers</li>
+<li>mTLS security</li>
+<li>Observability</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>Complex to setup</li>
+<li>Resource overhead</li>
+<li>Steep learning curve</li>
+<li>Operational burden</li>
+<li>Overkill for current scale</li>
+</ul>
+<p><strong>Why Rejected</strong>: Too complex for initial deployment. May consider for larger deployments.</p>
+<h3 id="4-graphql-for-all-apis"><a class="header" href="#4-graphql-for-all-apis">4. GraphQL for All APIs</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Flexible queries</li>
+<li>Single endpoint</li>
+<li>Strong typing</li>
+<li>Batch requests</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>More complex than REST</li>
+<li>Caching harder</li>
+<li>N+1 query problem</li>
+<li>Learning curve</li>
+<li>Less suitable for internal APIs</li>
+</ul>
+<p><strong>Why Rejected</strong>: REST is simpler and sufficient for our internal APIs.</p>
+<h2 id="implementation-guidelines"><a class="header" href="#implementation-guidelines">Implementation Guidelines</a></h2>
+<h3 id="http-best-practices"><a class="header" href="#http-best-practices">HTTP Best Practices</a></h3>
+<ol>
+<li>
+<p><strong>Use standard status codes</strong>:</p>
+<ul>
+<li>200 OK: Success</li>
+<li>201 Created: Resource created</li>
+<li>400 Bad Request: Validation error</li>
+<li>401 Unauthorized: Authentication required</li>
+<li>403 Forbidden: Authorization failed</li>
+<li>404 Not Found: Resource doesn't exist</li>
+<li>429 Too Many Requests: Rate limit</li>
+<li>500 Internal Server Error: Server error</li>
+<li>503 Service Unavailable: Service down</li>
+</ul>
+</li>
+<li>
+<p><strong>Include correlation headers</strong>:</p>
+<pre><code class="language-python">headers = {
+    "X-Request-ID": request_id,
+    "X-Correlation-ID": correlation_id,
+    "Authorization": f"Bearer {token}"
+}
+</code></pre>
+</li>
+<li>
+<p><strong>Set appropriate timeouts</strong>:</p>
+<pre><code class="language-python">timeout = httpx.Timeout(
+    connect=5.0,  # Connection timeout
+    read=30.0,    # Read timeout
+    write=10.0,   # Write timeout
+    pool=5.0      # Pool timeout
+)
+</code></pre>
+</li>
+<li>
+<p><strong>Use connection pooling</strong>:</p>
+<pre><code class="language-python">client = httpx.AsyncClient(
+    limits=httpx.Limits(
+        max_keepalive_connections=20,
+        max_connections=100
+    )
+)
+</code></pre>
+</li>
+</ol>
+<h3 id="event-publishing"><a class="header" href="#event-publishing">Event Publishing</a></h3>
+<ol>
+<li>
+<p><strong>Event schema</strong>:</p>
+<pre><code class="language-python">{
+    "event_type": "task.completed",
+    "timestamp": "2025-11-10T10:30:00Z",
+    "source": "orchestrator",
+    "data": {
+        "task_id": "task-123",
+        "status": "completed",
+        "duration_ms": 1234
+    }
+}
+</code></pre>
+</li>
+<li>
+<p><strong>Channel naming</strong>:</p>
+<ul>
+<li>Format: <code>&lt;domain&gt;:&lt;entity&gt;:&lt;action&gt;</code></li>
+<li>Examples: <code>events:task:completed</code>, <code>events:arm:registered</code></li>
+</ul>
+</li>
+</ol>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><a href="https://http2.github.io/">HTTP/2 Specification</a></li>
+<li><a href="https://restfulapi.net/">REST API Best Practices</a></li>
+<li><a href="https://redis.io/topics/pubsub">Redis Pub/Sub Documentation</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc6455">WebSocket Protocol</a></li>
+<li><a href="https://opentelemetry.io/">OpenTelemetry</a></li>
+</ul>
+<hr />
+<p><strong>Last Review</strong>: 2025-11-10
+<strong>Next Review</strong>: 2026-05-10 (6 months)
+<strong>Related ADRs</strong>: ADR-001, ADR-004, ADR-005</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../architecture/adr/001-technology-stack.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../architecture/adr/003-memory-architecture.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../architecture/adr/001-technology-stack.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../architecture/adr/003-memory-architecture.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

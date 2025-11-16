@@ -1,0 +1,2085 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Alert Response Procedures - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/operations/alert-response-procedures.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="alert-response-procedures"><a class="header" href="#alert-response-procedures">Alert Response Procedures</a></h1>
+<p><strong>Document Version</strong>: 1.0.0
+<strong>Last Updated</strong>: 2025-11-12
+<strong>Owner</strong>: OctoLLM Operations Team
+<strong>Status</strong>: Production</p>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#response-workflow">Response Workflow</a></li>
+<li><a href="#critical-alert-procedures">Critical Alert Procedures</a></li>
+<li><a href="#warning-alert-procedures">Warning Alert Procedures</a></li>
+<li><a href="#informational-alert-procedures">Informational Alert Procedures</a></li>
+<li><a href="#multi-alert-scenarios">Multi-Alert Scenarios</a></li>
+<li><a href="#escalation-decision-trees">Escalation Decision Trees</a></li>
+<li><a href="#post-incident-actions">Post-Incident Actions</a></li>
+</ol>
+<hr />
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This document provides step-by-step procedures for responding to alerts from the OctoLLM monitoring system. Each procedure includes:</p>
+<ul>
+<li><strong>Detection</strong>: How the alert is triggered</li>
+<li><strong>Impact</strong>: What this means for users and the system</li>
+<li><strong>Investigation Steps</strong>: How to diagnose the issue</li>
+<li><strong>Remediation Actions</strong>: How to fix the problem</li>
+<li><strong>Escalation Criteria</strong>: When to involve senior engineers or management</li>
+</ul>
+<p><strong>Alert Severity Levels</strong>:</p>
+<ul>
+<li><strong>Critical</strong>: Immediate action required, user-impacting, PagerDuty notification</li>
+<li><strong>Warning</strong>: Action required within 1 hour, potential user impact, Slack notification</li>
+<li><strong>Info</strong>: No immediate action required, informational only, logged to Slack</li>
+</ul>
+<p><strong>Response Time SLAs</strong>:</p>
+<ul>
+<li><strong>Critical</strong>: Acknowledge within 5 minutes, resolve within 1 hour</li>
+<li><strong>Warning</strong>: Acknowledge within 30 minutes, resolve within 4 hours</li>
+<li><strong>Info</strong>: Review within 24 hours</li>
+</ul>
+<hr />
+<h2 id="response-workflow"><a class="header" href="#response-workflow">Response Workflow</a></h2>
+<h3 id="general-alert-response-process"><a class="header" href="#general-alert-response-process">General Alert Response Process</a></h3>
+<pre><code>1. ACKNOWLEDGE
+   └─&gt; Acknowledge alert in PagerDuty/Slack
+   └─&gt; Note start time in incident tracker
+
+2. ASSESS
+   └─&gt; Check alert details (service, namespace, severity)
+   └─&gt; Review recent deployments or changes
+   └─&gt; Check for related alerts
+
+3. INVESTIGATE
+   └─&gt; Follow specific alert procedure (see sections below)
+   └─&gt; Gather logs, metrics, traces
+   └─&gt; Identify root cause
+
+4. REMEDIATE
+   └─&gt; Apply fix (restart, scale, rollback, etc.)
+   └─&gt; Verify fix with metrics/logs
+   └─&gt; Monitor for 10-15 minutes
+
+5. DOCUMENT
+   └─&gt; Update incident tracker with resolution
+   └─&gt; Create post-incident review if critical
+   └─&gt; Update runbooks if new issue discovered
+
+6. CLOSE
+   └─&gt; Resolve alert in PagerDuty/Slack
+   └─&gt; Confirm no related alerts remain
+</code></pre>
+<h3 id="tools-quick-reference"><a class="header" href="#tools-quick-reference">Tools Quick Reference</a></h3>
+<ul>
+<li><strong>Grafana</strong>: https://grafana.octollm.dev</li>
+<li><strong>Prometheus</strong>: https://prometheus.octollm.dev</li>
+<li><strong>Jaeger</strong>: https://jaeger.octollm.dev</li>
+<li><strong>Alertmanager</strong>: https://alertmanager.octollm.dev</li>
+<li><strong>kubectl</strong>: CLI access to Kubernetes cluster</li>
+</ul>
+<hr />
+<h2 id="critical-alert-procedures"><a class="header" href="#critical-alert-procedures">Critical Alert Procedures</a></h2>
+<h3 id="1-podcrashloopbackoff"><a class="header" href="#1-podcrashloopbackoff">1. PodCrashLoopBackOff</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: PodCrashLoopBackOff
+expr: rate(kube_pod_container_status_restarts_total{namespace=~"octollm.*"}[10m]) &gt; 0.3
+for: 5m
+severity: critical
+</code></pre>
+<p><strong>Impact</strong>: Service degradation or complete outage. Users may experience errors or timeouts.</p>
+<h4 id="investigation-steps"><a class="header" href="#investigation-steps">Investigation Steps</a></h4>
+<p><strong>Step 1: Identify the crashing pod</strong></p>
+<pre><code class="language-bash"># List pods with high restart counts
+kubectl get pods -n &lt;namespace&gt; --sort-by=.status.containerStatuses[0].restartCount
+
+# Example output:
+# NAME                          READY   STATUS             RESTARTS   AGE
+# orchestrator-7d9f8c-xk2p9     0/1     CrashLoopBackOff   12         30m
+</code></pre>
+<p><strong>Step 2: Check pod logs</strong></p>
+<pre><code class="language-bash"># Get recent logs from crashing container
+kubectl logs -n &lt;namespace&gt; &lt;pod-name&gt; --tail=100
+
+# Get logs from previous container instance
+kubectl logs -n &lt;namespace&gt; &lt;pod-name&gt; --previous
+
+# Common error patterns:
+# - "Connection refused" → Dependency unavailable
+# - "Out of memory" → Resource limits too low
+# - "Panic: runtime error" → Code bug
+# - "Permission denied" → RBAC or volume mount issue
+</code></pre>
+<p><strong>Step 3: Check pod events</strong></p>
+<pre><code class="language-bash">kubectl describe pod -n &lt;namespace&gt; &lt;pod-name&gt;
+
+# Look for events like:
+# - "Back-off restarting failed container"
+# - "Error: ErrImagePull"
+# - "FailedMount"
+# - "OOMKilled"
+</code></pre>
+<p><strong>Step 4: Check resource usage</strong></p>
+<pre><code class="language-bash"># Check if pod is OOMKilled
+kubectl get pod -n &lt;namespace&gt; &lt;pod-name&gt; -o jsonpath='{.status.containerStatuses[0].lastState.terminated.reason}'
+
+# Check resource requests/limits
+kubectl get pod -n &lt;namespace&gt; &lt;pod-name&gt; -o jsonpath='{.spec.containers[0].resources}'
+</code></pre>
+<p><strong>Step 5: Check configuration</strong></p>
+<pre><code class="language-bash"># Verify environment variables
+kubectl get pod -n &lt;namespace&gt; &lt;pod-name&gt; -o jsonpath='{.spec.containers[0].env}'
+
+# Check ConfigMap/Secret mounts
+kubectl describe configmap -n &lt;namespace&gt; &lt;configmap-name&gt;
+kubectl describe secret -n &lt;namespace&gt; &lt;secret-name&gt;
+</code></pre>
+<h4 id="remediation-actions"><a class="header" href="#remediation-actions">Remediation Actions</a></h4>
+<p><strong>If: Connection refused to dependency (DB, Redis, etc.)</strong></p>
+<pre><code class="language-bash"># 1. Check if dependency service is healthy
+kubectl get pods -n &lt;namespace&gt; -l app=&lt;dependency&gt;
+
+# 2. Test connectivity from within cluster
+kubectl run -it --rm debug --image=busybox --restart=Never -- sh
+# Inside pod: nc -zv &lt;service-name&gt; &lt;port&gt;
+
+# 3. Check service endpoints
+kubectl get endpoints -n &lt;namespace&gt; &lt;service-name&gt;
+
+# 4. If dependency is down, restart it first
+kubectl rollout restart deployment/&lt;dependency-name&gt; -n &lt;namespace&gt;
+
+# 5. Wait for dependency to be ready, then restart affected pod
+kubectl delete pod -n &lt;namespace&gt; &lt;pod-name&gt;
+</code></pre>
+<p><strong>If: Out of memory (OOMKilled)</strong></p>
+<pre><code class="language-bash"># 1. Check current memory usage in Grafana
+# Query: container_memory_usage_bytes{pod="&lt;pod-name&gt;"}
+
+# 2. Increase memory limits
+kubectl edit deployment -n &lt;namespace&gt; &lt;deployment-name&gt;
+# Increase resources.limits.memory (e.g., from 512Mi to 1Gi)
+
+# 3. Monitor memory usage after restart
+</code></pre>
+<p><strong>If: Image pull error</strong></p>
+<pre><code class="language-bash"># 1. Check image name and tag
+kubectl get pod -n &lt;namespace&gt; &lt;pod-name&gt; -o jsonpath='{.spec.containers[0].image}'
+
+# 2. Verify image exists in registry
+gcloud container images list --repository=gcr.io/&lt;project-id&gt;
+
+# 3. Check image pull secrets
+kubectl get secrets -n &lt;namespace&gt; | grep gcr
+
+# 4. If image is wrong, update deployment
+kubectl set image deployment/&lt;deployment-name&gt; &lt;container-name&gt;=&lt;correct-image&gt; -n &lt;namespace&gt;
+</code></pre>
+<p><strong>If: Configuration error</strong></p>
+<pre><code class="language-bash"># 1. Validate ConfigMap/Secret exists and has correct data
+kubectl get configmap -n &lt;namespace&gt; &lt;configmap-name&gt; -o yaml
+
+# 2. If config is wrong, update it
+kubectl edit configmap -n &lt;namespace&gt; &lt;configmap-name&gt;
+
+# 3. Restart pods to pick up new config
+kubectl rollout restart deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+</code></pre>
+<p><strong>If: Code bug (panic, runtime error)</strong></p>
+<pre><code class="language-bash"># 1. Check Jaeger for traces showing error
+# Navigate to https://jaeger.octollm.dev
+# Search for service: &lt;service-name&gt;, operation: &lt;failing-operation&gt;
+
+# 2. Identify commit that introduced bug
+kubectl get deployment -n &lt;namespace&gt; &lt;deployment-name&gt; -o jsonpath='{.spec.template.spec.containers[0].image}'
+
+# 3. Rollback to previous version
+kubectl rollout undo deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# 4. Verify rollback
+kubectl rollout status deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# 5. Create incident ticket with logs/traces
+# Subject: "CrashLoopBackOff in &lt;service&gt; due to &lt;error&gt;"
+# Include: logs, traces, reproduction steps
+</code></pre>
+<p><strong>If: Persistent volume mount failure</strong></p>
+<pre><code class="language-bash"># 1. Check PVC status
+kubectl get pvc -n &lt;namespace&gt;
+
+# 2. Check PVC events
+kubectl describe pvc -n &lt;namespace&gt; &lt;pvc-name&gt;
+
+# 3. If PVC is pending, check storage class
+kubectl get storageclass
+
+# 4. If PVC is lost, restore from backup (see backup-restore.md)
+</code></pre>
+<h4 id="escalation-criteria"><a class="header" href="#escalation-criteria">Escalation Criteria</a></h4>
+<p><strong>Escalate to Senior Engineer if</strong>:</p>
+<ul>
+<li>Root cause not identified within 15 minutes</li>
+<li>Multiple pods crashing across different services</li>
+<li>Rollback does not resolve the issue</li>
+<li>Data loss suspected</li>
+</ul>
+<p><strong>Escalate to Engineering Lead if</strong>:</p>
+<ul>
+<li>Critical service (orchestrator, reflex-layer) down for &gt;30 minutes</li>
+<li>Root cause requires code fix (cannot be resolved via config/restart)</li>
+</ul>
+<p><strong>Escalate to VP Engineering if</strong>:</p>
+<ul>
+<li>Complete outage (all services down)</li>
+<li>Data corruption suspected</li>
+<li>Estimated resolution time &gt;2 hours</li>
+</ul>
+<hr />
+<h3 id="2-nodenotready"><a class="header" href="#2-nodenotready">2. NodeNotReady</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: NodeNotReady
+expr: kube_node_status_condition{condition="Ready",status="false"} == 1
+for: 5m
+severity: critical
+</code></pre>
+<p><strong>Impact</strong>: Reduced cluster capacity. Pods on the node are evicted and rescheduled. Possible service degradation.</p>
+<h4 id="investigation-steps-1"><a class="header" href="#investigation-steps-1">Investigation Steps</a></h4>
+<p><strong>Step 1: Identify unhealthy node</strong></p>
+<pre><code class="language-bash"># List all nodes with status
+kubectl get nodes -o wide
+
+# Example output:
+# NAME                     STATUS     ROLES    AGE   VERSION
+# gke-cluster-pool-1-abc   Ready      &lt;none&gt;   10d   v1.28.3
+# gke-cluster-pool-1-def   NotReady   &lt;none&gt;   10d   v1.28.3  ← Problem node
+</code></pre>
+<p><strong>Step 2: Check node conditions</strong></p>
+<pre><code class="language-bash">kubectl describe node &lt;node-name&gt;
+
+# Look for conditions:
+# - Ready: False
+# - MemoryPressure: True
+# - DiskPressure: True
+# - PIDPressure: True
+# - NetworkUnavailable: True
+</code></pre>
+<p><strong>Step 3: Check node resource usage</strong></p>
+<pre><code class="language-bash"># Check node metrics
+kubectl top node &lt;node-name&gt;
+
+# Query in Grafana:
+# CPU: node_cpu_seconds_total{instance="&lt;node-name&gt;"}
+# Memory: node_memory_MemAvailable_bytes{instance="&lt;node-name&gt;"}
+# Disk: node_filesystem_avail_bytes{instance="&lt;node-name&gt;"}
+</code></pre>
+<p><strong>Step 4: Check kubelet logs (if SSH access available)</strong></p>
+<pre><code class="language-bash"># SSH to node (GKE nodes)
+gcloud compute ssh &lt;node-name&gt; --zone=&lt;zone&gt;
+
+# Check kubelet status
+sudo systemctl status kubelet
+
+# Check kubelet logs
+sudo journalctl -u kubelet --since "30 minutes ago"
+</code></pre>
+<p><strong>Step 5: Check pods on the node</strong></p>
+<pre><code class="language-bash"># List pods running on the node
+kubectl get pods --all-namespaces --field-selector spec.nodeName=&lt;node-name&gt;
+
+# Check if critical pods are affected
+kubectl get pods -n octollm-prod --field-selector spec.nodeName=&lt;node-name&gt;
+</code></pre>
+<h4 id="remediation-actions-1"><a class="header" href="#remediation-actions-1">Remediation Actions</a></h4>
+<p><strong>If: Disk pressure (disk full)</strong></p>
+<pre><code class="language-bash"># 1. Check disk usage on node
+gcloud compute ssh &lt;node-name&gt; --zone=&lt;zone&gt; --command "df -h"
+
+# 2. Identify large files/directories
+gcloud compute ssh &lt;node-name&gt; --zone=&lt;zone&gt; --command "du -sh /var/lib/docker/containers/* | sort -rh | head -20"
+
+# 3. Clean up old container logs
+gcloud compute ssh &lt;node-name&gt; --zone=&lt;zone&gt; --command "sudo find /var/lib/docker/containers -name '*-json.log' -type f -mtime +7 -delete"
+
+# 4. Clean up unused Docker images
+gcloud compute ssh &lt;node-name&gt; --zone=&lt;zone&gt; --command "sudo docker system prune -a -f"
+
+# 5. If still full, cordon and drain the node
+kubectl cordon &lt;node-name&gt;
+kubectl drain &lt;node-name&gt; --ignore-daemonsets --delete-emptydir-data
+
+# 6. Delete and recreate node (GKE auto-repairs)
+# Node will be automatically replaced by GKE
+</code></pre>
+<p><strong>If: Memory pressure</strong></p>
+<pre><code class="language-bash"># 1. Check memory usage
+kubectl top node &lt;node-name&gt;
+
+# 2. Identify memory-hungry pods
+kubectl top pods --all-namespaces --field-selector spec.nodeName=&lt;node-name&gt; --sort-by=memory
+
+# 3. Check if any pods have memory leaks
+# Use Grafana to view memory trends over time
+# Query: container_memory_usage_bytes{node="&lt;node-name&gt;"}
+
+# 4. Evict non-critical pods to free memory
+kubectl cordon &lt;node-name&gt;
+kubectl drain &lt;node-name&gt; --ignore-daemonsets --delete-emptydir-data --force
+
+# 5. Wait for pods to be rescheduled
+kubectl get pods --all-namespaces -o wide | grep &lt;node-name&gt;
+
+# 6. Uncordon node if memory stabilizes
+kubectl uncordon &lt;node-name&gt;
+
+# 7. If memory pressure persists, replace node
+# Delete node and let GKE auto-repair create new one
+</code></pre>
+<p><strong>If: Network unavailable</strong></p>
+<pre><code class="language-bash"># 1. Check network connectivity from node
+gcloud compute ssh &lt;node-name&gt; --zone=&lt;zone&gt; --command "ping -c 5 8.8.8.8"
+
+# 2. Check CNI plugin status (GKE uses kubenet or Calico)
+gcloud compute ssh &lt;node-name&gt; --zone=&lt;zone&gt; --command "sudo systemctl status kubenet"
+
+# 3. Check for network plugin errors
+gcloud compute ssh &lt;node-name&gt; --zone=&lt;zone&gt; --command "sudo journalctl -u kubenet --since '30 minutes ago'"
+
+# 4. Restart network services (risky - only if node is already unusable)
+gcloud compute ssh &lt;node-name&gt; --zone=&lt;zone&gt; --command "sudo systemctl restart kubenet"
+
+# 5. If network issue persists, cordon and drain
+kubectl cordon &lt;node-name&gt;
+kubectl drain &lt;node-name&gt; --ignore-daemonsets --delete-emptydir-data --force
+
+# 6. Delete node and let GKE replace it
+gcloud compute instances delete &lt;node-name&gt; --zone=&lt;zone&gt;
+</code></pre>
+<p><strong>If: Kubelet not responding</strong></p>
+<pre><code class="language-bash"># 1. Check kubelet process
+gcloud compute ssh &lt;node-name&gt; --zone=&lt;zone&gt; --command "sudo systemctl status kubelet"
+
+# 2. Restart kubelet
+gcloud compute ssh &lt;node-name&gt; --zone=&lt;zone&gt; --command "sudo systemctl restart kubelet"
+
+# 3. Wait 2 minutes and check node status
+kubectl get node &lt;node-name&gt;
+
+# 4. If node returns to Ready, uncordon
+kubectl uncordon &lt;node-name&gt;
+
+# 5. If kubelet fails to start, check logs
+gcloud compute ssh &lt;node-name&gt; --zone=&lt;zone&gt; --command "sudo journalctl -u kubelet -n 100"
+
+# 6. If cannot resolve, cordon, drain, and delete node
+kubectl cordon &lt;node-name&gt;
+kubectl drain &lt;node-name&gt; --ignore-daemonsets --delete-emptydir-data --force
+gcloud compute instances delete &lt;node-name&gt; --zone=&lt;zone&gt;
+</code></pre>
+<p><strong>If: Hardware failure (rare in GKE)</strong></p>
+<pre><code class="language-bash"># 1. Check for hardware errors in system logs
+gcloud compute ssh &lt;node-name&gt; --zone=&lt;zone&gt; --command "dmesg | grep -i error"
+
+# 2. Check for I/O errors
+gcloud compute ssh &lt;node-name&gt; --zone=&lt;zone&gt; --command "dmesg | grep -i 'i/o error'"
+
+# 3. Cordon and drain immediately
+kubectl cordon &lt;node-name&gt;
+kubectl drain &lt;node-name&gt; --ignore-daemonsets --delete-emptydir-data --force
+
+# 4. Delete node - GKE will create replacement
+gcloud compute instances delete &lt;node-name&gt; --zone=&lt;zone&gt;
+
+# 5. Monitor new node creation
+kubectl get nodes -w
+</code></pre>
+<h4 id="escalation-criteria-1"><a class="header" href="#escalation-criteria-1">Escalation Criteria</a></h4>
+<p><strong>Escalate to Senior Engineer if</strong>:</p>
+<ul>
+<li>Multiple nodes NotReady simultaneously</li>
+<li>Node cannot be drained (pods stuck in terminating state)</li>
+<li>Network issues affecting entire node pool</li>
+</ul>
+<p><strong>Escalate to Engineering Lead if</strong>:</p>
+<ul>
+<li>
+<blockquote>
+<p>30% of nodes NotReady</p>
+</blockquote>
+</li>
+<li>Node failure pattern suggests cluster-wide issue</li>
+<li>Auto-repair not creating replacement nodes</li>
+</ul>
+<p><strong>Escalate to VP Engineering + GCP Support if</strong>:</p>
+<ul>
+<li>Complete cluster failure (all nodes NotReady)</li>
+<li>GKE control plane unreachable</li>
+<li>Suspected GCP infrastructure issue</li>
+</ul>
+<hr />
+<h3 id="3-higherrorrate"><a class="header" href="#3-higherrorrate">3. HighErrorRate</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: HighErrorRate
+expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) &gt; 0.1
+for: 5m
+severity: critical
+</code></pre>
+<p><strong>Impact</strong>: Users experiencing errors (500, 502, 503, 504). Service availability degraded.</p>
+<h4 id="investigation-steps-2"><a class="header" href="#investigation-steps-2">Investigation Steps</a></h4>
+<p><strong>Step 1: Identify affected service</strong></p>
+<pre><code class="language-bash"># Check error rate in Grafana
+# Dashboard: GKE Service Health
+# Panel: "Error Rate (5xx) by Service"
+# Identify which service has &gt;10% error rate
+</code></pre>
+<p><strong>Step 2: Check recent deployments</strong></p>
+<pre><code class="language-bash"># List recent rollouts
+kubectl rollout history deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# Check when error rate started
+# Compare with deployment timestamp in Grafana
+</code></pre>
+<p><strong>Step 3: Analyze error patterns</strong></p>
+<pre><code class="language-bash"># Query Loki for error logs
+# LogQL: {namespace="&lt;namespace&gt;", service="&lt;service&gt;", level="error"} |= "5xx" | json
+
+# Look for patterns:
+# - Specific endpoints failing
+# - Common error messages
+# - Correlation with other services
+</code></pre>
+<p><strong>Step 4: Check dependencies</strong></p>
+<pre><code class="language-bash"># Check if errors are due to downstream dependencies
+# Use Jaeger to trace requests
+# Navigate to https://jaeger.octollm.dev
+# Search for service: &lt;service-name&gt;
+# Filter by error status: error=true
+
+# Common dependency issues:
+# - Database connection pool exhausted
+# - Redis timeout
+# - External API rate limiting
+# - Inter-service timeout
+</code></pre>
+<p><strong>Step 5: Check resource utilization</strong></p>
+<pre><code class="language-bash"># Check if service is resource-constrained
+kubectl top pods -n &lt;namespace&gt; -l app=&lt;service&gt;
+
+# Query CPU/memory in Grafana:
+# CPU: rate(container_cpu_usage_seconds_total{pod=~"&lt;service&gt;.*"}[5m])
+# Memory: container_memory_usage_bytes{pod=~"&lt;service&gt;.*"}
+</code></pre>
+<h4 id="remediation-actions-2"><a class="header" href="#remediation-actions-2">Remediation Actions</a></h4>
+<p><strong>If: Error rate increased after recent deployment</strong></p>
+<pre><code class="language-bash"># 1. Verify deployment timing matches error spike
+kubectl rollout history deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# 2. Check logs from new pods
+kubectl logs -n &lt;namespace&gt; -l app=&lt;service&gt; --tail=100 | grep -i error
+
+# 3. Rollback to previous version
+kubectl rollout undo deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# 4. Monitor error rate after rollback
+# Should decrease within 2-5 minutes
+
+# 5. Verify rollback success
+kubectl rollout status deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# 6. Create incident ticket with error logs
+# Block new deployment until issue is resolved
+</code></pre>
+<p><strong>If: Database connection pool exhausted</strong></p>
+<pre><code class="language-bash"># 1. Verify in Grafana
+# Query: db_pool_active_connections{service="&lt;service&gt;"} / db_pool_max_connections{service="&lt;service&gt;"}
+
+# 2. Check for connection leaks
+# Look for long-running queries in database
+# PostgreSQL: SELECT * FROM pg_stat_activity WHERE state = 'active' AND query_start &lt; NOW() - INTERVAL '5 minutes';
+
+# 3. Restart service to clear connections
+kubectl rollout restart deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# 4. If issue persists, increase connection pool size
+kubectl edit configmap -n &lt;namespace&gt; &lt;service&gt;-config
+# Increase DB_POOL_SIZE (e.g., from 20 to 40)
+
+# 5. Restart to apply new config
+kubectl rollout restart deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# 6. Monitor connection pool usage
+# Should stay below 80% of max
+</code></pre>
+<p><strong>If: Downstream service timeout</strong></p>
+<pre><code class="language-bash"># 1. Identify failing dependency from Jaeger traces
+# Look for spans with error=true and long duration
+
+# 2. Check health of downstream service
+kubectl get pods -n &lt;namespace&gt; -l app=&lt;downstream-service&gt;
+
+# 3. Check latency of downstream service
+# Grafana query: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{service="&lt;downstream-service&gt;"}[5m]))
+
+# 4. If downstream is slow, scale it up
+kubectl scale deployment/&lt;downstream-service&gt; -n &lt;namespace&gt; --replicas=&lt;new-count&gt;
+
+# 5. Increase timeout in calling service (if downstream is legitimately slow)
+kubectl edit configmap -n &lt;namespace&gt; &lt;service&gt;-config
+# Increase timeout (e.g., from 5s to 10s)
+
+# 6. Restart calling service
+kubectl rollout restart deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+</code></pre>
+<p><strong>If: External API rate limiting</strong></p>
+<pre><code class="language-bash"># 1. Verify in logs
+kubectl logs -n &lt;namespace&gt; -l app=&lt;service&gt; | grep -i "rate limit\|429\|too many requests"
+
+# 2. Check rate limit configuration
+kubectl get configmap -n &lt;namespace&gt; &lt;service&gt;-config -o yaml | grep -i rate
+
+# 3. Reduce request rate (add caching, implement backoff)
+# Short-term: Reduce replica count to lower total requests
+kubectl scale deployment/&lt;deployment-name&gt; -n &lt;namespace&gt; --replicas=&lt;reduced-count&gt;
+
+# 4. Implement circuit breaker (code change required)
+# Long-term fix: Add circuit breaker to prevent cascading failures
+
+# 5. Contact external API provider for rate limit increase
+# Document current usage and justification for higher limits
+</code></pre>
+<p><strong>If: Memory leak causing OOM errors</strong></p>
+<pre><code class="language-bash"># 1. Identify memory trend in Grafana
+# Query: container_memory_usage_bytes{pod=~"&lt;service&gt;.*"}
+# Look for steady increase over time
+
+# 2. Restart pods to free memory (temporary fix)
+kubectl rollout restart deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# 3. Increase memory limits (short-term mitigation)
+kubectl edit deployment -n &lt;namespace&gt; &lt;deployment-name&gt;
+# Increase resources.limits.memory
+
+# 4. Enable heap profiling (if supported)
+# Add profiling endpoint to service
+# Analyze heap dumps to identify leak
+
+# 5. Create high-priority bug ticket
+# Attach memory graphs and profiling data
+# Assign to owning team
+</code></pre>
+<h4 id="escalation-criteria-2"><a class="header" href="#escalation-criteria-2">Escalation Criteria</a></h4>
+<p><strong>Escalate to Senior Engineer if</strong>:</p>
+<ul>
+<li>Error rate &gt;20% for &gt;10 minutes</li>
+<li>Rollback does not resolve issue</li>
+<li>Root cause unclear after 15 minutes of investigation</li>
+</ul>
+<p><strong>Escalate to Engineering Lead if</strong>:</p>
+<ul>
+<li>Error rate &gt;50% (severe outage)</li>
+<li>Multiple services affected</li>
+<li>Estimated resolution time &gt;1 hour</li>
+</ul>
+<p><strong>Escalate to VP Engineering if</strong>:</p>
+<ul>
+<li>Complete service outage (100% error rate)</li>
+<li>Customer-reported errors trending on social media</li>
+<li>Revenue-impacting outage</li>
+</ul>
+<hr />
+<h3 id="4-databaseconnectionpoolexhausted"><a class="header" href="#4-databaseconnectionpoolexhausted">4. DatabaseConnectionPoolExhausted</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: DatabaseConnectionPoolExhausted
+expr: db_pool_active_connections / db_pool_max_connections &gt; 0.95
+for: 5m
+severity: critical
+</code></pre>
+<p><strong>Impact</strong>: Services unable to query database. Users experience errors or timeouts.</p>
+<h4 id="investigation-steps-3"><a class="header" href="#investigation-steps-3">Investigation Steps</a></h4>
+<p><strong>Step 1: Verify pool exhaustion</strong></p>
+<pre><code class="language-bash"># Check current pool usage in Grafana
+# Query: db_pool_active_connections{service="&lt;service&gt;"} / db_pool_max_connections{service="&lt;service&gt;"}
+
+# Check which service is affected
+# Multiple services may share the same database
+</code></pre>
+<p><strong>Step 2: Check for long-running queries</strong></p>
+<pre><code class="language-bash"># Connect to database
+kubectl exec -it -n &lt;namespace&gt; &lt;postgres-pod&gt; -- psql -U octollm
+
+# List active connections by service
+SELECT application_name, COUNT(*)
+FROM pg_stat_activity
+WHERE state = 'active'
+GROUP BY application_name;
+
+# List long-running queries (&gt;5 minutes)
+SELECT pid, application_name, query_start, state, query
+FROM pg_stat_activity
+WHERE state = 'active'
+  AND query_start &lt; NOW() - INTERVAL '5 minutes'
+ORDER BY query_start;
+</code></pre>
+<p><strong>Step 3: Check for connection leaks</strong></p>
+<pre><code class="language-bash"># List idle connections
+SELECT application_name, COUNT(*)
+FROM pg_stat_activity
+WHERE state = 'idle'
+GROUP BY application_name;
+
+# If idle count is very high for a service, there's likely a connection leak
+# (Idle connections should be returned to pool)
+</code></pre>
+<p><strong>Step 4: Check application logs for connection errors</strong></p>
+<pre><code class="language-bash"># Query Loki
+# LogQL: {namespace="&lt;namespace&gt;", service="&lt;service&gt;"} |= "connection" |= "error|timeout|exhausted"
+
+# Common error messages:
+# - "unable to acquire connection from pool"
+# - "connection pool timeout"
+# - "too many clients already"
+</code></pre>
+<p><strong>Step 5: Check database resource usage</strong></p>
+<pre><code class="language-bash"># Check database CPU/memory
+kubectl top pod -n &lt;namespace&gt; &lt;postgres-pod&gt;
+
+# Check database metrics in Grafana
+# CPU: rate(container_cpu_usage_seconds_total{pod="&lt;postgres-pod&gt;"}[5m])
+# Memory: container_memory_usage_bytes{pod="&lt;postgres-pod&gt;"}
+# Disk I/O: rate(container_fs_reads_bytes_total{pod="&lt;postgres-pod&gt;"}[5m])
+</code></pre>
+<h4 id="remediation-actions-3"><a class="header" href="#remediation-actions-3">Remediation Actions</a></h4>
+<p><strong>If: Long-running queries blocking connections</strong></p>
+<pre><code class="language-bash"># 1. Identify problematic queries
+SELECT pid, application_name, query_start, query
+FROM pg_stat_activity
+WHERE state = 'active'
+  AND query_start &lt; NOW() - INTERVAL '5 minutes';
+
+# 2. Terminate long-running queries (careful!)
+# Only terminate if you're sure it's safe
+SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid = &lt;pid&gt;;
+
+# 3. Monitor connection pool recovery
+# Check Grafana: pool usage should drop below 95%
+
+# 4. Investigate why queries are slow
+# Use EXPLAIN ANALYZE to check query plans
+# Look for missing indexes or inefficient joins
+
+# 5. Optimize slow queries (code change)
+# Create ticket with slow query details
+# Add indexes if needed
+</code></pre>
+<p><strong>If: Connection leak in application</strong></p>
+<pre><code class="language-bash"># 1. Identify service with high idle connection count
+SELECT application_name, COUNT(*)
+FROM pg_stat_activity
+WHERE state = 'idle'
+GROUP BY application_name;
+
+# 2. Restart affected service to release connections
+kubectl rollout restart deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# 3. Monitor connection pool after restart
+# Usage should drop significantly
+
+# 4. Check application code for connection handling
+# Ensure connections are properly closed in finally blocks
+# Example (Python):
+# try:
+#     conn = pool.get_connection()
+#     # Use connection
+# finally:
+#     conn.close()  # Must always close!
+
+# 5. Implement connection timeout in pool config
+# Add to service ConfigMap:
+# DB_POOL_TIMEOUT: 30s
+# DB_CONN_MAX_LIFETIME: 1h  # Force connection recycling
+</code></pre>
+<p><strong>If: Pool size too small for load</strong></p>
+<pre><code class="language-bash"># 1. Check current pool configuration
+kubectl get configmap -n &lt;namespace&gt; &lt;service&gt;-config -o yaml | grep DB_POOL
+
+# 2. Calculate required pool size
+# Formula: (avg concurrent requests) * (avg query time in seconds) * 1.5
+# Example: 100 req/s * 0.1s * 1.5 = 15 connections
+
+# 3. Increase pool size
+kubectl edit configmap -n &lt;namespace&gt; &lt;service&gt;-config
+# Update DB_POOL_SIZE (e.g., from 20 to 40)
+
+# 4. Verify database can handle more connections
+# PostgreSQL max_connections setting (typically 100-200)
+kubectl exec -it -n &lt;namespace&gt; &lt;postgres-pod&gt; -- psql -U octollm -c "SHOW max_connections;"
+
+# 5. If database max_connections is too low, increase it
+# Edit PostgreSQL ConfigMap or StatefulSet
+# Requires database restart
+
+# 6. Restart service to use new pool size
+kubectl rollout restart deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# 7. Monitor pool usage
+# Target: &lt;80% utilization under normal load
+</code></pre>
+<p><strong>If: Database is resource-constrained</strong></p>
+<pre><code class="language-bash"># 1. Check database CPU/memory
+kubectl top pod -n &lt;namespace&gt; &lt;postgres-pod&gt;
+
+# 2. If database CPU &gt;80%, check for expensive queries
+# Connect to database
+kubectl exec -it -n &lt;namespace&gt; &lt;postgres-pod&gt; -- psql -U octollm
+
+# Find most expensive queries
+SELECT query, calls, total_time, mean_time
+FROM pg_stat_statements
+ORDER BY total_time DESC
+LIMIT 10;
+
+# 3. If database memory &gt;90%, increase memory limits
+kubectl edit statefulset -n &lt;namespace&gt; postgres
+# Increase resources.limits.memory
+
+# 4. If database disk I/O high, consider:
+# - Adding indexes to reduce table scans
+# - Increasing disk IOPS (resize persistent disk)
+# - Enabling query result caching
+
+# 5. Scale database vertically (larger instance)
+# For managed databases (Cloud SQL), increase machine type
+# For self-hosted, increase resource limits and restart
+</code></pre>
+<p><strong>If: Too many services connecting to same database</strong></p>
+<pre><code class="language-bash"># 1. Identify which services are using most connections
+SELECT application_name, COUNT(*), MAX(query_start)
+FROM pg_stat_activity
+GROUP BY application_name
+ORDER BY COUNT(*) DESC;
+
+# 2. Implement connection pooling at database level
+# Deploy PgBouncer between services and database
+# PgBouncer multiplexes connections, reducing load on database
+
+# 3. Configure PgBouncer
+# pool_mode: transaction (default) or session
+# max_client_conn: 1000 (much higher than database limit)
+# default_pool_size: 20 (connections to actual database per pool)
+
+# 4. Update service connection strings to point to PgBouncer
+kubectl edit configmap -n &lt;namespace&gt; &lt;service&gt;-config
+# Change DB_HOST from postgres:5432 to pgbouncer:6432
+
+# 5. Restart services
+kubectl rollout restart deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# 6. Monitor PgBouncer metrics
+# Check connection multiplexing ratio
+</code></pre>
+<h4 id="escalation-criteria-3"><a class="header" href="#escalation-criteria-3">Escalation Criteria</a></h4>
+<p><strong>Escalate to Senior Engineer if</strong>:</p>
+<ul>
+<li>Pool exhaustion persists after restarting services</li>
+<li>Cannot identify source of connection leak</li>
+<li>Database max_connections needs to be increased significantly</li>
+</ul>
+<p><strong>Escalate to Database Admin if</strong>:</p>
+<ul>
+<li>Database CPU/memory consistently &gt;90%</li>
+<li>Slow queries cannot be optimized with indexes</li>
+<li>Need to implement replication or sharding</li>
+</ul>
+<p><strong>Escalate to Engineering Lead if</strong>:</p>
+<ul>
+<li>Database outage suspected</li>
+<li>Need to migrate to larger database instance</li>
+<li>Estimated resolution time &gt;1 hour</li>
+</ul>
+<hr />
+<h3 id="5-highlatency"><a class="header" href="#5-highlatency">5. HighLatency</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: HighLatency
+expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) &gt; 1.0
+for: 10m
+severity: critical
+</code></pre>
+<p><strong>Impact</strong>: Slow response times for users. Degraded user experience. Possible timeout errors.</p>
+<h4 id="investigation-steps-4"><a class="header" href="#investigation-steps-4">Investigation Steps</a></h4>
+<p><strong>Step 1: Identify affected service and endpoints</strong></p>
+<pre><code class="language-bash"># Check latency by service in Grafana
+# Dashboard: GKE Service Health
+# Panel: "Request Latency (P50/P95/P99)"
+# Identify which service has P95 &gt;1s
+
+# Check latency by endpoint
+# Query: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{service="&lt;service&gt;"}[5m])) by (handler)
+</code></pre>
+<p><strong>Step 2: Check for recent changes</strong></p>
+<pre><code class="language-bash"># List recent deployments
+kubectl rollout history deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# Check when latency increased
+# Compare with deployment timestamp in Grafana
+</code></pre>
+<p><strong>Step 3: Analyze slow requests with Jaeger</strong></p>
+<pre><code class="language-bash"># Navigate to https://jaeger.octollm.dev
+# 1. Search for service: &lt;service-name&gt;
+# 2. Filter by min duration: &gt;1s
+# 3. Sort by longest duration
+# 4. Click on slowest trace to see span breakdown
+
+# Look for:
+# - Which span is slowest (database query, external API call, internal processing)
+# - Spans with errors
+# - Multiple spans to same service (N+1 query problem)
+</code></pre>
+<p><strong>Step 4: Check resource utilization</strong></p>
+<pre><code class="language-bash"># Check if service is CPU-constrained
+kubectl top pods -n &lt;namespace&gt; -l app=&lt;service&gt;
+
+# Query CPU in Grafana:
+# rate(container_cpu_usage_seconds_total{pod=~"&lt;service&gt;.*"}[5m])
+
+# If CPU near limit, service may be throttled
+</code></pre>
+<p><strong>Step 5: Check dependencies</strong></p>
+<pre><code class="language-bash"># Check if downstream services are slow
+# Use Jaeger to identify which dependency is slow
+
+# Check database query performance
+# Connect to database and check slow query log
+
+# Check cache hit rate (Redis)
+# Grafana query: redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total)
+</code></pre>
+<h4 id="remediation-actions-4"><a class="header" href="#remediation-actions-4">Remediation Actions</a></h4>
+<p><strong>If: Slow database queries</strong></p>
+<pre><code class="language-bash"># 1. Identify slow queries from Jaeger traces
+# Look for database spans with duration &gt;500ms
+
+# 2. Connect to database and analyze query
+kubectl exec -it -n &lt;namespace&gt; &lt;postgres-pod&gt; -- psql -U octollm
+
+# 3. Use EXPLAIN ANALYZE to check query plan
+EXPLAIN ANALYZE &lt;slow-query&gt;;
+
+# 4. Look for sequential scans (bad - should use index)
+# Look for "Seq Scan on &lt;table&gt;" in output
+
+# 5. Create missing indexes
+CREATE INDEX CONCURRENTLY idx_&lt;table&gt;_&lt;column&gt; ON &lt;table&gt;(&lt;column&gt;);
+# CONCURRENTLY allows index creation without locking table
+
+# 6. Monitor query performance after index creation
+# Should see immediate improvement in latency
+
+# 7. Update query to use index (if optimizer doesn't automatically)
+# Sometimes need to rewrite query to use indexed columns
+</code></pre>
+<p><strong>If: Low cache hit rate</strong></p>
+<pre><code class="language-bash"># 1. Check cache hit rate in Grafana
+# Query: redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total)
+# Target: &gt;80% hit rate
+
+# 2. Check cache size
+kubectl exec -it -n &lt;namespace&gt; &lt;redis-pod&gt; -- redis-cli INFO memory
+
+# 3. If cache is too small, increase memory
+kubectl edit statefulset -n &lt;namespace&gt; redis
+# Increase resources.limits.memory
+
+# 4. Check cache TTL settings
+# If TTL too short, increase it
+kubectl get configmap -n &lt;namespace&gt; &lt;service&gt;-config -o yaml | grep CACHE_TTL
+
+# 5. Increase cache TTL
+kubectl edit configmap -n &lt;namespace&gt; &lt;service&gt;-config
+# CACHE_TTL: 600s → 1800s (10m → 30m)
+
+# 6. Restart service to use new TTL
+kubectl rollout restart deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# 7. Consider implementing cache warming
+# Pre-populate cache with frequently accessed data
+</code></pre>
+<p><strong>If: CPU-constrained (throttled)</strong></p>
+<pre><code class="language-bash"># 1. Check CPU usage in Grafana
+# Query: rate(container_cpu_usage_seconds_total{pod=~"&lt;service&gt;.*"}[5m])
+# Compare with CPU limit
+
+# 2. If usage near limit, increase CPU allocation
+kubectl edit deployment -n &lt;namespace&gt; &lt;deployment-name&gt;
+# Increase resources.limits.cpu (e.g., from 500m to 1000m)
+
+# 3. Monitor latency after change
+# Should improve within 2-5 minutes
+
+# 4. If latency persists, consider horizontal scaling
+kubectl scale deployment/&lt;deployment-name&gt; -n &lt;namespace&gt; --replicas=&lt;new-count&gt;
+
+# 5. Enable HPA for automatic scaling
+kubectl autoscale deployment/&lt;deployment-name&gt; -n &lt;namespace&gt; \
+  --cpu-percent=70 \
+  --min=2 \
+  --max=10
+</code></pre>
+<p><strong>If: External API slow</strong></p>
+<pre><code class="language-bash"># 1. Identify slow external API from Jaeger
+# Look for HTTP client spans with long duration
+
+# 2. Check if external API has status page
+# Navigate to status page (e.g., status.openai.com)
+
+# 3. Implement timeout and circuit breaker
+# Prevent one slow API from blocking all requests
+# Example circuit breaker config:
+# - Failure threshold: 50%
+# - Timeout: 5s
+# - Cool-down period: 30s
+
+# 4. Add caching for external API responses
+# Cache responses for 5-15 minutes if data doesn't change frequently
+
+# 5. Implement fallback mechanism
+# Return cached/default data if external API is slow
+# Example: Use stale cache data if API timeout
+
+# 6. Contact external API provider
+# Request status update or escalation
+</code></pre>
+<p><strong>If: N+1 query problem</strong></p>
+<pre><code class="language-bash"># 1. Identify N+1 pattern in Jaeger
+# Multiple sequential database queries in a loop
+# Example: 1 query to get list + N queries to get details
+
+# 2. Check application code
+# Look for loops that execute queries
+# Example (bad):
+# users = fetch_users()
+# for user in users:
+#     user.posts = fetch_posts(user.id)  # N queries!
+
+# 3. Implement eager loading / batch fetching
+# Fetch all related data in one query
+# Example (good):
+# users = fetch_users_with_posts()  # Single join query
+
+# 4. Deploy fix and verify
+# Check Jaeger - should see single query instead of N+1
+
+# 5. Monitor latency improvement
+# Should see significant reduction in P95/P99 latency
+</code></pre>
+<p><strong>If: Latency increased after deployment</strong></p>
+<pre><code class="language-bash"># 1. Verify timing correlation
+kubectl rollout history deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# 2. Check recent code changes
+git log --oneline --since="2 hours ago"
+
+# 3. Rollback deployment
+kubectl rollout undo deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+
+# 4. Verify latency returns to normal
+# Check Grafana - should improve within 5 minutes
+
+# 5. Create incident ticket with details
+# - Deployment that caused regression
+# - Latency metrics before/after
+# - Affected endpoints
+
+# 6. Block deployment until fix is available
+# Review code changes to identify performance regression
+</code></pre>
+<h4 id="escalation-criteria-4"><a class="header" href="#escalation-criteria-4">Escalation Criteria</a></h4>
+<p><strong>Escalate to Senior Engineer if</strong>:</p>
+<ul>
+<li>Latency &gt;2s (P95) for &gt;15 minutes</li>
+<li>Root cause not identified within 20 minutes</li>
+<li>Rollback does not resolve issue</li>
+</ul>
+<p><strong>Escalate to Database Admin if</strong>:</p>
+<ul>
+<li>Database queries slow despite proper indexes</li>
+<li>Need to optimize database configuration</li>
+<li>Considering read replicas or sharding</li>
+</ul>
+<p><strong>Escalate to Engineering Lead if</strong>:</p>
+<ul>
+<li>Latency affecting multiple services</li>
+<li>Need architectural changes (caching layer, async processing)</li>
+<li>Customer complaints or revenue impact</li>
+</ul>
+<hr />
+<h3 id="6-certificateexpiringinsevendays"><a class="header" href="#6-certificateexpiringinsevendays">6. CertificateExpiringInSevenDays</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: CertificateExpiringInSevenDays
+expr: (certmanager_certificate_expiration_timestamp_seconds - time()) &lt; 604800
+for: 1h
+severity: critical
+</code></pre>
+<p><strong>Impact</strong>: If certificate expires, users will see TLS errors and cannot access services via HTTPS.</p>
+<h4 id="investigation-steps-5"><a class="header" href="#investigation-steps-5">Investigation Steps</a></h4>
+<p><strong>Step 1: Identify expiring certificate</strong></p>
+<pre><code class="language-bash"># List all certificates
+kubectl get certificate --all-namespaces
+
+# Check expiring certificates
+kubectl get certificate --all-namespaces -o json | \
+  jq -r '.items[] | select(.status.notAfter != null) |
+  [.metadata.namespace, .metadata.name, .status.notAfter] | @tsv'
+
+# Example output:
+# octollm-monitoring  grafana-tls-cert  2025-12-05T10:30:00Z
+# octollm-prod        api-tls-cert      2025-12-12T14:20:00Z
+</code></pre>
+<p><strong>Step 2: Check certificate status</strong></p>
+<pre><code class="language-bash">kubectl describe certificate -n &lt;namespace&gt; &lt;cert-name&gt;
+
+# Look for:
+# Status: Ready
+# Renewal Time: (should be set)
+# Events: Check for renewal attempts
+</code></pre>
+<p><strong>Step 3: Check cert-manager logs</strong></p>
+<pre><code class="language-bash"># Get cert-manager controller pod
+kubectl get pods -n cert-manager
+
+# Check logs for renewal attempts
+kubectl logs -n cert-manager &lt;cert-manager-pod&gt; | grep &lt;cert-name&gt;
+
+# Look for errors:
+# - "rate limit exceeded" (Let's Encrypt)
+# - "challenge failed" (DNS/HTTP validation failed)
+# - "unable to connect to ACME server"
+</code></pre>
+<p><strong>Step 4: Check ClusterIssuer status</strong></p>
+<pre><code class="language-bash"># List ClusterIssuers
+kubectl get clusterissuer
+
+# Check issuer details
+kubectl describe clusterissuer letsencrypt-prod
+
+# Look for:
+# Status: Ready
+# ACME account registered: True
+</code></pre>
+<p><strong>Step 5: Check DNS/Ingress for challenge</strong></p>
+<pre><code class="language-bash"># For DNS-01 challenge (wildcard certs)
+# Verify DNS provider credentials are valid
+kubectl get secret -n cert-manager &lt;dns-provider-secret&gt;
+
+# For HTTP-01 challenge
+# Verify ingress is accessible
+curl -I https://&lt;domain&gt;/.well-known/acme-challenge/test
+</code></pre>
+<h4 id="remediation-actions-5"><a class="header" href="#remediation-actions-5">Remediation Actions</a></h4>
+<p><strong>If: Certificate not auto-renewing (cert-manager issue)</strong></p>
+<pre><code class="language-bash"># 1. Check cert-manager is running
+kubectl get pods -n cert-manager
+
+# 2. If pods are not running, check for issues
+kubectl describe pods -n cert-manager &lt;cert-manager-pod&gt;
+
+# 3. Restart cert-manager if needed
+kubectl rollout restart deployment -n cert-manager cert-manager
+kubectl rollout restart deployment -n cert-manager cert-manager-webhook
+kubectl rollout restart deployment -n cert-manager cert-manager-cainjector
+
+# 4. Wait for cert-manager to be ready
+kubectl wait --for=condition=ready pod -n cert-manager -l app=cert-manager --timeout=2m
+
+# 5. Trigger manual renewal
+kubectl delete certificaterequest -n &lt;namespace&gt; $(kubectl get certificaterequest -n &lt;namespace&gt; -o name)
+
+# 6. Check renewal progress
+kubectl describe certificate -n &lt;namespace&gt; &lt;cert-name&gt;
+
+# 7. Monitor events for successful renewal
+kubectl get events -n &lt;namespace&gt; --sort-by='.lastTimestamp' | grep -i certificate
+</code></pre>
+<p><strong>If: Let's Encrypt rate limit exceeded</strong></p>
+<pre><code class="language-bash"># 1. Check error message in cert-manager logs
+kubectl logs -n cert-manager &lt;cert-manager-pod&gt; | grep "rate limit"
+
+# Error example: "too many certificates already issued for: octollm.dev"
+
+# 2. Let's Encrypt limits:
+# - 50 certificates per registered domain per week
+# - 5 duplicate certificates per week
+
+# 3. Wait for rate limit to reset (1 week)
+# No immediate fix - must wait
+
+# 4. Temporary workaround: Use staging issuer
+kubectl edit certificate -n &lt;namespace&gt; &lt;cert-name&gt;
+# Change issuerRef.name: letsencrypt-prod → letsencrypt-staging
+
+# 5. Staging cert will be issued (browsers will show warning)
+# Acceptable for dev/staging, not for prod
+
+# 6. For prod: Request rate limit increase from Let's Encrypt
+# Email: limit-increases@letsencrypt.org
+# Provide: domain, business justification, expected cert volume
+
+# 7. Long-term: Reduce cert renewals
+# Use wildcard certificates to cover multiple subdomains
+# Increase cert lifetime (Let's Encrypt is 90 days, cannot change)
+</code></pre>
+<p><strong>If: DNS challenge failing (DNS-01)</strong></p>
+<pre><code class="language-bash"># 1. Check DNS provider credentials
+kubectl get secret -n cert-manager &lt;dns-provider-secret&gt; -o yaml
+
+# 2. Verify secret has correct keys
+# For Google Cloud DNS:
+# - key.json (service account key)
+# For Cloudflare:
+# - api-token
+
+# 3. Test DNS provider access manually
+# For Google Cloud DNS:
+gcloud dns record-sets list --zone=&lt;zone-name&gt;
+
+# For Cloudflare:
+curl -X GET "https://api.cloudflare.com/client/v4/zones" \
+  -H "Authorization: Bearer &lt;token&gt;"
+
+# 4. If credentials are invalid, update secret
+kubectl delete secret -n cert-manager &lt;dns-provider-secret&gt;
+kubectl create secret generic -n cert-manager &lt;dns-provider-secret&gt; \
+  --from-file=key.json=&lt;path-to-new-key&gt;
+
+# 5. Restart cert-manager to pick up new credentials
+kubectl rollout restart deployment -n cert-manager cert-manager
+
+# 6. Trigger certificate renewal
+kubectl delete certificaterequest -n &lt;namespace&gt; $(kubectl get certificaterequest -n &lt;namespace&gt; -o name)
+
+# 7. Check certificate status
+kubectl describe certificate -n &lt;namespace&gt; &lt;cert-name&gt;
+</code></pre>
+<p><strong>If: HTTP challenge failing (HTTP-01)</strong></p>
+<pre><code class="language-bash"># 1. Check if ingress is accessible
+curl -I https://&lt;domain&gt;/.well-known/acme-challenge/test
+
+# 2. Verify ingress controller is running
+kubectl get pods -n ingress-nginx  # or kube-system for GKE
+
+# 3. Check if challenge path is reachable
+kubectl get ingress -n &lt;namespace&gt;
+
+# 4. Check ingress events
+kubectl describe ingress -n &lt;namespace&gt; &lt;ingress-name&gt;
+
+# 5. Verify DNS points to correct load balancer
+nslookup &lt;domain&gt;
+# Should resolve to ingress load balancer IP
+
+# 6. Check firewall rules allow HTTP (port 80)
+# Let's Encrypt requires HTTP for challenge, even for HTTPS certs
+gcloud compute firewall-rules list --filter="name~'.*allow-http.*'"
+
+# 7. If firewall blocks HTTP, create allow rule
+gcloud compute firewall-rules create allow-http \
+  --allow tcp:80 \
+  --source-ranges 0.0.0.0/0
+
+# 8. Retry certificate issuance
+kubectl delete certificaterequest -n &lt;namespace&gt; $(kubectl get certificaterequest -n &lt;namespace&gt; -o name)
+</code></pre>
+<p><strong>If: Manual certificate renewal needed (last resort)</strong></p>
+<pre><code class="language-bash"># 1. Generate new certificate manually with certbot
+certbot certonly --manual --preferred-challenges dns \
+  -d &lt;domain&gt; -d *.&lt;domain&gt;
+
+# 2. Update DNS TXT record as instructed by certbot
+# Wait for DNS propagation (1-5 minutes)
+
+# 3. Complete certbot challenge
+# Certbot will save certificate to /etc/letsencrypt/live/&lt;domain&gt;/
+
+# 4. Create Kubernetes secret with new certificate
+kubectl create secret tls &lt;cert-name&gt; -n &lt;namespace&gt; \
+  --cert=/etc/letsencrypt/live/&lt;domain&gt;/fullchain.pem \
+  --key=/etc/letsencrypt/live/&lt;domain&gt;/privkey.pem
+
+# 5. Update ingress to use new secret
+kubectl edit ingress -n &lt;namespace&gt; &lt;ingress-name&gt;
+# Verify spec.tls[].secretName matches new secret name
+
+# 6. Verify HTTPS is working
+curl -I https://&lt;domain&gt;
+
+# 7. Fix cert-manager issue to prevent manual renewals in future
+# This is a temporary workaround only!
+</code></pre>
+<h4 id="escalation-criteria-5"><a class="header" href="#escalation-criteria-5">Escalation Criteria</a></h4>
+<p><strong>Escalate to Senior Engineer if</strong>:</p>
+<ul>
+<li>Certificate expires in &lt;3 days and not renewing</li>
+<li>cert-manager issues persist after restart</li>
+<li>DNS provider integration broken</li>
+</ul>
+<p><strong>Escalate to Engineering Lead if</strong>:</p>
+<ul>
+<li>Certificate expires in &lt;24 hours</li>
+<li>Multiple certificates failing to renew</li>
+<li>Need to switch certificate provider</li>
+</ul>
+<p><strong>Escalate to VP Engineering + Legal if</strong>:</p>
+<ul>
+<li>Production certificate expired (causing outage)</li>
+<li>Customer data exposure risk due to TLS issues</li>
+<li>Need to purchase commercial certificates (e.g., DigiCert)</li>
+</ul>
+<hr />
+<h2 id="warning-alert-procedures"><a class="header" href="#warning-alert-procedures">Warning Alert Procedures</a></h2>
+<h3 id="7-highnodecpuusage"><a class="header" href="#7-highnodecpuusage">7. HighNodeCPUUsage</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: HighNodeCPUUsage
+expr: (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance)) &gt; 0.80
+for: 10m
+severity: warning
+</code></pre>
+<p><strong>Impact</strong>: Node under high load. May affect performance. Pods may be throttled.</p>
+<h4 id="investigation-steps-6"><a class="header" href="#investigation-steps-6">Investigation Steps</a></h4>
+<ol>
+<li><strong>Identify affected node</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl top nodes
+</code></pre>
+<ol start="2">
+<li><strong>Check pod CPU usage on the node</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl top pods --all-namespaces --field-selector spec.nodeName=&lt;node-name&gt; --sort-by=cpu
+</code></pre>
+<ol start="3">
+<li><strong>Check for CPU-intensive processes</strong></li>
+</ol>
+<pre><code class="language-bash"># Use metrics in Grafana
+# Query: topk(10, rate(container_cpu_usage_seconds_total{node="&lt;node-name&gt;"}[5m]))
+</code></pre>
+<h4 id="remediation-actions-6"><a class="header" href="#remediation-actions-6">Remediation Actions</a></h4>
+<p><strong>Option 1: Scale application horizontally</strong></p>
+<pre><code class="language-bash"># Add more replicas to distribute load
+kubectl scale deployment/&lt;deployment-name&gt; -n &lt;namespace&gt; --replicas=&lt;new-count&gt;
+
+# Or enable HPA
+kubectl autoscale deployment/&lt;deployment-name&gt; -n &lt;namespace&gt; \
+  --cpu-percent=70 --min=2 --max=10
+</code></pre>
+<p><strong>Option 2: Increase node CPU limits</strong></p>
+<pre><code class="language-bash"># Edit deployment to increase CPU limits
+kubectl edit deployment -n &lt;namespace&gt; &lt;deployment-name&gt;
+# Increase resources.limits.cpu
+</code></pre>
+<p><strong>Option 3: Add more nodes to cluster</strong></p>
+<pre><code class="language-bash"># For GKE, resize node pool
+gcloud container clusters resize &lt;cluster-name&gt; \
+  --node-pool=&lt;pool-name&gt; \
+  --num-nodes=&lt;new-count&gt; \
+  --zone=&lt;zone&gt;
+</code></pre>
+<h4 id="escalation-criteria-6"><a class="header" href="#escalation-criteria-6">Escalation Criteria</a></h4>
+<ul>
+<li>Escalate if CPU &gt;90% for &gt;30 minutes</li>
+<li>Escalate if performance degradation reported by users</li>
+</ul>
+<hr />
+<h3 id="8-highnodememoryusage"><a class="header" href="#8-highnodememoryusage">8. HighNodeMemoryUsage</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: HighNodeMemoryUsage
+expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) &gt; 0.85
+for: 10m
+severity: warning
+</code></pre>
+<p><strong>Impact</strong>: Node running out of memory. May trigger OOM kills.</p>
+<h4 id="investigation-steps-7"><a class="header" href="#investigation-steps-7">Investigation Steps</a></h4>
+<ol>
+<li><strong>Identify affected node</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl top nodes
+</code></pre>
+<ol start="2">
+<li><strong>Check pod memory usage on the node</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl top pods --all-namespaces --field-selector spec.nodeName=&lt;node-name&gt; --sort-by=memory
+</code></pre>
+<ol start="3">
+<li><strong>Check for memory leaks</strong></li>
+</ol>
+<pre><code class="language-bash"># Use Grafana to view memory trends
+# Query: container_memory_usage_bytes{node="&lt;node-name&gt;"}
+# Look for steadily increasing memory over time
+</code></pre>
+<h4 id="remediation-actions-7"><a class="header" href="#remediation-actions-7">Remediation Actions</a></h4>
+<p><strong>Option 1: Restart memory-leaking pods</strong></p>
+<pre><code class="language-bash">kubectl delete pod -n &lt;namespace&gt; &lt;pod-name&gt;
+# Or rollout restart
+kubectl rollout restart deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+</code></pre>
+<p><strong>Option 2: Increase memory limits</strong></p>
+<pre><code class="language-bash">kubectl edit deployment -n &lt;namespace&gt; &lt;deployment-name&gt;
+# Increase resources.limits.memory
+</code></pre>
+<p><strong>Option 3: Scale horizontally</strong></p>
+<pre><code class="language-bash">kubectl scale deployment/&lt;deployment-name&gt; -n &lt;namespace&gt; --replicas=&lt;new-count&gt;
+</code></pre>
+<h4 id="escalation-criteria-7"><a class="header" href="#escalation-criteria-7">Escalation Criteria</a></h4>
+<ul>
+<li>Escalate if memory &gt;95% for &gt;15 minutes</li>
+<li>Escalate if OOMKilled events detected</li>
+</ul>
+<hr />
+<h3 id="9-highrequestlatency"><a class="header" href="#9-highrequestlatency">9. HighRequestLatency</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: HighRequestLatency
+expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) &gt; 1.0
+for: 10m
+severity: warning
+</code></pre>
+<p><strong>Impact</strong>: Slow responses. Users experiencing delays.</p>
+<p><strong>See detailed procedure in Critical Alert #5 (HighLatency)</strong> - same investigation and remediation steps apply.</p>
+<hr />
+<h3 id="10-podoomkilled"><a class="header" href="#10-podoomkilled">10. PodOOMKilled</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: PodOOMKilled
+expr: kube_pod_container_status_terminated_reason{reason="OOMKilled"} &gt; 0
+for: 1m
+severity: warning
+</code></pre>
+<p><strong>Impact</strong>: Container killed due to out-of-memory. Service may be unavailable briefly.</p>
+<h4 id="investigation-steps-8"><a class="header" href="#investigation-steps-8">Investigation Steps</a></h4>
+<ol>
+<li><strong>Identify OOMKilled pod</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl get pods --all-namespaces -o json | \
+  jq -r '.items[] | select(.status.containerStatuses[]?.lastState.terminated.reason == "OOMKilled") |
+  [.metadata.namespace, .metadata.name] | @tsv'
+</code></pre>
+<ol start="2">
+<li><strong>Check memory limits</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl get pod -n &lt;namespace&gt; &lt;pod-name&gt; -o jsonpath='{.spec.containers[0].resources}'
+</code></pre>
+<ol start="3">
+<li><strong>Check memory usage before OOM</strong></li>
+</ol>
+<pre><code class="language-bash"># Query in Grafana:
+# container_memory_usage_bytes{pod="&lt;pod-name&gt;"}
+</code></pre>
+<h4 id="remediation-actions-8"><a class="header" href="#remediation-actions-8">Remediation Actions</a></h4>
+<p><strong>Increase memory limits</strong></p>
+<pre><code class="language-bash">kubectl edit deployment -n &lt;namespace&gt; &lt;deployment-name&gt;
+# Increase resources.limits.memory (e.g., 512Mi → 1Gi)
+</code></pre>
+<p><strong>Check for memory leaks</strong></p>
+<pre><code class="language-bash"># If memory increases steadily over time, likely a leak
+# Enable heap profiling and investigate
+</code></pre>
+<h4 id="escalation-criteria-8"><a class="header" href="#escalation-criteria-8">Escalation Criteria</a></h4>
+<ul>
+<li>Escalate if OOMKilled repeatedly (&gt;3 times in 1 hour)</li>
+<li>Escalate if memory leak suspected</li>
+</ul>
+<hr />
+<h3 id="11-persistentvolumeclaimpending"><a class="header" href="#11-persistentvolumeclaimpending">11. PersistentVolumeClaimPending</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: PersistentVolumeClaimPending
+expr: kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1
+for: 5m
+severity: warning
+</code></pre>
+<p><strong>Impact</strong>: Pod cannot start due to unbound PVC. Service may be unavailable.</p>
+<h4 id="investigation-steps-9"><a class="header" href="#investigation-steps-9">Investigation Steps</a></h4>
+<ol>
+<li><strong>Identify pending PVC</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl get pvc --all-namespaces | grep Pending
+</code></pre>
+<ol start="2">
+<li><strong>Check PVC details</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl describe pvc -n &lt;namespace&gt; &lt;pvc-name&gt;
+</code></pre>
+<ol start="3">
+<li><strong>Check storage class</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl get storageclass
+kubectl describe storageclass &lt;storage-class-name&gt;
+</code></pre>
+<h4 id="remediation-actions-9"><a class="header" href="#remediation-actions-9">Remediation Actions</a></h4>
+<p><strong>If: No storage class exists</strong></p>
+<pre><code class="language-bash"># Create storage class (example for GKE)
+kubectl apply -f - &lt;&lt;EOF
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-ssd
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-ssd
+EOF
+
+# Update PVC to use storage class
+kubectl edit pvc -n &lt;namespace&gt; &lt;pvc-name&gt;
+# Set storageClassName: fast-ssd
+</code></pre>
+<p><strong>If: Storage quota exceeded</strong></p>
+<pre><code class="language-bash"># Check quota
+kubectl get resourcequota -n &lt;namespace&gt;
+
+# Increase quota if needed
+kubectl edit resourcequota -n &lt;namespace&gt; &lt;quota-name&gt;
+</code></pre>
+<p><strong>If: Node affinity preventing binding</strong></p>
+<pre><code class="language-bash"># Check if PV has node affinity that doesn't match any node
+kubectl get pv | grep Available
+kubectl describe pv &lt;pv-name&gt;
+
+# May need to delete PV and recreate without affinity
+</code></pre>
+<h4 id="escalation-criteria-9"><a class="header" href="#escalation-criteria-9">Escalation Criteria</a></h4>
+<ul>
+<li>Escalate if PVC pending for &gt;15 minutes</li>
+<li>Escalate if quota increase needed</li>
+</ul>
+<hr />
+<h3 id="12-deploymentreplicasmismatch"><a class="header" href="#12-deploymentreplicasmismatch">12. DeploymentReplicasMismatch</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: DeploymentReplicasMismatch
+expr: kube_deployment_spec_replicas != kube_deployment_status_replicas_available
+for: 15m
+severity: warning
+</code></pre>
+<p><strong>Impact</strong>: Deployment not at desired replica count. May affect availability or capacity.</p>
+<h4 id="investigation-steps-10"><a class="header" href="#investigation-steps-10">Investigation Steps</a></h4>
+<ol>
+<li><strong>Identify affected deployment</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl get deployments --all-namespaces
+# Look for deployments where READY != DESIRED
+</code></pre>
+<ol start="2">
+<li><strong>Check pod status</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl get pods -n &lt;namespace&gt; -l app=&lt;deployment-name&gt;
+</code></pre>
+<ol start="3">
+<li><strong>Check for pod errors</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl describe pod -n &lt;namespace&gt; &lt;pod-name&gt;
+</code></pre>
+<h4 id="remediation-actions-10"><a class="header" href="#remediation-actions-10">Remediation Actions</a></h4>
+<p><strong>If: Pods pending due to resources</strong></p>
+<pre><code class="language-bash"># Check pending reason
+kubectl describe pod -n &lt;namespace&gt; &lt;pod-name&gt; | grep -A 5 Events
+
+# If "Insufficient cpu" or "Insufficient memory":
+# - Add more nodes, or
+# - Reduce resource requests
+</code></pre>
+<p><strong>If: Image pull error</strong></p>
+<pre><code class="language-bash"># Fix image name or credentials
+kubectl set image deployment/&lt;deployment-name&gt; &lt;container&gt;=&lt;correct-image&gt; -n &lt;namespace&gt;
+</code></pre>
+<p><strong>If: Pods crashing</strong></p>
+<pre><code class="language-bash"># See PodCrashLoopBackOff procedure (Critical Alert #1)
+</code></pre>
+<h4 id="escalation-criteria-10"><a class="header" href="#escalation-criteria-10">Escalation Criteria</a></h4>
+<ul>
+<li>Escalate if mismatch persists for &gt;30 minutes</li>
+<li>Escalate if related to resource capacity issues</li>
+</ul>
+<hr />
+<h3 id="13-lowcachehitrate"><a class="header" href="#13-lowcachehitrate">13. LowCacheHitRate</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: LowCacheHitRate
+expr: redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total) &lt; 0.50
+for: 15m
+severity: warning
+</code></pre>
+<p><strong>Impact</strong>: Increased latency and load on database due to cache misses.</p>
+<h4 id="investigation-steps-11"><a class="header" href="#investigation-steps-11">Investigation Steps</a></h4>
+<ol>
+<li><strong>Check cache hit rate in Grafana</strong></li>
+</ol>
+<pre><code class="language-bash"># Query: redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total)
+</code></pre>
+<ol start="2">
+<li><strong>Check cache size and memory</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl exec -it -n &lt;namespace&gt; &lt;redis-pod&gt; -- redis-cli INFO memory
+</code></pre>
+<ol start="3">
+<li><strong>Check cache eviction rate</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl exec -it -n &lt;namespace&gt; &lt;redis-pod&gt; -- redis-cli INFO stats | grep evicted_keys
+</code></pre>
+<h4 id="remediation-actions-11"><a class="header" href="#remediation-actions-11">Remediation Actions</a></h4>
+<p><strong>If: Cache too small (frequent evictions)</strong></p>
+<pre><code class="language-bash"># Increase Redis memory
+kubectl edit statefulset -n &lt;namespace&gt; redis
+# Increase resources.limits.memory
+
+# Restart Redis
+kubectl delete pod -n &lt;namespace&gt; &lt;redis-pod&gt;
+</code></pre>
+<p><strong>If: Cache TTL too short</strong></p>
+<pre><code class="language-bash"># Increase TTL in application config
+kubectl edit configmap -n &lt;namespace&gt; &lt;service&gt;-config
+# Increase CACHE_TTL value
+
+# Restart service
+kubectl rollout restart deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+</code></pre>
+<p><strong>If: Data access patterns changed</strong></p>
+<pre><code class="language-bash"># Implement cache warming
+# Pre-populate cache with frequently accessed data
+
+# Adjust cache strategy (e.g., cache-aside vs. write-through)
+</code></pre>
+<h4 id="escalation-criteria-11"><a class="header" href="#escalation-criteria-11">Escalation Criteria</a></h4>
+<ul>
+<li>Escalate if hit rate &lt;30% for &gt;1 hour</li>
+<li>Escalate if causing user-facing latency issues</li>
+</ul>
+<hr />
+<h2 id="informational-alert-procedures"><a class="header" href="#informational-alert-procedures">Informational Alert Procedures</a></h2>
+<h3 id="14-newdeploymentdetected"><a class="header" href="#14-newdeploymentdetected">14. NewDeploymentDetected</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: NewDeploymentDetected
+expr: changes(kube_deployment_status_observed_generation[5m]) &gt; 0
+severity: info
+</code></pre>
+<p><strong>Impact</strong>: Informational. No immediate action required.</p>
+<h4 id="actions"><a class="header" href="#actions">Actions</a></h4>
+<ol>
+<li><strong>Verify deployment in kubectl</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl rollout status deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+</code></pre>
+<ol start="2">
+<li><strong>Monitor for related alerts</strong> (errors, crashes, latency)</li>
+</ol>
+<pre><code class="language-bash"># Check Alertmanager for any new critical/warning alerts
+</code></pre>
+<ol start="3">
+<li><strong>Document in change log</strong> if significant deployment</li>
+</ol>
+<hr />
+<h3 id="15-hpascaledup--hpascaleddown"><a class="header" href="#15-hpascaledup--hpascaleddown">15. HPAScaledUp / HPAScaledDown</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: HPAScaledUp
+expr: changes(kube_horizontalpodautoscaler_status_current_replicas[5m]) &gt; 0
+severity: info
+</code></pre>
+<p><strong>Impact</strong>: Informational. HPA adjusted replica count based on load.</p>
+<h4 id="actions-1"><a class="header" href="#actions-1">Actions</a></h4>
+<ol>
+<li><strong>Verify scaling event in Grafana</strong></li>
+</ol>
+<pre><code class="language-bash"># Query: kube_horizontalpodautoscaler_status_current_replicas{hpa="&lt;hpa-name&gt;"}
+</code></pre>
+<ol start="2">
+<li>
+<p><strong>Check if scaling is expected</strong> (e.g., during peak hours)</p>
+</li>
+<li>
+<p><strong>If scaling too frequent</strong>, adjust HPA thresholds:</p>
+</li>
+</ol>
+<pre><code class="language-bash">kubectl edit hpa -n &lt;namespace&gt; &lt;hpa-name&gt;
+# Adjust targetCPUUtilizationPercentage
+</code></pre>
+<hr />
+<h3 id="16-configmapchanged"><a class="header" href="#16-configmapchanged">16. ConfigMapChanged</a></h3>
+<p><strong>Alert Definition</strong>:</p>
+<pre><code class="language-yaml">alert: ConfigMapChanged
+expr: changes(kube_configmap_info[5m]) &gt; 0
+severity: info
+</code></pre>
+<p><strong>Impact</strong>: Informational. ConfigMap updated.</p>
+<h4 id="actions-2"><a class="header" href="#actions-2">Actions</a></h4>
+<ol>
+<li><strong>Identify changed ConfigMap</strong></li>
+</ol>
+<pre><code class="language-bash">kubectl get configmap --all-namespaces --sort-by=.metadata.creationTimestamp
+</code></pre>
+<ol start="2">
+<li>
+<p><strong>Verify change was intentional</strong></p>
+</li>
+<li>
+<p><strong>Restart pods if needed</strong> to pick up new config:</p>
+</li>
+</ol>
+<pre><code class="language-bash">kubectl rollout restart deployment/&lt;deployment-name&gt; -n &lt;namespace&gt;
+</code></pre>
+<hr />
+<h2 id="multi-alert-scenarios"><a class="header" href="#multi-alert-scenarios">Multi-Alert Scenarios</a></h2>
+<h3 id="scenario-1-multiple-pods-crashing--node-notready"><a class="header" href="#scenario-1-multiple-pods-crashing--node-notready">Scenario 1: Multiple Pods Crashing + Node NotReady</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul>
+<li>Alert: PodCrashLoopBackOff (multiple pods)</li>
+<li>Alert: NodeNotReady (1 node)</li>
+</ul>
+<p><strong>Root Cause</strong>: Node failure causing all pods on that node to crash.</p>
+<p><strong>Investigation</strong>:</p>
+<ol>
+<li>Identify which pods are on the failing node</li>
+<li>Check node status (see NodeNotReady procedure)</li>
+</ol>
+<p><strong>Remediation</strong>:</p>
+<ol>
+<li>Cordon and drain the failing node</li>
+<li>Pods will be rescheduled to healthy nodes</li>
+<li>Replace the failed node</li>
+</ol>
+<hr />
+<h3 id="scenario-2-high-error-rate--database-connection-pool-exhausted"><a class="header" href="#scenario-2-high-error-rate--database-connection-pool-exhausted">Scenario 2: High Error Rate + Database Connection Pool Exhausted</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul>
+<li>Alert: HighErrorRate (&gt;10% 5xx errors)</li>
+<li>Alert: DatabaseConnectionPoolExhausted (&gt;95% pool usage)</li>
+</ul>
+<p><strong>Root Cause</strong>: Connection pool exhaustion causing service errors.</p>
+<p><strong>Investigation</strong>:</p>
+<ol>
+<li>Check if error rate corresponds to pool exhaustion timing</li>
+<li>Check for long-running database queries</li>
+</ol>
+<p><strong>Remediation</strong>:</p>
+<ol>
+<li>Restart service to release connections</li>
+<li>Increase connection pool size</li>
+<li>Optimize slow queries</li>
+</ol>
+<hr />
+<h3 id="scenario-3-high-latency--low-cache-hit-rate--high-database-load"><a class="header" href="#scenario-3-high-latency--low-cache-hit-rate--high-database-load">Scenario 3: High Latency + Low Cache Hit Rate + High Database Load</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul>
+<li>Alert: HighLatency (P95 &gt;1s)</li>
+<li>Alert: LowCacheHitRate (&lt;50%)</li>
+<li>Observation: High database CPU</li>
+</ul>
+<p><strong>Root Cause</strong>: Cache ineffectiveness causing excessive database load and slow queries.</p>
+<p><strong>Investigation</strong>:</p>
+<ol>
+<li>Check cache hit rate timeline</li>
+<li>Check database query volume</li>
+<li>Identify cache misses by key pattern</li>
+</ol>
+<p><strong>Remediation</strong>:</p>
+<ol>
+<li>Increase cache size</li>
+<li>Increase cache TTL</li>
+<li>Implement cache warming for common queries</li>
+<li>Add database indexes for frequent queries</li>
+</ol>
+<hr />
+<h2 id="escalation-decision-trees"><a class="header" href="#escalation-decision-trees">Escalation Decision Trees</a></h2>
+<h3 id="decision-tree-1-service-outage"><a class="header" href="#decision-tree-1-service-outage">Decision Tree 1: Service Outage</a></h3>
+<pre><code>Service completely unavailable (100% error rate)?
+├─ YES → CRITICAL - Page on-call engineer
+│   ├─ Multiple services down?
+│   │   ├─ YES → Page Engineering Lead + VP Eng
+│   │   └─ NO → Continue troubleshooting
+│   └─ Customer-reported on social media?
+│       ├─ YES → Notify VP Eng + Customer Success
+│       └─ NO → Continue troubleshooting
+└─ NO → Check error rate
+    ├─ &gt;50% error rate?
+    │   ├─ YES → Page on-call engineer
+    │   └─ NO → Assign to on-call engineer (Slack)
+    └─ &lt;10% error rate?
+        └─ YES → Create ticket, no immediate page
+</code></pre>
+<h3 id="decision-tree-2-performance-degradation"><a class="header" href="#decision-tree-2-performance-degradation">Decision Tree 2: Performance Degradation</a></h3>
+<pre><code>Users reporting slow performance?
+├─ YES → Check latency metrics
+│   ├─ P95 &gt;2s?
+│   │   ├─ YES → CRITICAL - Page on-call engineer
+│   │   └─ NO → Assign to on-call engineer
+│   └─ P95 &gt;1s but &lt;2s?
+│       ├─ YES → WARNING - Notify on-call engineer (Slack)
+│       └─ NO → Create ticket for investigation
+└─ NO → Proactive monitoring
+    └─ P95 &gt;1s for &gt;15m?
+        ├─ YES → Investigate proactively
+        └─ NO → Continue monitoring
+</code></pre>
+<h3 id="decision-tree-3-infrastructure-issue"><a class="header" href="#decision-tree-3-infrastructure-issue">Decision Tree 3: Infrastructure Issue</a></h3>
+<pre><code>Node or infrastructure alert?
+├─ NodeNotReady?
+│   ├─ Single node?
+│   │   ├─ YES → Cordon, drain, replace
+│   │   └─ NO → Multiple nodes - Page Engineering Lead
+│   └─ &gt;30% of nodes affected?
+│       └─ YES → CRITICAL - Page VP Eng + GCP Support
+└─ Disk/Memory pressure?
+    ├─ Can be resolved with cleanup?
+    │   ├─ YES → Clean up and monitor
+    │   └─ NO → Page on-call engineer for node replacement
+</code></pre>
+<hr />
+<h2 id="post-incident-actions"><a class="header" href="#post-incident-actions">Post-Incident Actions</a></h2>
+<h3 id="after-resolving-critical-alerts"><a class="header" href="#after-resolving-critical-alerts">After Resolving Critical Alerts</a></h3>
+<ol>
+<li>
+<p><strong>Document resolution</strong> in incident tracker</p>
+<ul>
+<li>Root cause</li>
+<li>Actions taken</li>
+<li>Time to resolution</li>
+<li>Services affected</li>
+</ul>
+</li>
+<li>
+<p><strong>Create post-incident review</strong> (PIR) for critical incidents</p>
+<ul>
+<li>Timeline of events</li>
+<li>Impact assessment</li>
+<li>Contributing factors</li>
+<li>Action items to prevent recurrence</li>
+</ul>
+</li>
+<li>
+<p><strong>Update runbooks</strong> if new issue discovered</p>
+<ul>
+<li>Add new troubleshooting steps</li>
+<li>Update remediation procedures</li>
+<li>Document lessons learned</li>
+</ul>
+</li>
+<li>
+<p><strong>Implement preventive measures</strong></p>
+<ul>
+<li>Add monitoring for early detection</li>
+<li>Improve alerting thresholds</li>
+<li>Automate remediation where possible</li>
+</ul>
+</li>
+<li>
+<p><strong>Communicate to stakeholders</strong></p>
+<ul>
+<li>Internal: Engineering team, leadership</li>
+<li>External: Customers (if user-impacting)</li>
+<li>Status page update</li>
+</ul>
+</li>
+</ol>
+<h3 id="post-incident-review-template"><a class="header" href="#post-incident-review-template">Post-Incident Review Template</a></h3>
+<pre><code class="language-markdown"># Post-Incident Review: &lt;Incident Title&gt;
+
+**Date**: YYYY-MM-DD
+**Severity**: Critical / Warning
+**Duration**: X hours Y minutes
+**Services Affected**: &lt;list&gt;
+
+## Summary
+
+&lt;1-2 sentence summary of incident&gt;
+
+## Timeline
+
+| Time (UTC) | Event |
+|------------|-------|
+| 14:00 | Alert triggered: HighErrorRate |
+| 14:05 | On-call engineer acknowledged |
+| 14:10 | Root cause identified: database connection pool exhausted |
+| 14:15 | Mitigation applied: restarted service |
+| 14:20 | Incident resolved: error rate returned to normal |
+
+## Root Cause
+
+&lt;Detailed explanation of what caused the incident&gt;
+
+## Impact
+
+- **User Impact**: X% of requests resulted in errors
+- **Revenue Impact**: $Y estimated lost revenue
+- **Duration**: X hours Y minutes
+
+## Resolution
+
+&lt;What was done to resolve the incident&gt;
+
+## Contributing Factors
+
+1. Factor 1
+2. Factor 2
+
+## Action Items
+
+1. [ ] Increase connection pool size (Owner: @engineer, Due: YYYY-MM-DD)
+2. [ ] Add alert for connection pool usage (Owner: @engineer, Due: YYYY-MM-DD)
+3. [ ] Update runbook with new procedure (Owner: @engineer, Due: YYYY-MM-DD)
+
+## Lessons Learned
+
+- What went well
+- What could be improved
+- What we learned
+</code></pre>
+<hr />
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>This alert response procedures document provides detailed, step-by-step guidance for responding to all alerts in the OctoLLM monitoring system. Key points:</p>
+<ul>
+<li><strong>Critical alerts</strong> require immediate action (acknowledge within 5 minutes, resolve within 1 hour)</li>
+<li><strong>Warning alerts</strong> require timely action (acknowledge within 30 minutes, resolve within 4 hours)</li>
+<li><strong>Info alerts</strong> are informational and require no immediate action</li>
+</ul>
+<p>Each procedure includes:</p>
+<ul>
+<li>Alert definition and impact</li>
+<li>Investigation steps with commands</li>
+<li>Remediation actions with code examples</li>
+<li>Escalation criteria</li>
+</ul>
+<p><strong>For all incidents</strong>:</p>
+<ol>
+<li>Follow the general response workflow (acknowledge → assess → investigate → remediate → document → close)</li>
+<li>Use the escalation decision trees to determine when to involve senior engineers or leadership</li>
+<li>Complete post-incident reviews for critical incidents</li>
+<li>Update runbooks with lessons learned</li>
+</ol>
+<p><strong>Related Documents</strong>:</p>
+<ul>
+<li>Monitoring Runbook: <code>/home/parobek/Code/OctoLLM/docs/operations/monitoring-runbook.md</code></li>
+<li>Deployment Guide: <code>/home/parobek/Code/OctoLLM/docs/deployment-guide.md</code></li>
+<li>Backup and Restore: <code>/home/parobek/Code/OctoLLM/docs/operations/backup-restore.md</code></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../operations/monitoring-runbook.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../operations/troubleshooting-playbooks.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../operations/monitoring-runbook.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../operations/troubleshooting-playbooks.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

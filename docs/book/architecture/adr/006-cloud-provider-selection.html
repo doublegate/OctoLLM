@@ -1,0 +1,1343 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>ADR-006: Cloud Provider Selection - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/architecture/adr/006-cloud-provider-selection.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="adr-006-cloud-provider-selection"><a class="header" href="#adr-006-cloud-provider-selection">ADR-006: Cloud Provider Selection</a></h1>
+<p><strong>Status</strong>: Accepted
+<strong>Date</strong>: 2025-11-12
+<strong>Decision Makers</strong>: Architecture Team, DevOps Team, Finance Team
+<strong>Consulted</strong>: Engineering Team, Security Team, Operations Team</p>
+<h2 id="context"><a class="header" href="#context">Context</a></h2>
+<p>OctoLLM requires a cloud infrastructure provider to host production, staging, and development environments. As established in <strong>ADR-005 (Deployment Platform)</strong>, we have decided to use <strong>Kubernetes for production</strong> with a cloud-agnostic architecture. This ADR focuses on selecting the specific cloud provider for managed services while maintaining portability.</p>
+<h3 id="infrastructure-requirements"><a class="header" href="#infrastructure-requirements">Infrastructure Requirements</a></h3>
+<p><strong>Core Services Needed</strong>:</p>
+<ol>
+<li><strong>Kubernetes Service</strong>: Managed Kubernetes cluster (1.28+)</li>
+<li><strong>Managed PostgreSQL</strong>: PostgreSQL 15+ with HA, read replicas, automated backups</li>
+<li><strong>Managed Redis</strong>: Redis 7+ with cluster mode, persistence, automatic failover</li>
+<li><strong>Object Storage</strong>: S3-compatible storage for backups, logs, artifacts</li>
+<li><strong>Secrets Management</strong>: Secure storage for API keys, certificates, passwords</li>
+<li><strong>Load Balancing</strong>: Layer 7 load balancers with TLS termination</li>
+<li><strong>DNS Management</strong>: Managed DNS with health checks</li>
+<li><strong>Monitoring &amp; Logging</strong>: Metrics, logs, distributed tracing capabilities</li>
+</ol>
+<p><strong>Deployment Environments</strong>:</p>
+<ul>
+<li><strong>Development</strong>: Minimal resources, cost-optimized, single-region</li>
+<li><strong>Staging</strong>: Production-like, scaled down 50%, multi-AZ</li>
+<li><strong>Production</strong>: Full HA, multi-AZ, auto-scaling, 99.95% SLA</li>
+</ul>
+<p><strong>Resource Specifications</strong> (from MASTER-TODO.md Sprint 0.7):</p>
+<div class="table-wrapper"><table><thead><tr><th>Environment</th><th>Kubernetes Nodes</th><th>PostgreSQL</th><th>Redis</th><th>Monthly Est.</th></tr></thead><tbody>
+<tr><td>Development</td><td>3 nodes (2vCPU, 8GB)</td><td>1vCPU, 2GB, 20GB</td><td>2GB single</td><td>$200-400</td></tr>
+<tr><td>Staging</td><td>4 nodes (4vCPU, 16GB)</td><td>2vCPU, 8GB, 100GB</td><td>3GB cluster</td><td>$600-1,000</td></tr>
+<tr><td>Production</td><td>5-15 nodes (8vCPU, 32GB)</td><td>4vCPU, 16GB, 200GB + 2 replicas</td><td>3 masters + 3 replicas @ 6GB</td><td>$2,500-5,000</td></tr>
+</tbody></table>
+</div>
+<p><strong>Key Decision Criteria</strong>:</p>
+<ol>
+<li><strong>Cost</strong>: Total cost of ownership (TCO) across all environments</li>
+<li><strong>Kubernetes Maturity</strong>: Feature set, stability, ecosystem integration</li>
+<li><strong>Database Performance</strong>: PostgreSQL and Redis managed service quality</li>
+<li><strong>Developer Experience</strong>: Ease of setup, documentation, tooling</li>
+<li><strong>Security &amp; Compliance</strong>: SOC 2, ISO 27001, GDPR capabilities</li>
+<li><strong>Geographic Coverage</strong>: Low-latency access for target users</li>
+<li><strong>Free Tier</strong>: Development and experimentation capabilities</li>
+<li><strong>Migration Path</strong>: Ease of multi-cloud or exit strategy</li>
+<li><strong>Monitoring &amp; Observability</strong>: Native tools for metrics, logs, traces</li>
+<li><strong>Community &amp; Support</strong>: Documentation quality, community size, support options</li>
+</ol>
+<h3 id="evaluation-constraints"><a class="header" href="#evaluation-constraints">Evaluation Constraints</a></h3>
+<ul>
+<li><strong>Budget</strong>: Target $500/month for dev + staging, $3,000/month for production</li>
+<li><strong>Timeline</strong>: Infrastructure must be provisionable within 1 week</li>
+<li><strong>Skills</strong>: Team has moderate cloud experience, strong Kubernetes knowledge</li>
+<li><strong>Compliance</strong>: Must support future SOC 2 Type II certification</li>
+<li><strong>Portability</strong>: Infrastructure must be cloud-agnostic (use standard APIs)</li>
+</ul>
+<h2 id="research--analysis"><a class="header" href="#research--analysis">Research &amp; Analysis</a></h2>
+<h3 id="1-amazon-web-services-aws"><a class="header" href="#1-amazon-web-services-aws">1. Amazon Web Services (AWS)</a></h3>
+<p><strong>Kubernetes Service</strong>: Amazon Elastic Kubernetes Service (EKS)
+<strong>Managed PostgreSQL</strong>: Amazon RDS for PostgreSQL
+<strong>Managed Redis</strong>: Amazon ElastiCache for Redis
+<strong>Object Storage</strong>: Amazon S3
+<strong>Secrets Management</strong>: AWS Secrets Manager</p>
+<h4 id="strengths"><a class="header" href="#strengths">Strengths</a></h4>
+<p><strong>Kubernetes (EKS)</strong>:</p>
+<ul>
+<li>Mature service (GA since 2018)</li>
+<li>Excellent control plane HA (99.95% SLA)</li>
+<li>Native integration with AWS services (IAM, CloudWatch, ELB)</li>
+<li>Fargate support for serverless node pools</li>
+<li>Managed node groups with auto-scaling</li>
+<li>EKS Anywhere for hybrid/on-prem (portability)</li>
+<li>Extensive ecosystem (add-ons, operators)</li>
+</ul>
+<p><strong>Database (RDS PostgreSQL)</strong>:</p>
+<ul>
+<li>PostgreSQL 15+ support</li>
+<li>Automated backups (35-day retention max)</li>
+<li>Multi-AZ deployments with automatic failover (&lt;2 min)</li>
+<li>Read replicas (up to 15) with cross-region support</li>
+<li>Performance Insights for query optimization</li>
+<li>Aurora PostgreSQL option (5x performance, higher cost)</li>
+<li>Proxy support (RDS Proxy) for connection pooling</li>
+</ul>
+<p><strong>Redis (ElastiCache)</strong>:</p>
+<ul>
+<li>Redis 7.0+ support</li>
+<li>Cluster mode with auto-sharding (up to 500 nodes)</li>
+<li>Multi-AZ with automatic failover</li>
+<li>Daily backups with point-in-time recovery</li>
+<li>Encryption at rest and in transit</li>
+<li>Global Datastore for multi-region replication</li>
+</ul>
+<p><strong>Storage (S3)</strong>:</p>
+<ul>
+<li>Industry-leading 99.999999999% durability (11 nines)</li>
+<li>Lifecycle policies for cost optimization</li>
+<li>Versioning, replication, encryption</li>
+<li>Glacier for long-term archival (lowest cost)</li>
+<li>S3 Express One Zone for ultra-low latency</li>
+</ul>
+<p><strong>Secrets (Secrets Manager)</strong>:</p>
+<ul>
+<li>Automatic rotation for RDS, Redshift, DocumentDB</li>
+<li>Fine-grained IAM policies</li>
+<li>Encryption with KMS</li>
+<li>Cross-region replication</li>
+<li>Versioning and rollback</li>
+</ul>
+<p><strong>Monitoring</strong>:</p>
+<ul>
+<li>CloudWatch for metrics (1-minute resolution, 15-month retention)</li>
+<li>CloudWatch Logs for centralized logging</li>
+<li>X-Ray for distributed tracing</li>
+<li>Container Insights for EKS-specific metrics</li>
+</ul>
+<p><strong>Developer Experience</strong>:</p>
+<ul>
+<li>AWS CLI (mature, feature-complete)</li>
+<li>eksctl for simplified EKS operations</li>
+<li>AWS CDK for infrastructure as code (TypeScript/Python)</li>
+<li>Extensive Terraform modules (community-maintained)</li>
+<li>Copilot CLI for containerized apps</li>
+<li>Comprehensive documentation (best-in-class)</li>
+</ul>
+<p><strong>Geographic Coverage</strong>:</p>
+<ul>
+<li>32 regions, 102 availability zones (as of 2024)</li>
+<li>Excellent global coverage (US, EU, Asia-Pacific, Middle East, South America)</li>
+<li>Low-latency access for most OctoLLM users (US-based initially)</li>
+</ul>
+<p><strong>Free Tier</strong>:</p>
+<ul>
+<li>750 hours/month EC2 t2.micro (12 months)</li>
+<li>20GB RDS PostgreSQL (12 months)</li>
+<li>5GB S3 storage (always free)</li>
+<li>1 million Lambda requests/month (always free)</li>
+<li><strong>No free tier for EKS</strong> ($0.10/hour = $73/month per cluster)</li>
+</ul>
+<p><strong>Compliance</strong>:</p>
+<ul>
+<li>SOC 2 Type II certified</li>
+<li>ISO 27001, 27017, 27018</li>
+<li>GDPR, HIPAA, PCI DSS compliant</li>
+<li>143 compliance certifications (most comprehensive)</li>
+</ul>
+<h4 id="weaknesses"><a class="header" href="#weaknesses">Weaknesses</a></h4>
+<p><strong>Cost</strong>:</p>
+<ul>
+<li>EKS control plane: $0.10/hour ($73/month per cluster)</li>
+<li>More expensive than GCP/Azure for compute (10-15% higher)</li>
+<li>Data transfer costs can be significant (egress: $0.09/GB)</li>
+<li>RDS pricing higher than CloudSQL/Azure Database</li>
+</ul>
+<p><strong>Complexity</strong>:</p>
+<ul>
+<li>Steeper learning curve (vast service catalog)</li>
+<li>IAM complexity (policies, roles, users, groups)</li>
+<li>Networking setup more involved (VPC, subnets, route tables, NAT)</li>
+</ul>
+<p><strong>Vendor Lock-in Risk</strong>:</p>
+<ul>
+<li>Easy to use AWS-specific services (DynamoDB, Lambda)</li>
+<li>Proprietary APIs (CloudWatch, X-Ray)</li>
+<li>Aurora PostgreSQL not portable</li>
+</ul>
+<h4 id="cost-estimate-per-month"><a class="header" href="#cost-estimate-per-month">Cost Estimate (per month)</a></h4>
+<p><strong>Development Environment</strong>:</p>
+<ul>
+<li>EKS cluster: $73 (control plane)</li>
+<li>EC2 nodes: 3 × t3.large (2vCPU, 8GB): $150</li>
+<li>RDS PostgreSQL: db.t3.micro (1vCPU, 2GB): $30</li>
+<li>ElastiCache Redis: cache.t3.micro (2GB): $35</li>
+<li>S3: 50GB + requests: $5</li>
+<li>Data transfer: $10</li>
+<li><strong>Total: ~$303/month</strong></li>
+</ul>
+<p><strong>Staging Environment</strong>:</p>
+<ul>
+<li>EKS cluster: $73</li>
+<li>EC2 nodes: 4 × t3.xlarge (4vCPU, 16GB): $400</li>
+<li>RDS PostgreSQL: db.t3.medium (2vCPU, 8GB): $120</li>
+<li>ElastiCache Redis: cache.r6g.large (3GB cluster): $150</li>
+<li>S3: 200GB + requests: $15</li>
+<li>Data transfer: $30</li>
+<li><strong>Total: ~$788/month</strong></li>
+</ul>
+<p><strong>Production Environment</strong>:</p>
+<ul>
+<li>EKS cluster: $73</li>
+<li>EC2 nodes: 5-10 × m6i.2xlarge (8vCPU, 32GB): $2,400 (avg 7.5 nodes)</li>
+<li>RDS PostgreSQL: db.r6g.xlarge (4vCPU, 16GB) + 2 read replicas: $900</li>
+<li>ElastiCache Redis: cache.r6g.xlarge (6GB) × 6 (cluster): $900</li>
+<li>S3: 1TB + requests: $50</li>
+<li>Load Balancer (ALB): $30</li>
+<li>NAT Gateway: $90</li>
+<li>Data transfer: $200</li>
+<li><strong>Total: ~$4,643/month</strong></li>
+</ul>
+<p><strong>Total All Environments</strong>: ~$5,734/month</p>
+<hr />
+<h3 id="2-google-cloud-platform-gcp"><a class="header" href="#2-google-cloud-platform-gcp">2. Google Cloud Platform (GCP)</a></h3>
+<p><strong>Kubernetes Service</strong>: Google Kubernetes Engine (GKE)
+<strong>Managed PostgreSQL</strong>: Cloud SQL for PostgreSQL
+<strong>Managed Redis</strong>: Memorystore for Redis
+<strong>Object Storage</strong>: Google Cloud Storage (GCS)
+<strong>Secrets Management</strong>: Secret Manager</p>
+<h4 id="strengths-1"><a class="header" href="#strengths-1">Strengths</a></h4>
+<p><strong>Kubernetes (GKE)</strong>:</p>
+<ul>
+<li><strong>Best-in-class Kubernetes</strong> (Google created Kubernetes)</li>
+<li>Autopilot mode: fully managed, serverless, pay-per-pod</li>
+<li>Standard mode: flexible, full control</li>
+<li>Automatic node repairs and upgrades</li>
+<li>Built-in container security (Binary Authorization, GKE Sandbox)</li>
+<li>Multi-cluster Ingress (traffic routing across clusters)</li>
+<li>Workload Identity (native Kubernetes service account integration)</li>
+<li><strong>Free control plane for Standard mode</strong> (below 3 zones)</li>
+<li>GKE Enterprise (formerly Anthos) for multi-cloud/hybrid</li>
+</ul>
+<p><strong>Database (Cloud SQL PostgreSQL)</strong>:</p>
+<ul>
+<li>PostgreSQL 15+ support</li>
+<li>High availability with automatic failover (&lt;60 seconds)</li>
+<li>Up to 10 read replicas</li>
+<li>Automated backups (365-day retention max)</li>
+<li>Point-in-time recovery (7 days)</li>
+<li>Connection pooling built-in (PgBouncer)</li>
+<li>Query Insights for performance analysis</li>
+<li><strong>15-25% cheaper than RDS</strong> (similar specs)</li>
+</ul>
+<p><strong>Redis (Memorystore)</strong>:</p>
+<ul>
+<li>Redis 7.0+ support</li>
+<li>High availability with automatic failover</li>
+<li><strong>Extremely low latency</strong> (&lt;1ms within region)</li>
+<li>Read replicas for read-heavy workloads</li>
+<li>Import/export capabilities</li>
+<li><strong>No cluster mode</strong> (scaling limited to 300GB per instance)</li>
+</ul>
+<p><strong>Storage (GCS)</strong>:</p>
+<ul>
+<li>99.999999999% durability (same as S3)</li>
+<li>Multi-region and dual-region options</li>
+<li>Lifecycle management</li>
+<li>Object versioning</li>
+<li>Nearline/Coldline/Archive for cost optimization</li>
+<li>Signed URLs for temporary access</li>
+</ul>
+<p><strong>Secrets (Secret Manager)</strong>:</p>
+<ul>
+<li>Automatic versioning</li>
+<li>IAM integration</li>
+<li>Encryption with Cloud KMS</li>
+<li>Audit logging with Cloud Audit Logs</li>
+<li><strong>Simpler than AWS Secrets Manager</strong> (less feature-rich but easier)</li>
+</ul>
+<p><strong>Monitoring</strong>:</p>
+<ul>
+<li>Cloud Monitoring (formerly Stackdriver)</li>
+<li>Cloud Logging (centralized logs, 30-day default retention)</li>
+<li>Cloud Trace (distributed tracing)</li>
+<li>GKE observability built-in (metrics, logs, traces)</li>
+<li><strong>Better integration than AWS</strong> (single pane of glass)</li>
+</ul>
+<p><strong>Developer Experience</strong>:</p>
+<ul>
+<li>gcloud CLI (well-designed, intuitive)</li>
+<li>GKE-specific commands (gcloud container)</li>
+<li>Google Cloud Console (modern UI, fastest)</li>
+<li>Terraform support (official provider, well-maintained)</li>
+<li><strong>Excellent documentation</strong> (clear, concise)</li>
+<li>Cloud Shell (browser-based development environment)</li>
+</ul>
+<p><strong>Geographic Coverage</strong>:</p>
+<ul>
+<li>40 regions, 121 zones (as of 2024)</li>
+<li><strong>Best regional expansion</strong> (new regions frequently)</li>
+<li>Strong Asia-Pacific presence</li>
+<li>Multi-region resources (Cloud SQL, GCS)</li>
+</ul>
+<p><strong>Free Tier</strong>:</p>
+<ul>
+<li><strong>GKE Standard: FREE control plane</strong> (autopilot mode free for &lt;18 hours/month)</li>
+<li>$300 free credit for 90 days (new accounts)</li>
+<li>Always free: 1 non-preemptible e2-micro VM</li>
+<li>Always free: 5GB Cloud Storage (regional)</li>
+<li><strong>Best free tier for Kubernetes experimentation</strong></li>
+</ul>
+<p><strong>Compliance</strong>:</p>
+<ul>
+<li>SOC 2 Type II certified</li>
+<li>ISO 27001, 27017, 27018</li>
+<li>GDPR, HIPAA, PCI DSS compliant</li>
+<li>80+ compliance certifications</li>
+</ul>
+<h4 id="weaknesses-1"><a class="header" href="#weaknesses-1">Weaknesses</a></h4>
+<p><strong>Kubernetes</strong>:</p>
+<ul>
+<li>Autopilot mode limitations (less control, some add-ons unsupported)</li>
+<li>Fewer managed add-ons than EKS (no Fargate equivalent)</li>
+</ul>
+<p><strong>Redis</strong>:</p>
+<ul>
+<li><strong>No cluster mode</strong> (major limitation for high-scale workloads)</li>
+<li>Maximum 300GB per instance (ElastiCache supports terabytes)</li>
+<li>Fewer sharding options</li>
+</ul>
+<p><strong>Ecosystem</strong>:</p>
+<ul>
+<li>Smaller community than AWS (fewer third-party integrations)</li>
+<li>Less enterprise adoption (compared to AWS/Azure)</li>
+</ul>
+<p><strong>Support</strong>:</p>
+<ul>
+<li>Support plans more expensive than AWS (for similar tiers)</li>
+<li>Fewer certified partners for consulting/implementation</li>
+</ul>
+<p><strong>Vendor Lock-in Risk</strong>:</p>
+<ul>
+<li>BigQuery, Pub/Sub, Cloud Functions (proprietary)</li>
+<li>GKE Autopilot tight coupling</li>
+</ul>
+<h4 id="cost-estimate-per-month-1"><a class="header" href="#cost-estimate-per-month-1">Cost Estimate (per month)</a></h4>
+<p><strong>Development Environment</strong>:</p>
+<ul>
+<li>GKE cluster: <strong>$0</strong> (free control plane for &lt;3 zones)</li>
+<li>Compute Engine: 3 × e2-standard-2 (2vCPU, 8GB): $120</li>
+<li>Cloud SQL PostgreSQL: db-f1-micro (1vCPU, 3.75GB): $25</li>
+<li>Memorystore Redis: Basic tier (2GB): $40</li>
+<li>Cloud Storage: 50GB: $2</li>
+<li>Data transfer: $5</li>
+<li><strong>Total: ~$192/month</strong> (36% cheaper than AWS)</li>
+</ul>
+<p><strong>Staging Environment</strong>:</p>
+<ul>
+<li>GKE cluster: <strong>$0</strong></li>
+<li>Compute Engine: 4 × e2-standard-4 (4vCPU, 16GB): $340</li>
+<li>Cloud SQL PostgreSQL: db-n1-standard-2 (2vCPU, 7.5GB): $100</li>
+<li>Memorystore Redis: Standard tier (3GB): $120</li>
+<li>Cloud Storage: 200GB: $8</li>
+<li>Data transfer: $20</li>
+<li><strong>Total: ~$588/month</strong> (25% cheaper than AWS)</li>
+</ul>
+<p><strong>Production Environment</strong>:</p>
+<ul>
+<li>GKE cluster: $73 (3+ zones = paid)</li>
+<li>Compute Engine: 5-10 × n2-standard-8 (8vCPU, 32GB): $2,000 (avg 7.5 nodes)</li>
+<li>Cloud SQL PostgreSQL: db-n1-standard-4 (4vCPU, 15GB) + 2 replicas: $700</li>
+<li>Memorystore Redis: Standard tier (6GB) × 3 (manual sharding): $650</li>
+<li>Cloud Storage: 1TB: $40</li>
+<li>Load Balancer: $25</li>
+<li>Cloud NAT: $45</li>
+<li>Data transfer: $150</li>
+<li><strong>Total: ~$3,683/month</strong> (21% cheaper than AWS)</li>
+</ul>
+<p><strong>Total All Environments</strong>: ~$4,463/month (22% cheaper than AWS)</p>
+<hr />
+<h3 id="3-microsoft-azure"><a class="header" href="#3-microsoft-azure">3. Microsoft Azure</a></h3>
+<p><strong>Kubernetes Service</strong>: Azure Kubernetes Service (AKS)
+<strong>Managed PostgreSQL</strong>: Azure Database for PostgreSQL Flexible Server
+<strong>Managed Redis</strong>: Azure Cache for Redis
+<strong>Object Storage</strong>: Azure Blob Storage
+<strong>Secrets Management</strong>: Azure Key Vault</p>
+<h4 id="strengths-2"><a class="header" href="#strengths-2">Strengths</a></h4>
+<p><strong>Kubernetes (AKS)</strong>:</p>
+<ul>
+<li><strong>Free control plane</strong> (no hourly charge)</li>
+<li>Azure CNI for native VNet integration</li>
+<li>Azure AD integration for RBAC</li>
+<li>Virtual nodes (ACI for serverless pods)</li>
+<li>Dev Spaces for collaborative development</li>
+<li>Azure Policy for governance</li>
+<li>Excellent Windows container support</li>
+<li>Azure Arc for multi-cloud Kubernetes management</li>
+</ul>
+<p><strong>Database (Azure Database for PostgreSQL)</strong>:</p>
+<ul>
+<li>PostgreSQL 15+ support (Flexible Server)</li>
+<li>High availability with zone-redundant deployment</li>
+<li>Up to 5 read replicas</li>
+<li>Automated backups (35-day retention)</li>
+<li>Point-in-time recovery</li>
+<li><strong>Burstable SKUs</strong> (B-series) for cost-effective dev/test</li>
+<li>Hyperscale (Citus) option for distributed PostgreSQL</li>
+</ul>
+<p><strong>Redis (Azure Cache for Redis)</strong>:</p>
+<ul>
+<li>Redis 6.0+ support (7.0 in preview)</li>
+<li>Enterprise tier with Redis Enterprise features</li>
+<li>Clustering support (Premium/Enterprise tiers)</li>
+<li>Active geo-replication (Enterprise)</li>
+<li>Zone redundancy for HA</li>
+<li><strong>Best Redis integration</strong> (first-party Redis Enterprise)</li>
+</ul>
+<p><strong>Storage (Blob Storage)</strong>:</p>
+<ul>
+<li>99.999999999% durability (LRS)</li>
+<li>Hot, Cool, Archive tiers</li>
+<li>Immutable storage for compliance</li>
+<li>Soft delete and versioning</li>
+<li>Azure Data Lake Storage Gen2 (big data analytics)</li>
+</ul>
+<p><strong>Secrets (Key Vault)</strong>:</p>
+<ul>
+<li>Secrets, keys, certificates in single service</li>
+<li>HSM-backed keys (Premium tier)</li>
+<li>Managed identity integration</li>
+<li>RBAC and access policies</li>
+<li>Automatic rotation (Azure SQL, Storage Accounts)</li>
+</ul>
+<p><strong>Monitoring</strong>:</p>
+<ul>
+<li>Azure Monitor (unified platform)</li>
+<li>Log Analytics (Kusto Query Language)</li>
+<li>Application Insights (APM for apps)</li>
+<li>Container Insights (AKS-specific)</li>
+<li>Azure Monitor for Prometheus (managed Prometheus)</li>
+</ul>
+<p><strong>Developer Experience</strong>:</p>
+<ul>
+<li>Azure CLI (powerful, consistent)</li>
+<li>Azure Portal (feature-rich, can be overwhelming)</li>
+<li>Bicep for IaC (DSL, simpler than ARM templates)</li>
+<li>Terraform support (official provider)</li>
+<li><strong>Best Windows/hybrid integration</strong></li>
+<li>GitHub Actions integration (Microsoft-owned)</li>
+</ul>
+<p><strong>Geographic Coverage</strong>:</p>
+<ul>
+<li>60+ regions (most of any cloud provider)</li>
+<li>Strong presence in Europe, Asia, US</li>
+<li>Government clouds (Azure Government)</li>
+<li>Azure Stack for on-premises</li>
+</ul>
+<p><strong>Free Tier</strong>:</p>
+<ul>
+<li>$200 Azure credit for 30 days (new accounts)</li>
+<li>12 months free: 750 hours B1S VM, 5GB Blob Storage</li>
+<li><strong>AKS: FREE control plane</strong></li>
+<li>Always free: 10 App Services, 1GB Storage</li>
+</ul>
+<p><strong>Compliance</strong>:</p>
+<ul>
+<li>SOC 2 Type II certified</li>
+<li>ISO 27001, 27017, 27018</li>
+<li>GDPR, HIPAA, PCI DSS compliant</li>
+<li>100+ compliance certifications</li>
+<li><strong>Best for government/regulated industries</strong></li>
+</ul>
+<h4 id="weaknesses-2"><a class="header" href="#weaknesses-2">Weaknesses</a></h4>
+<p><strong>Kubernetes</strong>:</p>
+<ul>
+<li>AKS upgrade process can be disruptive</li>
+<li>Less mature than GKE (created by Google)</li>
+<li>Networking complexity (Azure CNI vs kubenet)</li>
+</ul>
+<p><strong>Database</strong>:</p>
+<ul>
+<li>PostgreSQL 15 released later than AWS/GCP</li>
+<li>Fewer PostgreSQL extensions than RDS</li>
+<li>Connection limits lower than RDS (for same SKU)</li>
+</ul>
+<p><strong>Redis</strong>:</p>
+<ul>
+<li>Redis 7.0 still in preview (as of Nov 2024)</li>
+<li>Enterprise tier very expensive (3-5x Premium tier)</li>
+<li>Basic tier has no SLA</li>
+</ul>
+<p><strong>Ecosystem</strong>:</p>
+<ul>
+<li>Smaller Kubernetes community than GKE/EKS</li>
+<li>Fewer Kubernetes-specific tools and integrations</li>
+</ul>
+<p><strong>Documentation</strong>:</p>
+<ul>
+<li>Quality inconsistent (some areas excellent, others lacking)</li>
+<li>Frequent rebranding causes confusion</li>
+<li>Examples sometimes outdated</li>
+</ul>
+<p><strong>Vendor Lock-in Risk</strong>:</p>
+<ul>
+<li>Azure Functions, Cosmos DB, Service Bus (proprietary)</li>
+<li>Azure AD tight coupling</li>
+<li>ARM templates complex (Bicep mitigates)</li>
+</ul>
+<h4 id="cost-estimate-per-month-2"><a class="header" href="#cost-estimate-per-month-2">Cost Estimate (per month)</a></h4>
+<p><strong>Development Environment</strong>:</p>
+<ul>
+<li>AKS cluster: <strong>$0</strong> (free control plane)</li>
+<li>Virtual Machines: 3 × Standard_D2s_v3 (2vCPU, 8GB): $130</li>
+<li>Azure Database PostgreSQL: B1ms (1vCPU, 2GB): $20</li>
+<li>Azure Cache Redis: Basic C1 (1GB): $20 (note: 1GB minimum, not 2GB)</li>
+<li>Blob Storage: 50GB (Hot): $3</li>
+<li>Data transfer: $5</li>
+<li><strong>Total: ~$178/month</strong> (41% cheaper than AWS, 7% cheaper than GCP)</li>
+</ul>
+<p><strong>Staging Environment</strong>:</p>
+<ul>
+<li>AKS cluster: <strong>$0</strong></li>
+<li>Virtual Machines: 4 × Standard_D4s_v3 (4vCPU, 16GB): $360</li>
+<li>Azure Database PostgreSQL: GP_Standard_D2s_v3 (2vCPU, 8GB): $110</li>
+<li>Azure Cache Redis: Standard C3 (3GB): $100</li>
+<li>Blob Storage: 200GB (Hot): $10</li>
+<li>Data transfer: $20</li>
+<li><strong>Total: ~$600/month</strong> (24% cheaper than AWS, 2% more than GCP)</li>
+</ul>
+<p><strong>Production Environment</strong>:</p>
+<ul>
+<li>AKS cluster: <strong>$0</strong></li>
+<li>Virtual Machines: 5-10 × Standard_D8s_v3 (8vCPU, 32GB): $2,100 (avg 7.5 nodes)</li>
+<li>Azure Database PostgreSQL: GP_Standard_D4s_v3 (4vCPU, 16GB) + 2 replicas: $750</li>
+<li>Azure Cache Redis: Premium P3 (6GB) × 3 nodes (cluster): $750</li>
+<li>Blob Storage: 1TB (Hot): $45</li>
+<li>Load Balancer: $20</li>
+<li>NAT Gateway: $40</li>
+<li>Data transfer: $150</li>
+<li><strong>Total: ~$3,855/month</strong> (17% cheaper than AWS, 5% more than GCP)</li>
+</ul>
+<p><strong>Total All Environments</strong>: ~$4,633/month (19% cheaper than AWS, 4% more than GCP)</p>
+<hr />
+<h2 id="detailed-comparison-matrix"><a class="header" href="#detailed-comparison-matrix">Detailed Comparison Matrix</a></h2>
+<h3 id="cost-comparison-monthly"><a class="header" href="#cost-comparison-monthly">Cost Comparison (Monthly)</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Environment</th><th>AWS</th><th>GCP</th><th>Azure</th><th>Winner</th></tr></thead><tbody>
+<tr><td>Development</td><td>$303</td><td><strong>$192</strong></td><td>$178</td><td><strong>Azure</strong> (-41%)</td></tr>
+<tr><td>Staging</td><td>$788</td><td><strong>$588</strong></td><td>$600</td><td><strong>GCP</strong> (-25%)</td></tr>
+<tr><td>Production</td><td>$4,643</td><td><strong>$3,683</strong></td><td>$3,855</td><td><strong>GCP</strong> (-21%)</td></tr>
+<tr><td><strong>Total</strong></td><td>$5,734</td><td><strong>$4,463</strong></td><td>$4,633</td><td><strong>GCP</strong> (-22%)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Annual Cost Savings</strong> (vs AWS):</p>
+<ul>
+<li>GCP: <strong>$15,252 saved/year</strong> (22% reduction)</li>
+<li>Azure: <strong>$13,212 saved/year</strong> (19% reduction)</li>
+</ul>
+<h3 id="feature-comparison"><a class="header" href="#feature-comparison">Feature Comparison</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Feature</th><th>AWS</th><th>GCP</th><th>Azure</th><th>Winner</th></tr></thead><tbody>
+<tr><td><strong>Kubernetes Maturity</strong></td><td>4/5</td><td><strong>5/5</strong></td><td>3.5/5</td><td><strong>GCP</strong></td></tr>
+<tr><td>Kubernetes Cost</td><td>$73/month</td><td><strong>$0</strong> (free)</td><td><strong>$0</strong> (free)</td><td><strong>GCP/Azure</strong></td></tr>
+<tr><td>Kubernetes Features</td><td>Excellent</td><td><strong>Best</strong></td><td>Very Good</td><td><strong>GCP</strong></td></tr>
+<tr><td>Kubernetes DX</td><td>Good</td><td><strong>Excellent</strong></td><td>Good</td><td><strong>GCP</strong></td></tr>
+<tr><td>PostgreSQL Performance</td><td>Excellent</td><td>Very Good</td><td>Good</td><td><strong>AWS</strong></td></tr>
+<tr><td>PostgreSQL Features</td><td><strong>Most</strong></td><td>Good</td><td>Good</td><td><strong>AWS</strong></td></tr>
+<tr><td>PostgreSQL Cost</td><td>$900</td><td><strong>$700</strong></td><td>$750</td><td><strong>GCP</strong></td></tr>
+<tr><td>Redis Performance</td><td>Excellent</td><td><strong>Excellent</strong></td><td>Very Good</td><td><strong>AWS/GCP</strong></td></tr>
+<tr><td>Redis Clustering</td><td>Excellent</td><td><strong>Limited</strong></td><td>Good</td><td><strong>AWS</strong></td></tr>
+<tr><td>Redis Cost</td><td>$900</td><td><strong>$650</strong></td><td>$750</td><td><strong>GCP</strong></td></tr>
+<tr><td>Object Storage</td><td><strong>S3</strong> (best)</td><td>GCS (excellent)</td><td>Blob (good)</td><td><strong>AWS</strong></td></tr>
+<tr><td>Secrets Management</td><td><strong>Best</strong></td><td>Good</td><td>Very Good</td><td><strong>AWS</strong></td></tr>
+<tr><td>Monitoring/Observability</td><td>Very Good</td><td><strong>Excellent</strong></td><td>Good</td><td><strong>GCP</strong></td></tr>
+<tr><td>Documentation Quality</td><td><strong>Excellent</strong></td><td><strong>Excellent</strong></td><td>Good</td><td><strong>AWS/GCP</strong></td></tr>
+<tr><td>CLI Experience</td><td>Good</td><td><strong>Excellent</strong></td><td>Good</td><td><strong>GCP</strong></td></tr>
+<tr><td>Free Tier (Dev)</td><td>Limited</td><td><strong>Best</strong></td><td>Good</td><td><strong>GCP</strong></td></tr>
+<tr><td>Geographic Coverage</td><td>Very Good</td><td>Very Good</td><td><strong>Best</strong></td><td><strong>Azure</strong></td></tr>
+<tr><td>Compliance Certifications</td><td><strong>143</strong></td><td>80+</td><td>100+</td><td><strong>AWS</strong></td></tr>
+<tr><td>Community Size</td><td><strong>Largest</strong></td><td>Large</td><td>Medium</td><td><strong>AWS</strong></td></tr>
+<tr><td>Ecosystem Maturity</td><td><strong>Most Mature</strong></td><td>Mature</td><td>Growing</td><td><strong>AWS</strong></td></tr>
+</tbody></table>
+</div>
+<h3 id="developer-experience-comparison"><a class="header" href="#developer-experience-comparison">Developer Experience Comparison</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Aspect</th><th>AWS</th><th>GCP</th><th>Azure</th><th>Winner</th></tr></thead><tbody>
+<tr><td>Setup Time (0-1st cluster)</td><td>60 min</td><td><strong>30 min</strong></td><td>45 min</td><td><strong>GCP</strong></td></tr>
+<tr><td>CLI Quality</td><td>Good</td><td><strong>Excellent</strong></td><td>Good</td><td><strong>GCP</strong></td></tr>
+<tr><td>Web Console</td><td>Functional</td><td><strong>Modern</strong></td><td>Feature-rich</td><td><strong>GCP</strong></td></tr>
+<tr><td>Terraform Support</td><td><strong>Excellent</strong></td><td>Excellent</td><td>Good</td><td><strong>AWS</strong></td></tr>
+<tr><td>Documentation Clarity</td><td><strong>Excellent</strong></td><td><strong>Excellent</strong></td><td>Fair</td><td><strong>AWS/GCP</strong></td></tr>
+<tr><td>Local Dev Tools</td><td>Good</td><td><strong>Best</strong></td><td>Good</td><td><strong>GCP</strong></td></tr>
+<tr><td>Debugging Experience</td><td>Good</td><td><strong>Excellent</strong></td><td>Fair</td><td><strong>GCP</strong></td></tr>
+<tr><td>Learning Curve</td><td>Steep</td><td><strong>Gentle</strong></td><td>Moderate</td><td><strong>GCP</strong></td></tr>
+</tbody></table>
+</div>
+<h3 id="security--compliance-comparison"><a class="header" href="#security--compliance-comparison">Security &amp; Compliance Comparison</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Aspect</th><th>AWS</th><th>GCP</th><th>Azure</th><th>Winner</th></tr></thead><tbody>
+<tr><td>Compliance Certs</td><td><strong>143</strong></td><td>80+</td><td>100+</td><td><strong>AWS</strong></td></tr>
+<tr><td>SOC 2 Type II</td><td>✅</td><td>✅</td><td>✅</td><td><strong>Tie</strong></td></tr>
+<tr><td>ISO 27001</td><td>✅</td><td>✅</td><td>✅</td><td><strong>Tie</strong></td></tr>
+<tr><td>GDPR</td><td>✅</td><td>✅</td><td>✅</td><td><strong>Tie</strong></td></tr>
+<tr><td>HIPAA</td><td>✅</td><td>✅</td><td>✅</td><td><strong>Tie</strong></td></tr>
+<tr><td>Government Cloud</td><td>✅ AWS GovCloud</td><td>❌</td><td>✅ <strong>Azure Gov</strong></td><td><strong>Azure</strong></td></tr>
+<tr><td>Identity Management</td><td>IAM (complex)</td><td>IAM (good)</td><td><strong>Azure AD</strong> (best)</td><td><strong>Azure</strong></td></tr>
+<tr><td>Network Security</td><td><strong>Best</strong></td><td>Very Good</td><td>Good</td><td><strong>AWS</strong></td></tr>
+<tr><td>Encryption at Rest</td><td>✅</td><td>✅</td><td>✅</td><td><strong>Tie</strong></td></tr>
+<tr><td>Encryption in Transit</td><td>✅</td><td>✅</td><td>✅</td><td><strong>Tie</strong></td></tr>
+<tr><td>Key Management</td><td><strong>KMS</strong> (best)</td><td>Cloud KMS (good)</td><td>Key Vault (good)</td><td><strong>AWS</strong></td></tr>
+</tbody></table>
+</div>
+<h3 id="portability--lock-in-risk"><a class="header" href="#portability--lock-in-risk">Portability &amp; Lock-in Risk</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Aspect</th><th>AWS</th><th>GCP</th><th>Azure</th><th>Winner</th></tr></thead><tbody>
+<tr><td>Standard Kubernetes</td><td>✅</td><td>✅</td><td>✅</td><td><strong>Tie</strong></td></tr>
+<tr><td>Proprietary K8s Features</td><td>Moderate</td><td>Low</td><td>Moderate</td><td><strong>GCP</strong></td></tr>
+<tr><td>Standard PostgreSQL</td><td>✅</td><td>✅</td><td>✅</td><td><strong>Tie</strong></td></tr>
+<tr><td>Proprietary DB Features</td><td>Aurora</td><td>Spanner</td><td>Cosmos DB</td><td><strong>N/A</strong></td></tr>
+<tr><td>Standard Redis</td><td>✅</td><td>✅</td><td>✅</td><td><strong>Tie</strong></td></tr>
+<tr><td>S3-Compatible Storage</td><td><strong>S3</strong> (standard)</td><td>GCS (compatible)</td><td>Blob (compatible)</td><td><strong>AWS</strong></td></tr>
+<tr><td>Vendor-Specific APIs</td><td>High</td><td>Moderate</td><td>High</td><td><strong>GCP</strong></td></tr>
+<tr><td>Multi-Cloud Tools</td><td>EKS Anywhere</td><td><strong>Anthos</strong></td><td>Azure Arc</td><td><strong>GCP</strong></td></tr>
+<tr><td>Exit Difficulty</td><td>Moderate</td><td><strong>Low</strong></td><td>Moderate</td><td><strong>GCP</strong></td></tr>
+</tbody></table>
+</div>
+<h3 id="support--community"><a class="header" href="#support--community">Support &amp; Community</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Aspect</th><th>AWS</th><th>GCP</th><th>Azure</th><th>Winner</th></tr></thead><tbody>
+<tr><td>Community Size</td><td><strong>Largest</strong></td><td>Large</td><td>Medium</td><td><strong>AWS</strong></td></tr>
+<tr><td>Stack Overflow Questions</td><td><strong>500k+</strong></td><td>200k+</td><td>300k+</td><td><strong>AWS</strong></td></tr>
+<tr><td>GitHub Stars (tools)</td><td><strong>Highest</strong></td><td>High</td><td>Medium</td><td><strong>AWS</strong></td></tr>
+<tr><td>Third-Party Integrations</td><td><strong>Most</strong></td><td>Many</td><td>Good</td><td><strong>AWS</strong></td></tr>
+<tr><td>Training Resources</td><td><strong>Most</strong></td><td>Many</td><td>Many</td><td><strong>AWS</strong></td></tr>
+<tr><td>Official Certifications</td><td><strong>Most</strong></td><td>Good</td><td>Good</td><td><strong>AWS</strong></td></tr>
+<tr><td>Support Plans (cost)</td><td>Moderate</td><td>High</td><td>Moderate</td><td><strong>AWS/Azure</strong></td></tr>
+<tr><td>Support Response Time</td><td>Good</td><td>Good</td><td>Good</td><td><strong>Tie</strong></td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="decision"><a class="header" href="#decision">Decision</a></h2>
+<p><strong>We choose Google Cloud Platform (GCP) as our primary cloud provider for the following reasons:</strong></p>
+<h3 id="primary-factors"><a class="header" href="#primary-factors">Primary Factors</a></h3>
+<ol>
+<li>
+<p><strong>Cost Efficiency</strong> (Weight: 30%)</p>
+<ul>
+<li><strong>22% cheaper than AWS</strong> ($15,252/year savings)</li>
+<li><strong>4% cheaper than Azure</strong> ($2,040/year savings)</li>
+<li><strong>Free Kubernetes control plane</strong> (saves $876/year vs AWS)</li>
+<li>Best free tier for development and experimentation</li>
+</ul>
+</li>
+<li>
+<p><strong>Kubernetes Excellence</strong> (Weight: 25%)</p>
+<ul>
+<li><strong>Google created Kubernetes</strong> (unmatched expertise)</li>
+<li>GKE is the most mature, feature-rich Kubernetes service</li>
+<li>Autopilot mode for simplified operations</li>
+<li>Workload Identity (best practice for service accounts)</li>
+<li>Excellent documentation and tooling</li>
+</ul>
+</li>
+<li>
+<p><strong>Developer Experience</strong> (Weight: 20%)</p>
+<ul>
+<li><strong>Fastest setup time</strong> (30 min to first cluster)</li>
+<li><strong>Best CLI</strong> (gcloud intuitive, well-designed)</li>
+<li>Modern, responsive web console</li>
+<li>Excellent observability (single pane of glass)</li>
+<li>Cloud Shell for browser-based development</li>
+</ul>
+</li>
+<li>
+<p><strong>Portability</strong> (Weight: 15%)</p>
+<ul>
+<li><strong>Lowest vendor lock-in risk</strong></li>
+<li>Standard Kubernetes (minimal proprietary features)</li>
+<li>Multi-cloud strategy with Anthos (if needed)</li>
+<li>Easy migration path to other providers</li>
+</ul>
+</li>
+<li>
+<p><strong>Performance</strong> (Weight: 10%)</p>
+<ul>
+<li><strong>Best Kubernetes performance</strong> (Google's expertise)</li>
+<li>Memorystore for Redis: &lt;1ms latency</li>
+<li>Cloud SQL competitive with RDS</li>
+<li>Excellent network performance (Google's backbone)</li>
+</ul>
+</li>
+</ol>
+<h3 id="trade-offs-accepted"><a class="header" href="#trade-offs-accepted">Trade-offs Accepted</a></h3>
+<p><strong>Limitations vs AWS</strong>:</p>
+<ul>
+<li>Smaller ecosystem (fewer third-party integrations)</li>
+<li>Fewer compliance certifications (143 vs 80+)</li>
+<li>Redis cluster mode limited (300GB max per instance)</li>
+<li>Smaller community (200k+ vs 500k+ Stack Overflow questions)</li>
+</ul>
+<p><strong>Mitigation Strategies</strong>:</p>
+<ul>
+<li>Redis limitation: Use manual sharding (3 instances) for production</li>
+<li>Ecosystem: AWS services available via APIs (e.g., AWS SDK for S3 backups)</li>
+<li>Community: GCP community large enough for OctoLLM needs</li>
+<li>Compliance: 80+ certifications sufficient for current requirements</li>
+</ul>
+<p><strong>Why Not AWS</strong>:</p>
+<ul>
+<li>22% more expensive ($15,252/year difference)</li>
+<li>Paid Kubernetes control plane ($876/year)</li>
+<li>Steeper learning curve (complexity overkill for OctoLLM)</li>
+<li>Higher vendor lock-in risk (easy to use proprietary services)</li>
+</ul>
+<p><strong>Why Not Azure</strong>:</p>
+<ul>
+<li>4% more expensive than GCP ($2,040/year)</li>
+<li>Kubernetes less mature than GKE</li>
+<li>PostgreSQL 15 support lagged behind competitors</li>
+<li>Smaller Kubernetes ecosystem</li>
+<li>Documentation quality inconsistent</li>
+</ul>
+<h3 id="cloud-agnostic-architecture-portability-safeguards"><a class="header" href="#cloud-agnostic-architecture-portability-safeguards">Cloud-Agnostic Architecture (Portability Safeguards)</a></h3>
+<p>To maintain portability and avoid lock-in, we will:</p>
+<ol>
+<li>
+<p><strong>Use Standard Kubernetes APIs</strong>:</p>
+<ul>
+<li>No GKE-specific CRDs (Custom Resource Definitions)</li>
+<li>Avoid GKE Autopilot for production (use Standard mode)</li>
+<li>Use standard Ingress, not GKE-specific LoadBalancer</li>
+</ul>
+</li>
+<li>
+<p><strong>Abstract Cloud Services</strong>:</p>
+<ul>
+<li>PostgreSQL: Standard libpq connection strings</li>
+<li>Redis: Standard Redis protocol (no GCP-specific features)</li>
+<li>Object Storage: S3-compatible API (GCS supports this)</li>
+</ul>
+</li>
+<li>
+<p><strong>Infrastructure as Code (Terraform)</strong>:</p>
+<ul>
+<li>Use Terraform with provider abstraction</li>
+<li>Modular design (swap providers by changing modules)</li>
+<li>No hard-coded GCP resource IDs</li>
+</ul>
+</li>
+<li>
+<p><strong>Monitoring</strong>: Use Prometheus/Grafana (not Cloud Monitoring alone)</p>
+</li>
+<li>
+<p><strong>Secrets</strong>: ExternalSecrets Operator (supports multiple backends)</p>
+</li>
+<li>
+<p><strong>CI/CD</strong>: GitHub Actions (provider-agnostic, not Cloud Build)</p>
+</li>
+</ol>
+<h3 id="migration-path-if-needed"><a class="header" href="#migration-path-if-needed">Migration Path (if needed)</a></h3>
+<p>If we need to migrate to AWS or Azure:</p>
+<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Migration Effort</th><th>Time Estimate</th></tr></thead><tbody>
+<tr><td>Kubernetes manifests</td><td>Low</td><td>1-2 days</td></tr>
+<tr><td>Terraform modules</td><td>Moderate</td><td>3-5 days</td></tr>
+<tr><td>PostgreSQL data</td><td>Low</td><td>1 day (dump/restore)</td></tr>
+<tr><td>Redis data</td><td>Low</td><td>1 day (export/import)</td></tr>
+<tr><td>Object storage</td><td>Low</td><td>1-2 days (rclone sync)</td></tr>
+<tr><td>Secrets</td><td>Moderate</td><td>2-3 days</td></tr>
+<tr><td>DNS/Certificates</td><td>Low</td><td>1 day</td></tr>
+<tr><td>Monitoring</td><td>Moderate</td><td>3-5 days</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>Moderate</strong></td><td><strong>2-3 weeks</strong></td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="consequences"><a class="header" href="#consequences">Consequences</a></h2>
+<h3 id="positive"><a class="header" href="#positive">Positive</a></h3>
+<ol>
+<li><strong>Cost Savings</strong>: $15,252/year compared to AWS (22% reduction)</li>
+<li><strong>Best Kubernetes</strong>: Leveraging Google's Kubernetes expertise</li>
+<li><strong>Fast Development</strong>: Free control plane + excellent DX = faster iteration</li>
+<li><strong>Simple Operations</strong>: GKE Autopilot option for less operational overhead</li>
+<li><strong>Strong Observability</strong>: Cloud Monitoring/Logging/Trace integrated</li>
+<li><strong>Low Lock-in</strong>: Easy migration to other clouds if needed</li>
+<li><strong>Scalability</strong>: GKE supports large-scale production workloads</li>
+<li><strong>Security</strong>: SOC 2, ISO 27001, 80+ certifications sufficient</li>
+</ol>
+<h3 id="negative"><a class="header" href="#negative">Negative</a></h3>
+<ol>
+<li><strong>Smaller Ecosystem</strong>: Fewer third-party tools than AWS (mitigated: sufficient for OctoLLM)</li>
+<li><strong>Redis Limitations</strong>: No cluster mode &gt;300GB (mitigated: manual sharding)</li>
+<li><strong>Team Learning</strong>: Team needs to learn GCP (mitigated: excellent docs, gentle curve)</li>
+<li><strong>Fewer Certifications</strong>: 80+ vs AWS 143 (mitigated: covers all current needs)</li>
+<li><strong>Community Size</strong>: Smaller than AWS (mitigated: still large, active community)</li>
+</ol>
+<h3 id="risks--mitigation"><a class="header" href="#risks--mitigation">Risks &amp; Mitigation</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Risk</th><th>Impact</th><th>Probability</th><th>Mitigation</th></tr></thead><tbody>
+<tr><td>Team unfamiliar with GCP</td><td>Medium</td><td>High</td><td>Training plan, excellent docs, Cloud Shell</td></tr>
+<tr><td>Redis scaling beyond 300GB</td><td>High</td><td>Low</td><td>Manual sharding, monitoring, upgrade to Cloud Memorystore clusters</td></tr>
+<tr><td>GCP outage</td><td>High</td><td>Very Low</td><td>Multi-AZ deployment, backups to S3 (cross-cloud)</td></tr>
+<tr><td>Vendor lock-in</td><td>Medium</td><td>Medium</td><td>Cloud-agnostic architecture, Terraform modules</td></tr>
+<tr><td>Cost overruns</td><td>Medium</td><td>Low</td><td>Billing alerts, budget caps, committed use discounts</td></tr>
+<tr><td>Compliance gaps</td><td>Low</td><td>Very Low</td><td>80+ certs cover current needs, audit before new requirements</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="implementation-plan"><a class="header" href="#implementation-plan">Implementation Plan</a></h2>
+<h3 id="phase-1-gcp-account-setup-week-1"><a class="header" href="#phase-1-gcp-account-setup-week-1">Phase 1: GCP Account Setup (Week 1)</a></h3>
+<ol>
+<li>
+<p><strong>Create GCP Organization &amp; Projects</strong>:</p>
+<ul>
+<li>Organization: <code>octollm.com</code></li>
+<li>Projects: <code>octollm-dev</code>, <code>octollm-staging</code>, <code>octollm-prod</code></li>
+<li>Enable billing account</li>
+<li>Set up billing alerts: 50% ($250), 80% ($400), 100% ($500) for dev</li>
+</ul>
+</li>
+<li>
+<p><strong>Configure IAM &amp; Security</strong>:</p>
+<ul>
+<li>Create service accounts for Terraform</li>
+<li>Set up IAM roles (least privilege):
+<ul>
+<li><code>Kubernetes Engine Admin</code> (cluster management)</li>
+<li><code>Cloud SQL Admin</code> (database management)</li>
+<li><code>Storage Admin</code> (GCS management)</li>
+<li><code>Secret Manager Admin</code> (secrets)</li>
+</ul>
+</li>
+<li>Enable required APIs:
+<ul>
+<li>Kubernetes Engine API</li>
+<li>Cloud SQL Admin API</li>
+<li>Compute Engine API</li>
+<li>Cloud Storage API</li>
+<li>Secret Manager API</li>
+<li>Cloud Monitoring API</li>
+</ul>
+</li>
+<li>Configure organization policies:
+<ul>
+<li>Require OS Login</li>
+<li>Disable service account key creation</li>
+<li>Restrict public IP assignment</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Set Up Billing Alerts &amp; Budgets</strong>:</p>
+<pre><code class="language-yaml"># Dev Environment
+budget: $500/month
+alerts:
+  - 50%: Email team, Slack notification
+  - 80%: Email team + managers, Slack alert
+  - 100%: Email team + managers + finance, stop dev resources
+
+# Staging Environment
+budget: $1,000/month
+alerts:
+  - 50%: Email team
+  - 80%: Email team + managers
+  - 100%: Email team + managers + finance
+
+# Production Environment
+budget: $5,000/month
+alerts:
+  - 50%: Email team
+  - 80%: Email team + managers
+  - 100%: Email team + managers + finance + executives
+</code></pre>
+</li>
+<li>
+<p><strong>Configure Resource Tagging Strategy</strong>:</p>
+<ul>
+<li>Labels (GCP terminology):
+<ul>
+<li><code>environment</code>: dev | staging | prod</li>
+<li><code>project</code>: octollm</li>
+<li><code>component</code>: orchestrator | reflex | arm-* | database | cache</li>
+<li><code>owner</code>: team-backend | team-devops</li>
+<li><code>cost-center</code>: engineering | infrastructure</li>
+<li><code>managed-by</code>: terraform | manual</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="phase-2-development-environment-week-1"><a class="header" href="#phase-2-development-environment-week-1">Phase 2: Development Environment (Week 1)</a></h3>
+<ol>
+<li>
+<p><strong>Provision GKE Cluster</strong> (dev-cluster):</p>
+<pre><code class="language-bash">gcloud container clusters create octollm-dev \
+  --region us-central1 \
+  --num-nodes 1 --min-nodes 1 --max-nodes 3 \
+  --node-locations us-central1-a \
+  --machine-type e2-standard-2 \
+  --disk-size 50 \
+  --enable-autoscaling \
+  --enable-autorepair \
+  --enable-autoupgrade \
+  --no-enable-cloud-logging \
+  --no-enable-cloud-monitoring \
+  --addons HorizontalPodAutoscaling,HttpLoadBalancing
+</code></pre>
+</li>
+<li>
+<p><strong>Provision Cloud SQL PostgreSQL</strong>:</p>
+<pre><code class="language-bash">gcloud sql instances create octollm-dev-postgres \
+  --database-version POSTGRES_15 \
+  --tier db-f1-micro \
+  --region us-central1 \
+  --storage-size 20GB \
+  --storage-type SSD \
+  --storage-auto-increase \
+  --backup-start-time 03:00 \
+  --retained-backups-count 7
+</code></pre>
+</li>
+<li>
+<p><strong>Provision Memorystore Redis</strong>:</p>
+<pre><code class="language-bash">gcloud redis instances create octollm-dev-redis \
+  --size 2 \
+  --region us-central1 \
+  --tier basic \
+  --redis-version redis_7_0
+</code></pre>
+</li>
+<li>
+<p><strong>Create GCS Buckets</strong>:</p>
+<pre><code class="language-bash">gsutil mb -l us-central1 -c STANDARD gs://octollm-dev-backups
+gsutil mb -l us-central1 -c STANDARD gs://octollm-dev-logs
+</code></pre>
+</li>
+</ol>
+<h3 id="phase-3-staging--production-week-2"><a class="header" href="#phase-3-staging--production-week-2">Phase 3: Staging &amp; Production (Week 2)</a></h3>
+<ol>
+<li><strong>Staging</strong>: Similar to dev, scaled up (see Sprint 0.7 Task 3)</li>
+<li><strong>Production</strong>: Multi-AZ, HA, autoscaling (see Sprint 0.7 Task 3)</li>
+</ol>
+<h3 id="phase-4-monitoring--observability-week-2"><a class="header" href="#phase-4-monitoring--observability-week-2">Phase 4: Monitoring &amp; Observability (Week 2)</a></h3>
+<ol>
+<li>Install Prometheus + Grafana (Helm charts)</li>
+<li>Configure Cloud Monitoring dashboards</li>
+<li>Set up alerting policies</li>
+<li>Configure log retention (Cloud Logging)</li>
+</ol>
+<hr />
+<h2 id="appendix-detailed-setup-instructions"><a class="header" href="#appendix-detailed-setup-instructions">Appendix: Detailed Setup Instructions</a></h2>
+<h3 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h3>
+<p><strong>Required Tools</strong>:</p>
+<pre><code class="language-bash"># Install gcloud CLI
+curl https://sdk.cloud.google.com | bash
+exec -l $SHELL
+
+# Install kubectl
+gcloud components install kubectl
+
+# Install Terraform (for IaC)
+brew install terraform  # macOS
+# or: wget + install from terraform.io
+
+# Install Helm (for Kubernetes packages)
+brew install helm  # macOS
+</code></pre>
+<p><strong>Authentication</strong>:</p>
+<pre><code class="language-bash"># Authenticate with GCP
+gcloud auth login
+
+# Set default project
+gcloud config set project octollm-dev
+
+# Configure kubectl
+gcloud container clusters get-credentials octollm-dev --region us-central1
+</code></pre>
+<h3 id="cost-optimization-tips"><a class="header" href="#cost-optimization-tips">Cost Optimization Tips</a></h3>
+<ol>
+<li>
+<p><strong>Committed Use Discounts</strong>:</p>
+<ul>
+<li>1-year commitment: 25% discount</li>
+<li>3-year commitment: 52% discount</li>
+<li>Apply to Compute Engine, GKE nodes</li>
+<li><strong>Savings</strong>: $6,000/year on production (25% discount)</li>
+</ul>
+</li>
+<li>
+<p><strong>Preemptible/Spot VMs</strong> (dev environment):</p>
+<ul>
+<li>60-91% discount vs on-demand</li>
+<li>Suitable for dev workloads (can tolerate interruptions)</li>
+<li><strong>Savings</strong>: $80/month on dev</li>
+</ul>
+</li>
+<li>
+<p><strong>Sustained Use Discounts</strong> (automatic):</p>
+<ul>
+<li>Up to 30% discount for sustained usage</li>
+<li>No commitment required</li>
+<li>Applied automatically</li>
+</ul>
+</li>
+<li>
+<p><strong>Rightsizing Recommendations</strong>:</p>
+<ul>
+<li>Enable recommender API</li>
+<li>Review monthly (downsize underutilized resources)</li>
+</ul>
+</li>
+<li>
+<p><strong>Storage Lifecycle Policies</strong>:</p>
+<ul>
+<li>Move logs to Nearline after 30 days (50% cheaper)</li>
+<li>Move logs to Coldline after 90 days (70% cheaper)</li>
+<li>Delete logs after 1 year</li>
+</ul>
+</li>
+</ol>
+<h3 id="security-best-practices"><a class="header" href="#security-best-practices">Security Best Practices</a></h3>
+<ol>
+<li>
+<p><strong>Enable Binary Authorization</strong> (GKE):</p>
+<ul>
+<li>Require signed container images</li>
+<li>Prevent untrusted images from running</li>
+</ul>
+</li>
+<li>
+<p><strong>Enable GKE Sandbox</strong> (gVisor):</p>
+<ul>
+<li>Additional container isolation</li>
+<li>Recommended for executor-arm (untrusted code)</li>
+</ul>
+</li>
+<li>
+<p><strong>Configure Workload Identity</strong>:</p>
+<ul>
+<li>Bind Kubernetes service accounts to GCP service accounts</li>
+<li>Avoid service account keys (security risk)</li>
+</ul>
+</li>
+<li>
+<p><strong>Enable Private GKE Clusters</strong>:</p>
+<ul>
+<li>No public IP addresses for nodes</li>
+<li>Access via Cloud VPN or bastion host</li>
+</ul>
+</li>
+<li>
+<p><strong>Enable VPC Service Controls</strong>:</p>
+<ul>
+<li>Protect against data exfiltration</li>
+<li>Restrict access to GCP services</li>
+</ul>
+</li>
+<li>
+<p><strong>Configure Cloud Armor</strong> (production):</p>
+<ul>
+<li>DDoS protection</li>
+<li>WAF rules (SQL injection, XSS)</li>
+</ul>
+</li>
+</ol>
+<h3 id="compliance--audit"><a class="header" href="#compliance--audit">Compliance &amp; Audit</a></h3>
+<p><strong>Enable Audit Logging</strong>:</p>
+<pre><code class="language-bash"># Enable all audit logs (Admin Activity, Data Access, System Event)
+gcloud logging read 'logName="projects/PROJECT_ID/logs/cloudaudit.googleapis.com"' \
+  --limit 10 --format json
+</code></pre>
+<p><strong>SOC 2 Requirements</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Enable audit logging (all operations)</li>
+<li><input disabled="" type="checkbox"/>
+Configure log retention (1 year minimum)</li>
+<li><input disabled="" type="checkbox"/>
+Set up security monitoring alerts</li>
+<li><input disabled="" type="checkbox"/>
+Regular access reviews (IAM)</li>
+<li><input disabled="" type="checkbox"/>
+Encrypt data at rest (enabled by default)</li>
+<li><input disabled="" type="checkbox"/>
+Encrypt data in transit (TLS 1.2+)</li>
+</ul>
+<p><strong>GDPR Requirements</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Data residency (use europe-west1 for EU users)</li>
+<li><input disabled="" type="checkbox"/>
+Data processing agreement with Google</li>
+<li><input disabled="" type="checkbox"/>
+Right to erasure (document deletion procedures)</li>
+<li><input disabled="" type="checkbox"/>
+Data portability (export procedures)</li>
+</ul>
+<hr />
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ol>
+<li>
+<p><strong>GCP Documentation</strong>:</p>
+<ul>
+<li>GKE Overview: https://cloud.google.com/kubernetes-engine/docs</li>
+<li>Cloud SQL PostgreSQL: https://cloud.google.com/sql/docs/postgres</li>
+<li>Memorystore for Redis: https://cloud.google.com/memorystore/docs/redis</li>
+<li>GCP Pricing Calculator: https://cloud.google.com/products/calculator</li>
+</ul>
+</li>
+<li>
+<p><strong>OctoLLM Documentation</strong>:</p>
+<ul>
+<li>ADR-001: Technology Stack Selection</li>
+<li>ADR-005: Deployment Platform</li>
+<li><code>docs/operations/deployment-guide.md</code> (2,863 lines)</li>
+<li><code>to-dos/MASTER-TODO.md</code> (Sprint 0.7 specification)</li>
+</ul>
+</li>
+<li>
+<p><strong>Competitor Comparisons</strong>:</p>
+<ul>
+<li>AWS vs GCP vs Azure (Kubernetes): https://cloud.google.com/kubernetes-engine/docs/resources/kubernetes-on-aws-vs-gke</li>
+<li>Database Comparison: https://db-engines.com/en/system/Amazon+RDS+for+PostgreSQL%3BGoogle+Cloud+SQL+for+PostgreSQL</li>
+<li>Redis Comparison: ElastiCache vs Memorystore performance benchmarks</li>
+</ul>
+</li>
+<li>
+<p><strong>Community Resources</strong>:</p>
+<ul>
+<li>r/googlecloud (Reddit community)</li>
+<li>GCP Slack community</li>
+<li>Stack Overflow (gcp tag)</li>
+</ul>
+</li>
+</ol>
+<hr />
+<p><strong>Decision Date</strong>: 2025-11-12
+<strong>Next Review</strong>: 2026-11-12 (annual review)
+<strong>Approved By</strong>: Architecture Team, DevOps Team, Finance Team
+<strong>Implementation Start</strong>: Sprint 0.7 (Infrastructure as Code - Week 1)</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../architecture/adr/005-deployment-platform.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../architecture/adr/007-unraid-local-deployment.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../architecture/adr/005-deployment-platform.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../architecture/adr/007-unraid-local-deployment.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

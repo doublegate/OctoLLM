@@ -1,0 +1,917 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>CodeGeneration Schema - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/api/schemas/code-generation.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="codegeneration-schema-reference"><a class="header" href="#codegeneration-schema-reference">CodeGeneration Schema Reference</a></h1>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The <strong>CodeGeneration</strong> (also called <code>CodeResponse</code>) schema represents the output from the Coder arm after processing code-related requests. This includes generated code, debugging fixes, refactorings, analysis, test generation, explanations, and optimizations.</p>
+<p><strong>Used By</strong>: Coder Arm (output), Orchestrator (for code tasks), Judge Arm (for validation)
+<strong>Primary Endpoint</strong>: <code>POST /code</code>
+<strong>Format</strong>: JSON</p>
+<hr />
+<h2 id="structure"><a class="header" href="#structure">Structure</a></h2>
+<h3 id="codegeneration-coderesponse"><a class="header" href="#codegeneration-coderesponse">CodeGeneration (CodeResponse)</a></h3>
+<p>Complete code generation response with code, explanation, tests, and metadata.</p>
+<pre><code class="language-typescript">interface CodeGeneration {
+  success: boolean;                 // Required: Whether operation succeeded
+  code: string;                     // Required: Generated or modified code
+  explanation: string;              // Required: Approach and design decisions
+  language: string;                 // Required: Programming language
+  tests?: string;                   // Optional: Unit tests
+  confidence: number;               // Required: 0.0-1.0 quality confidence
+  warnings: string[];               // Optional: Caveats and limitations
+  metadata: CodeMetadata;           // Optional: Additional info
+}
+
+interface CodeMetadata {
+  model: string;                    // LLM model used (e.g., "gpt-4")
+  tokens_used: number;              // Total tokens consumed
+  memory_hits: number;              // Episodic memory cache hits
+  episodic_memory_used: boolean;    // Whether previous solutions were reused
+  request_type: RequestType;        // Type of operation performed
+  duration_ms: number;              // Execution time
+  language_version?: string;        // Language version if specified
+  framework?: string;               // Framework if specified (e.g., "React", "FastAPI")
+}
+
+type RequestType =
+  | 'generate'      // Create new code
+  | 'debug'         // Fix bugs
+  | 'refactor'      // Improve structure
+  | 'analyze'       // Understand code
+  | 'test'          // Generate tests
+  | 'explain'       // Document code
+  | 'optimize';     // Improve performance
+</code></pre>
+<hr />
+<h2 id="field-definitions"><a class="header" href="#field-definitions">Field Definitions</a></h2>
+<h3 id="success-required"><a class="header" href="#success-required"><code>success</code> (required)</a></h3>
+<p><strong>Type</strong>: boolean
+<strong>Description</strong>: Whether the code operation succeeded</p>
+<p><strong>Success Criteria</strong>:</p>
+<ul>
+<li><code>true</code>: Code generated/modified successfully</li>
+<li><code>false</code>: Operation failed (error in processing, unable to complete task)</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">// Successful generation
+{
+  "success": true,
+  "code": "def validate_email(email: str) -&gt; bool: ..."
+}
+
+// Failed generation
+{
+  "success": false,
+  "code": "",
+  "explanation": "Unable to generate code: instruction too vague"
+}
+</code></pre>
+<p><strong>Note</strong>: Even if <code>success: true</code>, always check <code>confidence</code> and <code>warnings</code> before using code in production.</p>
+<hr />
+<h3 id="code-required"><a class="header" href="#code-required"><code>code</code> (required)</a></h3>
+<p><strong>Type</strong>: string
+<strong>Constraints</strong>: 1-50,000 characters
+<strong>Description</strong>: Generated, modified, or analyzed code</p>
+<p><strong>Format</strong>:</p>
+<ul>
+<li>Plain text source code</li>
+<li>No markdown code blocks (no ```python etc.)</li>
+<li>Properly indented according to language conventions</li>
+<li>Includes comments where helpful</li>
+<li>May include imports/dependencies at the top</li>
+</ul>
+<p><strong>Examples by Request Type</strong>:</p>
+<p><strong>generate</strong> - New code from scratch:</p>
+<pre><code class="language-python">from typing import Optional
+import re
+
+def validate_email(email: str) -&gt; bool:
+    """Validate email address using RFC 5322 regex.
+
+    Args:
+        email: Email address to validate
+
+    Returns:
+        True if valid, False otherwise
+
+    Examples:
+        &gt;&gt;&gt; validate_email("user@example.com")
+        True
+        &gt;&gt;&gt; validate_email("invalid.email")
+        False
+    """
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email))
+</code></pre>
+<p><strong>debug</strong> - Fixed code:</p>
+<pre><code class="language-python">def get_item(items: List[T], index: int) -&gt; Optional[T]:
+    """Safely retrieve item from list by index."""
+    if 0 &lt;= index &lt; len(items):
+        return items[index]
+    return None  # Fixed: added bounds check
+</code></pre>
+<p><strong>refactor</strong> - Improved code:</p>
+<pre><code class="language-python"># Before (callback-based)
+def fetchData(url, callback):
+    fetch(url).then(data =&gt; callback(null, data))
+
+# After (async/await)
+async def fetch_data(url: str) -&gt; Optional[dict]:
+    """Fetch JSON data from URL with error handling."""
+    try:
+        response = await fetch(url)
+        return await response.json()
+    except Exception as error:
+        logger.error(f"Fetch error: {error}")
+        return None
+</code></pre>
+<p><strong>analyze</strong> - Code with annotations:</p>
+<pre><code class="language-python"># Complexity: O(n²) - PERFORMANCE ISSUE
+def find_duplicates(items):  # Missing type hints
+    duplicates = []
+    for i in range(len(items)):
+        for j in range(i + 1, len(items)):  # Nested loop
+            if items[i] == items[j]:
+                duplicates.append(items[i])
+    return duplicates
+# Recommendation: Use set-based approach for O(n)
+</code></pre>
+<p><strong>test</strong> - Test code:</p>
+<pre><code class="language-python">import pytest
+
+def test_fibonacci_base_cases():
+    assert fibonacci(0) == 0
+    assert fibonacci(1) == 1
+
+def test_fibonacci_recursive():
+    assert fibonacci(5) == 5
+    assert fibonacci(10) == 55
+</code></pre>
+<hr />
+<h3 id="explanation-required"><a class="header" href="#explanation-required"><code>explanation</code> (required)</a></h3>
+<p><strong>Type</strong>: string
+<strong>Constraints</strong>: 50-5000 characters
+<strong>Description</strong>: Human-readable explanation of the approach, design decisions, and trade-offs</p>
+<p><strong>Should Include</strong>:</p>
+<ul>
+<li>High-level approach and algorithm used</li>
+<li>Key design decisions and why they were made</li>
+<li>Trade-offs considered (performance vs readability, etc.)</li>
+<li>Assumptions made</li>
+<li>Important implementation details</li>
+</ul>
+<p><strong>Examples by Request Type</strong>:</p>
+<p><strong>generate</strong>:</p>
+<pre><code>Created an email validation function using regex pattern matching.
+The pattern follows RFC 5322 standard with simplified rules for
+common email formats. Includes docstring with examples and type hints
+for better IDE support. Returns boolean for easy integration into
+validation logic.
+</code></pre>
+<p><strong>debug</strong>:</p>
+<pre><code>Fixed IndexError by adding bounds checking (0 &lt;= index &lt; len(items)).
+Returns None for out-of-bounds indices instead of raising exception,
+which is more graceful for the calling code. Added type hints with
+generics (TypeVar) for type safety across different list types.
+</code></pre>
+<p><strong>refactor</strong>:</p>
+<pre><code>Converted callback-based async code to modern async/await syntax for
+better readability and error handling. Used try-catch instead of promise
+chaining to simplify error flow. Returns None on error to avoid
+exceptions propagating to callers. Added type hints for better IDE support.
+</code></pre>
+<p><strong>optimize</strong>:</p>
+<pre><code>Replaced nested loops (O(n²)) with set-based approach (O(n)) for finding
+duplicates. The new implementation creates a set to track seen items and
+identifies duplicates in a single pass. This reduces time complexity from
+quadratic to linear, significantly improving performance for large inputs.
+</code></pre>
+<hr />
+<h3 id="language-required"><a class="header" href="#language-required"><code>language</code> (required)</a></h3>
+<p><strong>Type</strong>: string
+<strong>Description</strong>: Programming language of the code (echoed from request)</p>
+<p><strong>Supported Languages</strong>:</p>
+<ul>
+<li><strong>Python</strong> (<code>python</code>)</li>
+<li><strong>JavaScript</strong> (<code>javascript</code>)</li>
+<li><strong>TypeScript</strong> (<code>typescript</code>)</li>
+<li><strong>Rust</strong> (<code>rust</code>)</li>
+<li><strong>Go</strong> (<code>go</code>)</li>
+<li><strong>Java</strong> (<code>java</code>)</li>
+<li><strong>C++</strong> (<code>cpp</code>)</li>
+<li><strong>C#</strong> (<code>csharp</code>)</li>
+<li><strong>Ruby</strong> (<code>ruby</code>)</li>
+<li><strong>PHP</strong> (<code>php</code>)</li>
+<li><strong>Swift</strong> (<code>swift</code>)</li>
+<li><strong>Kotlin</strong> (<code>kotlin</code>)</li>
+<li><strong>Shell</strong> (<code>bash</code>, <code>shell</code>)</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "language": "python",
+  "code": "def example(): ..."
+}
+</code></pre>
+<hr />
+<h3 id="tests-optional"><a class="header" href="#tests-optional"><code>tests</code> (optional)</a></h3>
+<p><strong>Type</strong>: string
+<strong>Constraints</strong>: 1-20,000 characters
+<strong>Description</strong>: Unit tests for validating the generated code</p>
+<p><strong>When Present</strong>:</p>
+<ul>
+<li><code>request_type: 'test'</code> - Always includes tests</li>
+<li><code>request_type: 'generate'</code> - Includes tests if requested in constraints</li>
+<li>Other request types - Rarely includes tests</li>
+</ul>
+<p><strong>Format</strong>:</p>
+<ul>
+<li>Uses appropriate testing framework for language (pytest, jest, JUnit, etc.)</li>
+<li>Includes multiple test cases covering:
+<ul>
+<li>Happy path (normal inputs)</li>
+<li>Edge cases (boundaries, empty inputs)</li>
+<li>Error cases (invalid inputs)</li>
+</ul>
+</li>
+<li>Well-named test functions (test_<em>, should_</em>, etc.)</li>
+</ul>
+<p><strong>Example</strong> (Python + pytest):</p>
+<pre><code class="language-python">import pytest
+from email_validator import validate_email
+
+def test_valid_emails():
+    assert validate_email("user@example.com") == True
+    assert validate_email("test.user+tag@sub.example.org") == True
+
+def test_invalid_emails():
+    assert validate_email("invalid.email") == False
+    assert validate_email("@example.com") == False
+    assert validate_email("user@") == False
+
+def test_edge_cases():
+    assert validate_email("") == False
+    assert validate_email("a@b.c") == True  # Minimal valid email
+</code></pre>
+<hr />
+<h3 id="confidence-required"><a class="header" href="#confidence-required"><code>confidence</code> (required)</a></h3>
+<p><strong>Type</strong>: number
+<strong>Constraints</strong>: 0.0-1.0
+<strong>Description</strong>: Confidence in the quality and correctness of the generated code</p>
+<p><strong>Confidence Levels</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Range</th><th>Interpretation</th><th>Recommendation</th></tr></thead><tbody>
+<tr><td>0.95-1.0</td><td>Very High</td><td>Production-ready, thoroughly tested approach</td></tr>
+<tr><td>0.85-0.94</td><td>High</td><td>Good quality, minor review recommended</td></tr>
+<tr><td>0.70-0.84</td><td>Medium</td><td>Acceptable, moderate review needed</td></tr>
+<tr><td>0.50-0.69</td><td>Low</td><td>Significant review required, may have issues</td></tr>
+<tr><td>0.0-0.49</td><td>Very Low</td><td>Unreliable, major rework likely needed</td></tr>
+</tbody></table>
+</div>
+<p><strong>Factors Affecting Confidence</strong>:</p>
+<ul>
+<li><strong>Instruction Clarity</strong>: Vague instructions → lower confidence</li>
+<li><strong>Language Familiarity</strong>: Common languages (Python, JS) → higher confidence</li>
+<li><strong>Code Complexity</strong>: Simple tasks → higher confidence</li>
+<li><strong>Edge Cases</strong>: Well-defined edge cases → higher confidence</li>
+<li><strong>Testing</strong>: Testable code → higher confidence</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "confidence": 0.92,
+  "warnings": [
+    "Edge case handling for Unicode emails not fully tested"
+  ]
+}
+</code></pre>
+<p><strong>Best Practice</strong>: Only use code with <code>confidence &gt;= 0.80</code> in production without manual review.</p>
+<hr />
+<h3 id="warnings-optional"><a class="header" href="#warnings-optional"><code>warnings</code> (optional)</a></h3>
+<p><strong>Type</strong>: array of strings
+<strong>Description</strong>: Caveats, limitations, or potential issues with the generated code</p>
+<p><strong>Common Warning Types</strong>:</p>
+<p><strong>Performance Warnings</strong>:</p>
+<ul>
+<li>"O(n²) complexity may be slow for large inputs"</li>
+<li>"Recursive approach may hit stack limit for n &gt; 1000"</li>
+<li>"Database query in loop may cause N+1 problem"</li>
+</ul>
+<p><strong>Security Warnings</strong>:</p>
+<ul>
+<li>"User input not sanitized, vulnerable to injection"</li>
+<li>"Hardcoded credentials should be moved to environment variables"</li>
+<li>"SQL query vulnerable to SQL injection, use parameterized queries"</li>
+</ul>
+<p><strong>Compatibility Warnings</strong>:</p>
+<ul>
+<li>"Requires Python 3.10+ for match statement"</li>
+<li>"Uses experimental async/await, may change in future Node versions"</li>
+<li>"Deprecated API usage, migrate to new API soon"</li>
+</ul>
+<p><strong>Edge Case Warnings</strong>:</p>
+<ul>
+<li>"Does not handle Unicode characters in input"</li>
+<li>"May fail for very large files (&gt;1GB)"</li>
+<li>"Thread-safety not guaranteed for concurrent access"</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "warnings": [
+    "Regex pattern does not support international email addresses with Unicode characters",
+    "Consider using a library like 'email-validator' for production use",
+    "Performance may degrade for batch validation (&gt;10k emails)"
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="metadata-optional"><a class="header" href="#metadata-optional"><code>metadata</code> (optional)</a></h3>
+<p><strong>Type</strong>: object
+<strong>Description</strong>: Additional information about the code generation process</p>
+<p><strong>Common Metadata Fields</strong>:</p>
+<p><strong><code>model</code></strong> - LLM model used:</p>
+<pre><code class="language-json">{"model": "gpt-4"}
+{"model": "gpt-3.5-turbo"}
+</code></pre>
+<p><strong><code>tokens_used</code></strong> - Total tokens consumed:</p>
+<pre><code class="language-json">{"tokens_used": 1450}  // Input + output tokens
+</code></pre>
+<p><strong><code>memory_hits</code></strong> - Episodic memory cache hits:</p>
+<pre><code class="language-json">{"memory_hits": 2}  // Found 2 similar past solutions
+</code></pre>
+<p><strong><code>episodic_memory_used</code></strong> - Whether previous solutions were reused:</p>
+<pre><code class="language-json">{"episodic_memory_used": true}
+</code></pre>
+<p><strong><code>duration_ms</code></strong> - Execution time:</p>
+<pre><code class="language-json">{"duration_ms": 8500}
+</code></pre>
+<p><strong>Complete Metadata Example</strong>:</p>
+<pre><code class="language-json">{
+  "metadata": {
+    "model": "gpt-4",
+    "tokens_used": 2340,
+    "memory_hits": 1,
+    "episodic_memory_used": true,
+    "request_type": "generate",
+    "duration_ms": 7800,
+    "language_version": "3.11",
+    "framework": "FastAPI"
+  }
+}
+</code></pre>
+<hr />
+<h2 id="complete-examples"><a class="header" href="#complete-examples">Complete Examples</a></h2>
+<h3 id="example-1-generate-new-function-high-confidence"><a class="header" href="#example-1-generate-new-function-high-confidence">Example 1: Generate New Function (High Confidence)</a></h3>
+<pre><code class="language-json">{
+  "success": true,
+  "code": "from typing import Optional\nimport re\n\ndef validate_email(email: str) -&gt; bool:\n    \"\"\"Validate email address using RFC 5322 regex.\n\n    Args:\n        email: Email address to validate\n\n    Returns:\n        True if valid, False otherwise\n\n    Examples:\n        &gt;&gt;&gt; validate_email(\"user@example.com\")\n        True\n        &gt;&gt;&gt; validate_email(\"invalid.email\")\n        False\n    \"\"\"\n    if not email or not isinstance(email, str):\n        return False\n\n    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'\n    return bool(re.match(pattern, email))",
+  "explanation": "Created an email validation function using regex pattern matching. The pattern follows RFC 5322 standard with simplified rules for common email formats. Added input validation to handle edge cases (None, empty string, non-string types). Includes comprehensive docstring with examples and type hints for better IDE support. Returns boolean for easy integration into validation logic.",
+  "language": "python",
+  "tests": "import pytest\nfrom email_validator import validate_email\n\ndef test_valid_emails():\n    assert validate_email(\"user@example.com\") == True\n    assert validate_email(\"test.user+tag@sub.example.org\") == True\n\ndef test_invalid_emails():\n    assert validate_email(\"invalid.email\") == False\n    assert validate_email(\"@example.com\") == False\n    assert validate_email(\"user@\") == False\n\ndef test_edge_cases():\n    assert validate_email(\"\") == False\n    assert validate_email(None) == False\n    assert validate_email(123) == False\n    assert validate_email(\"a@b.c\") == True",
+  "confidence": 0.92,
+  "warnings": [
+    "Regex pattern does not support international email addresses with Unicode characters",
+    "Consider using a library like 'email-validator' for production use with full RFC 5322 compliance",
+    "Performance may degrade for batch validation (&gt;10k emails)"
+  ],
+  "metadata": {
+    "model": "gpt-4",
+    "tokens_used": 1450,
+    "memory_hits": 0,
+    "episodic_memory_used": false,
+    "request_type": "generate",
+    "duration_ms": 6200,
+    "language_version": "3.11"
+  }
+}
+</code></pre>
+<hr />
+<h3 id="example-2-debug-existing-code"><a class="header" href="#example-2-debug-existing-code">Example 2: Debug Existing Code</a></h3>
+<pre><code class="language-json">{
+  "success": true,
+  "code": "from typing import Optional, List, TypeVar\n\nT = TypeVar('T')\n\ndef get_item(items: List[T], index: int) -&gt; Optional[T]:\n    \"\"\"Safely retrieve item from list by index.\n\n    Args:\n        items: List to retrieve from\n        index: Index to retrieve\n\n    Returns:\n        Item at index, or None if index out of bounds\n    \"\"\"\n    if 0 &lt;= index &lt; len(items):\n        return items[index]\n    return None\n\n# Example usage\nresult = get_item([1, 2, 3], 5)  # Returns None instead of raising IndexError",
+  "explanation": "Fixed IndexError by adding bounds checking (0 &lt;= index &lt; len(items)). Returns None for out-of-bounds indices instead of raising exception, which is more graceful for the calling code. Added type hints with generics (TypeVar) for type safety across different list types. Included comprehensive docstring explaining behavior and return values.",
+  "language": "python",
+  "confidence": 0.95,
+  "warnings": [
+    "Returning None may mask errors if caller doesn't check for None",
+    "Consider raising a custom exception with clear error message for better debugging"
+  ],
+  "metadata": {
+    "model": "gpt-4",
+    "tokens_used": 980,
+    "memory_hits": 1,
+    "episodic_memory_used": true,
+    "request_type": "debug",
+    "duration_ms": 4500
+  }
+}
+</code></pre>
+<hr />
+<h3 id="example-3-refactor-to-asyncawait"><a class="header" href="#example-3-refactor-to-asyncawait">Example 3: Refactor to Async/Await</a></h3>
+<pre><code class="language-json">{
+  "success": true,
+  "code": "/**\n * Fetch JSON data from URL with error handling\n * @param {string} url - URL to fetch from\n * @returns {Promise&lt;Object|null&gt;} JSON data or null on error\n */\nasync function fetchData(url) {\n  try {\n    const response = await fetch(url);\n\n    if (!response.ok) {\n      throw new Error(`HTTP error! status: ${response.status}`);\n    }\n\n    const data = await response.json();\n    return data;\n  } catch (error) {\n    console.error('Fetch error:', error);\n    return null;\n  }\n}",
+  "explanation": "Converted callback-based async code to modern async/await syntax for better readability and error handling. Used try-catch instead of promise chaining to simplify error flow. Added check for response.ok to handle HTTP errors properly. Returns null on error to avoid exceptions propagating to callers. Added JSDoc comment for documentation.",
+  "language": "javascript",
+  "confidence": 0.88,
+  "warnings": [
+    "Consider checking response.ok before parsing JSON",
+    "Logging to console may not be appropriate for production (use proper logging framework)",
+    "Returning null on error may hide issues; consider throwing custom error or using Result type"
+  ],
+  "metadata": {
+    "model": "gpt-4",
+    "tokens_used": 1120,
+    "memory_hits": 2,
+    "episodic_memory_used": true,
+    "request_type": "refactor",
+    "duration_ms": 5800
+  }
+}
+</code></pre>
+<hr />
+<h3 id="example-4-generate-unit-tests"><a class="header" href="#example-4-generate-unit-tests">Example 4: Generate Unit Tests</a></h3>
+<pre><code class="language-json">{
+  "success": true,
+  "code": "import pytest\n\ndef test_fibonacci_base_cases():\n    \"\"\"Test base cases n=0 and n=1\"\"\"\n    assert fibonacci(0) == 0\n    assert fibonacci(1) == 1\n\ndef test_fibonacci_recursive():\n    \"\"\"Test recursive cases\"\"\"\n    assert fibonacci(2) == 1\n    assert fibonacci(5) == 5\n    assert fibonacci(10) == 55\n\ndef test_fibonacci_negative():\n    \"\"\"Test negative inputs\"\"\"\n    with pytest.raises(ValueError):\n        fibonacci(-1)\n\ndef test_fibonacci_performance():\n    \"\"\"Test performance for n=10\"\"\"\n    import time\n    start = time.time()\n    result = fibonacci(10)\n    duration = time.time() - start\n    assert result == 55\n    assert duration &lt; 0.1  # Should complete in &lt;100ms",
+  "explanation": "Generated comprehensive unit tests using pytest. Tests cover: (1) Base cases (n=0, n=1), (2) Recursive cases (n=2, 5, 10), (3) Edge case (negative input), (4) Performance check (n=10 completes in &lt;100ms). Each test function is well-named and includes docstring. Uses pytest.raises for exception testing.",
+  "language": "python",
+  "confidence": 0.90,
+  "warnings": [
+    "Performance test may be flaky depending on system load",
+    "Original fibonacci function should validate n &gt;= 0 to make negative test pass",
+    "Consider adding tests for large n values (e.g., n=30) to catch stack overflow"
+  ],
+  "metadata": {
+    "model": "gpt-4",
+    "tokens_used": 1680,
+    "memory_hits": 0,
+    "episodic_memory_used": false,
+    "request_type": "test",
+    "duration_ms": 7200
+  }
+}
+</code></pre>
+<hr />
+<h3 id="example-5-failed-generation-low-confidence"><a class="header" href="#example-5-failed-generation-low-confidence">Example 5: Failed Generation (Low Confidence)</a></h3>
+<pre><code class="language-json">{
+  "success": false,
+  "code": "",
+  "explanation": "Unable to generate code due to ambiguous instruction. The request asked to 'make the code better' without specifying what aspects to improve (performance, readability, security, etc.). Additionally, no existing code was provided to refactor. Please clarify the specific improvements desired and provide the code to be modified.",
+  "language": "python",
+  "confidence": 0.15,
+  "warnings": [
+    "Instruction too vague: 'make the code better' is subjective",
+    "No existing code provided for refactoring",
+    "Recommend re-submitting with specific constraints (e.g., 'optimize for performance', 'add error handling')"
+  ],
+  "metadata": {
+    "model": "gpt-4",
+    "tokens_used": 320,
+    "memory_hits": 0,
+    "episodic_memory_used": false,
+    "request_type": "refactor",
+    "duration_ms": 2100
+  }
+}
+</code></pre>
+<hr />
+<h2 id="usage-patterns"><a class="header" href="#usage-patterns">Usage Patterns</a></h2>
+<h3 id="pattern-1-iterative-refinement"><a class="header" href="#pattern-1-iterative-refinement">Pattern 1: Iterative Refinement</a></h3>
+<p>Generate code, validate, and refine based on feedback.</p>
+<pre><code class="language-python">from octollm_sdk import CoderClient, JudgeClient
+
+coder = CoderClient(bearer_token="service_token_abc123")
+judge = JudgeClient(bearer_token="service_token_abc123")
+
+MAX_ATTEMPTS = 3
+
+async def generate_with_validation(instruction: str, language: str):
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        # Generate code
+        code_result = await coder.process_code({
+            "request_type": "generate",
+            "language": language,
+            "instruction": instruction
+        })
+
+        if not code_result.success:
+            print(f"Attempt {attempt} failed: {code_result.explanation}")
+            continue
+
+        # Validate code
+        validation = await judge.validate({
+            "output": {"code": code_result.code},
+            "validation_types": ["schema", "quality"]
+        })
+
+        if validation.valid and validation.quality_score &gt;= 0.8:
+            print(f"✅ Success on attempt {attempt}")
+            return code_result
+
+        # Refine instruction with validation feedback
+        instruction += f"\n\nPrevious attempt issues: {', '.join([i.message for i in validation.issues])}"
+
+    raise Exception("Failed to generate valid code after maximum attempts")
+</code></pre>
+<hr />
+<h3 id="pattern-2-confidence-based-acceptance"><a class="header" href="#pattern-2-confidence-based-acceptance">Pattern 2: Confidence-Based Acceptance</a></h3>
+<p>Only accept code above confidence threshold.</p>
+<pre><code class="language-typescript">const MIN_CONFIDENCE = 0.85;
+
+async function generateCode(instruction: string): Promise&lt;CodeGeneration&gt; {
+  const result = await coderClient.processCode({
+    requestType: 'generate',
+    language: 'python',
+    instruction
+  });
+
+  if (!result.success) {
+    throw new Error(`Code generation failed: ${result.explanation}`);
+  }
+
+  if (result.confidence &lt; MIN_CONFIDENCE) {
+    console.warn(`⚠️ Low confidence (${result.confidence.toFixed(2)}), manual review required`);
+    console.warn(`Warnings: ${result.warnings.join(', ')}`);
+    // Send for manual review
+    await sendForReview(result);
+  } else {
+    console.log(`✅ High confidence (${result.confidence.toFixed(2)}), auto-accepting`);
+  }
+
+  return result;
+}
+</code></pre>
+<hr />
+<h3 id="pattern-3-multi-language-code-generation"><a class="header" href="#pattern-3-multi-language-code-generation">Pattern 3: Multi-Language Code Generation</a></h3>
+<p>Generate equivalent code in multiple languages.</p>
+<pre><code class="language-python">async def generate_multilanguage(instruction: str, languages: List[str]):
+    """Generate equivalent code in multiple languages."""
+    results = {}
+
+    for lang in languages:
+        result = await coder.process_code({
+            "request_type": "generate",
+            "language": lang,
+            "instruction": instruction
+        })
+        results[lang] = result
+
+    # Compare confidence scores
+    best_lang = max(results.items(), key=lambda x: x[1].confidence)
+    print(f"Best implementation: {best_lang[0]} (confidence: {best_lang[1].confidence:.2f})")
+
+    return results
+
+# Example usage
+results = await generate_multilanguage(
+    "Implement binary search",
+    ["python", "javascript", "rust", "go"]
+)
+</code></pre>
+<hr />
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<h3 id="1-always-check-success-and-confidence"><a class="header" href="#1-always-check-success-and-confidence">1. Always Check <code>success</code> and <code>confidence</code></a></h3>
+<p><strong>Why</strong>: Even successful generations may have low confidence
+<strong>How</strong>: Validate both fields</p>
+<pre><code class="language-python">if result.success and result.confidence &gt;= 0.85:
+    use_code(result.code)
+else:
+    send_for_review(result)
+</code></pre>
+<hr />
+<h3 id="2-review-warnings-before-production-use"><a class="header" href="#2-review-warnings-before-production-use">2. Review Warnings Before Production Use</a></h3>
+<p><strong>Why</strong>: Warnings highlight potential issues
+<strong>How</strong>: Log and review all warnings</p>
+<pre><code class="language-typescript">if (result.warnings.length &gt; 0) {
+  console.warn('Code generation warnings:');
+  result.warnings.forEach(w =&gt; console.warn(`  - ${w}`));
+}
+</code></pre>
+<hr />
+<h3 id="3-use-tests-to-validate-generated-code"><a class="header" href="#3-use-tests-to-validate-generated-code">3. Use Tests to Validate Generated Code</a></h3>
+<p><strong>Why</strong>: Tests catch bugs before production
+<strong>How</strong>: Always request tests or generate separately</p>
+<pre><code class="language-python">code_result = await coder.process_code({
+    "request_type": "generate",
+    "language": "python",
+    "instruction": "...",
+    "constraints": ["Generate comprehensive unit tests"]
+})
+
+# Run tests
+if code_result.tests:
+    run_tests(code_result.tests)
+</code></pre>
+<hr />
+<h3 id="4-leverage-episodic-memory-for-repeated-tasks"><a class="header" href="#4-leverage-episodic-memory-for-repeated-tasks">4. Leverage Episodic Memory for Repeated Tasks</a></h3>
+<p><strong>Why</strong>: Reusing past solutions improves quality and speed
+<strong>How</strong>: Check <code>metadata.episodic_memory_used</code></p>
+<pre><code class="language-typescript">if (result.metadata.episodic_memory_used) {
+  console.log(`✨ Reused ${result.metadata.memory_hits} past solution(s)`);
+}
+</code></pre>
+<hr />
+<h2 id="related-documentation"><a class="header" href="#related-documentation">Related Documentation</a></h2>
+<ul>
+<li><a href="../services/coder.html">Coder Arm API Reference</a></li>
+<li><a href="./ValidationResult.html">ValidationResult Schema</a></li>
+<li><a href="./TaskContract.html">TaskContract Schema</a></li>
+<li><a href="../../guides/code-generation.html">Code Generation Best Practices</a> (coming soon)</li>
+</ul>
+<hr />
+<h2 id="json-schema"><a class="header" href="#json-schema">JSON Schema</a></h2>
+<p>Complete JSON Schema for validation:</p>
+<pre><code class="language-json">{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CodeGeneration",
+  "type": "object",
+  "required": ["success", "code", "explanation", "language", "confidence"],
+  "properties": {
+    "success": {
+      "type": "boolean",
+      "description": "Whether operation succeeded"
+    },
+    "code": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 50000,
+      "description": "Generated or modified code"
+    },
+    "explanation": {
+      "type": "string",
+      "minLength": 50,
+      "maxLength": 5000,
+      "description": "Approach and design decisions"
+    },
+    "language": {
+      "type": "string",
+      "description": "Programming language"
+    },
+    "tests": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000,
+      "description": "Unit tests"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Quality confidence score"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Caveats and limitations"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "model": {"type": "string"},
+        "tokens_used": {"type": "integer"},
+        "memory_hits": {"type": "integer"},
+        "episodic_memory_used": {"type": "boolean"},
+        "request_type": {
+          "type": "string",
+          "enum": ["generate", "debug", "refactor", "analyze", "test", "explain", "optimize"]
+        },
+        "duration_ms": {"type": "number"},
+        "language_version": {"type": "string"},
+        "framework": {"type": "string"}
+      }
+    }
+  }
+}
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../api/schemas/arm-capability.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../api/schemas/validation-result.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../api/schemas/arm-capability.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../api/schemas/validation-result.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

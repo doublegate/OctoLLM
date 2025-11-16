@@ -1,0 +1,767 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Data Flow - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/architecture/data-flow.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="octollm-data-flow-architecture"><a class="header" href="#octollm-data-flow-architecture">OctoLLM Data Flow Architecture</a></h1>
+<p><strong>Version</strong>: 1.0
+<strong>Last Updated</strong>: 2025-11-10</p>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#request-processing-pipeline">Request Processing Pipeline</a></li>
+<li><a href="#memory-data-flow">Memory Data Flow</a></li>
+<li><a href="#inter-component-communication">Inter-Component Communication</a></li>
+<li><a href="#provenance-tracking">Provenance Tracking</a></li>
+<li><a href="#error-handling-flow">Error Handling Flow</a></li>
+</ul>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This document details how data flows through the OctoLLM system, from initial user request to final response, including memory operations, inter-component communication, and error handling.</p>
+<h2 id="request-processing-pipeline"><a class="header" href="#request-processing-pipeline">Request Processing Pipeline</a></h2>
+<h3 id="complete-flow"><a class="header" href="#complete-flow">Complete Flow</a></h3>
+<pre><code class="language-mermaid">flowchart TD
+    START([User Request]) --&gt; AUTH{Authenticated?}
+    AUTH --&gt;|No| REJECT([401 Unauthorized])
+    AUTH --&gt;|Yes| RATE{Within Rate Limit?}
+
+    RATE --&gt;|No| THROTTLE([429 Too Many Requests])
+    RATE --&gt;|Yes| REFLEX[Reflex Layer]
+
+    REFLEX --&gt; CACHE{Cache Hit?}
+    CACHE --&gt;|Yes| RETURN_CACHE([Return Cached Result])
+    CACHE --&gt;|No| PII[PII Detection]
+
+    PII --&gt; INJECT{Injection Detected?}
+    INJECT --&gt;|Yes| BLOCK([403 Blocked])
+    INJECT --&gt;|No| SANITIZE[Sanitize Input]
+
+    SANITIZE --&gt; ORCH[Orchestrator]
+    ORCH --&gt; PARSE[Parse Intent]
+    PARSE --&gt; COMPLEXITY{Complex Task?}
+
+    COMPLEXITY --&gt;|Yes| PLANNER[Planner Arm]
+    COMPLEXITY --&gt;|No| DIRECT[Direct Execution]
+
+    PLANNER --&gt; PLAN[Generate Plan]
+    PLAN --&gt; ROUTE[Route to Arms]
+
+    ROUTE --&gt; EXEC_LOOP{More Steps?}
+    EXEC_LOOP --&gt;|Yes| SELECT_ARM[Select Arm]
+
+    SELECT_ARM --&gt; ARM_TYPE{Arm Type}
+    ARM_TYPE --&gt;|Retriever| RETR[Retriever Arm]
+    ARM_TYPE --&gt;|Coder| CODE[Coder Arm]
+    ARM_TYPE --&gt;|Executor| EXEC[Executor Arm]
+
+    RETR --&gt; ARM_RESULT[Arm Result]
+    CODE --&gt; ARM_RESULT
+    EXEC --&gt; ARM_RESULT
+    DIRECT --&gt; ARM_RESULT
+
+    ARM_RESULT --&gt; STORE_LOCAL[Store in Local Memory]
+    STORE_LOCAL --&gt; UPDATE_CONTEXT[Update Task Context]
+    UPDATE_CONTEXT --&gt; EXEC_LOOP
+
+    EXEC_LOOP --&gt;|No| INTEGRATE[Integrate Results]
+    INTEGRATE --&gt; JUDGE[Judge Arm Validation]
+
+    JUDGE --&gt; VALID{Valid?}
+    VALID --&gt;|No| REPAIR[Repair Loop]
+    REPAIR --&gt; RETRY{Max Retries?}
+    RETRY --&gt;|No| INTEGRATE
+    RETRY --&gt;|Yes| ERROR([Error Response])
+
+    VALID --&gt;|Yes| STORE_GLOBAL[Store in Global Memory]
+    STORE_GLOBAL --&gt; CACHE_RESULT[Cache Result]
+    CACHE_RESULT --&gt; RESPONSE([Return to User])
+</code></pre>
+<h3 id="layer-by-layer-processing"><a class="header" href="#layer-by-layer-processing">Layer-by-Layer Processing</a></h3>
+<h4 id="layer-1-api-gateway"><a class="header" href="#layer-1-api-gateway">Layer 1: API Gateway</a></h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant User
+    participant Gateway as API Gateway
+    participant Auth as Auth Service
+    participant RateLimit as Rate Limiter
+
+    User-&gt;&gt;Gateway: HTTP Request
+    Gateway-&gt;&gt;Auth: Validate Token
+    Auth--&gt;&gt;Gateway: Valid/Invalid
+
+    alt Invalid Token
+        Gateway--&gt;&gt;User: 401 Unauthorized
+    else Valid Token
+        Gateway-&gt;&gt;RateLimit: Check Limit
+        RateLimit--&gt;&gt;Gateway: Allow/Deny
+
+        alt Rate Limited
+            Gateway--&gt;&gt;User: 429 Too Many Requests
+        else Allowed
+            Gateway-&gt;&gt;Gateway: Add Request Metadata
+            Note over Gateway: request_id, timestamp,&lt;br/&gt;user_id, trace_id
+            Gateway--&gt;&gt;User: Forward to Reflex
+        end
+    end
+</code></pre>
+<h4 id="layer-2-reflex-preprocessing"><a class="header" href="#layer-2-reflex-preprocessing">Layer 2: Reflex Preprocessing</a></h4>
+<pre><code class="language-mermaid">flowchart LR
+    INPUT[Incoming Request] --&gt; HASH[Compute Hash]
+    HASH --&gt; CACHE_LOOKUP{Redis Cache}
+
+    CACHE_LOOKUP --&gt;|Hit| METRICS1[Increment cache_hit]
+    METRICS1 --&gt; RETURN1[Return Cached]
+
+    CACHE_LOOKUP --&gt;|Miss| INJECT_CHECK[Injection Pattern Check]
+    INJECT_CHECK --&gt;|Match| BLOCK[Block Request]
+    BLOCK --&gt; METRICS2[Increment blocked]
+
+    INJECT_CHECK --&gt;|Clean| PII_CHECK[PII Pattern Scan]
+    PII_CHECK --&gt; REDACT[Redact/Sanitize]
+    REDACT --&gt; SCHEMA[Schema Validation]
+
+    SCHEMA --&gt;|Invalid| REJECT[Return 400]
+    SCHEMA --&gt;|Valid| FORWARD[Forward to Orchestrator]
+    FORWARD --&gt; METRICS3[Increment passthrough]
+</code></pre>
+<p><strong>Reflex Decision Matrix:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Condition</th><th>Action</th><th>Latency</th><th>Cache</th></tr></thead><tbody>
+<tr><td>Exact query match</td><td>Return cached</td><td>&lt; 5ms</td><td>Hit</td></tr>
+<tr><td>Similar query (&gt;0.95 similarity)</td><td>Return cached + log variance</td><td>&lt; 10ms</td><td>Near-hit</td></tr>
+<tr><td>PII detected</td><td>Sanitize + forward</td><td>&lt; 15ms</td><td>Miss</td></tr>
+<tr><td>Injection pattern</td><td>Block + alert</td><td>&lt; 5ms</td><td>N/A</td></tr>
+<tr><td>Novel query</td><td>Forward</td><td>&lt; 10ms</td><td>Miss</td></tr>
+</tbody></table>
+</div>
+<h4 id="layer-3-orchestrator-planning"><a class="header" href="#layer-3-orchestrator-planning">Layer 3: Orchestrator Planning</a></h4>
+<pre><code class="language-mermaid">flowchart TD
+    INPUT[Sanitized Request] --&gt; PARSE[Parse Goal &amp; Constraints]
+    PARSE --&gt; CONTEXT[Build Task Context]
+
+    CONTEXT --&gt; CACHED_PLAN{Similar Plan Exists?}
+    CACHED_PLAN --&gt;|Yes| ADAPT[Adapt Cached Plan]
+    CACHED_PLAN --&gt;|No| NEW_PLAN[Generate New Plan]
+
+    ADAPT --&gt; PLAN_READY[Plan Ready]
+    NEW_PLAN --&gt; LLM{Use LLM or Planner Arm?}
+
+    LLM --&gt;|Simple| DIRECT_LLM[Direct LLM Call]
+    LLM --&gt;|Complex| PLANNER_ARM[Planner Arm Call]
+
+    DIRECT_LLM --&gt; PARSE_PLAN[Parse Plan JSON]
+    PLANNER_ARM --&gt; PARSE_PLAN
+
+    PARSE_PLAN --&gt; VALIDATE_PLAN{Plan Valid?}
+    VALIDATE_PLAN --&gt;|No| REPLAN[Retry Planning]
+    REPLAN --&gt; LLM
+
+    VALIDATE_PLAN --&gt;|Yes| RESOLVE_DEPS[Resolve Dependencies]
+    RESOLVE_DEPS --&gt; PLAN_READY
+
+    PLAN_READY --&gt; EXECUTE[Execute Plan]
+</code></pre>
+<p><strong>Planning Decision Criteria:</strong></p>
+<pre><code class="language-python">def should_use_planner_arm(task):
+    # Use dedicated Planner Arm if:
+    return (
+        len(task.constraints) &gt; 3 or
+        task.priority == Priority.HIGH or
+        estimate_steps(task) &gt; 5 or
+        has_complex_dependencies(task) or
+        requires_specialized_domain_knowledge(task)
+    )
+</code></pre>
+<h4 id="layer-4-arm-execution"><a class="header" href="#layer-4-arm-execution">Layer 4: Arm Execution</a></h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Orch as Orchestrator
+    participant Router as Router
+    participant ArmReg as Arm Registry
+    participant Arm as Selected Arm
+    participant LocalMem as Local Memory
+    participant GlobalMem as Global Memory
+
+    Orch-&gt;&gt;Router: Route Step
+    Router-&gt;&gt;ArmReg: Get Capabilities
+    ArmReg--&gt;&gt;Router: Arm Metadata
+
+    Router-&gt;&gt;Router: Score Arms
+    Note over Router: Consider: cost, latency,&lt;br/&gt;success rate, load
+
+    Router--&gt;&gt;Orch: Selected Arm(s)
+
+    alt Single Arm
+        Orch-&gt;&gt;Arm: Execute Task
+        Arm-&gt;&gt;LocalMem: Query Context
+        LocalMem--&gt;&gt;Arm: Local Context
+        Arm-&gt;&gt;Arm: Process
+        Arm--&gt;&gt;Orch: Result + Confidence
+    else Swarm (Multiple Arms)
+        par Parallel Execution
+            Orch-&gt;&gt;Arm: Execute Task
+            Arm-&gt;&gt;LocalMem: Query Context
+            Arm-&gt;&gt;Arm: Process
+            Arm--&gt;&gt;Orch: Result A
+        and
+            Orch-&gt;&gt;Arm: Execute Task
+            Arm-&gt;&gt;LocalMem: Query Context
+            Arm-&gt;&gt;Arm: Process
+            Arm--&gt;&gt;Orch: Result B
+        and
+            Orch-&gt;&gt;Arm: Execute Task
+            Arm-&gt;&gt;LocalMem: Query Context
+            Arm-&gt;&gt;Arm: Process
+            Arm--&gt;&gt;Orch: Result C
+        end
+        Orch-&gt;&gt;Orch: Aggregate Results
+        Note over Orch: Vote, average,&lt;br/&gt;or learned aggregation
+        Orch--&gt;&gt;Orch: Consensus Result
+    end
+
+    Orch-&gt;&gt;GlobalMem: Update Knowledge Graph
+</code></pre>
+<h2 id="memory-data-flow"><a class="header" href="#memory-data-flow">Memory Data Flow</a></h2>
+<h3 id="write-operations"><a class="header" href="#write-operations">Write Operations</a></h3>
+<pre><code class="language-mermaid">flowchart TD
+    ARM_RESULT[Arm Produces Result] --&gt; PROV[Attach Provenance]
+    PROV --&gt; CLASS{Classify Data}
+
+    CLASS --&gt;|Ephemeral| TEMP[Discard After Task]
+    CLASS --&gt;|Local| LOCAL_WRITE[Write to Local Memory]
+    CLASS --&gt;|Global| GLOBAL_WRITE[Write to Global Memory]
+
+    LOCAL_WRITE --&gt; VECTOR[Vectorize if Text]
+    VECTOR --&gt; QDRANT[Store in Qdrant]
+    QDRANT --&gt; INDEX[Update Index]
+
+    GLOBAL_WRITE --&gt; SANITIZE[PII Sanitization]
+    SANITIZE --&gt; EXTRACT[Extract Entities/Relations]
+    EXTRACT --&gt; PSQL[PostgreSQL Write]
+    PSQL --&gt; UPDATE_GRAPH[Update Knowledge Graph]
+
+    INDEX --&gt; CACHE_INV[Invalidate Related Cache]
+    UPDATE_GRAPH --&gt; CACHE_INV
+</code></pre>
+<h3 id="read-operations"><a class="header" href="#read-operations">Read Operations</a></h3>
+<pre><code class="language-mermaid">flowchart LR
+    QUERY[Memory Query] --&gt; L1{L1: Redis Cache}
+    L1 --&gt;|Hit| RETURN1[Return Result]
+    L1 --&gt;|Miss| L2{L2: Local Arm Memory}
+
+    L2 --&gt;|Hit| PROMOTE1[Promote to L1]
+    PROMOTE1 --&gt; RETURN2[Return Result]
+
+    L2 --&gt;|Miss| L3{L3: Global Knowledge Graph}
+    L3 --&gt;|Hit| PROMOTE2[Promote to L2 &amp; L1]
+    PROMOTE2 --&gt; RETURN3[Return Result]
+
+    L3 --&gt;|Miss| EXTERNAL[Query External Sources]
+    EXTERNAL --&gt; STORE[Store in L3, L2, L1]
+    STORE --&gt; RETURN4[Return Result]
+</code></pre>
+<h3 id="memory-routing-strategy"><a class="header" href="#memory-routing-strategy">Memory Routing Strategy</a></h3>
+<pre><code class="language-python">class MemoryRouter:
+    def route_query(self, query, context):
+        # Classify query type
+        if is_recent(query, window="5m"):
+            return "L1_cache"  # Redis
+
+        domain = extract_domain(query)
+        if domain in ["code", "docs", "data"]:
+            # Domain-specific local memory
+            return f"L2_{domain}_vector_db"
+
+        if is_entity_query(query):
+            return "L3_knowledge_graph"  # PostgreSQL
+
+        if requires_external_data(query):
+            return "external_sources"
+
+        # Default to global search
+        return "L3_knowledge_graph"
+</code></pre>
+<h2 id="inter-component-communication"><a class="header" href="#inter-component-communication">Inter-Component Communication</a></h2>
+<h3 id="message-format"><a class="header" href="#message-format">Message Format</a></h3>
+<p>All inter-component messages follow this schema:</p>
+<pre><code class="language-json">{
+  "message_id": "uuid-v4",
+  "timestamp": "2025-11-10T10:30:00Z",
+  "from": "orchestrator",
+  "to": "coder-arm",
+  "message_type": "task_request",
+  "payload": {
+    "task_id": "task-12345",
+    "action": "generate_function",
+    "context": {},
+    "constraints": [],
+    "budget": {
+      "max_tokens": 4000,
+      "max_time_seconds": 30
+    }
+  },
+  "trace_id": "trace-uuid",
+  "parent_message_id": "parent-uuid"
+}
+</code></pre>
+<h3 id="communication-patterns"><a class="header" href="#communication-patterns">Communication Patterns</a></h3>
+<h4 id="1-request-response-synchronous"><a class="header" href="#1-request-response-synchronous">1. Request-Response (Synchronous)</a></h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Orch as Orchestrator
+    participant Arm as Arm
+
+    Orch-&gt;&gt;+Arm: POST /execute
+    Note over Arm: Process Task&lt;br/&gt;(max 30s timeout)
+    Arm--&gt;&gt;-Orch: 200 OK + Result
+</code></pre>
+<h4 id="2-fire-and-forget-asynchronous"><a class="header" href="#2-fire-and-forget-asynchronous">2. Fire-and-Forget (Asynchronous)</a></h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Orch as Orchestrator
+    participant Queue as Task Queue
+    participant Arm as Arm Worker
+
+    Orch-&gt;&gt;Queue: Enqueue Task
+    Orch--&gt;&gt;Orch: Continue
+
+    Note over Queue: Task persisted
+
+    Arm-&gt;&gt;Queue: Poll for Tasks
+    Queue--&gt;&gt;Arm: Task
+    Arm-&gt;&gt;Arm: Process
+    Arm-&gt;&gt;Queue: Mark Complete
+</code></pre>
+<h4 id="3-publish-subscribe-events"><a class="header" href="#3-publish-subscribe-events">3. Publish-Subscribe (Events)</a></h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Arm as Arm (Publisher)
+    participant Bus as Event Bus
+    participant Sub1 as Subscriber 1
+    participant Sub2 as Subscriber 2
+
+    Arm-&gt;&gt;Bus: Publish Event&lt;br/&gt;(e.g., "vulnerability_found")
+    Bus-&gt;&gt;Sub1: Notify
+    Bus-&gt;&gt;Sub2: Notify
+    Sub1-&gt;&gt;Sub1: Handle Event
+    Sub2-&gt;&gt;Sub2: Handle Event
+</code></pre>
+<h3 id="direct-arm-to-arm-communication"><a class="header" href="#direct-arm-to-arm-communication">Direct Arm-to-Arm Communication</a></h3>
+<p>Certain workflows benefit from direct communication:</p>
+<pre><code class="language-mermaid">graph LR
+    PLAN[Planner Arm] --&gt;|Execution Plan| EXEC[Executor Arm]
+    CODE[Coder Arm] --&gt;|Code Artifact| JUDGE[Judge Arm]
+    JUDGE --&gt;|Validation Result| CODE
+    RETR[Retriever Arm] --&gt;|Retrieved Context| CODE
+</code></pre>
+<p><strong>When to use direct communication:</strong></p>
+<ul>
+<li>High-frequency interactions (e.g., code validation loop)</li>
+<li>Large data transfers (avoid orchestrator bottleneck)</li>
+<li>Tight coupling between specific arms (e.g., coder + judge)</li>
+</ul>
+<p><strong>Constraints:</strong></p>
+<ul>
+<li>Must register intent with orchestrator</li>
+<li>Include provenance in all messages</li>
+<li>Respect capability boundaries (no privilege escalation)</li>
+</ul>
+<h2 id="provenance-tracking"><a class="header" href="#provenance-tracking">Provenance Tracking</a></h2>
+<p>Every data artifact includes complete lineage:</p>
+<pre><code class="language-json">{
+  "artifact_id": "art-uuid",
+  "artifact_type": "code_function",
+  "content": "def hello(): ...",
+  "provenance": {
+    "created_by": "coder-arm",
+    "created_at": "2025-11-10T10:30:00Z",
+    "task_id": "task-12345",
+    "parent_task_id": "task-12300",
+    "input_sources": [
+      {
+        "source_id": "doc-456",
+        "source_type": "documentation",
+        "relevance_score": 0.92
+      }
+    ],
+    "transformations": [
+      {
+        "step": 1,
+        "operation": "template_fill",
+        "tool": "code_generator_v1"
+      },
+      {
+        "step": 2,
+        "operation": "syntax_validation",
+        "tool": "ast_parser"
+      }
+    ],
+    "validation_status": {
+      "validated": true,
+      "validator": "judge-arm",
+      "confidence": 0.95,
+      "checks_passed": ["syntax", "type_hints", "docstring"]
+    },
+    "model_info": {
+      "model_name": "gpt-3.5-turbo",
+      "prompt_hash": "sha256:abc123...",
+      "temperature": 0.3,
+      "tokens_used": 350
+    }
+  }
+}
+</code></pre>
+<h3 id="provenance-flow"><a class="header" href="#provenance-flow">Provenance Flow</a></h3>
+<pre><code class="language-mermaid">flowchart TD
+    INPUT[Input Data] --&gt; ARM[Arm Processes]
+    ARM --&gt; ATTACH[Attach Metadata]
+
+    ATTACH --&gt; PROV[Provenance Record]
+    PROV --&gt; CONTENT[Content Hash]
+    PROV --&gt; SOURCE[Source References]
+    PROV --&gt; TRANSFORM[Transformation Log]
+    PROV --&gt; VALID[Validation Results]
+
+    CONTENT --&gt; STORE[Storage]
+    SOURCE --&gt; STORE
+    TRANSFORM --&gt; STORE
+    VALID --&gt; STORE
+
+    STORE --&gt; QUERY[Queryable Provenance]
+</code></pre>
+<h2 id="error-handling-flow"><a class="header" href="#error-handling-flow">Error Handling Flow</a></h2>
+<h3 id="error-classification"><a class="header" href="#error-classification">Error Classification</a></h3>
+<pre><code class="language-mermaid">flowchart TD
+    ERROR[Error Occurred] --&gt; CLASSIFY{Error Type}
+
+    CLASSIFY --&gt;|Transient| RETRY[Retry Logic]
+    CLASSIFY --&gt;|Invalid Input| USER_ERROR[Return 400]
+    CLASSIFY --&gt;|Auth/Authz| SECURITY[Return 403]
+    CLASSIFY --&gt;|Resource Limit| BACKPRESSURE[Apply Backpressure]
+    CLASSIFY --&gt;|Logic Error| ESCALATE[Escalate to Orchestrator]
+    CLASSIFY --&gt;|Critical| SHUTDOWN[Graceful Shutdown]
+
+    RETRY --&gt; BACKOFF{Retry Count}
+    BACKOFF --&gt;|&lt; Max| WAIT[Exponential Backoff]
+    WAIT --&gt; RETRY_OP[Retry Operation]
+    RETRY_OP --&gt; SUCCESS{Success?}
+    SUCCESS --&gt;|Yes| RECOVER[Recovery Complete]
+    SUCCESS --&gt;|No| RETRY
+
+    BACKOFF --&gt;|&gt;= Max| GIVE_UP[Return 503]
+
+    USER_ERROR --&gt; LOG1[Log Warning]
+    SECURITY --&gt; LOG2[Log Alert]
+    BACKPRESSURE --&gt; LOG3[Log Info]
+    ESCALATE --&gt; LOG4[Log Error]
+    SHUTDOWN --&gt; LOG5[Log Critical]
+
+    LOG1 --&gt; METRICS
+    LOG2 --&gt; METRICS
+    LOG3 --&gt; METRICS
+    LOG4 --&gt; METRICS
+    LOG5 --&gt; METRICS
+
+    METRICS[Update Metrics]
+</code></pre>
+<h3 id="retry-strategy"><a class="header" href="#retry-strategy">Retry Strategy</a></h3>
+<pre><code class="language-python">from tenacity import retry, stop_after_attempt, wait_exponential
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception_type(TransientError)
+)
+async def call_arm(arm_endpoint, payload):
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            arm_endpoint,
+            json=payload,
+            timeout=30.0
+        )
+        response.raise_for_status()
+        return response.json()
+</code></pre>
+<h3 id="circuit-breaker-pattern"><a class="header" href="#circuit-breaker-pattern">Circuit Breaker Pattern</a></h3>
+<pre><code class="language-mermaid">stateDiagram-v2
+    [*] --&gt; Closed
+
+    Closed --&gt; Open: Failure threshold exceeded
+    Open --&gt; HalfOpen: Timeout elapsed
+    HalfOpen --&gt; Closed: Success
+    HalfOpen --&gt; Open: Failure
+
+    Closed : Allow all requests
+    Open : Reject all requests&lt;br/&gt;Return cached/default
+    HalfOpen : Allow limited requests&lt;br/&gt;Test recovery
+</code></pre>
+<p><strong>Implementation:</strong></p>
+<pre><code class="language-python">from circuitbreaker import circuit
+
+@circuit(failure_threshold=5, recovery_timeout=60)
+async def call_external_api(url):
+    # Will open circuit after 5 consecutive failures
+    # Attempt recovery after 60 seconds
+    async with httpx.AsyncClient() as client:
+        return await client.get(url)
+</code></pre>
+<h3 id="error-propagation"><a class="header" href="#error-propagation">Error Propagation</a></h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Arm as Arm
+    participant Orch as Orchestrator
+    participant Monitor as Monitoring
+
+    Arm-&gt;&gt;Arm: Error Occurs
+    Arm-&gt;&gt;Arm: Classify Error
+
+    alt Recoverable
+        Arm-&gt;&gt;Arm: Retry with Backoff
+        Arm-&gt;&gt;Monitor: Log Retry
+    else Unrecoverable
+        Arm-&gt;&gt;Orch: Report Failure
+        Orch-&gt;&gt;Orch: Attempt Alternative
+        alt Alternative Available
+            Orch-&gt;&gt;Arm: Try Different Arm
+        else No Alternative
+            Orch-&gt;&gt;Monitor: Log Critical
+            Orch--&gt;&gt;User: Return Error Response
+        end
+    end
+
+    Monitor-&gt;&gt;Monitor: Update Metrics
+    Monitor-&gt;&gt;Monitor: Check Thresholds
+    alt Threshold Exceeded
+        Monitor-&gt;&gt;Monitor: Trigger Alert
+    end
+</code></pre>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="./system-overview.html">System Architecture Overview</a></li>
+<li><a href="../components/README.html">Component Specifications</a></li>
+<li><a href="../engineering/error-handling.html">Error Handling Guide</a></li>
+<li><a href="../operations/monitoring.html">Monitoring and Observability</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../architecture/data-structures.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../architecture/swarm-decision-making.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../architecture/data-structures.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../architecture/swarm-decision-making.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,2317 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Phase 2: Core Capabilities - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/project-tracking/phases/phase-2.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="phase-2-core-capabilities"><a class="header" href="#phase-2-core-capabilities">Phase 2: Core Capabilities</a></h1>
+<p><strong>Status</strong>: Not Started
+<strong>Duration</strong>: 8-10 weeks
+<strong>Team Size</strong>: 4-5 engineers (3 Python, 1 Rust, 1 ML/data)
+<strong>Prerequisites</strong>: Phase 1 complete
+<strong>Start Date</strong>: TBD
+<strong>Target Completion</strong>: TBD</p>
+<hr />
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Phase 2 expands the OctoLLM system to include all 6 specialized arms, distributed memory systems, Kubernetes production deployment, and swarm decision-making capabilities. This phase transforms the POC into a production-capable system with all core functionality.</p>
+<p><strong>Key Deliverables</strong>:</p>
+<ol>
+<li>Retriever Arm (Python) - Hybrid search with Qdrant + PostgreSQL</li>
+<li>Coder Arm (Python) - Code generation with episodic memory</li>
+<li>Judge Arm (Python) - Multi-layer output validation</li>
+<li>Safety Guardian Arm (Python) - PII detection and content filtering</li>
+<li>Distributed Memory System - PostgreSQL + Qdrant + Redis with routing</li>
+<li>Kubernetes Production Deployment - StatefulSets, Deployments, HPA, Ingress</li>
+<li>Swarm Decision-Making - Parallel proposal generation and consensus</li>
+</ol>
+<p><strong>Success Criteria</strong>:</p>
+<ul>
+<li>✅ All 6 arms deployed and operational</li>
+<li>✅ Memory system handling 100,000+ entities</li>
+<li>✅ Kubernetes deployment with autoscaling</li>
+<li>✅ Swarm decision-making working</li>
+<li>✅ Load tests passing (1,000 concurrent tasks)</li>
+<li>✅ Documentation updated</li>
+</ul>
+<p><strong>Reference</strong>: <code>docs/doc_phases/PHASE-2-COMPLETE-SPECIFICATIONS.md</code> (10,500+ lines)</p>
+<hr />
+<h2 id="sprint-21-retriever-arm-week-7-8"><a class="header" href="#sprint-21-retriever-arm-week-7-8">Sprint 2.1: Retriever Arm [Week 7-8]</a></h2>
+<p><strong>Duration</strong>: 2 weeks
+<strong>Team</strong>: 1-2 engineers (Python + ML)
+<strong>Prerequisites</strong>: Phase 1 complete, Qdrant deployed
+<strong>Priority</strong>: HIGH</p>
+<h3 id="sprint-goals"><a class="header" href="#sprint-goals">Sprint Goals</a></h3>
+<ul>
+<li>Implement hybrid search (vector + keyword) with Reciprocal Rank Fusion</li>
+<li>Deploy Qdrant vector database with optimized collections</li>
+<li>Integrate semantic search with sentence-transformers</li>
+<li>Create knowledge base indexing pipeline</li>
+<li>Achieve &gt;80% retrieval accuracy (relevant docs in top-5)</li>
+<li>Query latency &lt;500ms for most queries</li>
+</ul>
+<h3 id="architecture-decisions-required"><a class="header" href="#architecture-decisions-required">Architecture Decisions Required</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Decision 1: Embedding Model Selection</strong></p>
+<ul>
+<li>Option A: sentence-transformers/all-MiniLM-L6-v2 (fast, 384 dim)</li>
+<li>Option B: sentence-transformers/all-mpnet-base-v2 (better quality, 768 dim)</li>
+<li>Option C: OpenAI text-embedding-ada-002 (API-based, 1536 dim)</li>
+<li><strong>Recommendation</strong>: Option A for cost/speed balance</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Decision 2: Re-ranking Strategy</strong></p>
+<ul>
+<li>Option A: Cross-encoder re-ranking (accurate but slow)</li>
+<li>Option B: Reciprocal Rank Fusion (RRF) only (fast)</li>
+<li>Option C: Hybrid approach (RRF + cross-encoder for top-10)</li>
+<li><strong>Recommendation</strong>: Option B initially, Option C for production</li>
+</ul>
+</li>
+</ul>
+<h3 id="tasks"><a class="header" href="#tasks">Tasks</a></h3>
+<h4 id="qdrant-deployment-and-configuration-8-hours"><a class="header" href="#qdrant-deployment-and-configuration-8-hours">Qdrant Deployment and Configuration (8 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Deploy Qdrant Vector Database</strong> (4 hours)</p>
+<ul>
+<li>Create Qdrant StatefulSet for Kubernetes:
+<pre><code class="language-yaml"># k8s/databases/qdrant-statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: qdrant
+  namespace: octollm
+spec:
+  serviceName: qdrant
+  replicas: 1  # Single instance for Phase 2
+  selector:
+    matchLabels:
+      app: qdrant
+  template:
+    metadata:
+      labels:
+        app: qdrant
+    spec:
+      containers:
+      - name: qdrant
+        image: qdrant/qdrant:v1.7.0
+        ports:
+        - containerPort: 6333
+          name: http
+        - containerPort: 6334
+          name: grpc
+        volumeMounts:
+        - name: qdrant-storage
+          mountPath: /qdrant/storage
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+  volumeClaimTemplates:
+  - metadata:
+      name: qdrant-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 50Gi
+</code></pre>
+</li>
+<li>Create Qdrant Service (ClusterIP)</li>
+<li>Verify deployment with health check</li>
+<li>Files to create: <code>k8s/databases/qdrant-statefulset.yaml</code>, <code>k8s/databases/qdrant-service.yaml</code></li>
+<li>Reference: <code>docs/operations/kubernetes-deployment.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create Collection Schema</strong> (2 hours)</p>
+<ul>
+<li>Define collection structure for documents:
+<pre><code class="language-python"># arms/retriever/collections.py
+from qdrant_client import QdrantClient
+from qdrant_client.http import models
+
+COLLECTION_CONFIG = {
+    "documents": {
+        "vector_size": 384,  # all-MiniLM-L6-v2
+        "distance": "Cosine",
+        "on_disk_payload": True,
+        "hnsw_config": {
+            "m": 16,
+            "ef_construct": 100,
+            "full_scan_threshold": 10000
+        },
+        "quantization_config": {
+            "scalar": {
+                "type": "int8",
+                "quantile": 0.99,
+                "always_ram": True
+            }
+        }
+    }
+}
+
+def initialize_collections(client: QdrantClient):
+    """Initialize Qdrant collections with optimized configuration."""
+    for collection_name, config in COLLECTION_CONFIG.items():
+        if not client.collection_exists(collection_name):
+            client.create_collection(
+                collection_name=collection_name,
+                vectors_config=models.VectorParams(
+                    size=config["vector_size"],
+                    distance=models.Distance[config["distance"].upper()]
+                ),
+                hnsw_config=models.HnswConfigDiff(**config["hnsw_config"]),
+                quantization_config=models.ScalarQuantization(**config["quantization_config"]["scalar"]),
+                on_disk_payload=config["on_disk_payload"]
+            )
+</code></pre>
+</li>
+<li>Create indexes for metadata filtering</li>
+<li>Configure HNSW parameters for performance</li>
+<li>Files to create: <code>arms/retriever/collections.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Qdrant Client Wrapper</strong> (2 hours)</p>
+<ul>
+<li>Connection pooling and retry logic</li>
+<li>Health check integration</li>
+<li>Batch operations for indexing</li>
+<li>Code example:
+<pre><code class="language-python"># arms/retriever/qdrant_client.py
+from typing import List, Dict, Any
+from qdrant_client import QdrantClient
+from qdrant_client.http import models
+import asyncio
+from functools import lru_cache
+
+class QdrantClientWrapper:
+    def __init__(self, url: str, api_key: str = None, timeout: int = 30):
+        self.client = QdrantClient(url=url, api_key=api_key, timeout=timeout)
+
+    async def search(
+        self,
+        collection_name: str,
+        query_vector: List[float],
+        limit: int = 10,
+        filter_conditions: Dict = None,
+        score_threshold: float = 0.0
+    ) -&gt; List[Dict[str, Any]]:
+        """Async semantic search with optional filtering."""
+        search_result = await asyncio.to_thread(
+            self.client.search,
+            collection_name=collection_name,
+            query_vector=query_vector,
+            limit=limit,
+            query_filter=models.Filter(**filter_conditions) if filter_conditions else None,
+            score_threshold=score_threshold,
+            with_payload=True
+        )
+        return [
+            {
+                "id": hit.id,
+                "score": hit.score,
+                "payload": hit.payload
+            }
+            for hit in search_result
+        ]
+</code></pre>
+</li>
+<li>Files to create: <code>arms/retriever/qdrant_client.py</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="hybrid-search-implementation-12-hours"><a class="header" href="#hybrid-search-implementation-12-hours">Hybrid Search Implementation (12 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Semantic Search with Embeddings</strong> (4 hours)</p>
+<ul>
+<li>sentence-transformers integration</li>
+<li>Batch embedding generation</li>
+<li>Caching for common queries</li>
+<li>Code example:
+<pre><code class="language-python"># arms/retriever/embeddings.py
+from sentence_transformers import SentenceTransformer
+from typing import List
+import torch
+from functools import lru_cache
+
+class EmbeddingGenerator:
+    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2"):
+        self.model = SentenceTransformer(model_name)
+        self.model.eval()
+
+    @lru_cache(maxsize=1000)
+    def encode_cached(self, text: str) -&gt; List[float]:
+        """Generate embeddings with caching for common queries."""
+        return self.encode([text])[0]
+
+    def encode(self, texts: List[str]) -&gt; List[List[float]]:
+        """Generate embeddings for a batch of texts."""
+        with torch.no_grad():
+            embeddings = self.model.encode(
+                texts,
+                batch_size=32,
+                show_progress_bar=False,
+                normalize_embeddings=True
+            )
+        return embeddings.tolist()
+</code></pre>
+</li>
+<li>Files to create: <code>arms/retriever/embeddings.py</code></li>
+<li>Reference: <code>docs/components/arms/retriever-arm.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement PostgreSQL Full-Text Search</strong> (3 hours)</p>
+<ul>
+<li>Create GIN indexes for text columns</li>
+<li>ts_vector and ts_query integration</li>
+<li>Relevance ranking with ts_rank</li>
+<li>SQL schema:
+<pre><code class="language-sql">-- Add full-text search to entities table
+ALTER TABLE entities ADD COLUMN search_vector tsvector
+  GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', coalesce(name, '')), 'A') ||
+    setweight(to_tsvector('english', coalesce(description, '')), 'B') ||
+    setweight(to_tsvector('english', coalesce(properties::text, '')), 'C')
+  ) STORED;
+
+CREATE INDEX entities_search_idx ON entities USING GIN (search_vector);
+
+-- Full-text search function
+CREATE OR REPLACE FUNCTION search_entities(query_text text, max_results int DEFAULT 20)
+RETURNS TABLE (
+  entity_id uuid,
+  name text,
+  description text,
+  relevance_score real
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    e.entity_id,
+    e.name,
+    e.description,
+    ts_rank(e.search_vector, websearch_to_tsquery('english', query_text)) as relevance_score
+  FROM entities e
+  WHERE e.search_vector @@ websearch_to_tsquery('english', query_text)
+  ORDER BY relevance_score DESC
+  LIMIT max_results;
+END;
+$$ LANGUAGE plpgsql;
+</code></pre>
+</li>
+<li>Files to create: <code>db/migrations/004_fulltext_search.sql</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Reciprocal Rank Fusion (RRF)</strong> (3 hours)</p>
+<ul>
+<li>Combine vector and keyword search results</li>
+<li>Configurable fusion weights</li>
+<li>Deduplication logic</li>
+<li>Code example:
+<pre><code class="language-python"># arms/retriever/fusion.py
+from typing import List, Dict, Any
+from collections import defaultdict
+
+class ReciprocalRankFusion:
+    def __init__(self, k: int = 60):
+        """
+        Reciprocal Rank Fusion algorithm.
+        k: constant for smoothing (typically 60)
+        """
+        self.k = k
+
+    def fuse(
+        self,
+        semantic_results: List[Dict[str, Any]],
+        keyword_results: List[Dict[str, Any]],
+        semantic_weight: float = 0.6,
+        keyword_weight: float = 0.4
+    ) -&gt; List[Dict[str, Any]]:
+        """
+        Fuse semantic and keyword search results using RRF.
+        """
+        scores = defaultdict(float)
+        doc_map = {}
+
+        # Process semantic results
+        for rank, doc in enumerate(semantic_results, start=1):
+            doc_id = doc["id"]
+            scores[doc_id] += semantic_weight / (self.k + rank)
+            doc_map[doc_id] = doc
+
+        # Process keyword results
+        for rank, doc in enumerate(keyword_results, start=1):
+            doc_id = doc["id"]
+            scores[doc_id] += keyword_weight / (self.k + rank)
+            doc_map[doc_id] = doc
+
+        # Sort by fused score
+        sorted_ids = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+
+        return [
+            {
+                **doc_map[doc_id],
+                "fused_score": score,
+                "fusion_method": "RRF"
+            }
+            for doc_id, score in sorted_ids
+        ]
+</code></pre>
+</li>
+<li>Files to create: <code>arms/retriever/fusion.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Context Ranking and Reranking</strong> (2 hours)</p>
+<ul>
+<li>Cross-encoder reranking (optional)</li>
+<li>Maximal Marginal Relevance (MMR) for diversity</li>
+<li>Relevance scoring thresholds</li>
+<li>Code example:
+<pre><code class="language-python"># arms/retriever/reranking.py
+from typing import List, Dict, Any
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
+class MaximalMarginalRelevance:
+    def __init__(self, lambda_param: float = 0.5):
+        """
+        MMR for result diversification.
+        lambda_param: 0=max diversity, 1=max relevance
+        """
+        self.lambda_param = lambda_param
+
+    def rerank(
+        self,
+        query_embedding: List[float],
+        documents: List[Dict[str, Any]],
+        top_k: int = 10
+    ) -&gt; List[Dict[str, Any]]:
+        """Apply MMR to diversify results."""
+        if not documents:
+            return []
+
+        # Extract embeddings
+        doc_embeddings = np.array([doc["embedding"] for doc in documents])
+        query_emb = np.array([query_embedding])
+
+        # Compute similarities
+        query_sim = cosine_similarity(query_emb, doc_embeddings)[0]
+
+        selected = []
+        remaining = list(range(len(documents)))
+
+        # Iterative selection
+        while remaining and len(selected) &lt; top_k:
+            mmr_scores = []
+            for i in remaining:
+                relevance = query_sim[i]
+
+                if selected:
+                    selected_embs = doc_embeddings[selected]
+                    diversity = max(cosine_similarity([doc_embeddings[i]], selected_embs)[0])
+                else:
+                    diversity = 0
+
+                mmr_score = self.lambda_param * relevance - (1 - self.lambda_param) * diversity
+                mmr_scores.append((i, mmr_score))
+
+            # Select best MMR score
+            best_idx, best_score = max(mmr_scores, key=lambda x: x[1])
+            selected.append(best_idx)
+            remaining.remove(best_idx)
+
+        return [documents[i] for i in selected]
+</code></pre>
+</li>
+<li>Files to create: <code>arms/retriever/reranking.py</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="retriever-arm-service-implementation-8-hours"><a class="header" href="#retriever-arm-service-implementation-8-hours">Retriever Arm Service Implementation (8 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create FastAPI Service Structure</strong> (2 hours)</p>
+<ul>
+<li>Service initialization and configuration</li>
+<li>Dependency injection for clients</li>
+<li>Health check endpoints</li>
+<li>Files to create: <code>arms/retriever/main.py</code>, <code>arms/retriever/config.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Hybrid Search Endpoint</strong> (3 hours)</p>
+<ul>
+<li>POST /search endpoint with query and filters</li>
+<li>Pagination support</li>
+<li>Response caching with Redis</li>
+<li>Code example:
+<pre><code class="language-python"># arms/retriever/main.py
+from fastapi import FastAPI, HTTPException, Depends
+from pydantic import BaseModel, Field
+from typing import List, Dict, Any, Optional
+from .embeddings import EmbeddingGenerator
+from .qdrant_client import QdrantClientWrapper
+from .fusion import ReciprocalRankFusion
+from .reranking import MaximalMarginalRelevance
+import asyncio
+
+app = FastAPI(title="Retriever Arm")
+
+class SearchRequest(BaseModel):
+    query: str = Field(..., min_length=1, max_length=1000)
+    top_k: int = Field(default=10, ge=1, le=100)
+    filters: Optional[Dict[str, Any]] = None
+    enable_reranking: bool = Field(default=True)
+
+class SearchResponse(BaseModel):
+    results: List[Dict[str, Any]]
+    total_found: int
+    search_time_ms: float
+
+@app.post("/search", response_model=SearchResponse)
+async def hybrid_search(request: SearchRequest):
+    """Hybrid search combining semantic and keyword search."""
+    import time
+    start_time = time.time()
+
+    # Generate query embedding
+    embedding_gen = get_embedding_generator()
+    query_embedding = embedding_gen.encode_cached(request.query)
+
+    # Parallel search execution
+    semantic_task = asyncio.create_task(
+        semantic_search(query_embedding, request.top_k, request.filters)
+    )
+    keyword_task = asyncio.create_task(
+        keyword_search(request.query, request.top_k, request.filters)
+    )
+
+    semantic_results, keyword_results = await asyncio.gather(
+        semantic_task, keyword_task
+    )
+
+    # Fuse results
+    rrf = ReciprocalRankFusion(k=60)
+    fused_results = rrf.fuse(
+        semantic_results,
+        keyword_results,
+        semantic_weight=0.6,
+        keyword_weight=0.4
+    )
+
+    # Optional reranking
+    if request.enable_reranking:
+        mmr = MaximalMarginalRelevance(lambda_param=0.7)
+        fused_results = mmr.rerank(query_embedding, fused_results, request.top_k)
+
+    search_time_ms = (time.time() - start_time) * 1000
+
+    return SearchResponse(
+        results=fused_results[:request.top_k],
+        total_found=len(fused_results),
+        search_time_ms=search_time_ms
+    )
+</code></pre>
+</li>
+<li>Files to create: <code>arms/retriever/api/search.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Document Indexing Endpoint</strong> (2 hours)</p>
+<ul>
+<li>POST /index endpoint for adding documents</li>
+<li>Batch indexing support</li>
+<li>Embedding generation and storage</li>
+<li>Files to create: <code>arms/retriever/api/indexing.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Add Caching Layer with Redis</strong> (1 hour)</p>
+<ul>
+<li>Cache search results for common queries</li>
+<li>TTL-based cache expiration (1 hour)</li>
+<li>Cache key generation from query hash</li>
+<li>Code example:
+<pre><code class="language-python"># arms/retriever/cache.py
+import hashlib
+import json
+from typing import Optional, Any
+import redis.asyncio as redis
+
+class SearchCache:
+    def __init__(self, redis_url: str, ttl: int = 3600):
+        self.redis = redis.from_url(redis_url)
+        self.ttl = ttl
+
+    def _generate_key(self, query: str, filters: dict = None) -&gt; str:
+        """Generate cache key from query and filters."""
+        cache_input = {
+            "query": query,
+            "filters": filters or {}
+        }
+        cache_str = json.dumps(cache_input, sort_keys=True)
+        return f"search_cache:{hashlib.sha256(cache_str.encode()).hexdigest()}"
+
+    async def get(self, query: str, filters: dict = None) -&gt; Optional[Any]:
+        """Retrieve cached search results."""
+        key = self._generate_key(query, filters)
+        cached = await self.redis.get(key)
+        if cached:
+            return json.loads(cached)
+        return None
+
+    async def set(self, query: str, results: Any, filters: dict = None):
+        """Cache search results."""
+        key = self._generate_key(query, filters)
+        await self.redis.setex(
+            key,
+            self.ttl,
+            json.dumps(results)
+        )
+</code></pre>
+</li>
+<li>Files to create: <code>arms/retriever/cache.py</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="testing-requirements"><a class="header" href="#testing-requirements">Testing Requirements</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Unit Tests</strong> (6 hours)</p>
+<ul>
+<li>Test embedding generation (consistency, caching)</li>
+<li>Test RRF fusion algorithm (correctness, edge cases)</li>
+<li>Test MMR reranking (diversity improvement)</li>
+<li>Test cache hit/miss scenarios</li>
+<li>Target coverage: &gt;85%</li>
+<li>Test file: <code>arms/retriever/tests/test_retrieval.py</code></li>
+<li>Example tests:
+<pre><code class="language-python"># arms/retriever/tests/test_retrieval.py
+import pytest
+from retriever.fusion import ReciprocalRankFusion
+from retriever.embeddings import EmbeddingGenerator
+
+def test_rrf_fusion():
+    """Test Reciprocal Rank Fusion combines results correctly."""
+    rrf = ReciprocalRankFusion(k=60)
+
+    semantic = [
+        {"id": "doc1", "score": 0.95},
+        {"id": "doc2", "score": 0.85},
+        {"id": "doc3", "score": 0.75}
+    ]
+
+    keyword = [
+        {"id": "doc2", "score": 0.90},
+        {"id": "doc4", "score": 0.80},
+        {"id": "doc1", "score": 0.70}
+    ]
+
+    fused = rrf.fuse(semantic, keyword)
+
+    # doc2 should rank highest (appears in both)
+    assert fused[0]["id"] == "doc2"
+    assert "fused_score" in fused[0]
+
+def test_embedding_caching():
+    """Test embedding caching improves performance."""
+    gen = EmbeddingGenerator()
+
+    import time
+    # First call (uncached)
+    start = time.time()
+    emb1 = gen.encode_cached("test query")
+    first_time = time.time() - start
+
+    # Second call (cached)
+    start = time.time()
+    emb2 = gen.encode_cached("test query")
+    second_time = time.time() - start
+
+    # Cached call should be much faster
+    assert second_time &lt; first_time * 0.1
+    assert emb1 == emb2
+</code></pre>
+</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Integration Tests</strong> (4 hours)</p>
+<ul>
+<li>Test Qdrant integration (search, indexing)</li>
+<li>Test PostgreSQL full-text search</li>
+<li>Test end-to-end hybrid search flow</li>
+<li>Test file: <code>tests/integration/test_retriever_integration.py</code></li>
+<li>Scenarios:
+<ul>
+<li>Document indexing → Search retrieval</li>
+<li>Hybrid search with filters</li>
+<li>Cache hit/miss behavior</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="documentation-deliverables"><a class="header" href="#documentation-deliverables">Documentation Deliverables</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>API Documentation</strong> (2 hours)</p>
+<ul>
+<li>OpenAPI spec for all endpoints (auto-generated by FastAPI)</li>
+<li>Request/response examples</li>
+<li>Error code reference</li>
+<li>Files: Auto-generated at <code>/docs</code> endpoint</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Component README</strong> (1 hour)</p>
+<ul>
+<li>Architecture overview</li>
+<li>Configuration guide</li>
+<li>Deployment instructions</li>
+<li>Files to create: <code>arms/retriever/README.md</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="success-criteria"><a class="header" href="#success-criteria">Success Criteria</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Hybrid search retrieves relevant documents &gt;80% of time (top-5)</li>
+<li><input disabled="" type="checkbox"/>
+Query latency P95 &lt;500ms</li>
+<li><input disabled="" type="checkbox"/>
+Cache hit rate &gt;60% for common queries after warm-up</li>
+<li><input disabled="" type="checkbox"/>
+All tests passing with &gt;85% coverage</li>
+<li><input disabled="" type="checkbox"/>
+API documentation complete</li>
+<li><input disabled="" type="checkbox"/>
+Successfully integrated with Orchestrator</li>
+</ul>
+<h3 id="common-pitfalls--tips"><a class="header" href="#common-pitfalls--tips">Common Pitfalls &amp; Tips</a></h3>
+<p>⚠️ <strong>Pitfall 1</strong>: Poor embedding quality leads to low retrieval accuracy
+✅ <strong>Solution</strong>: Use high-quality embedding models (all-mpnet-base-v2) and normalize embeddings</p>
+<p>⚠️ <strong>Pitfall 2</strong>: RRF weights favor one search method too heavily
+✅ <strong>Solution</strong>: A/B test different weight combinations (0.5/0.5, 0.6/0.4, 0.7/0.3)</p>
+<p>⚠️ <strong>Pitfall 3</strong>: Qdrant memory usage grows unbounded
+✅ <strong>Solution</strong>: Enable quantization and on-disk payload storage</p>
+<h3 id="estimated-effort"><a class="header" href="#estimated-effort">Estimated Effort</a></h3>
+<ul>
+<li>Development: 28 hours</li>
+<li>Testing: 10 hours</li>
+<li>Documentation: 3 hours</li>
+<li><strong>Total</strong>: 41 hours (~2 weeks for 1 engineer)</li>
+</ul>
+<h3 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h3>
+<ul>
+<li>Blocks: Sprint 2.3 (Judge arm needs retrieval for fact-checking)</li>
+<li>Blocked by: Phase 1 complete, Qdrant deployed</li>
+</ul>
+<hr />
+<h2 id="sprint-22-coder-arm-week-8-9"><a class="header" href="#sprint-22-coder-arm-week-8-9">Sprint 2.2: Coder Arm [Week 8-9]</a></h2>
+<p><strong>Duration</strong>: 2 weeks
+<strong>Team</strong>: 1-2 engineers (Python + LLM experience)
+<strong>Prerequisites</strong>: Qdrant deployed, Memory systems basic structure
+<strong>Priority</strong>: HIGH</p>
+<h3 id="sprint-goals-1"><a class="header" href="#sprint-goals-1">Sprint Goals</a></h3>
+<ul>
+<li>Implement code generation with GPT-4/Claude integration</li>
+<li>Create episodic memory for code snippets (Qdrant-based)</li>
+<li>Add static analysis integration (Ruff for Python, Clippy for Rust)</li>
+<li>Implement debugging assistance</li>
+<li>Code refactoring suggestions</li>
+<li>Generated code passes linters &gt;90% of time</li>
+</ul>
+<h3 id="architecture-decisions-required-1"><a class="header" href="#architecture-decisions-required-1">Architecture Decisions Required</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Decision 1: LLM Model Selection</strong></p>
+<ul>
+<li>Option A: GPT-4 (best quality, expensive)</li>
+<li>Option B: GPT-3.5-turbo (fast, cheaper)</li>
+<li>Option C: Claude 3 Sonnet (good balance)</li>
+<li><strong>Recommendation</strong>: GPT-4 for complex, GPT-3.5 for simple</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Decision 2: Static Analysis Integration</strong></p>
+<ul>
+<li>Option A: Pre-generation (analyze context before generation)</li>
+<li>Option B: Post-generation (validate generated code)</li>
+<li>Option C: Both (comprehensive but slower)</li>
+<li><strong>Recommendation</strong>: Option B for simplicity</li>
+</ul>
+</li>
+</ul>
+<h3 id="tasks-1"><a class="header" href="#tasks-1">Tasks</a></h3>
+<h4 id="episodic-memory-setup-6-hours"><a class="header" href="#episodic-memory-setup-6-hours">Episodic Memory Setup (6 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create Qdrant Collection for Code Snippets</strong> (2 hours)</p>
+<ul>
+<li>Language-specific collections (Python, Rust, JavaScript)</li>
+<li>Metadata schema (language, framework, complexity)</li>
+<li>Code example:
+<pre><code class="language-python"># arms/coder/memory.py
+from qdrant_client import QdrantClient
+from qdrant_client.http import models
+from typing import List, Dict, Any
+
+LANGUAGE_COLLECTIONS = {
+    "python_code": {"vector_size": 384, "distance": "Cosine"},
+    "rust_code": {"vector_size": 384, "distance": "Cosine"},
+    "javascript_code": {"vector_size": 384, "distance": "Cosine"}
+}
+
+def initialize_code_collections(client: QdrantClient):
+    """Initialize language-specific code collections."""
+    for collection_name, config in LANGUAGE_COLLECTIONS.items():
+        if not client.collection_exists(collection_name):
+            client.create_collection(
+                collection_name=collection_name,
+                vectors_config=models.VectorParams(
+                    size=config["vector_size"],
+                    distance=models.Distance[config["distance"].upper()]
+                ),
+                hnsw_config=models.HnswConfigDiff(m=16, ef_construct=100)
+            )
+
+            # Create payload indexes for filtering
+            client.create_payload_index(
+                collection_name=collection_name,
+                field_name="language",
+                field_schema="keyword"
+            )
+</code></pre>
+</li>
+<li>Files to create: <code>arms/coder/memory.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement CoderMemory Class</strong> (4 hours)</p>
+<ul>
+<li>Store code snippets with embeddings</li>
+<li>Semantic search for similar code</li>
+<li>Context retrieval for generation</li>
+<li>Code example:
+<pre><code class="language-python"># arms/coder/memory.py (continued)
+from sentence_transformers import SentenceTransformer
+import uuid
+
+class CoderMemory:
+    def __init__(self, qdrant_client: QdrantClient, embedding_model: str = "all-MiniLM-L6-v2"):
+        self.client = qdrant_client
+        self.model = SentenceTransformer(embedding_model)
+
+    async def store_code_snippet(
+        self,
+        code: str,
+        language: str,
+        description: str,
+        metadata: Dict[str, Any] = None
+    ) -&gt; str:
+        """Store code snippet with embedding."""
+        # Generate embedding from code + description
+        text = f"{description}\n\n{code}"
+        embedding = self.model.encode(text).tolist()
+
+        snippet_id = str(uuid.uuid4())
+        collection_name = f"{language.lower()}_code"
+
+        self.client.upsert(
+            collection_name=collection_name,
+            points=[
+                models.PointStruct(
+                    id=snippet_id,
+                    vector=embedding,
+                    payload={
+                        "code": code,
+                        "language": language,
+                        "description": description,
+                        **(metadata or {})
+                    }
+                )
+            ]
+        )
+
+        return snippet_id
+
+    async def search_similar_code(
+        self,
+        query: str,
+        language: str,
+        limit: int = 5
+    ) -&gt; List[Dict[str, Any]]:
+        """Search for similar code snippets."""
+        query_embedding = self.model.encode(query).tolist()
+        collection_name = f"{language.lower()}_code"
+
+        results = self.client.search(
+            collection_name=collection_name,
+            query_vector=query_embedding,
+            limit=limit,
+            with_payload=True
+        )
+
+        return [
+            {
+                "code": hit.payload["code"],
+                "description": hit.payload.get("description"),
+                "similarity": hit.score
+            }
+            for hit in results
+        ]
+</code></pre>
+</li>
+<li>Files to create: <code>arms/coder/memory.py</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="llm-integration-for-code-generation-8-hours"><a class="header" href="#llm-integration-for-code-generation-8-hours">LLM Integration for Code Generation (8 hours)</a></h4>
+<ul>
+<li><input disabled="" type="checkbox"/>
+<strong>Implement OpenAI/Anthropic Code Generation</strong> (4 hours)
+<ul>
+<li>GPT-4 integration with code-specific prompts</li>
+<li>Claude 3 integration as fallback</li>
+<li>Temperature and parameter tuning</li>
+<li>Code example:
+<pre><code class="language-python"># arms/coder/generator.py
+from openai import AsyncOpenAI
+from anthropic import AsyncAnthropic
+from typing import Optional, Dict, Any
+
+class CodeGenerator:
+    def __init__(self, openai_key: str, anthropic_key: str):
+        self.openai = AsyncOpenAI(api_key=openai_key)
+        self.anthropic = AsyncAnthropic(api_key=anthropic_key)
+
+    async def generate_code(
+        self,
+        prompt: str,
+        language: str,
+        context: Optional[str] = None,
+        model: str = "gpt-4"
+    ) -&gt; Dict[str, Any]:
+        """Generate code using LLM."""
+        system_prompt = f"""You are an expert {language} programmer.
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+<p>Generate clean, idiomatic, well-documented {language} code.
+Include type hints, error handling, and follow best practices.
+"""</p>
+<pre><code>        if context:
+            system_prompt += f"\n\nRelevant context:\n{context}"
+
+        try:
+            if model.startswith("gpt"):
+                response = await self.openai.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.2,  # Lower temp for code
+                    max_tokens=2000
+                )
+
+                return {
+                    "code": response.choices[0].message.content,
+                    "model": model,
+                    "tokens": response.usage.total_tokens
+                }
+            else:
+                # Claude fallback
+                response = await self.anthropic.messages.create(
+                    model="claude-3-sonnet-20240229",
+                    max_tokens=2000,
+                    system=system_prompt,
+                    messages=[
+                        {"role": "user", "content": prompt}
+                    ]
+                )
+
+                return {
+                    "code": response.content[0].text,
+                    "model": "claude-3-sonnet",
+                    "tokens": response.usage.input_tokens + response.usage.output_tokens
+                }
+        except Exception as e:
+            raise CodeGenerationError(f"Code generation failed: {str(e)}")
+```
+</code></pre>
+<ul>
+<li>
+<p>Files to create: <code>arms/coder/generator.py</code></p>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Context-Aware Generation</strong> (2 hours)</p>
+<ul>
+<li>Retrieve similar code from memory</li>
+<li>Include relevant examples in prompt</li>
+<li>Improve generation quality with context</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Add Token Usage Tracking</strong> (2 hours)</p>
+<ul>
+<li>Prometheus metrics for LLM API calls</li>
+<li>Cost tracking per request</li>
+<li>Rate limiting to prevent overuse</li>
+</ul>
+</li>
+</ul>
+<h4 id="static-analysis-integration-6-hours"><a class="header" href="#static-analysis-integration-6-hours">Static Analysis Integration (6 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Integrate Python Linters (Ruff, Black)</strong> (3 hours)</p>
+<ul>
+<li>Post-generation validation</li>
+<li>Automatic formatting</li>
+<li>Error reporting</li>
+<li>Code example:
+<pre><code class="language-python"># arms/coder/validators.py
+import subprocess
+import tempfile
+from pathlib import Path
+from typing import Dict, Any, List
+
+class PythonValidator:
+    def validate_code(self, code: str) -&gt; Dict[str, Any]:
+        """Validate Python code with Ruff and Black."""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            f.write(code)
+            temp_path = Path(f.name)
+
+        try:
+            # Run Ruff for linting
+            ruff_result = subprocess.run(
+                ['ruff', 'check', str(temp_path)],
+                capture_output=True,
+                text=True
+            )
+
+            # Run Black for formatting check
+            black_result = subprocess.run(
+                ['black', '--check', str(temp_path)],
+                capture_output=True,
+                text=True
+            )
+
+            issues = []
+            if ruff_result.returncode != 0:
+                issues.append({
+                    "tool": "ruff",
+                    "message": ruff_result.stdout
+                })
+
+            if black_result.returncode != 0:
+                issues.append({
+                    "tool": "black",
+                    "message": "Code formatting issues detected"
+                })
+
+            return {
+                "valid": len(issues) == 0,
+                "issues": issues
+            }
+        finally:
+            temp_path.unlink()
+</code></pre>
+</li>
+<li>Files to create: <code>arms/coder/validators.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Integrate Rust Linters (Clippy)</strong> (2 hours)</p>
+<ul>
+<li>Similar validation for Rust code</li>
+<li>Cargo check integration</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Add Syntax Validation</strong> (1 hour)</p>
+<ul>
+<li>AST parsing to verify syntax</li>
+<li>Early error detection</li>
+</ul>
+</li>
+</ul>
+<h4 id="coder-arm-service-implementation-8-hours"><a class="header" href="#coder-arm-service-implementation-8-hours">Coder Arm Service Implementation (8 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create FastAPI Service</strong> (2 hours)</p>
+<ul>
+<li>Service initialization</li>
+<li>Dependency injection</li>
+<li>Health checks</li>
+<li>Files to create: <code>arms/coder/main.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement /code Endpoint</strong> (3 hours)</p>
+<ul>
+<li>POST /code for code generation</li>
+<li>Language and framework parameters</li>
+<li>Context retrieval from memory</li>
+<li>Validation and formatting</li>
+<li>Code example:
+<pre><code class="language-python"># arms/coder/api/generation.py
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+from typing import Optional, Dict, Any
+from ..generator import CodeGenerator
+from ..validators import PythonValidator, RustValidator
+from ..memory import CoderMemory
+
+router = APIRouter()
+
+class CodeRequest(BaseModel):
+    prompt: str = Field(..., min_length=10, max_length=2000)
+    language: str = Field(..., regex="^(python|rust|javascript|typescript)$")
+    framework: Optional[str] = None
+    include_context: bool = True
+    validate: bool = True
+
+class CodeResponse(BaseModel):
+    code: str
+    language: str
+    validation_result: Dict[str, Any]
+    tokens_used: int
+    similar_examples: List[Dict[str, Any]]
+
+@router.post("/code", response_model=CodeResponse)
+async def generate_code(request: CodeRequest):
+    """Generate code based on natural language prompt."""
+    # Retrieve similar code from memory
+    similar_code = []
+    if request.include_context:
+        memory = get_coder_memory()
+        similar_code = await memory.search_similar_code(
+            query=request.prompt,
+            language=request.language,
+            limit=3
+        )
+
+    # Build context from similar examples
+    context = "\n\n".join([
+        f"Example {i+1}:\n{ex['code']}"
+        for i, ex in enumerate(similar_code)
+    ])
+
+    # Generate code
+    generator = get_code_generator()
+    result = await generator.generate_code(
+        prompt=request.prompt,
+        language=request.language,
+        context=context if similar_code else None
+    )
+
+    # Validate generated code
+    validation_result = {"valid": True, "issues": []}
+    if request.validate:
+        if request.language == "python":
+            validator = PythonValidator()
+            validation_result = validator.validate_code(result["code"])
+        elif request.language == "rust":
+            validator = RustValidator()
+            validation_result = validator.validate_code(result["code"])
+
+    # Store in memory if valid
+    if validation_result["valid"]:
+        memory = get_coder_memory()
+        await memory.store_code_snippet(
+            code=result["code"],
+            language=request.language,
+            description=request.prompt
+        )
+
+    return CodeResponse(
+        code=result["code"],
+        language=request.language,
+        validation_result=validation_result,
+        tokens_used=result["tokens"],
+        similar_examples=similar_code
+    )
+</code></pre>
+</li>
+<li>Files to create: <code>arms/coder/api/generation.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement /debug Endpoint</strong> (2 hours)</p>
+<ul>
+<li>POST /debug for debugging assistance</li>
+<li>Error analysis and suggestions</li>
+<li>Files to create: <code>arms/coder/api/debugging.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement /refactor Endpoint</strong> (1 hour)</p>
+<ul>
+<li>POST /refactor for code improvements</li>
+<li>Refactoring suggestions</li>
+<li>Files to create: <code>arms/coder/api/refactoring.py</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="testing-requirements-1"><a class="header" href="#testing-requirements-1">Testing Requirements</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Unit Tests</strong> (6 hours)</p>
+<ul>
+<li>Test code generation quality (syntax correctness)</li>
+<li>Test memory retrieval (similar code search)</li>
+<li>Test validators (catch syntax errors)</li>
+<li>Target coverage: &gt;85%</li>
+<li>Test file: <code>arms/coder/tests/test_generation.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Integration Tests</strong> (4 hours)</p>
+<ul>
+<li>Test end-to-end code generation flow</li>
+<li>Test memory integration</li>
+<li>Test validation pipeline</li>
+<li>Scenarios:
+<ul>
+<li>Generate Python function → Validate → Store</li>
+<li>Search similar code → Generate with context</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="documentation-deliverables-1"><a class="header" href="#documentation-deliverables-1">Documentation Deliverables</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>API Documentation</strong> (2 hours)</p>
+<ul>
+<li>OpenAPI spec</li>
+<li>Code generation examples</li>
+<li>Best practices</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Component README</strong> (1 hour)</p>
+<ul>
+<li>Architecture overview</li>
+<li>Supported languages</li>
+<li>Configuration guide</li>
+<li>Files to create: <code>arms/coder/README.md</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="success-criteria-1"><a class="header" href="#success-criteria-1">Success Criteria</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Generated code passes linters &gt;90% of time</li>
+<li><input disabled="" type="checkbox"/>
+Memory retrieval finds relevant examples</li>
+<li><input disabled="" type="checkbox"/>
+Static analysis integrated</li>
+<li><input disabled="" type="checkbox"/>
+All tests passing with &gt;85% coverage</li>
+<li><input disabled="" type="checkbox"/>
+API documentation complete</li>
+</ul>
+<h3 id="common-pitfalls--tips-1"><a class="header" href="#common-pitfalls--tips-1">Common Pitfalls &amp; Tips</a></h3>
+<p>⚠️ <strong>Pitfall 1</strong>: Generated code has syntax errors
+✅ <strong>Solution</strong>: Use temperature=0.2 and validate with AST parsing</p>
+<p>⚠️ <strong>Pitfall 2</strong>: Context retrieval returns irrelevant examples
+✅ <strong>Solution</strong>: Fine-tune embedding model on code corpus</p>
+<p>⚠️ <strong>Pitfall 3</strong>: High LLM API costs
+✅ <strong>Solution</strong>: Use GPT-3.5-turbo for simple tasks, cache results</p>
+<h3 id="estimated-effort-1"><a class="header" href="#estimated-effort-1">Estimated Effort</a></h3>
+<ul>
+<li>Development: 28 hours</li>
+<li>Testing: 10 hours</li>
+<li>Documentation: 3 hours</li>
+<li><strong>Total</strong>: 41 hours (~2 weeks for 1 engineer)</li>
+</ul>
+<h3 id="dependencies-1"><a class="header" href="#dependencies-1">Dependencies</a></h3>
+<ul>
+<li>Blocks: Sprint 2.7 (Swarm needs multiple arms operational)</li>
+<li>Blocked by: Qdrant deployed, basic memory structure</li>
+</ul>
+<hr />
+<h2 id="sprint-23-judge-arm-week-9-10"><a class="header" href="#sprint-23-judge-arm-week-9-10">Sprint 2.3: Judge Arm [Week 9-10]</a></h2>
+<p><strong>Duration</strong>: 2 weeks
+<strong>Team</strong>: 1 engineer (Python + ML)
+<strong>Prerequisites</strong>: Retriever Arm complete (for fact-checking)
+<strong>Priority</strong>: HIGH</p>
+<h3 id="sprint-goals-2"><a class="header" href="#sprint-goals-2">Sprint Goals</a></h3>
+<ul>
+<li>Implement multi-layer validation (schema, facts, criteria, hallucination)</li>
+<li>Create quality scoring system with weighted rubrics</li>
+<li>Integrate with Retriever for fact-checking</li>
+<li>Implement hallucination detection</li>
+<li>Generate actionable feedback for failed validations</li>
+<li>Validation catches &gt;95% of schema errors, &gt;90% fact accuracy</li>
+</ul>
+<h3 id="architecture-decisions-required-2"><a class="header" href="#architecture-decisions-required-2">Architecture Decisions Required</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Decision 1: Hallucination Detection Method</strong></p>
+<ul>
+<li>Option A: NLI (Natural Language Inference) model</li>
+<li>Option B: Fact extraction + verification against retrieval</li>
+<li>Option C: LLM-based consistency checking</li>
+<li><strong>Recommendation</strong>: Option B for explainability</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Decision 2: Scoring Methodology</strong></p>
+<ul>
+<li>Option A: Binary pass/fail</li>
+<li>Option B: Weighted rubric (0-100 score)</li>
+<li>Option C: Multi-dimensional scoring</li>
+<li><strong>Recommendation</strong>: Option B for flexibility</li>
+</ul>
+</li>
+</ul>
+<h3 id="tasks-2"><a class="header" href="#tasks-2">Tasks</a></h3>
+<h4 id="validation-framework-8-hours"><a class="header" href="#validation-framework-8-hours">Validation Framework (8 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Schema Validation</strong> (2 hours)</p>
+<ul>
+<li>Pydantic model validation</li>
+<li>JSON schema validation</li>
+<li>Custom validators</li>
+<li>Code example:
+<pre><code class="language-python"># arms/judge/validators/schema.py
+from pydantic import BaseModel, ValidationError, validator
+from typing import Any, Dict, List
+import jsonschema
+
+class SchemaValidator:
+    def validate_pydantic(self, data: Dict, model_class: type) -&gt; Dict[str, Any]:
+        """Validate data against Pydantic model."""
+        try:
+            validated = model_class(**data)
+            return {
+                "valid": True,
+                "validated_data": validated.dict(),
+                "errors": []
+            }
+        except ValidationError as e:
+            return {
+                "valid": False,
+                "validated_data": None,
+                "errors": [
+                    {
+                        "field": err["loc"][0] if err["loc"] else "root",
+                        "message": err["msg"],
+                        "type": err["type"]
+                    }
+                    for err in e.errors()
+                ]
+            }
+
+    def validate_json_schema(self, data: Dict, schema: Dict) -&gt; Dict[str, Any]:
+        """Validate data against JSON schema."""
+        try:
+            jsonschema.validate(instance=data, schema=schema)
+            return {
+                "valid": True,
+                "errors": []
+            }
+        except jsonschema.exceptions.ValidationError as e:
+            return {
+                "valid": False,
+                "errors": [
+                    {
+                        "field": ".".join(str(p) for p in e.path),
+                        "message": e.message,
+                        "schema_path": ".".join(str(p) for p in e.schema_path)
+                    }
+                ]
+            }
+</code></pre>
+</li>
+<li>Files to create: <code>arms/judge/validators/schema.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Fact-Checking</strong> (3 hours)</p>
+<ul>
+<li>Extract claims from output</li>
+<li>Verify against Retriever knowledge base</li>
+<li>k-evidence rule (require k=3 supporting documents)</li>
+<li>Code example:
+<pre><code class="language-python"># arms/judge/validators/facts.py
+from typing import List, Dict, Any
+import re
+from retriever.client import RetrieverClient
+
+class FactChecker:
+    def __init__(self, retriever_client: RetrieverClient, k: int = 3):
+        """
+        Fact checker with k-evidence rule.
+        k: number of supporting documents required
+        """
+        self.retriever = retriever_client
+        self.k = k
+
+    def extract_claims(self, text: str) -&gt; List[str]:
+        """Extract factual claims from text."""
+        # Simple heuristic: sentences with specific entities or numbers
+        sentences = re.split(r'[.!?]+', text)
+        claims = []
+
+        for sentence in sentences:
+            sentence = sentence.strip()
+            # Claims often contain specific details
+            if any([
+                re.search(r'\d+', sentence),  # Numbers
+                re.search(r'[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+', sentence),  # Proper nouns
+                any(word in sentence.lower() for word in ['is', 'was', 'are', 'were'])  # Assertions
+            ]):
+                claims.append(sentence)
+
+        return claims
+
+    async def verify_claim(self, claim: str) -&gt; Dict[str, Any]:
+        """Verify a single claim against knowledge base."""
+        # Search for supporting evidence
+        search_results = await self.retriever.search(
+            query=claim,
+            top_k=10
+        )
+
+        # Count supporting vs contradicting documents
+        supporting = []
+        contradicting = []
+
+        for result in search_results:
+            # Simple similarity threshold
+            if result["score"] &gt; 0.7:
+                supporting.append(result)
+            elif result["score"] &lt; 0.3:
+                contradicting.append(result)
+
+        verified = len(supporting) &gt;= self.k
+
+        return {
+            "claim": claim,
+            "verified": verified,
+            "supporting_count": len(supporting),
+            "supporting_docs": supporting[:3],  # Top 3
+            "confidence": len(supporting) / self.k if self.k &gt; 0 else 0
+        }
+
+    async def check_facts(self, text: str) -&gt; Dict[str, Any]:
+        """Check all factual claims in text."""
+        claims = self.extract_claims(text)
+
+        if not claims:
+            return {
+                "valid": True,
+                "message": "No factual claims to verify",
+                "claims_checked": 0
+            }
+
+        # Verify all claims
+        results = [await self.verify_claim(claim) for claim in claims]
+
+        verified_count = sum(1 for r in results if r["verified"])
+        accuracy = verified_count / len(results) if results else 0
+
+        return {
+            "valid": accuracy &gt;= 0.8,  # 80% threshold
+            "accuracy": accuracy,
+            "claims_checked": len(results),
+            "claims_verified": verified_count,
+            "failed_claims": [r for r in results if not r["verified"]]
+        }
+</code></pre>
+</li>
+<li>Files to create: <code>arms/judge/validators/facts.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Acceptance Criteria Checking</strong> (2 hours)</p>
+<ul>
+<li>Compare output against task acceptance criteria</li>
+<li>Rule-based validation</li>
+<li>LLM-based semantic validation</li>
+<li>Code example:
+<pre><code class="language-python"># arms/judge/validators/criteria.py
+from typing import List, Dict, Any
+from openai import AsyncOpenAI
+
+class CriteriaChecker:
+    def __init__(self, openai_client: AsyncOpenAI):
+        self.client = openai_client
+
+    async def check_criteria(
+        self,
+        output: str,
+        criteria: List[str]
+    ) -&gt; Dict[str, Any]:
+        """Check if output meets acceptance criteria."""
+        results = []
+
+        for criterion in criteria:
+            # Use LLM for semantic checking
+            prompt = f"""Does the following output meet this criterion?
+
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+<p>Criterion: {criterion}</p>
+<p>Output: {output}</p>
+<p>Answer with YES or NO, followed by a brief explanation."""</p>
+<pre><code>            response = await self.client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.0
+            )
+
+            answer = response.choices[0].message.content
+            met = answer.strip().upper().startswith("YES")
+
+            results.append({
+                "criterion": criterion,
+                "met": met,
+                "explanation": answer
+            })
+
+        met_count = sum(1 for r in results if r["met"])
+
+        return {
+            "valid": met_count == len(criteria),
+            "criteria_met": met_count,
+            "total_criteria": len(criteria),
+            "results": results
+        }
+```
+</code></pre>
+<ul>
+<li>
+<p>Files to create: <code>arms/judge/validators/criteria.py</code></p>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Hallucination Detection</strong> (1 hour)</p>
+<ul>
+<li>Detect unverifiable claims</li>
+<li>Consistency checking</li>
+<li>Confidence scoring</li>
+<li>Files to create: <code>arms/judge/validators/hallucination.py</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="quality-scoring-system-6-hours"><a class="header" href="#quality-scoring-system-6-hours">Quality Scoring System (6 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Weighted Rubric System</strong> (3 hours)</p>
+<ul>
+<li>Configurable scoring dimensions</li>
+<li>Weighted aggregation</li>
+<li>Threshold-based pass/fail</li>
+<li>Code example:
+<pre><code class="language-python"># arms/judge/scoring.py
+from typing import Dict, List, Any
+from pydantic import BaseModel, Field
+
+class ScoringDimension(BaseModel):
+    name: str
+    weight: float = Field(ge=0.0, le=1.0)
+    description: str
+    min_score: float = 0.0
+    max_score: float = 100.0
+
+class QualityScorer:
+    def __init__(self, dimensions: List[ScoringDimension]):
+        """
+        Initialize quality scorer with weighted dimensions.
+        Weights must sum to 1.0.
+        """
+        total_weight = sum(d.weight for d in dimensions)
+        if abs(total_weight - 1.0) &gt; 0.01:
+            raise ValueError(f"Weights must sum to 1.0, got {total_weight}")
+
+        self.dimensions = dimensions
+
+    def score(self, dimension_scores: Dict[str, float]) -&gt; Dict[str, Any]:
+        """
+        Calculate weighted score across dimensions.
+
+        Args:
+            dimension_scores: Dict mapping dimension name to score (0-100)
+
+        Returns:
+            Dict with overall score and breakdown
+        """
+        weighted_score = 0.0
+        breakdown = []
+
+        for dimension in self.dimensions:
+            score = dimension_scores.get(dimension.name, 0.0)
+            weighted = score * dimension.weight
+            weighted_score += weighted
+
+            breakdown.append({
+                "dimension": dimension.name,
+                "score": score,
+                "weight": dimension.weight,
+                "weighted_score": weighted
+            })
+
+        return {
+            "overall_score": weighted_score,
+            "breakdown": breakdown,
+            "passed": weighted_score &gt;= 70.0  # Default threshold
+        }
+
+# Default rubric for OctoLLM outputs
+DEFAULT_RUBRIC = [
+    ScoringDimension(
+        name="correctness",
+        weight=0.4,
+        description="Accuracy and factual correctness"
+    ),
+    ScoringDimension(
+        name="completeness",
+        weight=0.25,
+        description="All requirements addressed"
+    ),
+    ScoringDimension(
+        name="quality",
+        weight=0.20,
+        description="Code/output quality and best practices"
+    ),
+    ScoringDimension(
+        name="safety",
+        weight=0.15,
+        description="Security and safety considerations"
+    )
+]
+</code></pre>
+</li>
+<li>Files to create: <code>arms/judge/scoring.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Feedback Generation</strong> (2 hours)</p>
+<ul>
+<li>Generate actionable recommendations</li>
+<li>Repair suggestions for failures</li>
+<li>Prioritized issue list</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Add Confidence Scoring</strong> (1 hour)</p>
+<ul>
+<li>Uncertainty quantification</li>
+<li>Confidence intervals</li>
+<li>Flags for human review</li>
+</ul>
+</li>
+</ul>
+<h4 id="judge-arm-service-implementation-8-hours"><a class="header" href="#judge-arm-service-implementation-8-hours">Judge Arm Service Implementation (8 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create FastAPI Service</strong> (2 hours)</p>
+<ul>
+<li>Service initialization</li>
+<li>Dependency injection</li>
+<li>Health checks</li>
+<li>Files to create: <code>arms/judge/main.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement /validate Endpoint</strong> (4 hours)</p>
+<ul>
+<li>POST /validate for output validation</li>
+<li>Multi-layer validation pipeline</li>
+<li>Detailed validation report</li>
+<li>Code example:
+<pre><code class="language-python"># arms/judge/api/validation.py
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+from typing import List, Dict, Any, Optional
+from ..validators.schema import SchemaValidator
+from ..validators.facts import FactChecker
+from ..validators.criteria import CriteriaChecker
+from ..validators.hallucination import HallucinationDetector
+from ..scoring import QualityScorer, DEFAULT_RUBRIC
+
+router = APIRouter()
+
+class ValidationRequest(BaseModel):
+    output: str = Field(..., min_length=1)
+    schema: Optional[Dict] = None
+    acceptance_criteria: Optional[List[str]] = None
+    enable_fact_checking: bool = True
+    enable_hallucination_detection: bool = True
+
+class ValidationResponse(BaseModel):
+    valid: bool
+    overall_score: float
+    validations: Dict[str, Any]
+    feedback: List[str]
+    confidence: float
+
+@router.post("/validate", response_model=ValidationResponse)
+async def validate_output(request: ValidationRequest):
+    """Multi-layer validation of task output."""
+    validations = {}
+    dimension_scores = {}
+    feedback = []
+
+    # Layer 1: Schema validation
+    if request.schema:
+        schema_validator = SchemaValidator()
+        schema_result = schema_validator.validate_json_schema(
+            data=request.output,
+            schema=request.schema
+        )
+        validations["schema"] = schema_result
+        dimension_scores["correctness"] = 100.0 if schema_result["valid"] else 0.0
+
+        if not schema_result["valid"]:
+            feedback.extend([
+                f"Schema error in {err['field']}: {err['message']}"
+                for err in schema_result["errors"]
+            ])
+
+    # Layer 2: Fact-checking
+    if request.enable_fact_checking:
+        fact_checker = get_fact_checker()
+        fact_result = await fact_checker.check_facts(request.output)
+        validations["facts"] = fact_result
+        dimension_scores["correctness"] = min(
+            dimension_scores.get("correctness", 100.0),
+            fact_result["accuracy"] * 100
+        )
+
+        if not fact_result["valid"]:
+            feedback.extend([
+                f"Unverified claim: {claim['claim']}"
+                for claim in fact_result["failed_claims"]
+            ])
+
+    # Layer 3: Acceptance criteria
+    if request.acceptance_criteria:
+        criteria_checker = get_criteria_checker()
+        criteria_result = await criteria_checker.check_criteria(
+            output=request.output,
+            criteria=request.acceptance_criteria
+        )
+        validations["criteria"] = criteria_result
+        dimension_scores["completeness"] = (
+            criteria_result["criteria_met"] / criteria_result["total_criteria"] * 100
+        )
+
+        if not criteria_result["valid"]:
+            feedback.extend([
+                f"Criterion not met: {r['criterion']}"
+                for r in criteria_result["results"] if not r["met"]
+            ])
+
+    # Layer 4: Hallucination detection
+    if request.enable_hallucination_detection:
+        hallucination_detector = get_hallucination_detector()
+        hallucination_result = await hallucination_detector.detect(request.output)
+        validations["hallucination"] = hallucination_result
+
+        if hallucination_result["detected"]:
+            feedback.append(f"Potential hallucinations detected: {hallucination_result['count']}")
+
+    # Calculate overall score
+    scorer = QualityScorer(DEFAULT_RUBRIC)
+    score_result = scorer.score(dimension_scores)
+
+    return ValidationResponse(
+        valid=score_result["passed"] and all(
+            v.get("valid", True) for v in validations.values()
+        ),
+        overall_score=score_result["overall_score"],
+        validations=validations,
+        feedback=feedback,
+        confidence=min(1.0, sum(dimension_scores.values()) / (len(dimension_scores) * 100))
+    )
+</code></pre>
+</li>
+<li>Files to create: <code>arms/judge/api/validation.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement /fact-check Endpoint</strong> (2 hours)</p>
+<ul>
+<li>POST /fact-check for standalone fact verification</li>
+<li>Claim-by-claim breakdown</li>
+<li>Supporting evidence links</li>
+<li>Files to create: <code>arms/judge/api/facts.py</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="testing-requirements-2"><a class="header" href="#testing-requirements-2">Testing Requirements</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Unit Tests</strong> (6 hours)</p>
+<ul>
+<li>Test schema validation (catch format errors)</li>
+<li>Test fact-checking (k-evidence rule)</li>
+<li>Test scoring system (weighted aggregation)</li>
+<li>Target coverage: &gt;85%</li>
+<li>Test file: <code>arms/judge/tests/test_validation.py</code></li>
+<li>Example tests:
+<pre><code class="language-python"># arms/judge/tests/test_validation.py
+import pytest
+from judge.validators.schema import SchemaValidator
+from judge.validators.facts import FactChecker
+from judge.scoring import QualityScorer, ScoringDimension
+
+def test_schema_validation_catches_errors():
+    """Test schema validation detects type mismatches."""
+    validator = SchemaValidator()
+
+    schema = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "age": {"type": "integer"}
+        },
+        "required": ["name", "age"]
+    }
+
+    # Valid data
+    result = validator.validate_json_schema(
+        {"name": "John", "age": 30},
+        schema
+    )
+    assert result["valid"] == True
+
+    # Invalid data (wrong type)
+    result = validator.validate_json_schema(
+        {"name": "John", "age": "thirty"},
+        schema
+    )
+    assert result["valid"] == False
+    assert len(result["errors"]) &gt; 0
+
+@pytest.mark.asyncio
+async def test_fact_checking_accuracy():
+    """Test fact checker verifies claims correctly."""
+    mock_retriever = MockRetrieverClient()
+    fact_checker = FactChecker(mock_retriever, k=3)
+
+    # Text with verifiable claim
+    text = "Python was created by Guido van Rossum in 1991."
+    result = await fact_checker.check_facts(text)
+
+    assert result["claims_checked"] &gt; 0
+    assert result["accuracy"] &gt;= 0.8
+
+def test_quality_scoring():
+    """Test weighted quality scoring."""
+    dimensions = [
+        ScoringDimension(name="correctness", weight=0.5, description=""),
+        ScoringDimension(name="completeness", weight=0.5, description="")
+    ]
+
+    scorer = QualityScorer(dimensions)
+
+    result = scorer.score({
+        "correctness": 90.0,
+        "completeness": 80.0
+    })
+
+    assert result["overall_score"] == 85.0  # (90*0.5 + 80*0.5)
+    assert result["passed"] == True
+</code></pre>
+</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Integration Tests</strong> (4 hours)</p>
+<ul>
+<li>Test end-to-end validation flow</li>
+<li>Test Retriever integration for fact-checking</li>
+<li>Test validation report generation</li>
+<li>Scenarios:
+<ul>
+<li>Valid output → All layers pass</li>
+<li>Invalid schema → Schema validation fails</li>
+<li>False claims → Fact-checking fails</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="documentation-deliverables-2"><a class="header" href="#documentation-deliverables-2">Documentation Deliverables</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>API Documentation</strong> (2 hours)</p>
+<ul>
+<li>OpenAPI spec</li>
+<li>Validation examples</li>
+<li>Scoring rubric documentation</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Component README</strong> (1 hour)</p>
+<ul>
+<li>Validation layers overview</li>
+<li>Configuration guide</li>
+<li>Custom rubric creation</li>
+<li>Files to create: <code>arms/judge/README.md</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="success-criteria-2"><a class="header" href="#success-criteria-2">Success Criteria</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Validation catches &gt;95% of schema errors</li>
+<li><input disabled="" type="checkbox"/>
+Fact-checking &gt;90% accurate on known facts</li>
+<li><input disabled="" type="checkbox"/>
+Hallucination detection &gt;80% effective</li>
+<li><input disabled="" type="checkbox"/>
+All tests passing with &gt;85% coverage</li>
+<li><input disabled="" type="checkbox"/>
+API documentation complete</li>
+</ul>
+<h3 id="common-pitfalls--tips-2"><a class="header" href="#common-pitfalls--tips-2">Common Pitfalls &amp; Tips</a></h3>
+<p>⚠️ <strong>Pitfall 1</strong>: Fact-checking too strict causes false negatives
+✅ <strong>Solution</strong>: Tune k-evidence threshold based on domain</p>
+<p>⚠️ <strong>Pitfall 2</strong>: LLM-based criteria checking is slow
+✅ <strong>Solution</strong>: Cache results for similar outputs</p>
+<p>⚠️ <strong>Pitfall 3</strong>: Hallucination detector has high false positive rate
+✅ <strong>Solution</strong>: Use multiple detection methods and consensus</p>
+<h3 id="estimated-effort-2"><a class="header" href="#estimated-effort-2">Estimated Effort</a></h3>
+<ul>
+<li>Development: 28 hours</li>
+<li>Testing: 10 hours</li>
+<li>Documentation: 3 hours</li>
+<li><strong>Total</strong>: 41 hours (~2 weeks for 1 engineer)</li>
+</ul>
+<h3 id="dependencies-2"><a class="header" href="#dependencies-2">Dependencies</a></h3>
+<ul>
+<li>Blocks: All workflows (every task needs validation)</li>
+<li>Blocked by: Retriever Arm complete (for fact-checking)</li>
+</ul>
+<hr />
+<h2 id="sprint-24-safety-guardian-arm-week-10-11"><a class="header" href="#sprint-24-safety-guardian-arm-week-10-11">Sprint 2.4: Safety Guardian Arm [Week 10-11]</a></h2>
+<p><strong>(Content abbreviated for space - full sprint would be 1,500-2,000 lines with complete task breakdown, code examples, testing strategy, documentation, and acceptance criteria similar to Sprints 2.1-2.3)</strong></p>
+<h3 id="sprint-goals-3"><a class="header" href="#sprint-goals-3">Sprint Goals</a></h3>
+<ul>
+<li>Implement comprehensive PII detection (18+ types with regex + NER)</li>
+<li>Create automatic redaction (type-based, hash-based, reversible)</li>
+<li>Add content filtering (profanity, hate speech, NSFW)</li>
+<li>Implement policy enforcement (capability validation, rate limiting)</li>
+<li>Build audit logging system (provenance tracking, immutable logs)</li>
+<li>Achieve &gt;95% PII detection recall, &lt;5% false positive rate</li>
+</ul>
+<h3 id="key-tasks-summary"><a class="header" href="#key-tasks-summary">Key Tasks (Summary)</a></h3>
+<ol>
+<li>PII Detection Engine (regex patterns + spaCy NER)</li>
+<li>Redaction Strategies (multiple approaches with AES-256)</li>
+<li>Content Filtering (keyword lists + ML models)</li>
+<li>Policy Enforcement Framework</li>
+<li>Audit Logging with Provenance</li>
+<li>GDPR/CCPA Compliance Helpers</li>
+</ol>
+<hr />
+<h2 id="sprint-25-distributed-memory-system-week-11-13"><a class="header" href="#sprint-25-distributed-memory-system-week-11-13">Sprint 2.5: Distributed Memory System [Week 11-13]</a></h2>
+<p><strong>(Content abbreviated for space - full sprint would be 1,800-2,200 lines)</strong></p>
+<h3 id="sprint-goals-4"><a class="header" href="#sprint-goals-4">Sprint Goals</a></h3>
+<ul>
+<li>Implement complete PostgreSQL schema (entities, relationships, task_history, action_log)</li>
+<li>Deploy Qdrant per-arm episodic memory collections</li>
+<li>Create memory routing with query classification</li>
+<li>Implement data diodes for security isolation</li>
+<li>Build multi-tier caching (L1 in-memory, L2 Redis)</li>
+<li>Achieve &gt;90% routing accuracy, &lt;100ms query latency</li>
+</ul>
+<h3 id="key-tasks-summary-1"><a class="header" href="#key-tasks-summary-1">Key Tasks (Summary)</a></h3>
+<ol>
+<li>PostgreSQL Global Memory (full schema + indexes)</li>
+<li>Qdrant Local Memory (per-arm collections)</li>
+<li>Memory Router (query classification logic)</li>
+<li>Data Diode Implementation (PII filtering, capability checks)</li>
+<li>Multi-Tier Cache Layer</li>
+<li>Connection Pooling and Optimization</li>
+</ol>
+<p><strong>Reference</strong>: <code>docs/implementation/memory-systems.md</code> (2,850+ lines)</p>
+<hr />
+<h2 id="sprint-26-kubernetes-migration-week-13-15"><a class="header" href="#sprint-26-kubernetes-migration-week-13-15">Sprint 2.6: Kubernetes Migration [Week 13-15]</a></h2>
+<p><strong>(Content abbreviated for space - full sprint would be 2,000-2,500 lines)</strong></p>
+<h3 id="sprint-goals-5"><a class="header" href="#sprint-goals-5">Sprint Goals</a></h3>
+<ul>
+<li>Deploy all services to Kubernetes production cluster</li>
+<li>Implement Horizontal Pod Autoscaling (HPA) for all services</li>
+<li>Configure Ingress with TLS (cert-manager + Let's Encrypt)</li>
+<li>Set up Pod Disruption Budgets (PDB) for high availability</li>
+<li>Deploy monitoring stack (Prometheus, Grafana)</li>
+<li>Achieve successful load test (1,000 concurrent tasks)</li>
+</ul>
+<h3 id="key-tasks-summary-2"><a class="header" href="#key-tasks-summary-2">Key Tasks (Summary)</a></h3>
+<ol>
+<li>Kubernetes Manifests (Namespace, ResourceQuota, RBAC)</li>
+<li>StatefulSets for Databases (PostgreSQL, Redis, Qdrant)</li>
+<li>Deployments for Services (Orchestrator, Reflex, 6 Arms)</li>
+<li>HPA Configuration (CPU, memory, custom metrics)</li>
+<li>Ingress and TLS Setup</li>
+<li>Load Testing and Verification</li>
+</ol>
+<p><strong>Reference</strong>: <code>docs/operations/kubernetes-deployment.md</code> (1,481 lines)</p>
+<hr />
+<h2 id="sprint-27-swarm-decision-making-week-15-16"><a class="header" href="#sprint-27-swarm-decision-making-week-15-16">Sprint 2.7: Swarm Decision-Making [Week 15-16]</a></h2>
+<p><strong>(Content abbreviated for space - full sprint would be 1,200-1,500 lines)</strong></p>
+<h3 id="sprint-goals-6"><a class="header" href="#sprint-goals-6">Sprint Goals</a></h3>
+<ul>
+<li>Implement parallel arm invocation (N proposals for high-priority tasks)</li>
+<li>Create result aggregation strategies (voting, Borda count, learned)</li>
+<li>Build conflict resolution policies</li>
+<li>Add confidence scoring and uncertainty quantification</li>
+<li>Implement active learning feedback loops</li>
+<li>Achieve &gt;95% success rate on critical tasks, &lt;2x latency overhead</li>
+</ul>
+<h3 id="key-tasks-summary-3"><a class="header" href="#key-tasks-summary-3">Key Tasks (Summary)</a></h3>
+<ol>
+<li>Swarm Executor Class (parallel execution with asyncio)</li>
+<li>Voting and Aggregation Algorithms</li>
+<li>Conflict Resolution Strategies</li>
+<li>Confidence Scoring System</li>
+<li>Active Learning Integration</li>
+</ol>
+<p><strong>Reference</strong>: <code>docs/architecture/swarm-decision-making.md</code></p>
+<hr />
+<h2 id="phase-2-summary"><a class="header" href="#phase-2-summary">Phase 2 Summary</a></h2>
+<p><strong>Total Tasks</strong>: 80+ implementation tasks across 7 sprints
+<strong>Estimated Duration</strong>: 8-10 weeks with 4-5 engineers
+<strong>Total Estimated Hours</strong>: ~290 hours development + ~70 hours testing + ~20 hours documentation = 380 hours</p>
+<p><strong>Deliverables</strong>:</p>
+<ul>
+<li>4 additional arms (Retriever, Coder, Judge, Guardian)</li>
+<li>Distributed memory system (PostgreSQL + Qdrant + Redis)</li>
+<li>Kubernetes production deployment</li>
+<li>Swarm decision-making</li>
+<li>Integration tests and load tests</li>
+</ul>
+<p><strong>Completion Checklist</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+All 6 arms deployed and operational</li>
+<li><input disabled="" type="checkbox"/>
+Memory system handling 100,000+ entities</li>
+<li><input disabled="" type="checkbox"/>
+Kubernetes deployment with autoscaling</li>
+<li><input disabled="" type="checkbox"/>
+Swarm decision-making working</li>
+<li><input disabled="" type="checkbox"/>
+Load tests passing (1,000 concurrent tasks)</li>
+<li><input disabled="" type="checkbox"/>
+Documentation updated</li>
+<li><input disabled="" type="checkbox"/>
+Code reviewed and approved</li>
+<li><input disabled="" type="checkbox"/>
+Security audit complete</li>
+</ul>
+<p><strong>Next Phase</strong>: Phase 3 (Operations) + Phase 4 (Engineering) - Can run in parallel</p>
+<hr />
+<p><strong>Document Version</strong>: 1.0
+<strong>Last Updated</strong>: 2025-11-10
+<strong>Maintained By</strong>: OctoLLM Project Management Team</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../project-tracking/phases/phase-1.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../project-tracking/phases/phase-3.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../project-tracking/phases/phase-1.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../project-tracking/phases/phase-3.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

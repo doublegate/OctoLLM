@@ -1,0 +1,1599 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Kubernetes Deployment - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/operations/kubernetes-deployment.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="kubernetes-deployment-guide"><a class="header" href="#kubernetes-deployment-guide">Kubernetes Deployment Guide</a></h1>
+<p><strong>Estimated Time</strong>: 2-3 hours
+<strong>Difficulty</strong>: Advanced
+<strong>Prerequisites</strong>: Kubernetes cluster access, kubectl configured, basic Kubernetes knowledge</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This guide walks you through deploying OctoLLM to a production Kubernetes cluster with:</p>
+<ul>
+<li>High availability and auto-scaling</li>
+<li>Persistent storage for databases</li>
+<li>Service mesh integration (optional)</li>
+<li>Monitoring and observability</li>
+<li>Security best practices</li>
+</ul>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#cluster-requirements">Cluster Requirements</a></li>
+<li><a href="#namespace-setup">Namespace Setup</a></li>
+<li><a href="#storage-configuration">Storage Configuration</a></li>
+<li><a href="#database-deployment">Database Deployment</a></li>
+<li><a href="#core-services-deployment">Core Services Deployment</a></li>
+<li><a href="#ingress-configuration">Ingress Configuration</a></li>
+<li><a href="#scaling-configuration">Scaling Configuration</a></li>
+<li><a href="#security-hardening">Security Hardening</a></li>
+<li><a href="#monitoring-setup">Monitoring Setup</a></li>
+<li><a href="#verification">Verification</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ol>
+<hr />
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<h3 id="required-tools"><a class="header" href="#required-tools">Required Tools</a></h3>
+<pre><code class="language-bash"># Verify kubectl installation
+kubectl version --client
+
+# Verify Helm installation (v3+)
+helm version
+
+# Verify cluster access
+kubectl cluster-info
+kubectl get nodes
+</code></pre>
+<h3 id="recommended-versions"><a class="header" href="#recommended-versions">Recommended Versions</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Minimum Version</th><th>Recommended</th></tr></thead><tbody>
+<tr><td><strong>Kubernetes</strong></td><td>1.25+</td><td>1.28+</td></tr>
+<tr><td><strong>kubectl</strong></td><td>1.25+</td><td>1.28+</td></tr>
+<tr><td><strong>Helm</strong></td><td>3.10+</td><td>3.13+</td></tr>
+<tr><td><strong>Container Runtime</strong></td><td>containerd 1.6+</td><td>containerd 1.7+</td></tr>
+</tbody></table>
+</div>
+<h3 id="required-kubernetes-features"><a class="header" href="#required-kubernetes-features">Required Kubernetes Features</a></h3>
+<ul>
+<li><strong>StorageClasses</strong> - For persistent volumes</li>
+<li><strong>RBAC</strong> - For service accounts and permissions</li>
+<li><strong>NetworkPolicies</strong> - For network isolation</li>
+<li><strong>HorizontalPodAutoscaler</strong> - For auto-scaling</li>
+<li><strong>Ingress Controller</strong> - For external access (nginx, traefik, etc.)</li>
+</ul>
+<hr />
+<h2 id="cluster-requirements"><a class="header" href="#cluster-requirements">Cluster Requirements</a></h2>
+<h3 id="node-resources"><a class="header" href="#node-resources">Node Resources</a></h3>
+<p><strong>Minimum Cluster</strong> (Development/Testing):</p>
+<ul>
+<li>3 nodes (1 master, 2 workers)</li>
+<li>4 vCPU per node</li>
+<li>16 GB RAM per node</li>
+<li>100 GB SSD storage per node</li>
+</ul>
+<p><strong>Production Cluster</strong>:</p>
+<ul>
+<li>5+ nodes (1 master, 4+ workers)</li>
+<li>8 vCPU per node</li>
+<li>32 GB RAM per node</li>
+<li>200 GB SSD storage per node</li>
+<li>Separate node pool for databases (higher IOPS)</li>
+</ul>
+<h3 id="network-requirements"><a class="header" href="#network-requirements">Network Requirements</a></h3>
+<pre><code class="language-yaml"># Required network connectivity
+- Intra-cluster: All pods must communicate (CNI configured)
+- External API access: OpenAI, Anthropic, etc. (egress allowed)
+- Ingress: HTTPS (443) for external requests
+- Monitoring: Prometheus scraping (internal)
+</code></pre>
+<hr />
+<h2 id="namespace-setup"><a class="header" href="#namespace-setup">Namespace Setup</a></h2>
+<h3 id="create-octollm-namespace"><a class="header" href="#create-octollm-namespace">Create OctoLLM Namespace</a></h3>
+<pre><code class="language-bash"># Create namespace
+kubectl create namespace octollm
+
+# Set as default for this session
+kubectl config set-context --current --namespace=octollm
+
+# Verify
+kubectl get namespace octollm
+</code></pre>
+<h3 id="namespace-configuration"><a class="header" href="#namespace-configuration">Namespace Configuration</a></h3>
+<pre><code class="language-yaml"># k8s/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: octollm
+  labels:
+    name: octollm
+    env: production
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: octollm-quota
+  namespace: octollm
+spec:
+  hard:
+    requests.cpu: "32"
+    requests.memory: 64Gi
+    requests.storage: 500Gi
+    persistentvolumeclaims: "10"
+    pods: "50"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: octollm-limits
+  namespace: octollm
+spec:
+  limits:
+  - max:
+      cpu: "4"
+      memory: 8Gi
+    min:
+      cpu: 100m
+      memory: 128Mi
+    type: Container
+</code></pre>
+<p>Apply the configuration:</p>
+<pre><code class="language-bash">kubectl apply -f k8s/namespace.yaml
+</code></pre>
+<hr />
+<h2 id="storage-configuration"><a class="header" href="#storage-configuration">Storage Configuration</a></h2>
+<h3 id="storageclass-configuration"><a class="header" href="#storageclass-configuration">StorageClass Configuration</a></h3>
+<pre><code class="language-yaml"># k8s/storage/storageclass.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: octollm-fast-ssd
+provisioner: kubernetes.io/aws-ebs  # Change based on cloud provider
+parameters:
+  type: gp3
+  iopsPerGB: "50"
+  encrypted: "true"
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+</code></pre>
+<p>For different cloud providers:</p>
+<p><strong>AWS (EBS)</strong>:</p>
+<pre><code class="language-yaml">provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp3  # or io2 for higher IOPS
+  iopsPerGB: "50"
+</code></pre>
+<p><strong>GCP (Persistent Disk)</strong>:</p>
+<pre><code class="language-yaml">provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-ssd
+  replication-type: regional-pd
+</code></pre>
+<p><strong>Azure (Disk)</strong>:</p>
+<pre><code class="language-yaml">provisioner: kubernetes.io/azure-disk
+parameters:
+  storageaccounttype: Premium_LRS
+  kind: Managed
+</code></pre>
+<p>Apply storage configuration:</p>
+<pre><code class="language-bash">kubectl apply -f k8s/storage/storageclass.yaml
+</code></pre>
+<hr />
+<h2 id="database-deployment"><a class="header" href="#database-deployment">Database Deployment</a></h2>
+<h3 id="postgresql-deployment"><a class="header" href="#postgresql-deployment">PostgreSQL Deployment</a></h3>
+<pre><code class="language-yaml"># k8s/databases/postgres.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: octollm
+data:
+  POSTGRES_DB: octollm
+  POSTGRES_USER: octollm
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  namespace: octollm
+type: Opaque
+stringData:
+  POSTGRES_PASSWORD: "CHANGE_ME_SECURE_PASSWORD"  # Use sealed secrets in production
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: octollm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: octollm-fast-ssd
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: octollm
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+          name: postgres
+        envFrom:
+        - configMapRef:
+            name: postgres-config
+        - secretRef:
+            name: postgres-secret
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+          subPath: postgres
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 2Gi
+          limits:
+            cpu: 2000m
+            memory: 4Gi
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - octollm
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - octollm
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: octollm
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+  clusterIP: None  # Headless service for StatefulSet
+</code></pre>
+<h3 id="redis-deployment"><a class="header" href="#redis-deployment">Redis Deployment</a></h3>
+<pre><code class="language-yaml"># k8s/databases/redis.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: octollm
+data:
+  redis.conf: |
+    maxmemory 2gb
+    maxmemory-policy allkeys-lru
+    appendonly yes
+    appendfsync everysec
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+  namespace: octollm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: octollm-fast-ssd
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: octollm
+spec:
+  serviceName: redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+          name: redis
+        command:
+        - redis-server
+        - /etc/redis/redis.conf
+        volumeMounts:
+        - name: redis-config
+          mountPath: /etc/redis
+        - name: redis-storage
+          mountPath: /data
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            cpu: 1000m
+            memory: 4Gi
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-config
+      - name: redis-storage
+        persistentVolumeClaim:
+          claimName: redis-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: octollm
+spec:
+  selector:
+    app: redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+  clusterIP: None
+</code></pre>
+<h3 id="qdrant-deployment"><a class="header" href="#qdrant-deployment">Qdrant Deployment</a></h3>
+<pre><code class="language-yaml"># k8s/databases/qdrant.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qdrant-pvc
+  namespace: octollm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: octollm-fast-ssd
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: qdrant
+  namespace: octollm
+spec:
+  serviceName: qdrant
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qdrant
+  template:
+    metadata:
+      labels:
+        app: qdrant
+    spec:
+      containers:
+      - name: qdrant
+        image: qdrant/qdrant:v1.7.0
+        ports:
+        - containerPort: 6333
+          name: http
+        - containerPort: 6334
+          name: grpc
+        volumeMounts:
+        - name: qdrant-storage
+          mountPath: /qdrant/storage
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 2Gi
+          limits:
+            cpu: 2000m
+            memory: 4Gi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 6333
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 6333
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: qdrant-storage
+        persistentVolumeClaim:
+          claimName: qdrant-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant
+  namespace: octollm
+spec:
+  selector:
+    app: qdrant
+  ports:
+  - port: 6333
+    targetPort: 6333
+    name: http
+  - port: 6334
+    targetPort: 6334
+    name: grpc
+  clusterIP: None
+</code></pre>
+<p>Deploy all databases:</p>
+<pre><code class="language-bash">kubectl apply -f k8s/databases/postgres.yaml
+kubectl apply -f k8s/databases/redis.yaml
+kubectl apply -f k8s/databases/qdrant.yaml
+
+# Wait for databases to be ready
+kubectl wait --for=condition=ready pod -l app=postgres --timeout=300s
+kubectl wait --for=condition=ready pod -l app=redis --timeout=300s
+kubectl wait --for=condition=ready pod -l app=qdrant --timeout=300s
+</code></pre>
+<hr />
+<h2 id="core-services-deployment"><a class="header" href="#core-services-deployment">Core Services Deployment</a></h2>
+<h3 id="configmap-for-shared-configuration"><a class="header" href="#configmap-for-shared-configuration">ConfigMap for Shared Configuration</a></h3>
+<pre><code class="language-yaml"># k8s/core/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: octollm-config
+  namespace: octollm
+data:
+  LOG_LEVEL: "info"
+  ENVIRONMENT: "production"
+
+  # Database URLs (internal DNS)
+  POSTGRES_HOST: "postgres.octollm.svc.cluster.local"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "octollm"
+
+  REDIS_HOST: "redis.octollm.svc.cluster.local"
+  REDIS_PORT: "6379"
+
+  QDRANT_HOST: "qdrant.octollm.svc.cluster.local"
+  QDRANT_PORT: "6333"
+</code></pre>
+<h3 id="secret-for-api-keys"><a class="header" href="#secret-for-api-keys">Secret for API Keys</a></h3>
+<pre><code class="language-yaml"># k8s/core/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: octollm-secrets
+  namespace: octollm
+type: Opaque
+stringData:
+  # LLM API Keys (replace with actual keys)
+  OPENAI_API_KEY: "sk-XXXXXXXXXXXXXXXXXXXXX"
+  ANTHROPIC_API_KEY: "sk-ant-XXXXXXXXXXXXXXXXXXXXX"
+
+  # Database credentials
+  POSTGRES_PASSWORD: "SECURE_PASSWORD_HERE"
+
+  # JWT Secret for API authentication
+  JWT_SECRET: "SECURE_RANDOM_STRING_32_CHARS_MIN"
+</code></pre>
+<p><strong>IMPORTANT</strong>: In production, use <strong>Sealed Secrets</strong> or <strong>External Secrets Operator</strong> to manage secrets securely:</p>
+<pre><code class="language-bash"># Example with Sealed Secrets
+kubeseal --format=yaml &lt; k8s/core/secrets.yaml &gt; k8s/core/sealed-secrets.yaml
+kubectl apply -f k8s/core/sealed-secrets.yaml
+</code></pre>
+<h3 id="reflex-layer-deployment"><a class="header" href="#reflex-layer-deployment">Reflex Layer Deployment</a></h3>
+<pre><code class="language-yaml"># k8s/core/reflex-layer.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reflex-layer
+  namespace: octollm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: reflex-layer
+  template:
+    metadata:
+      labels:
+        app: reflex-layer
+    spec:
+      containers:
+      - name: reflex-layer
+        image: octollm/reflex-layer:latest
+        ports:
+        - containerPort: 8001
+          name: http
+        envFrom:
+        - configMapRef:
+            name: octollm-config
+        - secretRef:
+            name: octollm-secrets
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reflex-layer
+  namespace: octollm
+spec:
+  selector:
+    app: reflex-layer
+  ports:
+  - port: 8001
+    targetPort: 8001
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: reflex-layer-hpa
+  namespace: octollm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: reflex-layer
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+</code></pre>
+<h3 id="orchestrator-deployment"><a class="header" href="#orchestrator-deployment">Orchestrator Deployment</a></h3>
+<pre><code class="language-yaml"># k8s/core/orchestrator.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestrator
+  namespace: octollm
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: orchestrator
+  template:
+    metadata:
+      labels:
+        app: orchestrator
+    spec:
+      containers:
+      - name: orchestrator
+        image: octollm/orchestrator:latest
+        ports:
+        - containerPort: 8000
+          name: http
+        envFrom:
+        - configMapRef:
+            name: octollm-config
+        - secretRef:
+            name: octollm-secrets
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 2Gi
+          limits:
+            cpu: 2000m
+            memory: 4Gi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orchestrator
+  namespace: octollm
+spec:
+  selector:
+    app: orchestrator
+  ports:
+  - port: 8000
+    targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: orchestrator-hpa
+  namespace: octollm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: orchestrator
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+</code></pre>
+<h3 id="arm-deployments-example-planner-arm"><a class="header" href="#arm-deployments-example-planner-arm">Arm Deployments (Example: Planner Arm)</a></h3>
+<pre><code class="language-yaml"># k8s/arms/planner-arm.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: planner-arm
+  namespace: octollm
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: planner-arm
+  template:
+    metadata:
+      labels:
+        app: planner-arm
+    spec:
+      containers:
+      - name: planner-arm
+        image: octollm/planner-arm:latest
+        ports:
+        - containerPort: 8100
+          name: http
+        envFrom:
+        - configMapRef:
+            name: octollm-config
+        - secretRef:
+            name: octollm-secrets
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8100
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8100
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: planner-arm
+  namespace: octollm
+spec:
+  selector:
+    app: planner-arm
+  ports:
+  - port: 8100
+    targetPort: 8100
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: planner-arm-hpa
+  namespace: octollm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: planner-arm
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+</code></pre>
+<p>Deploy core services:</p>
+<pre><code class="language-bash">kubectl apply -f k8s/core/configmap.yaml
+kubectl apply -f k8s/core/secrets.yaml
+kubectl apply -f k8s/core/reflex-layer.yaml
+kubectl apply -f k8s/core/orchestrator.yaml
+kubectl apply -f k8s/arms/planner-arm.yaml
+
+# Deploy remaining arms similarly...
+# kubectl apply -f k8s/arms/executor-arm.yaml
+# kubectl apply -f k8s/arms/coder-arm.yaml
+# kubectl apply -f k8s/arms/judge-arm.yaml
+# kubectl apply -f k8s/arms/guardian-arm.yaml
+# kubectl apply -f k8s/arms/retriever-arm.yaml
+</code></pre>
+<hr />
+<h2 id="ingress-configuration"><a class="header" href="#ingress-configuration">Ingress Configuration</a></h2>
+<h3 id="nginx-ingress-controller"><a class="header" href="#nginx-ingress-controller">NGINX Ingress Controller</a></h3>
+<pre><code class="language-yaml"># k8s/ingress/nginx-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: octollm-ingress
+  namespace: octollm
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+spec:
+  tls:
+  - hosts:
+    - api.octollm.example.com
+    secretName: octollm-tls
+  rules:
+  - host: api.octollm.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: orchestrator
+            port:
+              number: 8000
+</code></pre>
+<h3 id="install-cert-manager-for-tls"><a class="header" href="#install-cert-manager-for-tls">Install cert-manager for TLS</a></h3>
+<pre><code class="language-bash"># Install cert-manager
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+
+# Create ClusterIssuer for Let's Encrypt
+cat &lt;&lt;EOF | kubectl apply -f -
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@example.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+EOF
+
+# Apply ingress
+kubectl apply -f k8s/ingress/nginx-ingress.yaml
+</code></pre>
+<hr />
+<h2 id="scaling-configuration"><a class="header" href="#scaling-configuration">Scaling Configuration</a></h2>
+<h3 id="cluster-autoscaler-aws-example"><a class="header" href="#cluster-autoscaler-aws-example">Cluster Autoscaler (AWS Example)</a></h3>
+<pre><code class="language-yaml"># k8s/scaling/cluster-autoscaler.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cluster-autoscaler
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-autoscaler
+rules:
+  - apiGroups: [""]
+    resources: ["events", "endpoints"]
+    verbs: ["create", "patch"]
+  - apiGroups: [""]
+    resources: ["pods/eviction"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["pods/status"]
+    verbs: ["update"]
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    resourceNames: ["cluster-autoscaler"]
+    verbs: ["get", "update"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["watch", "list", "get", "update"]
+  - apiGroups: [""]
+    resources: ["pods", "services", "replicationcontrollers", "persistentvolumeclaims", "persistentvolumes"]
+    verbs: ["watch", "list", "get"]
+  - apiGroups: ["extensions"]
+    resources: ["replicasets", "daemonsets"]
+    verbs: ["watch", "list", "get"]
+  - apiGroups: ["policy"]
+    resources: ["poddisruptionbudgets"]
+    verbs: ["watch", "list"]
+  - apiGroups: ["apps"]
+    resources: ["statefulsets", "replicasets", "daemonsets"]
+    verbs: ["watch", "list", "get"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses", "csinodes"]
+    verbs: ["watch", "list", "get"]
+  - apiGroups: ["batch", "extensions"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-autoscaler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-autoscaler
+subjects:
+  - kind: ServiceAccount
+    name: cluster-autoscaler
+    namespace: kube-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cluster-autoscaler
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cluster-autoscaler
+  template:
+    metadata:
+      labels:
+        app: cluster-autoscaler
+    spec:
+      serviceAccountName: cluster-autoscaler
+      containers:
+      - image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.28.0
+        name: cluster-autoscaler
+        resources:
+          limits:
+            cpu: 100m
+            memory: 300Mi
+          requests:
+            cpu: 100m
+            memory: 300Mi
+        command:
+          - ./cluster-autoscaler
+          - --v=4
+          - --stderrthreshold=info
+          - --cloud-provider=aws
+          - --skip-nodes-with-local-storage=false
+          - --expander=least-waste
+          - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/octollm-cluster
+</code></pre>
+<h3 id="pod-disruption-budgets"><a class="header" href="#pod-disruption-budgets">Pod Disruption Budgets</a></h3>
+<pre><code class="language-yaml"># k8s/scaling/pdb.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: orchestrator-pdb
+  namespace: octollm
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: orchestrator
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: reflex-layer-pdb
+  namespace: octollm
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: reflex-layer
+</code></pre>
+<hr />
+<h2 id="security-hardening"><a class="header" href="#security-hardening">Security Hardening</a></h2>
+<h3 id="network-policies"><a class="header" href="#network-policies">Network Policies</a></h3>
+<pre><code class="language-yaml"># k8s/security/network-policies.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: orchestrator-network-policy
+  namespace: octollm
+spec:
+  podSelector:
+    matchLabels:
+      app: orchestrator
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: reflex-layer
+    ports:
+    - protocol: TCP
+      port: 8000
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  - to:
+    - podSelector:
+        matchLabels:
+          app: qdrant
+    ports:
+    - protocol: TCP
+      port: 6333
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 53  # DNS
+    - protocol: UDP
+      port: 53
+  - to:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8100  # Arms
+    - protocol: TCP
+      port: 8101
+    - protocol: TCP
+      port: 8102
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: database-network-policy
+  namespace: octollm
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: orchestrator
+    - podSelector:
+        matchLabels:
+          app: planner-arm
+    ports:
+    - protocol: TCP
+      port: 5432
+</code></pre>
+<h3 id="pod-security-standards"><a class="header" href="#pod-security-standards">Pod Security Standards</a></h3>
+<pre><code class="language-yaml"># k8s/security/pod-security.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: octollm
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+</code></pre>
+<h3 id="security-context-example"><a class="header" href="#security-context-example">Security Context Example</a></h3>
+<pre><code class="language-yaml"># Add to deployment templates
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+containers:
+- name: orchestrator
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+      - ALL
+</code></pre>
+<p>Apply security configurations:</p>
+<pre><code class="language-bash">kubectl apply -f k8s/security/network-policies.yaml
+kubectl apply -f k8s/security/pod-security.yaml
+</code></pre>
+<hr />
+<h2 id="monitoring-setup"><a class="header" href="#monitoring-setup">Monitoring Setup</a></h2>
+<h3 id="prometheus-servicemonitor"><a class="header" href="#prometheus-servicemonitor">Prometheus ServiceMonitor</a></h3>
+<pre><code class="language-yaml"># k8s/monitoring/service-monitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: octollm-metrics
+  namespace: octollm
+spec:
+  selector:
+    matchLabels:
+      monitoring: "true"
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+</code></pre>
+<h3 id="add-monitoring-labels-to-services"><a class="header" href="#add-monitoring-labels-to-services">Add monitoring labels to services</a></h3>
+<pre><code class="language-yaml"># Update services with label
+metadata:
+  labels:
+    monitoring: "true"
+</code></pre>
+<h3 id="grafana-dashboard-configmap"><a class="header" href="#grafana-dashboard-configmap">Grafana Dashboard ConfigMap</a></h3>
+<pre><code class="language-yaml"># k8s/monitoring/grafana-dashboard.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: octollm-dashboard
+  namespace: monitoring
+data:
+  octollm-overview.json: |
+    {
+      "dashboard": {
+        "title": "OctoLLM Overview",
+        "panels": [
+          {
+            "title": "Request Rate",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{namespace=\"octollm\"}[5m])"
+              }
+            ]
+          }
+        ]
+      }
+    }
+</code></pre>
+<hr />
+<h2 id="verification"><a class="header" href="#verification">Verification</a></h2>
+<h3 id="deployment-verification-script"><a class="header" href="#deployment-verification-script">Deployment Verification Script</a></h3>
+<pre><code class="language-bash">#!/bin/bash
+# k8s/scripts/verify-deployment.sh
+
+set -e
+
+NAMESPACE="octollm"
+
+echo "=== OctoLLM Kubernetes Deployment Verification ==="
+
+# Check namespace
+echo -n "Checking namespace... "
+kubectl get namespace $NAMESPACE &amp;&gt; /dev/null &amp;&amp; echo "✓" || (echo "✗" &amp;&amp; exit 1)
+
+# Check databases
+echo -n "Checking PostgreSQL... "
+kubectl wait --for=condition=ready pod -l app=postgres -n $NAMESPACE --timeout=60s &amp;&gt; /dev/null &amp;&amp; echo "✓" || echo "✗"
+
+echo -n "Checking Redis... "
+kubectl wait --for=condition=ready pod -l app=redis -n $NAMESPACE --timeout=60s &amp;&gt; /dev/null &amp;&amp; echo "✓" || echo "✗"
+
+echo -n "Checking Qdrant... "
+kubectl wait --for=condition=ready pod -l app=qdrant -n $NAMESPACE --timeout=60s &amp;&gt; /dev/null &amp;&amp; echo "✓" || echo "✗"
+
+# Check core services
+echo -n "Checking Reflex Layer... "
+kubectl wait --for=condition=ready pod -l app=reflex-layer -n $NAMESPACE --timeout=60s &amp;&gt; /dev/null &amp;&amp; echo "✓" || echo "✗"
+
+echo -n "Checking Orchestrator... "
+kubectl wait --for=condition=ready pod -l app=orchestrator -n $NAMESPACE --timeout=60s &amp;&gt; /dev/null &amp;&amp; echo "✓" || echo "✗"
+
+# Check arms
+for arm in planner executor coder judge guardian retriever; do
+  echo -n "Checking ${arm} arm... "
+  kubectl wait --for=condition=ready pod -l app=${arm}-arm -n $NAMESPACE --timeout=60s &amp;&gt; /dev/null &amp;&amp; echo "✓" || echo "✗"
+done
+
+# Test API endpoint
+echo -n "Testing API health endpoint... "
+ORCHESTRATOR_POD=$(kubectl get pod -l app=orchestrator -n $NAMESPACE -o jsonpath='{.items[0].metadata.name}')
+kubectl exec -n $NAMESPACE $ORCHESTRATOR_POD -- curl -sf http://localhost:8000/health &amp;&gt; /dev/null &amp;&amp; echo "✓" || echo "✗"
+
+echo ""
+echo "=== Deployment Status ==="
+kubectl get pods -n $NAMESPACE
+</code></pre>
+<p>Run verification:</p>
+<pre><code class="language-bash">chmod +x k8s/scripts/verify-deployment.sh
+./k8s/scripts/verify-deployment.sh
+</code></pre>
+<h3 id="test-api-from-outside-cluster"><a class="header" href="#test-api-from-outside-cluster">Test API from Outside Cluster</a></h3>
+<pre><code class="language-bash"># Get ingress IP/hostname
+INGRESS_HOST=$(kubectl get ingress octollm-ingress -n octollm -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+# Test health endpoint
+curl https://$INGRESS_HOST/health
+
+# Submit test task
+curl -X POST https://$INGRESS_HOST/api/v1/tasks \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "goal": "Test deployment",
+    "constraints": ["Quick verification"],
+    "priority": "low"
+  }'
+</code></pre>
+<hr />
+<h2 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h2>
+<h3 id="common-issues"><a class="header" href="#common-issues">Common Issues</a></h3>
+<h4 id="1-pods-not-starting"><a class="header" href="#1-pods-not-starting">1. Pods Not Starting</a></h4>
+<pre><code class="language-bash"># Check pod status
+kubectl get pods -n octollm
+
+# Describe pod for events
+kubectl describe pod &lt;pod-name&gt; -n octollm
+
+# Check logs
+kubectl logs &lt;pod-name&gt; -n octollm --previous
+</code></pre>
+<p><strong>Common causes</strong>:</p>
+<ul>
+<li>Image pull errors (check image name/tag)</li>
+<li>Resource limits too low</li>
+<li>Missing secrets or configmaps</li>
+<li>Node capacity issues</li>
+</ul>
+<h4 id="2-database-connection-failures"><a class="header" href="#2-database-connection-failures">2. Database Connection Failures</a></h4>
+<pre><code class="language-bash"># Test database connectivity from orchestrator pod
+kubectl exec -it &lt;orchestrator-pod&gt; -n octollm -- sh
+
+# Inside pod, test PostgreSQL
+nc -zv postgres.octollm.svc.cluster.local 5432
+
+# Test Redis
+nc -zv redis.octollm.svc.cluster.local 6379
+</code></pre>
+<p><strong>Solutions</strong>:</p>
+<ul>
+<li>Verify service DNS resolution</li>
+<li>Check network policies</li>
+<li>Ensure databases are ready before deploying apps</li>
+</ul>
+<h4 id="3-ingress-not-working"><a class="header" href="#3-ingress-not-working">3. Ingress Not Working</a></h4>
+<pre><code class="language-bash"># Check ingress status
+kubectl get ingress -n octollm
+kubectl describe ingress octollm-ingress -n octollm
+
+# Check nginx ingress controller logs
+kubectl logs -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx
+</code></pre>
+<p><strong>Solutions</strong>:</p>
+<ul>
+<li>Verify ingress controller is installed</li>
+<li>Check DNS configuration</li>
+<li>Verify TLS certificate issuance</li>
+</ul>
+<h4 id="4-auto-scaling-not-triggering"><a class="header" href="#4-auto-scaling-not-triggering">4. Auto-scaling Not Triggering</a></h4>
+<pre><code class="language-bash"># Check HPA status
+kubectl get hpa -n octollm
+kubectl describe hpa orchestrator-hpa -n octollm
+
+# Check metrics server
+kubectl top pods -n octollm
+</code></pre>
+<p><strong>Solutions</strong>:</p>
+<ul>
+<li>Install metrics-server if missing</li>
+<li>Verify resource requests are set</li>
+<li>Check HPA metric thresholds</li>
+</ul>
+<h3 id="debugging-commands"><a class="header" href="#debugging-commands">Debugging Commands</a></h3>
+<pre><code class="language-bash"># Get all resources in namespace
+kubectl get all -n octollm
+
+# Check events
+kubectl get events -n octollm --sort-by='.lastTimestamp'
+
+# Port forward for local access
+kubectl port-forward svc/orchestrator 8000:8000 -n octollm
+
+# Execute shell in pod
+kubectl exec -it &lt;pod-name&gt; -n octollm -- /bin/sh
+
+# View logs with follow
+kubectl logs -f &lt;pod-name&gt; -n octollm
+
+# View logs from all replicas
+kubectl logs -l app=orchestrator -n octollm --tail=50
+</code></pre>
+<hr />
+<h2 id="production-checklist"><a class="header" href="#production-checklist">Production Checklist</a></h2>
+<p>Before going to production, ensure:</p>
+<h3 id="security"><a class="header" href="#security">Security</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Secrets managed with Sealed Secrets or External Secrets</li>
+<li><input disabled="" type="checkbox"/>
+Network policies applied and tested</li>
+<li><input disabled="" type="checkbox"/>
+Pod security standards enforced</li>
+<li><input disabled="" type="checkbox"/>
+RBAC properly configured</li>
+<li><input disabled="" type="checkbox"/>
+TLS certificates configured</li>
+<li><input disabled="" type="checkbox"/>
+Image scanning enabled</li>
+<li><input disabled="" type="checkbox"/>
+Security context configured for all pods</li>
+</ul>
+<h3 id="reliability"><a class="header" href="#reliability">Reliability</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Resource requests and limits set</li>
+<li><input disabled="" type="checkbox"/>
+Liveness and readiness probes configured</li>
+<li><input disabled="" type="checkbox"/>
+HPA configured and tested</li>
+<li><input disabled="" type="checkbox"/>
+PDB configured for critical services</li>
+<li><input disabled="" type="checkbox"/>
+Backup strategy for databases</li>
+<li><input disabled="" type="checkbox"/>
+Disaster recovery plan documented</li>
+</ul>
+<h3 id="monitoring"><a class="header" href="#monitoring">Monitoring</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Prometheus metrics exposed</li>
+<li><input disabled="" type="checkbox"/>
+Grafana dashboards created</li>
+<li><input disabled="" type="checkbox"/>
+Alerting rules configured</li>
+<li><input disabled="" type="checkbox"/>
+Log aggregation configured</li>
+<li><input disabled="" type="checkbox"/>
+Distributed tracing enabled</li>
+</ul>
+<h3 id="performance"><a class="header" href="#performance">Performance</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Load testing completed</li>
+<li><input disabled="" type="checkbox"/>
+Database indexes optimized</li>
+<li><input disabled="" type="checkbox"/>
+Connection pooling configured</li>
+<li><input disabled="" type="checkbox"/>
+Caching strategy verified</li>
+<li><input disabled="" type="checkbox"/>
+Resource limits tuned</li>
+</ul>
+<hr />
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<p>After successful deployment:</p>
+<ol>
+<li><strong>Set up monitoring</strong> - Follow <a href="monitoring-alerting.html">Monitoring and Alerting Guide</a></li>
+<li><strong>Configure backups</strong> - Set up automated database backups</li>
+<li><strong>Load testing</strong> - Use <a href="performance-tuning.html">Performance Tuning Guide</a></li>
+<li><strong>Disaster recovery</strong> - Test recovery procedures</li>
+<li><strong>Documentation</strong> - Document your specific configuration</li>
+</ol>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="docker-compose-setup.html">Docker Compose Setup</a></li>
+<li><a href="monitoring-alerting.html">Monitoring and Alerting</a></li>
+<li><a href="troubleshooting-playbooks.html">Troubleshooting Playbooks</a></li>
+<li><a href="performance-tuning.html">Performance Tuning</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../operations/deployment.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../operations/docker-compose-setup.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../operations/deployment.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../operations/docker-compose-setup.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

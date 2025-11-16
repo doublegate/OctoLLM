@@ -8,7 +8,7 @@
 
         <!-- Custom HTML head -->
 
-        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling">
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
@@ -182,31 +182,209 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="octollm-documentation"><a class="header" href="#octollm-documentation">OctoLLM Documentation</a></h1>
-<p>Welcome to the <strong>OctoLLM</strong> documentation. OctoLLM is a distributed AI architecture for offensive security and developer tooling, inspired by octopus neurobiology.</p>
+<p>Welcome to the <strong>OctoLLM</strong> comprehensive technical documentation. This guide covers the complete architecture, implementation, API reference, and operational workflows for the distributed AI system.</p>
 <h2 id="what-is-octollm"><a class="header" href="#what-is-octollm">What is OctoLLM?</a></h2>
-<p>OctoLLM mirrors the octopus's distributed nervous system:</p>
+<p><strong>OctoLLM</strong> is a novel distributed AI architecture inspired by octopus neurobiology, designed specifically for offensive security operations and advanced developer tooling. By modeling cognitive processing after the octopus's distributed nervous system—where each arm possesses autonomous decision-making capabilities coordinated by a central brain—OctoLLM achieves superior modularity, security isolation, and operational efficiency compared to monolithic LLM systems.</p>
+<h3 id="core-innovation"><a class="header" href="#core-innovation">Core Innovation</a></h3>
+<p>Rather than relying on a single large language model to handle all tasks, OctoLLM employs specialized "arm" modules that operate semi-autonomously under the guidance of a central "brain" orchestrator. This architecture enables:</p>
 <ul>
-<li><strong>Central Brain (Orchestrator):</strong> Strategic planning and coordination using frontier LLMs</li>
-<li><strong>Autonomous Arms (Specialized Modules):</strong> Domain-specific execution with local decision-making</li>
-<li><strong>Reflex Layer:</strong> Fast preprocessing for common patterns without LLM involvement</li>
-<li><strong>Distributed Memory:</strong> Global semantic memory + local episodic stores per arm</li>
+<li><strong>Enhanced Security</strong>: Capability isolation and compartmentalization prevent lateral movement of compromised components</li>
+<li><strong>Cost Efficiency</strong>: Lightweight reflexes and specialized models handle routine tasks without engaging expensive central processing</li>
+<li><strong>Operational Resilience</strong>: Individual component failures don't cascade through the system</li>
+<li><strong>Rapid Adaptation</strong>: New capabilities can be added as independent modules without system-wide reengineering</li>
+</ul>
+<h2 id="system-architecture"><a class="header" href="#system-architecture">System Architecture</a></h2>
+<h3 id="core-components"><a class="header" href="#core-components">Core Components</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Purpose</th><th>Technology</th></tr></thead><tbody>
+<tr><td><strong>Central Brain (Orchestrator)</strong></td><td>Strategic planning using frontier LLMs</td><td>Python + FastAPI, GPT-4/Claude Opus</td></tr>
+<tr><td><strong>Autonomous Arms</strong></td><td>Specialized modules with domain expertise</td><td>Python/Rust, smaller models</td></tr>
+<tr><td><strong>Reflex Layer</strong></td><td>Fast preprocessing bypassing LLM calls</td><td>Rust, regex/classifiers</td></tr>
+<tr><td><strong>Distributed Memory</strong></td><td>Global semantic + local episodic stores</td><td>PostgreSQL, Redis, Qdrant</td></tr>
+</tbody></table>
+</div>
+<h3 id="layer-architecture"><a class="header" href="#layer-architecture">Layer Architecture</a></h3>
+<p><strong>Layer 1: Ingress</strong> (API Gateway + Reflex)</p>
+<ul>
+<li>Technology: NGINX/Traefik + Rust</li>
+<li>Latency Target: &lt;10ms cache hits, &lt;50ms reflex decisions</li>
+</ul>
+<p><strong>Layer 2: Orchestration</strong> (The Brain)</p>
+<ul>
+<li>Technology: Python + FastAPI, LangChain</li>
+<li>Main Loop: Cache → Plan → Execute → Integrate → Validate</li>
+</ul>
+<p><strong>Layer 3: Execution</strong> (The Arms)</p>
+<ul>
+<li><strong>Planner</strong>: Task decomposition</li>
+<li><strong>Tool Executor</strong>: Sandboxed external actions</li>
+<li><strong>Retriever</strong>: Knowledge base search</li>
+<li><strong>Coder</strong>: Code generation/debugging</li>
+<li><strong>Judge</strong>: Output validation</li>
+<li><strong>Safety Guardian</strong>: PII detection, content filtering</li>
+</ul>
+<p><strong>Layer 4: Persistence</strong></p>
+<ul>
+<li>PostgreSQL (global memory), Redis (caching), Qdrant (vectors)</li>
+</ul>
+<p><strong>Layer 5: Observability</strong></p>
+<ul>
+<li>Prometheus (metrics), Loki (logs), Jaeger (tracing)</li>
 </ul>
 <h2 id="current-status"><a class="header" href="#current-status">Current Status</a></h2>
-<p><strong>Phase:</strong> Phase 0 (Architecture/Design) - Sprint 1.2 Complete
-<strong>Progress:</strong> ~22% overall, Phase 1 ~40%</p>
-<h2 id="quick-links"><a class="header" href="#quick-links">Quick Links</a></h2>
+<p><strong>Phase</strong>: Phase 0 (Architecture) → Phase 1 (Proof of Concept)
+<strong>Sprint</strong>: Sprint 1.2 COMPLETE (Orchestrator Core v1.2.0)
+<strong>Progress</strong>: ~22% overall, Phase 1 ~40%</p>
+<h3 id="completed-components"><a class="header" href="#completed-components">Completed Components</a></h3>
+<p>✅ <strong>Phase 0</strong>: Complete architecture, documentation, specifications (100%)
+✅ <strong>Sprint 1.1</strong>: Reflex Layer production-ready (v1.1.0)</p>
 <ul>
-<li><a href="./architecture/overview.html">Architecture Overview</a></li>
-<li><a href="./development/getting-started.html">Getting Started</a></li>
-<li><a href="https://github.com/doublegate/OctoLLM">GitHub Repository</a></li>
+<li>Cache hit latency: &lt;5ms (2x better than target)</li>
+<li>Pattern match latency: &lt;8ms (6x better than target)</li>
+<li>Memory usage: ~12MB (4x better than target)</li>
 </ul>
+<p>✅ <strong>Sprint 1.2</strong>: Orchestrator Core production-ready (v1.2.0)</p>
+<ul>
+<li>1,776 lines Python code</li>
+<li>2,776 lines tests (87 tests, 87% pass rate, 85%+ coverage)</li>
+<li>6 REST endpoints operational</li>
+<li>API latency P95: &lt;100ms (5x better than target)</li>
+<li>Database query P95: &lt;5ms (2x better than target)</li>
+</ul>
+<h3 id="in-progress"><a class="header" href="#in-progress">In Progress</a></h3>
+<p>🚧 <strong>Sprint 1.3</strong>: Planner Arm (PLANNED)</p>
+<ul>
+<li>Task decomposition into subtasks</li>
+<li>Acceptance criteria generation</li>
+<li>Resource estimation</li>
+</ul>
+<h2 id="documentation-structure"><a class="header" href="#documentation-structure">Documentation Structure</a></h2>
+<p>This documentation is organized into the following major sections:</p>
+<h3 id="1-project-overview"><a class="header" href="#1-project-overview">1. <a href="./overview/vision.html">Project Overview</a></a></h3>
+<ul>
+<li>Vision, goals, and success metrics</li>
+<li>Biological inspiration from octopus neurobiology</li>
+<li>Core concepts and design principles</li>
+<li>Complete roadmap (7 phases)</li>
+</ul>
+<h3 id="2-architecture"><a class="header" href="#2-architecture">2. <a href="./architecture/overview.html">Architecture</a></a></h3>
+<ul>
+<li>System architecture and layer design</li>
+<li>Data structures (TaskContract, ArmCapability, Memory Models)</li>
+<li>Data flow and swarm decision-making</li>
+<li>Architecture Decision Records (ADRs)</li>
+</ul>
+<h3 id="3-components"><a class="header" href="#3-components">3. <a href="./components/reflex-layer.html">Components</a></a></h3>
+<ul>
+<li>Reflex Layer (preprocessing and caching)</li>
+<li>Orchestrator (central coordination)</li>
+<li>All 6 Arms (specialized modules)</li>
+<li>Persistence layer</li>
+</ul>
+<h3 id="4-api-documentation"><a class="header" href="#4-api-documentation">4. <a href="./api/rest-api.html">API Documentation</a></a></h3>
+<ul>
+<li>REST API overview and contracts</li>
+<li>OpenAPI 3.0 specifications for all services</li>
+<li>Data models and schemas</li>
+<li>Authentication and error handling</li>
+</ul>
+<h3 id="5-development"><a class="header" href="#5-development">5. <a href="./development/getting-started.html">Development</a></a></h3>
+<ul>
+<li>Getting started guide</li>
+<li>Development environment setup</li>
+<li>Testing strategies and debugging</li>
+<li>Custom arm development</li>
+<li>Contributing guidelines</li>
+</ul>
+<h3 id="6-operations"><a class="header" href="#6-operations">6. <a href="./operations/deployment.html">Operations</a></a></h3>
+<ul>
+<li>Deployment guides (Docker Compose, Kubernetes, Unraid)</li>
+<li>Monitoring and alerting setup</li>
+<li>Troubleshooting playbooks</li>
+<li>Performance tuning and scaling</li>
+</ul>
+<h3 id="7-security"><a class="header" href="#7-security">7. <a href="./security/overview.html">Security</a></a></h3>
+<ul>
+<li>Security model and threat model</li>
+<li>Capability isolation and PII protection</li>
+<li>Secrets management</li>
+<li>Security testing and compliance</li>
+</ul>
+<h3 id="8-sprint-progress"><a class="header" href="#8-sprint-progress">8. <a href="./sprints/overview.html">Sprint Progress</a></a></h3>
+<ul>
+<li>Phase 0 sprints (0.1-0.7) - Complete</li>
+<li>Phase 1 sprints (1.1-1.3) - In progress</li>
+<li>Sprint completion reports with metrics</li>
+</ul>
+<h3 id="9-project-tracking"><a class="header" href="#9-project-tracking">9. <a href="./project-tracking/master-todo.html">Project Tracking</a></a></h3>
+<ul>
+<li>Master TODO with all 7 phases</li>
+<li>Roadmap and phase details</li>
+<li>Current status and checklists</li>
+</ul>
+<h3 id="10-reference"><a class="header" href="#10-reference">10. <a href="./reference/configuration.html">Reference</a></a></h3>
+<ul>
+<li>Configuration reference</li>
+<li>Glossary and diagrams</li>
+<li>Documentation summary</li>
+</ul>
+<h2 id="quick-links"><a class="header" href="#quick-links">Quick Links</a></h2>
+<h3 id="for-new-users"><a class="header" href="#for-new-users">For New Users</a></h3>
+<ul>
+<li><a href="./development/getting-started.html">Getting Started</a> - Setup and installation</li>
+<li><a href="./overview/concept.html">Core Concept</a> - Understanding the architecture</li>
+<li><a href="./development/getting-started.html#quickstart">Quickstart Guide</a> - Run your first task</li>
+</ul>
+<h3 id="for-developers"><a class="header" href="#for-developers">For Developers</a></h3>
+<ul>
+<li><a href="./development/dev-environment.html">Development Environment</a> - Python/Rust setup</li>
+<li><a href="./development/testing.html">Testing Guide</a> - Unit/integration tests</li>
+<li><a href="./development/custom-arms.html">Custom Arms</a> - Build new specialized modules</li>
+<li><a href="./development/contributing.html">Contributing</a> - How to contribute</li>
+</ul>
+<h3 id="for-operators"><a class="header" href="#for-operators">For Operators</a></h3>
+<ul>
+<li><a href="./operations/docker-compose-setup.html">Docker Compose Setup</a> - Local deployment</li>
+<li><a href="./operations/kubernetes-deployment.html">Kubernetes Deployment</a> - Production deployment</li>
+<li><a href="./operations/monitoring-runbook.html">Monitoring Runbook</a> - Operations guide</li>
+<li><a href="./operations/troubleshooting-playbooks.html">Troubleshooting Playbooks</a> - Common issues</li>
+</ul>
+<h3 id="for-security-engineers"><a class="header" href="#for-security-engineers">For Security Engineers</a></h3>
+<ul>
+<li><a href="./security/overview.html">Security Overview</a> - Security architecture</li>
+<li><a href="./security/threat-model.html">Threat Model</a> - Attack vectors and mitigations</li>
+<li><a href="./security/security-testing.html">Security Testing</a> - Security test suite</li>
+</ul>
+<h2 id="key-metrics"><a class="header" href="#key-metrics">Key Metrics</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Metric</th><th>Target</th><th>Current Status</th></tr></thead><tbody>
+<tr><td>Task Success Rate</td><td>&gt;95% vs baseline</td><td>Not yet measured (Phase 1.3+)</td></tr>
+<tr><td>P99 Latency</td><td>&lt;30s critical tasks</td><td>Reflex: &lt;8ms ✅, Orchestrator: &lt;100ms ✅</td></tr>
+<tr><td>Cost per Task</td><td>&lt;50% monolithic LLM</td><td>Not yet measured</td></tr>
+<tr><td>Reflex Cache Hit Rate</td><td>&gt;60% over time</td><td>Not yet measured</td></tr>
+<tr><td>PII Leakage Rate</td><td>&lt;0.1% outputs</td><td>Not yet measured</td></tr>
+<tr><td>Test Coverage</td><td>&gt;85%</td><td>Reflex: 90%+ ✅, Orchestrator: 85%+ ✅</td></tr>
+</tbody></table>
+</div>
+<h2 id="repository"><a class="header" href="#repository">Repository</a></h2>
+<p><strong>GitHub</strong>: <a href="https://github.com/doublegate/OctoLLM">github.com/doublegate/OctoLLM</a>
+<strong>Documentation</strong>: <a href="https://doublegate.github.io/OctoLLM">doublegate.github.io/OctoLLM</a></p>
+<hr />
+<h2 id="navigation"><a class="header" href="#navigation">Navigation</a></h2>
+<p>Use the <strong>sidebar</strong> to explore the documentation. All pages include:</p>
+<ul>
+<li>Links to source code in the repository</li>
+<li>Related documentation pages</li>
+<li>API references where applicable</li>
+<li>Version information</li>
+</ul>
+<p><strong>Need help?</strong> Check the <a href="./operations/troubleshooting-playbooks.html">Troubleshooting Playbooks</a> or review the <a href="./reference/glossary.html">FAQ section</a>.</p>
+<p><strong>Want to contribute?</strong> See the <a href="./development/contributing.html">Contributing Guide</a>.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
 
-                            <a rel="next prefetch" href="architecture/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="overview/vision.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -217,7 +395,7 @@
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
 
-                    <a rel="next prefetch" href="architecture/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="overview/vision.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

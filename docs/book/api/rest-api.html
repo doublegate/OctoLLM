@@ -3,12 +3,12 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>API Documentation - OctoLLM Documentation</title>
+        <title>REST API Overview - OctoLLM Documentation</title>
 
 
         <!-- Custom HTML head -->
 
-        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling">
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
@@ -147,7 +147,7 @@
                         <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/reference/api.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/api/rest-api.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -181,28 +181,114 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="api-reference"><a class="header" href="#api-reference">API Reference</a></h1>
-<p>REST API endpoints for the Orchestrator service.</p>
-<h2 id="endpoints"><a class="header" href="#endpoints">Endpoints</a></h2>
+                        <h1 id="rest-api-overview"><a class="header" href="#rest-api-overview">REST API Overview</a></h1>
+<p>OctoLLM exposes RESTful APIs for all major components. All APIs follow OpenAPI 3.0 specifications and use JSON for request/response bodies.</p>
+<h2 id="base-urls"><a class="header" href="#base-urls">Base URLs</a></h2>
+<p><strong>Local Development</strong>:</p>
 <ul>
-<li><code>POST /submit</code> - Submit a new task</li>
-<li><code>GET /tasks/{id}</code> - Retrieve task status</li>
-<li><code>GET /health</code> - Liveness check</li>
-<li><code>GET /ready</code> - Readiness check</li>
-<li><code>GET /</code> - Root endpoint</li>
-<li><code>GET /debug/stats</code> - Debug statistics</li>
+<li>Orchestrator: <code>http://localhost:8000</code></li>
+<li>Reflex Layer: <code>http://localhost:8001</code></li>
+<li>Arms: <code>http://localhost:80XX</code> (varies by arm)</li>
 </ul>
-<p>For complete API documentation, see <a href="https://github.com/doublegate/OctoLLM/blob/main/docs/api/openapi/orchestrator.yaml">docs/api/openapi/orchestrator.yaml</a>.</p>
+<p><strong>Production</strong>:</p>
+<ul>
+<li>API Gateway: <code>https://api.octollm.example.com</code></li>
+</ul>
+<h2 id="authentication"><a class="header" href="#authentication">Authentication</a></h2>
+<p><strong>Current</strong>: None (Phase 1 POC)
+<strong>Planned</strong>: JWT tokens with role-based access control (Phase 5)</p>
+<h2 id="common-headers"><a class="header" href="#common-headers">Common Headers</a></h2>
+<pre><code class="language-http">Content-Type: application/json
+Accept: application/json
+X-Request-ID: &lt;uuid&gt;  # Optional, for tracing
+</code></pre>
+<h2 id="orchestrator-api"><a class="header" href="#orchestrator-api">Orchestrator API</a></h2>
+<p>Base URL: <code>/api/v1</code></p>
+<h3 id="endpoints"><a class="header" href="#endpoints">Endpoints</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead><tbody>
+<tr><td>POST</td><td><code>/tasks</code></td><td>Create new task</td></tr>
+<tr><td>GET</td><td><code>/tasks/{task_id}</code></td><td>Get task status</td></tr>
+<tr><td>GET</td><td><code>/tasks</code></td><td>List all tasks</td></tr>
+<tr><td>DELETE</td><td><code>/tasks/{task_id}</code></td><td>Cancel task</td></tr>
+<tr><td>GET</td><td><code>/health</code></td><td>Health check</td></tr>
+<tr><td>GET</td><td><code>/metrics</code></td><td>Prometheus metrics</td></tr>
+</tbody></table>
+</div>
+<p><a href="./openapi/orchestrator.html">Full Specification</a></p>
+<h2 id="reflex-layer-api"><a class="header" href="#reflex-layer-api">Reflex Layer API</a></h2>
+<p>Base URL: <code>/api/v1</code></p>
+<h3 id="endpoints-1"><a class="header" href="#endpoints-1">Endpoints</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead><tbody>
+<tr><td>POST</td><td><code>/check</code></td><td>Check request (cache + patterns)</td></tr>
+<tr><td>POST</td><td><code>/cache</code></td><td>Store in cache</td></tr>
+<tr><td>GET</td><td><code>/cache/{key}</code></td><td>Retrieve from cache</td></tr>
+<tr><td>DELETE</td><td><code>/cache/{key}</code></td><td>Invalidate cache entry</td></tr>
+<tr><td>GET</td><td><code>/stats</code></td><td>Cache statistics</td></tr>
+<tr><td>GET</td><td><code>/health</code></td><td>Health check</td></tr>
+</tbody></table>
+</div>
+<p><a href="./openapi/reflex-layer.html">Full Specification</a></p>
+<h2 id="error-handling"><a class="header" href="#error-handling">Error Handling</a></h2>
+<p>All APIs return consistent error responses:</p>
+<pre><code class="language-json">{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Human-readable error description",
+    "details": {
+      "field": "specific_field",
+      "constraint": "must be non-empty"
+    },
+    "request_id": "uuid"
+  }
+}
+</code></pre>
+<h3 id="error-codes"><a class="header" href="#error-codes">Error Codes</a></h3>
+<ul>
+<li><code>VALIDATION_ERROR</code> (400): Invalid request</li>
+<li><code>NOT_FOUND</code> (404): Resource not found</li>
+<li><code>TIMEOUT</code> (408): Request timeout</li>
+<li><code>RATE_LIMIT</code> (429): Too many requests</li>
+<li><code>INTERNAL_ERROR</code> (500): Server error</li>
+<li><code>SERVICE_UNAVAILABLE</code> (503): Dependency down</li>
+</ul>
+<h2 id="rate-limiting"><a class="header" href="#rate-limiting">Rate Limiting</a></h2>
+<p><strong>Current</strong>: Not implemented (Phase 1)
+<strong>Planned</strong>:</p>
+<ul>
+<li>100 requests/minute per IP (Phase 3)</li>
+<li>1000 requests/minute for authenticated users</li>
+</ul>
+<h2 id="pagination"><a class="header" href="#pagination">Pagination</a></h2>
+<p>List endpoints support pagination:</p>
+<pre><code>GET /api/v1/tasks?page=1&amp;page_size=50&amp;sort_by=created_at&amp;order=desc
+</code></pre>
+<p>Response includes pagination metadata:</p>
+<pre><code class="language-json">{
+  "data": [...],
+  "pagination": {
+    "page": 1,
+    "page_size": 50,
+    "total_pages": 10,
+    "total_items": 487
+  }
+}
+</code></pre>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="./openapi-specs.html">OpenAPI Specifications</a></li>
+<li><a href="./component-contracts.html">Component Contracts</a></li>
+<li><a href="./data-models.html">Data Models</a></li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../development/sprints.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../components/persistence.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../reference/configuration.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../api/component-contracts.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -212,11 +298,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../development/sprints.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../components/persistence.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../reference/configuration.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../api/component-contracts.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

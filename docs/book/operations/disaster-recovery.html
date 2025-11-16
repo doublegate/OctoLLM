@@ -1,0 +1,2926 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Disaster Recovery - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/operations/disaster-recovery.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="disaster-recovery-and-business-continuity"><a class="header" href="#disaster-recovery-and-business-continuity">Disaster Recovery and Business Continuity</a></h1>
+<p><strong>Operations</strong> &gt; Disaster Recovery</p>
+<p><strong>Version</strong>: 1.0
+<strong>Last Updated</strong>: 2025-11-10
+<strong>Status</strong>: Production Ready
+<strong>RTO Target</strong>: 1-4 hours (tier-dependent)
+<strong>RPO Target</strong>: 5 minutes - 24 hours (tier-dependent)</p>
+<p><a href="./README.html">← Back to Operations</a> | <a href="../README.html">Documentation Home</a> | <a href="../implementation/memory-systems.html">Memory Systems</a></p>
+<hr />
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#introduction">Introduction</a>
+<ul>
+<li><a href="#importance-of-disaster-recovery">Importance of Disaster Recovery</a></li>
+<li><a href="#rto-and-rpo-targets">RTO and RPO Targets</a></li>
+<li><a href="#disaster-scenarios">Disaster Scenarios</a></li>
+<li><a href="#dr-strategy-overview">DR Strategy Overview</a></li>
+</ul>
+</li>
+<li><a href="#backup-strategies">Backup Strategies</a>
+<ul>
+<li><a href="#postgresql-backups">PostgreSQL Backups</a></li>
+<li><a href="#qdrant-vector-store-backups">Qdrant Vector Store Backups</a></li>
+<li><a href="#redis-persistence">Redis Persistence</a></li>
+<li><a href="#kubernetes-cluster-backups">Kubernetes Cluster Backups</a></li>
+<li><a href="#configuration-and-secrets-backups">Configuration and Secrets Backups</a></li>
+</ul>
+</li>
+<li><a href="#recovery-procedures">Recovery Procedures</a>
+<ul>
+<li><a href="#point-in-time-recovery-pitr">Point-in-Time Recovery (PITR)</a></li>
+<li><a href="#full-database-restoration">Full Database Restoration</a></li>
+<li><a href="#partial-recovery">Partial Recovery</a></li>
+<li><a href="#cluster-recovery">Cluster Recovery</a></li>
+<li><a href="#emergency-procedures">Emergency Procedures</a></li>
+</ul>
+</li>
+<li><a href="#rto-and-rpo-targets-1">RTO and RPO Targets</a>
+<ul>
+<li><a href="#service-tier-definitions">Service Tier Definitions</a></li>
+<li><a href="#recovery-time-objectives">Recovery Time Objectives</a></li>
+<li><a href="#recovery-point-objectives">Recovery Point Objectives</a></li>
+<li><a href="#testing-schedule">Testing Schedule</a></li>
+</ul>
+</li>
+<li><a href="#disaster-scenarios-1">Disaster Scenarios</a>
+<ul>
+<li><a href="#complete-cluster-failure">Complete Cluster Failure</a></li>
+<li><a href="#database-corruption">Database Corruption</a></li>
+<li><a href="#accidental-deletion">Accidental Deletion</a></li>
+<li><a href="#security-breach">Security Breach</a></li>
+<li><a href="#regional-outage">Regional Outage</a></li>
+<li><a href="#ransomware-attack">Ransomware Attack</a></li>
+<li><a href="#configuration-error">Configuration Error</a></li>
+<li><a href="#failed-deployment">Failed Deployment</a></li>
+<li><a href="#network-partition">Network Partition</a></li>
+<li><a href="#data-center-failure">Data Center Failure</a></li>
+</ul>
+</li>
+<li><a href="#backup-automation">Backup Automation</a>
+<ul>
+<li><a href="#automated-backup-jobs">Automated Backup Jobs</a></li>
+<li><a href="#backup-verification">Backup Verification</a></li>
+<li><a href="#retention-policies">Retention Policies</a></li>
+<li><a href="#monitoring-and-alerting">Monitoring and Alerting</a></li>
+</ul>
+</li>
+<li><a href="#testing-and-validation">Testing and Validation</a>
+<ul>
+<li><a href="#backup-restoration-tests">Backup Restoration Tests</a></li>
+<li><a href="#dr-drill-procedures">DR Drill Procedures</a></li>
+<li><a href="#validation-checklists">Validation Checklists</a></li>
+<li><a href="#test-reporting">Test Reporting</a></li>
+</ul>
+</li>
+<li><a href="#compliance-and-audit">Compliance and Audit</a>
+<ul>
+<li><a href="#regulatory-requirements">Regulatory Requirements</a></li>
+<li><a href="#audit-trails">Audit Trails</a></li>
+<li><a href="#retention-policies-1">Retention Policies</a></li>
+<li><a href="#compliance-reporting">Compliance Reporting</a></li>
+</ul>
+</li>
+<li><a href="#incident-response">Incident Response</a>
+<ul>
+<li><a href="#incident-classification">Incident Classification</a></li>
+<li><a href="#response-procedures">Response Procedures</a></li>
+<li><a href="#communication-plan">Communication Plan</a></li>
+<li><a href="#post-incident-review">Post-Incident Review</a></li>
+</ul>
+</li>
+<li><a href="#multi-region-deployment">Multi-Region Deployment</a>
+<ul>
+<li><a href="#active-active-architecture">Active-Active Architecture</a></li>
+<li><a href="#active-passive-architecture">Active-Passive Architecture</a></li>
+<li><a href="#data-replication">Data Replication</a></li>
+<li><a href="#failover-procedures">Failover Procedures</a></li>
+</ul>
+</li>
+</ol>
+<hr />
+<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
+<h3 id="importance-of-disaster-recovery"><a class="header" href="#importance-of-disaster-recovery">Importance of Disaster Recovery</a></h3>
+<p>A comprehensive disaster recovery (DR) strategy is critical for OctoLLM's operational resilience and business continuity. Without proper DR capabilities:</p>
+<p><strong>Business Impact</strong>:</p>
+<ul>
+<li>Service disruption leads to revenue loss</li>
+<li>Customer trust and reputation damage</li>
+<li>SLA violations and contractual penalties</li>
+<li>Competitive disadvantage</li>
+</ul>
+<p><strong>Data Loss Consequences</strong>:</p>
+<ul>
+<li>Loss of critical task history and knowledge</li>
+<li>User data and preferences unrecoverable</li>
+<li>Training data for model improvements lost</li>
+<li>Audit trails and compliance evidence missing</li>
+</ul>
+<p><strong>Security Implications</strong>:</p>
+<ul>
+<li>Inability to recover from ransomware attacks</li>
+<li>No rollback capability after security breaches</li>
+<li>Forensic evidence may be destroyed</li>
+<li>Compliance violations (GDPR, SOC 2)</li>
+</ul>
+<p><strong>Operational Costs</strong>:</p>
+<ul>
+<li>Emergency recovery efforts are expensive</li>
+<li>Extended downtime multiplies costs</li>
+<li>Manual recovery is error-prone and slow</li>
+<li>Loss of productivity across organization</li>
+</ul>
+<h3 id="rto-and-rpo-targets"><a class="header" href="#rto-and-rpo-targets">RTO and RPO Targets</a></h3>
+<p>Recovery Time Objective (RTO) and Recovery Point Objective (RPO) define acceptable downtime and data loss:</p>
+<div class="table-wrapper"><table><thead><tr><th>Service Tier</th><th>RTO</th><th>RPO</th><th>Backup Frequency</th><th>Use Case</th></tr></thead><tbody>
+<tr><td><strong>Critical</strong></td><td>1 hour</td><td>5 minutes</td><td>Continuous + Hourly</td><td>Orchestrator, PostgreSQL</td></tr>
+<tr><td><strong>Important</strong></td><td>4 hours</td><td>1 hour</td><td>Every 6 hours</td><td>Arms, Redis, Qdrant</td></tr>
+<tr><td><strong>Standard</strong></td><td>24 hours</td><td>24 hours</td><td>Daily</td><td>Logs, Metrics, Analytics</td></tr>
+<tr><td><strong>Archive</strong></td><td>7 days</td><td>7 days</td><td>Weekly</td><td>Historical data, Compliance</td></tr>
+</tbody></table>
+</div>
+<p><strong>RTO (Recovery Time Objective)</strong>:</p>
+<ul>
+<li>Maximum acceptable downtime</li>
+<li>Time to restore service functionality</li>
+<li>Includes detection, decision-making, and recovery</li>
+</ul>
+<p><strong>RPO (Recovery Point Objective)</strong>:</p>
+<ul>
+<li>Maximum acceptable data loss</li>
+<li>Time between last backup and failure</li>
+<li>Determines backup frequency</li>
+</ul>
+<h3 id="disaster-scenarios"><a class="header" href="#disaster-scenarios">Disaster Scenarios</a></h3>
+<p>OctoLLM DR planning covers these disaster categories:</p>
+<h4 id="infrastructure-failures"><a class="header" href="#infrastructure-failures">Infrastructure Failures</a></h4>
+<ul>
+<li>Hardware failures (disk, network, compute)</li>
+<li>Complete cluster failure</li>
+<li>Data center outage</li>
+<li>Network partition</li>
+</ul>
+<h4 id="data-disasters"><a class="header" href="#data-disasters">Data Disasters</a></h4>
+<ul>
+<li>Database corruption</li>
+<li>Accidental deletion</li>
+<li>Data inconsistency</li>
+<li>Storage system failure</li>
+</ul>
+<h4 id="security-incidents"><a class="header" href="#security-incidents">Security Incidents</a></h4>
+<ul>
+<li>Ransomware attack</li>
+<li>Data breach with compromise</li>
+<li>Unauthorized access</li>
+<li>Malicious insider actions</li>
+</ul>
+<h4 id="operational-errors"><a class="header" href="#operational-errors">Operational Errors</a></h4>
+<ul>
+<li>Failed deployment</li>
+<li>Configuration errors</li>
+<li>Software bugs causing data corruption</li>
+<li>Accidental infrastructure deletion</li>
+</ul>
+<h4 id="natural-disasters"><a class="header" href="#natural-disasters">Natural Disasters</a></h4>
+<ul>
+<li>Regional power outage</li>
+<li>Natural disasters (earthquake, flood, fire)</li>
+<li>Catastrophic facility failure</li>
+</ul>
+<h3 id="dr-strategy-overview"><a class="header" href="#dr-strategy-overview">DR Strategy Overview</a></h3>
+<p>OctoLLM implements a multi-layered DR strategy:</p>
+<pre><code class="language-mermaid">graph TB
+    subgraph "Layer 1: High Availability"
+        HA[Pod Replication]
+        LB[Load Balancing]
+        HK[Health Checks]
+    end
+
+    subgraph "Layer 2: Continuous Backup"
+        WAL[WAL Archiving]
+        SNAP[Snapshots]
+        REPL[Replication]
+    end
+
+    subgraph "Layer 3: Offsite Backup"
+        S3[S3 Storage]
+        GEO[Geographic Redundancy]
+        ENC[Encryption]
+    end
+
+    subgraph "Layer 4: DR Automation"
+        AUTO[Automated Recovery]
+        TEST[Regular Testing]
+        MON[Monitoring]
+    end
+
+    HA --&gt; WAL
+    LB --&gt; SNAP
+    HK --&gt; REPL
+
+    WAL --&gt; S3
+    SNAP --&gt; GEO
+    REPL --&gt; ENC
+
+    S3 --&gt; AUTO
+    GEO --&gt; TEST
+    ENC --&gt; MON
+
+    style HA fill:#9f9,stroke:#333
+    style WAL fill:#ff9,stroke:#333
+    style S3 fill:#f99,stroke:#333
+    style AUTO fill:#99f,stroke:#333
+</code></pre>
+<p><strong>Defense in Depth Approach</strong>:</p>
+<ol>
+<li><strong>Prevention</strong>: Redundancy, health checks, validation</li>
+<li><strong>Protection</strong>: Continuous backups, replication, versioning</li>
+<li><strong>Detection</strong>: Monitoring, alerting, anomaly detection</li>
+<li><strong>Response</strong>: Automated failover, manual procedures</li>
+<li><strong>Recovery</strong>: Point-in-time restore, full restoration</li>
+<li><strong>Learning</strong>: Post-incident reviews, process improvement</li>
+</ol>
+<hr />
+<h2 id="backup-strategies"><a class="header" href="#backup-strategies">Backup Strategies</a></h2>
+<h3 id="postgresql-backups"><a class="header" href="#postgresql-backups">PostgreSQL Backups</a></h3>
+<p>PostgreSQL is the authoritative source of truth for structured data, requiring comprehensive backup strategy.</p>
+<h4 id="continuous-archiving-with-wal"><a class="header" href="#continuous-archiving-with-wal">Continuous Archiving with WAL</a></h4>
+<p>Write-Ahead Logging (WAL) provides continuous backup capability:</p>
+<pre><code class="language-yaml">---
+# PostgreSQL ConfigMap with WAL archiving
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-config
+  namespace: octollm
+data:
+  postgresql.conf: |
+    # WAL Configuration
+    wal_level = replica
+    archive_mode = on
+    archive_command = 'aws s3 cp %p s3://octollm-wal-archive/%f --region us-east-1'
+    archive_timeout = 300
+
+    # Checkpoint Configuration
+    checkpoint_timeout = 15min
+    checkpoint_completion_target = 0.9
+    max_wal_size = 2GB
+    min_wal_size = 1GB
+
+    # Replication
+    max_wal_senders = 10
+    wal_keep_size = 1GB
+    hot_standby = on
+
+    # Performance
+    shared_buffers = 2GB
+    effective_cache_size = 6GB
+    maintenance_work_mem = 512MB
+    work_mem = 16MB
+
+    # Logging
+    log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
+    log_checkpoints = on
+    log_connections = on
+    log_disconnections = on
+    log_lock_waits = on
+    log_temp_files = 0
+</code></pre>
+<h4 id="automated-full-backups"><a class="header" href="#automated-full-backups">Automated Full Backups</a></h4>
+<p>Daily full backups using pg_dump with compression:</p>
+<pre><code class="language-yaml">---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgresql-backup
+  namespace: octollm
+  labels:
+    app: postgresql-backup
+    component: backup
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM UTC
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 3600  # 1 hour timeout
+      template:
+        metadata:
+          labels:
+            app: postgresql-backup
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: backup-service-account
+
+          # Security context
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+            fsGroup: 999
+
+          containers:
+          - name: backup
+            image: postgres:15-alpine
+            imagePullPolicy: IfNotPresent
+
+            env:
+              # PostgreSQL connection
+              - name: PGHOST
+                value: postgresql
+              - name: PGPORT
+                value: "5432"
+              - name: PGDATABASE
+                value: octollm
+              - name: PGUSER
+                valueFrom:
+                  secretKeyRef:
+                    name: octollm-postgres-secret
+                    key: username
+              - name: PGPASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: octollm-postgres-secret
+                    key: password
+
+              # AWS credentials
+              - name: AWS_ACCESS_KEY_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-credentials
+                    key: access-key-id
+              - name: AWS_SECRET_ACCESS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-credentials
+                    key: secret-access-key
+              - name: AWS_DEFAULT_REGION
+                value: us-east-1
+
+              # Backup configuration
+              - name: BACKUP_BUCKET
+                value: s3://octollm-backups
+              - name: RETENTION_DAYS
+                value: "30"
+
+            command:
+              - /bin/sh
+              - -c
+              - |
+                set -e
+
+                # Generate timestamp
+                TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+                BACKUP_FILE="octollm-${TIMESTAMP}.sql.gz"
+                BACKUP_PATH="/backups/${BACKUP_FILE}"
+
+                echo "==================================="
+                echo "PostgreSQL Backup Starting"
+                echo "Timestamp: $(date)"
+                echo "Database: ${PGDATABASE}"
+                echo "==================================="
+
+                # Create backup directory
+                mkdir -p /backups
+
+                # Full database dump with compression
+                echo "Creating database dump..."
+                pg_dump -Fc \
+                  --verbose \
+                  --no-owner \
+                  --no-acl \
+                  --clean \
+                  --if-exists \
+                  ${PGDATABASE} | gzip -9 &gt; "${BACKUP_PATH}"
+
+                # Verify backup file exists
+                if [ ! -f "${BACKUP_PATH}" ]; then
+                  echo "ERROR: Backup file not created"
+                  exit 1
+                fi
+
+                # Check backup size
+                BACKUP_SIZE=$(stat -c%s "${BACKUP_PATH}" 2&gt;/dev/null || stat -f%z "${BACKUP_PATH}")
+                BACKUP_SIZE_MB=$((BACKUP_SIZE / 1024 / 1024))
+                echo "Backup size: ${BACKUP_SIZE_MB} MB"
+
+                # Minimum size check (should be at least 1MB)
+                if [ ${BACKUP_SIZE_MB} -lt 1 ]; then
+                  echo "ERROR: Backup size too small (${BACKUP_SIZE_MB} MB)"
+                  exit 1
+                fi
+
+                # Upload to S3
+                echo "Uploading to S3..."
+                aws s3 cp "${BACKUP_PATH}" \
+                  "${BACKUP_BUCKET}/postgresql/${BACKUP_FILE}" \
+                  --storage-class STANDARD_IA \
+                  --server-side-encryption AES256
+
+                # Verify S3 upload
+                if ! aws s3 ls "${BACKUP_BUCKET}/postgresql/${BACKUP_FILE}"; then
+                  echo "ERROR: S3 upload verification failed"
+                  exit 1
+                fi
+
+                echo "Backup uploaded successfully"
+
+                # Create metadata file
+                cat &gt; /backups/metadata.json &lt;&lt;EOF
+                {
+                  "timestamp": "${TIMESTAMP}",
+                  "database": "${PGDATABASE}",
+                  "backup_file": "${BACKUP_FILE}",
+                  "size_bytes": ${BACKUP_SIZE},
+                  "size_mb": ${BACKUP_SIZE_MB},
+                  "s3_path": "${BACKUP_BUCKET}/postgresql/${BACKUP_FILE}",
+                  "pg_version": "$(pg_dump --version | head -n1)",
+                  "completed_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+                }
+                EOF
+
+                # Upload metadata
+                aws s3 cp /backups/metadata.json \
+                  "${BACKUP_BUCKET}/postgresql/metadata-${TIMESTAMP}.json"
+
+                # Clean up local files older than retention period
+                echo "Cleaning up old local backups..."
+                find /backups -name "octollm-*.sql.gz" -mtime +${RETENTION_DAYS} -delete
+
+                # Test backup integrity (if small enough)
+                if [ ${BACKUP_SIZE_MB} -lt 100 ]; then
+                  echo "Testing backup integrity..."
+                  gunzip -c "${BACKUP_PATH}" | pg_restore --list &gt; /dev/null
+                  if [ $? -eq 0 ]; then
+                    echo "Backup integrity test passed"
+                  else
+                    echo "WARNING: Backup integrity test failed"
+                  fi
+                fi
+
+                echo "==================================="
+                echo "Backup completed successfully"
+                echo "File: ${BACKUP_FILE}"
+                echo "Size: ${BACKUP_SIZE_MB} MB"
+                echo "==================================="
+
+            resources:
+              requests:
+                memory: "512Mi"
+                cpu: "500m"
+              limits:
+                memory: "2Gi"
+                cpu: "2000m"
+
+            volumeMounts:
+              - name: backup-storage
+                mountPath: /backups
+
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: backup-pvc
+</code></pre>
+<h4 id="backup-storage-pvc"><a class="header" href="#backup-storage-pvc">Backup Storage PVC</a></h4>
+<pre><code class="language-yaml">---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-pvc
+  namespace: octollm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: fast-ssd
+</code></pre>
+<h4 id="s3-lifecycle-policy"><a class="header" href="#s3-lifecycle-policy">S3 Lifecycle Policy</a></h4>
+<p>Automate backup retention and cost optimization:</p>
+<pre><code class="language-json">{
+  "Rules": [
+    {
+      "Id": "PostgreSQL-Backup-Lifecycle",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "postgresql/"
+      },
+      "Transitions": [
+        {
+          "Days": 7,
+          "StorageClass": "STANDARD_IA"
+        },
+        {
+          "Days": 30,
+          "StorageClass": "GLACIER_IR"
+        },
+        {
+          "Days": 90,
+          "StorageClass": "DEEP_ARCHIVE"
+        }
+      ],
+      "Expiration": {
+        "Days": 365
+      }
+    }
+  ]
+}
+</code></pre>
+<h4 id="backup-monitoring"><a class="header" href="#backup-monitoring">Backup Monitoring</a></h4>
+<p>Monitor backup success and failures:</p>
+<pre><code class="language-python">import boto3
+from datetime import datetime, timedelta
+import structlog
+
+logger = structlog.get_logger()
+
+class BackupMonitor:
+    """Monitor PostgreSQL backup health."""
+
+    def __init__(self, s3_bucket: str):
+        self.s3_client = boto3.client('s3')
+        self.s3_bucket = s3_bucket
+
+    def check_backup_health(self) -&gt; dict:
+        """Check if recent backup exists and is valid."""
+        # List recent backups
+        response = self.s3_client.list_objects_v2(
+            Bucket=self.s3_bucket,
+            Prefix='postgresql/',
+            MaxKeys=10
+        )
+
+        if 'Contents' not in response:
+            return {
+                "status": "critical",
+                "message": "No backups found",
+                "last_backup": None
+            }
+
+        # Sort by last modified
+        backups = sorted(
+            response['Contents'],
+            key=lambda x: x['LastModified'],
+            reverse=True
+        )
+
+        latest_backup = backups[0]
+        backup_age = datetime.now(latest_backup['LastModified'].tzinfo) - latest_backup['LastModified']
+
+        # Check backup age
+        if backup_age &gt; timedelta(days=2):
+            status = "critical"
+            message = f"Last backup is {backup_age.days} days old"
+        elif backup_age &gt; timedelta(hours=25):
+            status = "warning"
+            message = f"Last backup is {backup_age.total_seconds() / 3600:.1f} hours old"
+        else:
+            status = "healthy"
+            message = "Backups are current"
+
+        # Check backup size
+        size_mb = latest_backup['Size'] / (1024 * 1024)
+        if size_mb &lt; 1:
+            status = "critical"
+            message = f"Latest backup suspiciously small: {size_mb:.2f} MB"
+
+        return {
+            "status": status,
+            "message": message,
+            "last_backup": latest_backup['LastModified'].isoformat(),
+            "backup_age_hours": backup_age.total_seconds() / 3600,
+            "backup_size_mb": size_mb,
+            "backup_key": latest_backup['Key']
+        }
+
+    def verify_backup_integrity(self, backup_key: str) -&gt; bool:
+        """Download and verify backup integrity."""
+        try:
+            # Download metadata
+            metadata_key = backup_key.replace('.sql.gz', '-metadata.json')
+            response = self.s3_client.get_object(
+                Bucket=self.s3_bucket,
+                Key=metadata_key
+            )
+
+            metadata = json.loads(response['Body'].read())
+
+            # Verify size matches
+            backup_obj = self.s3_client.head_object(
+                Bucket=self.s3_bucket,
+                Key=backup_key
+            )
+
+            if backup_obj['ContentLength'] != metadata['size_bytes']:
+                logger.error(
+                    "backup_size_mismatch",
+                    expected=metadata['size_bytes'],
+                    actual=backup_obj['ContentLength']
+                )
+                return False
+
+            return True
+
+        except Exception as e:
+            logger.error("backup_verification_failed", error=str(e))
+            return False
+
+# Prometheus metrics
+from prometheus_client import Gauge, Counter
+
+backup_age_hours = Gauge(
+    'octollm_postgresql_backup_age_hours',
+    'Hours since last successful backup'
+)
+
+backup_size_mb = Gauge(
+    'octollm_postgresql_backup_size_mb',
+    'Size of latest backup in MB'
+)
+
+backup_failures = Counter(
+    'octollm_postgresql_backup_failures_total',
+    'Total number of backup failures'
+)
+
+# Monitor backup health
+monitor = BackupMonitor(s3_bucket='octollm-backups')
+health = monitor.check_backup_health()
+
+backup_age_hours.set(health['backup_age_hours'])
+backup_size_mb.set(health['backup_size_mb'])
+
+if health['status'] in ['critical', 'warning']:
+    backup_failures.inc()
+    logger.warning("backup_health_issue", **health)
+</code></pre>
+<h3 id="qdrant-vector-store-backups"><a class="header" href="#qdrant-vector-store-backups">Qdrant Vector Store Backups</a></h3>
+<p>Vector embeddings require specialized backup procedures.</p>
+<h4 id="snapshot-based-backups"><a class="header" href="#snapshot-based-backups">Snapshot-Based Backups</a></h4>
+<pre><code class="language-python">from qdrant_client import QdrantClient
+from qdrant_client.models import SnapshotDescription
+import boto3
+from datetime import datetime
+from typing import List, Dict
+import structlog
+
+logger = structlog.get_logger()
+
+class QdrantBackupManager:
+    """Manage Qdrant vector store backups."""
+
+    def __init__(self, qdrant_url: str, s3_bucket: str):
+        self.client = QdrantClient(url=qdrant_url)
+        self.s3_client = boto3.client('s3')
+        self.s3_bucket = s3_bucket
+
+    async def backup_all_collections(self) -&gt; Dict[str, str]:
+        """Create snapshots of all collections and upload to S3."""
+        timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+        results = {}
+
+        # Get all collections
+        collections = self.client.get_collections().collections
+
+        logger.info(
+            "qdrant_backup_started",
+            timestamp=timestamp,
+            collections=[c.name for c in collections]
+        )
+
+        for collection in collections:
+            try:
+                # Create snapshot
+                snapshot_info = self.client.create_snapshot(
+                    collection_name=collection.name
+                )
+
+                logger.info(
+                    "snapshot_created",
+                    collection=collection.name,
+                    snapshot=snapshot_info.name
+                )
+
+                # Download snapshot
+                snapshot_data = self.client.download_snapshot(
+                    collection_name=collection.name,
+                    snapshot_name=snapshot_info.name
+                )
+
+                # Upload to S3
+                s3_key = f"qdrant/{collection.name}/{timestamp}-{snapshot_info.name}"
+
+                self.s3_client.put_object(
+                    Bucket=self.s3_bucket,
+                    Key=s3_key,
+                    Body=snapshot_data,
+                    ServerSideEncryption='AES256',
+                    StorageClass='STANDARD_IA'
+                )
+
+                logger.info(
+                    "snapshot_uploaded",
+                    collection=collection.name,
+                    s3_key=s3_key
+                )
+
+                results[collection.name] = s3_key
+
+                # Delete local snapshot (save space)
+                self.client.delete_snapshot(
+                    collection_name=collection.name,
+                    snapshot_name=snapshot_info.name
+                )
+
+            except Exception as e:
+                logger.error(
+                    "snapshot_backup_failed",
+                    collection=collection.name,
+                    error=str(e)
+                )
+                results[collection.name] = f"ERROR: {str(e)}"
+
+        logger.info("qdrant_backup_completed", results=results)
+        return results
+
+    async def restore_collection(
+        self,
+        collection_name: str,
+        snapshot_s3_key: str,
+        overwrite: bool = False
+    ) -&gt; bool:
+        """Restore collection from S3 snapshot."""
+        try:
+            # Download from S3
+            response = self.s3_client.get_object(
+                Bucket=self.s3_bucket,
+                Key=snapshot_s3_key
+            )
+
+            snapshot_data = response['Body'].read()
+
+            # Write to temp file
+            import tempfile
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.snapshot') as f:
+                f.write(snapshot_data)
+                snapshot_path = f.name
+
+            # Delete existing collection if overwrite
+            if overwrite:
+                try:
+                    self.client.delete_collection(collection_name)
+                    logger.info("collection_deleted_for_restore", collection=collection_name)
+                except Exception:
+                    pass  # Collection might not exist
+
+            # Upload snapshot to Qdrant
+            self.client.upload_snapshot(
+                collection_name=collection_name,
+                snapshot_path=snapshot_path
+            )
+
+            # Recover from snapshot
+            self.client.recover_snapshot(
+                collection_name=collection_name,
+                snapshot_name=snapshot_path.split('/')[-1]
+            )
+
+            logger.info("collection_restored", collection=collection_name)
+            return True
+
+        except Exception as e:
+            logger.error(
+                "collection_restore_failed",
+                collection=collection_name,
+                error=str(e)
+            )
+            return False
+
+    def list_available_backups(self, collection_name: str = None) -&gt; List[Dict]:
+        """List available backups from S3."""
+        prefix = f"qdrant/{collection_name}/" if collection_name else "qdrant/"
+
+        response = self.s3_client.list_objects_v2(
+            Bucket=self.s3_bucket,
+            Prefix=prefix
+        )
+
+        if 'Contents' not in response:
+            return []
+
+        backups = []
+        for obj in response['Contents']:
+            # Parse key to extract info
+            # Format: qdrant/{collection}/{timestamp}-{snapshot_name}
+            parts = obj['Key'].split('/')
+            if len(parts) &gt;= 3:
+                collection = parts[1]
+                filename = parts[2]
+
+                backups.append({
+                    'collection': collection,
+                    'timestamp': filename.split('-')[0] if '-' in filename else 'unknown',
+                    's3_key': obj['Key'],
+                    'size_mb': obj['Size'] / (1024 * 1024),
+                    'last_modified': obj['LastModified'].isoformat()
+                })
+
+        return sorted(backups, key=lambda x: x['last_modified'], reverse=True)
+</code></pre>
+<h4 id="automated-qdrant-backup-cronjob"><a class="header" href="#automated-qdrant-backup-cronjob">Automated Qdrant Backup CronJob</a></h4>
+<pre><code class="language-yaml">---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: qdrant-backup
+  namespace: octollm
+spec:
+  schedule: "0 */6 * * *"  # Every 6 hours
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: qdrant-backup
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: backup-service-account
+
+          containers:
+          - name: backup
+            image: octollm/qdrant-backup:1.0
+            env:
+              - name: QDRANT_URL
+                value: "http://qdrant:6333"
+              - name: AWS_ACCESS_KEY_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-credentials
+                    key: access-key-id
+              - name: AWS_SECRET_ACCESS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-credentials
+                    key: secret-access-key
+              - name: S3_BUCKET
+                value: "octollm-backups"
+
+            command:
+              - python
+              - -c
+              - |
+                import asyncio
+                from qdrant_backup import QdrantBackupManager
+
+                async def main():
+                    manager = QdrantBackupManager(
+                        qdrant_url=os.environ['QDRANT_URL'],
+                        s3_bucket=os.environ['S3_BUCKET']
+                    )
+                    await manager.backup_all_collections()
+
+                asyncio.run(main())
+
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "250m"
+              limits:
+                memory: "1Gi"
+                cpu: "1000m"
+</code></pre>
+<h3 id="redis-persistence"><a class="header" href="#redis-persistence">Redis Persistence</a></h3>
+<p>Redis stores ephemeral cache data but still requires backup for fast recovery.</p>
+<h4 id="redis-configuration"><a class="header" href="#redis-configuration">Redis Configuration</a></h4>
+<pre><code class="language-yaml">---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: octollm
+data:
+  redis.conf: |
+    # RDB Persistence
+    save 900 1       # Save after 900 sec if at least 1 key changed
+    save 300 10      # Save after 300 sec if at least 10 keys changed
+    save 60 10000    # Save after 60 sec if at least 10000 keys changed
+
+    stop-writes-on-bgsave-error yes
+    rdbcompression yes
+    rdbchecksum yes
+    dbfilename dump.rdb
+    dir /data
+
+    # AOF Persistence
+    appendonly yes
+    appendfilename "appendonly.aof"
+    appendfsync everysec
+    no-appendfsync-on-rewrite no
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+    aof-load-truncated yes
+    aof-use-rdb-preamble yes
+
+    # Memory management
+    maxmemory 2gb
+    maxmemory-policy allkeys-lru
+
+    # Security
+    requirepass ${REDIS_PASSWORD}
+
+    # Logging
+    loglevel notice
+    logfile /var/log/redis/redis-server.log
+</code></pre>
+<h4 id="redis-backup-script"><a class="header" href="#redis-backup-script">Redis Backup Script</a></h4>
+<pre><code class="language-bash">#!/bin/bash
+# redis-backup.sh
+
+set -e
+
+REDIS_HOST="${REDIS_HOST:-redis}"
+REDIS_PORT="${REDIS_PORT:-6379}"
+REDIS_PASSWORD="${REDIS_PASSWORD}"
+S3_BUCKET="${S3_BUCKET:-s3://octollm-backups}"
+BACKUP_DIR="/backups"
+
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+BACKUP_FILE="redis-${TIMESTAMP}.rdb"
+
+echo "==================================="
+echo "Redis Backup Starting"
+echo "Timestamp: $(date)"
+echo "==================================="
+
+# Create backup directory
+mkdir -p ${BACKUP_DIR}
+
+# Trigger BGSAVE
+redis-cli -h ${REDIS_HOST} -p ${REDIS_PORT} -a "${REDIS_PASSWORD}" BGSAVE
+
+# Wait for BGSAVE to complete
+while true; do
+    LASTSAVE=$(redis-cli -h ${REDIS_HOST} -p ${REDIS_PORT} -a "${REDIS_PASSWORD}" LASTSAVE)
+    sleep 5
+    NEWSAVE=$(redis-cli -h ${REDIS_HOST} -p ${REDIS_PORT} -a "${REDIS_PASSWORD}" LASTSAVE)
+
+    if [ "${LASTSAVE}" != "${NEWSAVE}" ]; then
+        break
+    fi
+done
+
+echo "BGSAVE completed"
+
+# Copy RDB file
+kubectl exec -n octollm redis-0 -- cat /data/dump.rdb &gt; ${BACKUP_DIR}/${BACKUP_FILE}
+
+# Compress
+gzip ${BACKUP_DIR}/${BACKUP_FILE}
+
+# Upload to S3
+aws s3 cp ${BACKUP_DIR}/${BACKUP_FILE}.gz \
+    ${S3_BUCKET}/redis/${BACKUP_FILE}.gz \
+    --storage-class STANDARD_IA
+
+echo "Backup uploaded successfully"
+
+# Clean up
+rm ${BACKUP_DIR}/${BACKUP_FILE}.gz
+
+# Verify
+if aws s3 ls ${S3_BUCKET}/redis/${BACKUP_FILE}.gz; then
+    echo "Backup verified in S3"
+else
+    echo "ERROR: Backup verification failed"
+    exit 1
+fi
+
+echo "==================================="
+echo "Backup completed successfully"
+echo "==================================="
+</code></pre>
+<h3 id="kubernetes-cluster-backups"><a class="header" href="#kubernetes-cluster-backups">Kubernetes Cluster Backups</a></h3>
+<p>Use Velero for comprehensive cluster-level backups.</p>
+<h4 id="velero-installation"><a class="header" href="#velero-installation">Velero Installation</a></h4>
+<pre><code class="language-bash"># Install Velero CLI
+wget https://github.com/vmware-tanzu/velero/releases/download/v1.12.0/velero-v1.12.0-linux-amd64.tar.gz
+tar -xvf velero-v1.12.0-linux-amd64.tar.gz
+sudo mv velero-v1.12.0-linux-amd64/velero /usr/local/bin/
+
+# Install Velero in cluster
+velero install \
+  --provider aws \
+  --plugins velero/velero-plugin-for-aws:v1.8.0 \
+  --bucket octollm-velero-backups \
+  --backup-location-config region=us-east-1 \
+  --snapshot-location-config region=us-east-1 \
+  --secret-file ./credentials-velero
+</code></pre>
+<h4 id="scheduled-backups"><a class="header" href="#scheduled-backups">Scheduled Backups</a></h4>
+<pre><code class="language-yaml">---
+# Daily full cluster backup
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: octollm-daily-backup
+  namespace: velero
+spec:
+  schedule: "0 1 * * *"  # Daily at 1 AM
+  template:
+    includedNamespaces:
+      - octollm
+    excludedNamespaces: []
+    includedResources:
+      - '*'
+    excludedResources:
+      - events
+      - events.events.k8s.io
+    includeClusterResources: true
+    snapshotVolumes: true
+    ttl: 720h  # 30 days
+    storageLocation: default
+    volumeSnapshotLocations:
+      - default
+    labelSelector:
+      matchLabels:
+        backup: "true"
+
+---
+# Hourly backup of critical resources
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: octollm-hourly-critical
+  namespace: velero
+spec:
+  schedule: "0 * * * *"  # Every hour
+  template:
+    includedNamespaces:
+      - octollm
+    includedResources:
+      - configmaps
+      - secrets
+      - persistentvolumeclaims
+      - deployments
+      - statefulsets
+    excludedResources:
+      - events
+    snapshotVolumes: true
+    ttl: 168h  # 7 days
+    storageLocation: default
+    labelSelector:
+      matchLabels:
+        tier: critical
+</code></pre>
+<h3 id="configuration-and-secrets-backups"><a class="header" href="#configuration-and-secrets-backups">Configuration and Secrets Backups</a></h3>
+<p>Backup Kubernetes configurations and secrets securely.</p>
+<h4 id="backup-script"><a class="header" href="#backup-script">Backup Script</a></h4>
+<pre><code class="language-bash">#!/bin/bash
+# backup-k8s-configs.sh
+
+set -e
+
+NAMESPACE="octollm"
+BACKUP_DIR="/backups/k8s-configs"
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+S3_BUCKET="s3://octollm-backups"
+
+echo "Backing up Kubernetes configurations..."
+
+mkdir -p ${BACKUP_DIR}/${TIMESTAMP}
+
+# Backup ConfigMaps
+kubectl get configmaps -n ${NAMESPACE} -o yaml &gt; ${BACKUP_DIR}/${TIMESTAMP}/configmaps.yaml
+
+# Backup Secrets (encrypted)
+kubectl get secrets -n ${NAMESPACE} -o yaml &gt; ${BACKUP_DIR}/${TIMESTAMP}/secrets.yaml
+
+# Backup Deployments
+kubectl get deployments -n ${NAMESPACE} -o yaml &gt; ${BACKUP_DIR}/${TIMESTAMP}/deployments.yaml
+
+# Backup StatefulSets
+kubectl get statefulsets -n ${NAMESPACE} -o yaml &gt; ${BACKUP_DIR}/${TIMESTAMP}/statefulsets.yaml
+
+# Backup Services
+kubectl get services -n ${NAMESPACE} -o yaml &gt; ${BACKUP_DIR}/${TIMESTAMP}/services.yaml
+
+# Backup PVCs
+kubectl get pvc -n ${NAMESPACE} -o yaml &gt; ${BACKUP_DIR}/${TIMESTAMP}/pvcs.yaml
+
+# Create tarball
+tar -czf ${BACKUP_DIR}/k8s-config-${TIMESTAMP}.tar.gz -C ${BACKUP_DIR} ${TIMESTAMP}
+
+# Encrypt with GPG
+gpg --encrypt \
+    --recipient backup@octollm.example.com \
+    ${BACKUP_DIR}/k8s-config-${TIMESTAMP}.tar.gz
+
+# Upload to S3
+aws s3 cp ${BACKUP_DIR}/k8s-config-${TIMESTAMP}.tar.gz.gpg \
+    ${S3_BUCKET}/k8s-configs/k8s-config-${TIMESTAMP}.tar.gz.gpg
+
+# Clean up
+rm -rf ${BACKUP_DIR}/${TIMESTAMP}
+rm ${BACKUP_DIR}/k8s-config-${TIMESTAMP}.tar.gz*
+
+echo "Kubernetes configurations backed up successfully"
+</code></pre>
+<hr />
+<h2 id="recovery-procedures"><a class="header" href="#recovery-procedures">Recovery Procedures</a></h2>
+<h3 id="point-in-time-recovery-pitr"><a class="header" href="#point-in-time-recovery-pitr">Point-in-Time Recovery (PITR)</a></h3>
+<p>Restore PostgreSQL to a specific point in time using WAL archives.</p>
+<h4 id="pitr-script"><a class="header" href="#pitr-script">PITR Script</a></h4>
+<pre><code class="language-bash">#!/bin/bash
+# restore-postgres-pitr.sh
+
+set -e
+
+# Configuration
+TARGET_TIME="${1:-$(date -u +"%Y-%m-%d %H:%M:%S UTC")}"
+POSTGRES_NAMESPACE="octollm"
+POSTGRES_STATEFULSET="postgresql"
+BACKUP_BUCKET="s3://octollm-backups"
+RESTORE_DIR="/restore"
+
+echo "==================================="
+echo "PostgreSQL Point-in-Time Recovery"
+echo "Target Time: ${TARGET_TIME}"
+echo "==================================="
+
+# Step 1: Stop PostgreSQL
+echo "Stopping PostgreSQL..."
+kubectl scale statefulset ${POSTGRES_STATEFULSET} -n ${POSTGRES_NAMESPACE} --replicas=0
+
+# Wait for pods to terminate
+kubectl wait --for=delete pod -l app=postgresql -n ${POSTGRES_NAMESPACE} --timeout=300s
+
+# Step 2: Download latest base backup
+echo "Downloading base backup..."
+LATEST_BACKUP=$(aws s3 ls ${BACKUP_BUCKET}/postgresql/ | sort | tail -n 1 | awk '{print $4}')
+aws s3 cp ${BACKUP_BUCKET}/postgresql/${LATEST_BACKUP} /tmp/backup.sql.gz
+
+# Step 3: Restore base backup
+echo "Restoring base backup..."
+gunzip -c /tmp/backup.sql.gz | kubectl exec -i -n ${POSTGRES_NAMESPACE} postgresql-0 -- \
+    psql -U octollm -d octollm
+
+# Step 4: Configure recovery
+echo "Configuring point-in-time recovery..."
+kubectl exec -n ${POSTGRES_NAMESPACE} postgresql-0 -- bash -c "cat &gt; /var/lib/postgresql/data/recovery.conf &lt;&lt;EOF
+restore_command = 'aws s3 cp ${BACKUP_BUCKET}/wal/%f %p'
+recovery_target_time = '${TARGET_TIME}'
+recovery_target_action = 'promote'
+EOF"
+
+# Step 5: Start PostgreSQL in recovery mode
+echo "Starting PostgreSQL in recovery mode..."
+kubectl scale statefulset ${POSTGRES_STATEFULSET} -n ${POSTGRES_NAMESPACE} --replicas=1
+
+# Wait for recovery to complete
+echo "Waiting for recovery to complete..."
+sleep 30
+
+# Step 6: Verify recovery
+echo "Verifying recovery..."
+kubectl exec -n ${POSTGRES_NAMESPACE} postgresql-0 -- psql -U octollm -d octollm -c "\
+    SELECT pg_is_in_recovery(), \
+           pg_last_wal_replay_lsn(), \
+           now() - pg_last_xact_replay_timestamp() AS replication_lag;"
+
+echo "==================================="
+echo "Recovery completed successfully"
+echo "==================================="
+</code></pre>
+<h4 id="recovery-configuration"><a class="header" href="#recovery-configuration">Recovery Configuration</a></h4>
+<pre><code class="language-sql">-- recovery.conf (for PostgreSQL 11 and earlier)
+restore_command = 'aws s3 cp s3://octollm-wal-archive/%f %p'
+recovery_target_time = '2025-11-10 14:30:00 UTC'
+recovery_target_action = 'promote'
+
+-- For PostgreSQL 12+, use postgresql.conf:
+-- restore_command = 'aws s3 cp s3://octollm-wal-archive/%f %p'
+-- recovery_target_time = '2025-11-10 14:30:00 UTC'
+-- And create signal file: touch /var/lib/postgresql/data/recovery.signal
+</code></pre>
+<h3 id="full-database-restoration"><a class="header" href="#full-database-restoration">Full Database Restoration</a></h3>
+<p>Complete database restoration from backup.</p>
+<h4 id="restoration-script"><a class="header" href="#restoration-script">Restoration Script</a></h4>
+<pre><code class="language-bash">#!/bin/bash
+# restore-postgres-full.sh
+
+set -e
+
+BACKUP_FILE="${1}"
+POSTGRES_NAMESPACE="octollm"
+POSTGRES_STATEFULSET="postgresql"
+BACKUP_BUCKET="s3://octollm-backups"
+
+if [ -z "${BACKUP_FILE}" ]; then
+    echo "Usage: $0 &lt;backup_file&gt;"
+    echo "Available backups:"
+    aws s3 ls ${BACKUP_BUCKET}/postgresql/
+    exit 1
+fi
+
+echo "==================================="
+echo "PostgreSQL Full Restoration"
+echo "Backup: ${BACKUP_FILE}"
+echo "==================================="
+
+# Confirmation prompt
+read -p "This will DELETE all current data. Continue? (yes/no): " CONFIRM
+if [ "${CONFIRM}" != "yes" ]; then
+    echo "Restoration cancelled"
+    exit 0
+fi
+
+# Step 1: Scale down PostgreSQL
+echo "Scaling down PostgreSQL..."
+kubectl scale statefulset ${POSTGRES_STATEFULSET} -n ${POSTGRES_NAMESPACE} --replicas=0
+kubectl wait --for=delete pod -l app=postgresql -n ${POSTGRES_NAMESPACE} --timeout=300s
+
+# Step 2: Download backup
+echo "Downloading backup..."
+aws s3 cp ${BACKUP_BUCKET}/postgresql/${BACKUP_FILE} /tmp/restore.sql.gz
+
+# Step 3: Verify backup integrity
+echo "Verifying backup integrity..."
+if ! gunzip -t /tmp/restore.sql.gz; then
+    echo "ERROR: Backup file is corrupted"
+    exit 1
+fi
+
+# Step 4: Scale up PostgreSQL
+echo "Starting PostgreSQL..."
+kubectl scale statefulset ${POSTGRES_STATEFULSET} -n ${POSTGRES_NAMESPACE} --replicas=1
+kubectl wait --for=condition=ready pod -l app=postgresql -n ${POSTGRES_NAMESPACE} --timeout=300s
+
+# Step 5: Drop existing database
+echo "Dropping existing database..."
+kubectl exec -n ${POSTGRES_NAMESPACE} postgresql-0 -- psql -U postgres -c "DROP DATABASE IF EXISTS octollm;"
+kubectl exec -n ${POSTGRES_NAMESPACE} postgresql-0 -- psql -U postgres -c "CREATE DATABASE octollm OWNER octollm;"
+
+# Step 6: Restore backup
+echo "Restoring backup..."
+gunzip -c /tmp/restore.sql.gz | kubectl exec -i -n ${POSTGRES_NAMESPACE} postgresql-0 -- \
+    pg_restore \
+    --verbose \
+    --no-owner \
+    --no-acl \
+    --clean \
+    --if-exists \
+    -U octollm \
+    -d octollm
+
+# Step 7: Verify restoration
+echo "Verifying restoration..."
+TABLES=$(kubectl exec -n ${POSTGRES_NAMESPACE} postgresql-0 -- psql -U octollm -d octollm -t -c "\
+    SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';")
+
+echo "Tables restored: ${TABLES}"
+
+if [ "${TABLES}" -eq 0 ]; then
+    echo "ERROR: No tables found after restoration"
+    exit 1
+fi
+
+# Step 8: Run ANALYZE
+echo "Running ANALYZE..."
+kubectl exec -n ${POSTGRES_NAMESPACE} postgresql-0 -- psql -U octollm -d octollm -c "ANALYZE;"
+
+# Step 9: Verify data integrity
+echo "Verifying data integrity..."
+kubectl exec -n ${POSTGRES_NAMESPACE} postgresql-0 -- psql -U octollm -d octollm -c "\
+    SELECT 'entities' AS table_name, COUNT(*) FROM entities
+    UNION ALL
+    SELECT 'task_history', COUNT(*) FROM task_history
+    UNION ALL
+    SELECT 'action_log', COUNT(*) FROM action_log;"
+
+# Clean up
+rm /tmp/restore.sql.gz
+
+echo "==================================="
+echo "Restoration completed successfully"
+echo "==================================="
+</code></pre>
+<h3 id="partial-recovery"><a class="header" href="#partial-recovery">Partial Recovery</a></h3>
+<p>Restore specific tables or data without full restoration.</p>
+<pre><code class="language-bash">#!/bin/bash
+# restore-postgres-partial.sh
+
+set -e
+
+BACKUP_FILE="${1}"
+TABLE_NAME="${2}"
+POSTGRES_NAMESPACE="octollm"
+
+if [ -z "${BACKUP_FILE}" ] || [ -z "${TABLE_NAME}" ]; then
+    echo "Usage: $0 &lt;backup_file&gt; &lt;table_name&gt;"
+    exit 1
+fi
+
+echo "Partial restoration: ${TABLE_NAME} from ${BACKUP_FILE}"
+
+# Download backup
+aws s3 cp s3://octollm-backups/postgresql/${BACKUP_FILE} /tmp/backup.sql.gz
+
+# Extract and restore specific table
+gunzip -c /tmp/backup.sql.gz | pg_restore \
+    --verbose \
+    --no-owner \
+    --no-acl \
+    --table=${TABLE_NAME} \
+    -U octollm \
+    -d octollm
+
+rm /tmp/backup.sql.gz
+
+echo "Partial restoration completed"
+</code></pre>
+<h3 id="cluster-recovery"><a class="header" href="#cluster-recovery">Cluster Recovery</a></h3>
+<p>Restore entire Kubernetes cluster using Velero.</p>
+<pre><code class="language-bash">#!/bin/bash
+# velero-restore.sh
+
+set -e
+
+BACKUP_NAME="${1}"
+
+if [ -z "${BACKUP_NAME}" ]; then
+    echo "Usage: $0 &lt;backup_name&gt;"
+    echo "Available backups:"
+    velero backup get
+    exit 1
+fi
+
+echo "==================================="
+echo "Cluster Recovery with Velero"
+echo "Backup: ${BACKUP_NAME}"
+echo "==================================="
+
+# Confirmation
+read -p "Restore from backup ${BACKUP_NAME}? (yes/no): " CONFIRM
+if [ "${CONFIRM}" != "yes" ]; then
+    echo "Restore cancelled"
+    exit 0
+fi
+
+# Create restore
+velero restore create --from-backup ${BACKUP_NAME}
+
+# Monitor restore progress
+echo "Monitoring restore progress..."
+velero restore describe ${BACKUP_NAME} --details
+
+# Wait for completion
+while true; do
+    STATUS=$(velero restore get | grep ${BACKUP_NAME} | awk '{print $3}')
+
+    if [ "${STATUS}" = "Completed" ]; then
+        echo "Restore completed successfully"
+        break
+    elif [ "${STATUS}" = "Failed" ] || [ "${STATUS}" = "PartiallyFailed" ]; then
+        echo "ERROR: Restore failed or partially failed"
+        velero restore logs ${BACKUP_NAME}
+        exit 1
+    fi
+
+    echo "Restore status: ${STATUS}"
+    sleep 10
+done
+
+# Verify pods are running
+echo "Verifying pods..."
+kubectl get pods -n octollm
+
+echo "==================================="
+echo "Cluster recovery completed"
+echo "==================================="
+</code></pre>
+<h3 id="emergency-procedures"><a class="header" href="#emergency-procedures">Emergency Procedures</a></h3>
+<h4 id="critical-service-down"><a class="header" href="#critical-service-down">Critical Service Down</a></h4>
+<pre><code class="language-bash">#!/bin/bash
+# emergency-recovery.sh
+
+set -e
+
+SERVICE="${1}"
+
+case ${SERVICE} in
+    "postgresql")
+        echo "Emergency PostgreSQL recovery..."
+
+        # Try restarting first
+        kubectl rollout restart statefulset/postgresql -n octollm
+
+        # If restart fails, restore from latest backup
+        if ! kubectl wait --for=condition=ready pod -l app=postgresql -n octollm --timeout=300s; then
+            echo "Restart failed, restoring from backup..."
+            LATEST_BACKUP=$(aws s3 ls s3://octollm-backups/postgresql/ | sort | tail -n 1 | awk '{print $4}')
+            ./restore-postgres-full.sh ${LATEST_BACKUP}
+        fi
+        ;;
+
+    "qdrant")
+        echo "Emergency Qdrant recovery..."
+        kubectl rollout restart statefulset/qdrant -n octollm
+        ;;
+
+    "orchestrator")
+        echo "Emergency Orchestrator recovery..."
+        kubectl rollout restart deployment/orchestrator -n octollm
+        ;;
+
+    *)
+        echo "Unknown service: ${SERVICE}"
+        echo "Supported services: postgresql, qdrant, orchestrator"
+        exit 1
+        ;;
+esac
+
+echo "Emergency recovery initiated for ${SERVICE}"
+</code></pre>
+<hr />
+<h2 id="rto-and-rpo-targets-1"><a class="header" href="#rto-and-rpo-targets-1">RTO and RPO Targets</a></h2>
+<h3 id="service-tier-definitions"><a class="header" href="#service-tier-definitions">Service Tier Definitions</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Tier</th><th>Services</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Critical</strong></td><td>Orchestrator, PostgreSQL, API Gateway</td><td>Core services required for operation</td></tr>
+<tr><td><strong>Important</strong></td><td>Arms (all), Qdrant, Redis</td><td>Specialist services and data stores</td></tr>
+<tr><td><strong>Standard</strong></td><td>Monitoring, Logging, Metrics</td><td>Observability and support services</td></tr>
+<tr><td><strong>Archive</strong></td><td>Historical data, Audit logs</td><td>Long-term storage and compliance</td></tr>
+</tbody></table>
+</div>
+<h3 id="recovery-time-objectives"><a class="header" href="#recovery-time-objectives">Recovery Time Objectives</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Tier</th><th>RTO</th><th>Justification</th><th>Recovery Procedure</th></tr></thead><tbody>
+<tr><td><strong>Critical</strong></td><td>1 hour</td><td>Service disruption impacts all users</td><td>Automated failover + hot standby</td></tr>
+<tr><td><strong>Important</strong></td><td>4 hours</td><td>Graceful degradation possible</td><td>Restore from backup + warm standby</td></tr>
+<tr><td><strong>Standard</strong></td><td>24 hours</td><td>Non-essential for core operation</td><td>Manual restore from daily backup</td></tr>
+<tr><td><strong>Archive</strong></td><td>7 days</td><td>Historical data, rarely accessed</td><td>Restore from cold storage</td></tr>
+</tbody></table>
+</div>
+<h3 id="recovery-point-objectives"><a class="header" href="#recovery-point-objectives">Recovery Point Objectives</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Tier</th><th>RPO</th><th>Backup Frequency</th><th>Acceptable Data Loss</th></tr></thead><tbody>
+<tr><td><strong>Critical</strong></td><td>5 minutes</td><td>Continuous (WAL) + Hourly</td><td>&lt;5 minutes of transactions</td></tr>
+<tr><td><strong>Important</strong></td><td>1 hour</td><td>Every 6 hours</td><td>&lt;1 hour of task history</td></tr>
+<tr><td><strong>Standard</strong></td><td>24 hours</td><td>Daily</td><td>&lt;24 hours of logs</td></tr>
+<tr><td><strong>Archive</strong></td><td>7 days</td><td>Weekly</td><td>&lt;7 days of historical data</td></tr>
+</tbody></table>
+</div>
+<h3 id="testing-schedule"><a class="header" href="#testing-schedule">Testing Schedule</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Test Type</th><th>Frequency</th><th>Scope</th><th>Duration</th><th>Success Criteria</th></tr></thead><tbody>
+<tr><td><strong>Backup Verification</strong></td><td>Daily</td><td>All backups</td><td>15 min</td><td>Backup exists, correct size</td></tr>
+<tr><td><strong>Partial Restore</strong></td><td>Weekly</td><td>Single table</td><td>30 min</td><td>Data restored correctly</td></tr>
+<tr><td><strong>Full Database Restore</strong></td><td>Monthly</td><td>PostgreSQL</td><td>2 hours</td><td>Complete restoration + validation</td></tr>
+<tr><td><strong>Cluster Failover</strong></td><td>Quarterly</td><td>Full cluster</td><td>4 hours</td><td>All services operational</td></tr>
+<tr><td><strong>DR Drill</strong></td><td>Annually</td><td>Complete DR</td><td>8 hours</td><td>Full recovery from zero</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="disaster-scenarios-1"><a class="header" href="#disaster-scenarios-1">Disaster Scenarios</a></h2>
+<h3 id="complete-cluster-failure"><a class="header" href="#complete-cluster-failure">Complete Cluster Failure</a></h3>
+<p><strong>Scenario</strong>: Entire Kubernetes cluster becomes unavailable due to catastrophic failure.</p>
+<p><strong>Detection</strong>:</p>
+<ul>
+<li>All health checks failing</li>
+<li>No pods responding</li>
+<li>kubectl commands timeout</li>
+<li>Monitoring shows complete outage</li>
+</ul>
+<p><strong>Response Procedure</strong>:</p>
+<ol>
+<li>
+<p><strong>Assess Damage</strong> (5 minutes)</p>
+<pre><code class="language-bash"># Check cluster status
+kubectl cluster-info
+kubectl get nodes
+kubectl get pods --all-namespaces
+</code></pre>
+</li>
+<li>
+<p><strong>Activate DR Plan</strong> (10 minutes)</p>
+<pre><code class="language-bash"># Notify stakeholders
+./notify-incident.sh "Cluster failure detected"
+
+# Provision new cluster if needed
+eksctl create cluster \
+  --name octollm-dr \
+  --region us-west-2 \
+  --nodegroup-name standard-workers \
+  --node-type m5.xlarge \
+  --nodes 5
+</code></pre>
+</li>
+<li>
+<p><strong>Restore Infrastructure</strong> (30 minutes)</p>
+<pre><code class="language-bash"># Install Velero
+velero install --provider aws ...
+
+# Restore latest cluster backup
+LATEST_BACKUP=$(velero backup get | tail -n 1 | awk '{print $1}')
+velero restore create --from-backup ${LATEST_BACKUP}
+
+# Monitor restoration
+velero restore describe ${LATEST_BACKUP}
+</code></pre>
+</li>
+<li>
+<p><strong>Restore Data Stores</strong> (2 hours)</p>
+<pre><code class="language-bash"># Restore PostgreSQL
+./restore-postgres-full.sh $(latest_postgres_backup)
+
+# Restore Qdrant
+./restore-qdrant.sh --all-collections
+
+# Redis will rebuild cache automatically
+</code></pre>
+</li>
+<li>
+<p><strong>Validate Services</strong> (30 minutes)</p>
+<pre><code class="language-bash"># Run smoke tests
+./smoke-tests.sh
+
+# Verify data integrity
+./verify-data-integrity.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Resume Operations</strong> (15 minutes)</p>
+<pre><code class="language-bash"># Update DNS to point to new cluster
+./update-dns.sh
+
+# Notify stakeholders of recovery
+./notify-incident.sh "Services restored"
+</code></pre>
+</li>
+</ol>
+<p><strong>Total RTO</strong>: ~4 hours</p>
+<h3 id="database-corruption"><a class="header" href="#database-corruption">Database Corruption</a></h3>
+<p><strong>Scenario</strong>: PostgreSQL database becomes corrupted, queries failing.</p>
+<p><strong>Detection</strong>:</p>
+<ul>
+<li>PostgreSQL errors in logs</li>
+<li>Data integrity check failures</li>
+<li>Query timeouts</li>
+<li>Inconsistent data returned</li>
+</ul>
+<p><strong>Response Procedure</strong>:</p>
+<ol>
+<li>
+<p><strong>Isolate Problem</strong> (5 minutes)</p>
+<pre><code class="language-bash"># Stop writes to database
+kubectl scale deployment/orchestrator -n octollm --replicas=0
+
+# Check corruption extent
+kubectl exec -n octollm postgresql-0 -- psql -U octollm -c "\
+    SELECT datname, pg_database_size(datname) \
+    FROM pg_database WHERE datname = 'octollm';"
+</code></pre>
+</li>
+<li>
+<p><strong>Assess Damage</strong> (10 minutes)</p>
+<pre><code class="language-bash"># Run integrity checks
+kubectl exec -n octollm postgresql-0 -- psql -U octollm -d octollm -c "\
+    SELECT schemaname, tablename, \
+           pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) \
+    FROM pg_tables WHERE schemaname = 'public';"
+
+# Check for corrupt tables
+kubectl exec -n octollm postgresql-0 -- vacuumdb --analyze-only -U octollm octollm
+</code></pre>
+</li>
+<li>
+<p><strong>Determine Recovery Strategy</strong> (5 minutes)</p>
+<ul>
+<li><strong>Minor corruption</strong>: Repair in place</li>
+<li><strong>Major corruption</strong>: Restore from backup</li>
+</ul>
+</li>
+<li>
+<p><strong>Execute Recovery</strong> (1-2 hours)</p>
+<p><strong>Option A: Repair in place</strong> (if minor)</p>
+<pre><code class="language-bash"># Reindex database
+kubectl exec -n octollm postgresql-0 -- psql -U octollm -d octollm -c "REINDEX DATABASE octollm;"
+
+# Run vacuum
+kubectl exec -n octollm postgresql-0 -- vacuumdb --full -U octollm octollm
+</code></pre>
+<p><strong>Option B: Restore from backup</strong> (if major)</p>
+<pre><code class="language-bash"># Point-in-time recovery to before corruption
+CORRUPTION_TIME="2025-11-10 10:00:00 UTC"
+./restore-postgres-pitr.sh "${CORRUPTION_TIME}"
+</code></pre>
+</li>
+<li>
+<p><strong>Validate Restoration</strong> (15 minutes)</p>
+<pre><code class="language-bash"># Run data integrity tests
+./test-database-integrity.sh
+
+# Verify row counts
+kubectl exec -n octollm postgresql-0 -- psql -U octollm -d octollm -c "\
+    SELECT 'entities', COUNT(*) FROM entities
+    UNION ALL
+    SELECT 'task_history', COUNT(*) FROM task_history;"
+</code></pre>
+</li>
+<li>
+<p><strong>Resume Operations</strong> (10 minutes)</p>
+<pre><code class="language-bash"># Restart services
+kubectl scale deployment/orchestrator -n octollm --replicas=3
+
+# Monitor for issues
+kubectl logs -f -l app=orchestrator -n octollm
+</code></pre>
+</li>
+</ol>
+<p><strong>Total RTO</strong>: 2-4 hours (depending on corruption extent)</p>
+<h3 id="accidental-deletion"><a class="header" href="#accidental-deletion">Accidental Deletion</a></h3>
+<p><strong>Scenario</strong>: Critical data accidentally deleted by user or system error.</p>
+<p><strong>Detection</strong>:</p>
+<ul>
+<li>User reports missing data</li>
+<li>Monitoring shows sudden drop in row counts</li>
+<li>Application errors due to missing records</li>
+</ul>
+<p><strong>Response Procedure</strong>:</p>
+<ol>
+<li>
+<p><strong>Identify Scope</strong> (5 minutes)</p>
+<pre><code class="language-sql">-- Check recent deletions in audit log
+SELECT *
+FROM action_log
+WHERE action_type = 'DELETE'
+  AND timestamp &gt; NOW() - INTERVAL '1 hour'
+ORDER BY timestamp DESC;
+</code></pre>
+</li>
+<li>
+<p><strong>Stop Further Damage</strong> (5 minutes)</p>
+<pre><code class="language-bash"># Disable write access temporarily
+kubectl scale deployment/orchestrator -n octollm --replicas=0
+
+# Backup current state
+pg_dump -U octollm octollm &gt; /tmp/current-state-$(date +%s).sql
+</code></pre>
+</li>
+<li>
+<p><strong>Restore Deleted Data</strong> (30 minutes)</p>
+<p><strong>Option A: Restore from audit trail</strong> (if tracked)</p>
+<pre><code class="language-sql">-- Find deleted records in audit
+SELECT action_details
+FROM action_log
+WHERE action_type = 'DELETE'
+  AND timestamp &gt; '2025-11-10 10:00:00';
+
+-- Restore records
+INSERT INTO entities (id, entity_type, name, properties)
+SELECT ...
+FROM action_log
+WHERE ...;
+</code></pre>
+<p><strong>Option B: Point-in-time recovery</strong></p>
+<pre><code class="language-bash"># Determine deletion time
+DELETION_TIME="2025-11-10 10:15:00 UTC"
+
+# Restore to just before deletion
+RESTORE_TIME=$(date -d "${DELETION_TIME} -5 minutes" +"%Y-%m-%d %H:%M:%S UTC")
+./restore-postgres-pitr.sh "${RESTORE_TIME}"
+</code></pre>
+<p><strong>Option C: Partial restore from backup</strong></p>
+<pre><code class="language-bash"># Restore specific tables
+./restore-postgres-partial.sh latest-backup.sql.gz entities
+</code></pre>
+</li>
+<li>
+<p><strong>Validate Recovery</strong> (10 minutes)</p>
+<pre><code class="language-bash"># Verify restored data
+./verify-restored-data.sh
+
+# Check for consistency
+kubectl exec -n octollm postgresql-0 -- psql -U octollm -d octollm -c "\
+    SELECT COUNT(*) FROM entities WHERE deleted_at IS NOT NULL;"
+</code></pre>
+</li>
+<li>
+<p><strong>Resume Operations</strong> (5 minutes)</p>
+<pre><code class="language-bash">kubectl scale deployment/orchestrator -n octollm --replicas=3
+</code></pre>
+</li>
+</ol>
+<p><strong>Total RTO</strong>: 1 hour
+<strong>Total RPO</strong>: 5 minutes (if using PITR)</p>
+<h3 id="security-breach"><a class="header" href="#security-breach">Security Breach</a></h3>
+<p><strong>Scenario</strong>: Unauthorized access detected, potential data compromise.</p>
+<p><strong>Detection</strong>:</p>
+<ul>
+<li>Intrusion detection alerts</li>
+<li>Unusual activity patterns</li>
+<li>Unauthorized API calls</li>
+<li>Data exfiltration detected</li>
+</ul>
+<p><strong>Response Procedure</strong>:</p>
+<ol>
+<li>
+<p><strong>Contain Breach</strong> (IMMEDIATE)</p>
+<pre><code class="language-bash"># Isolate compromised systems
+kubectl cordon &lt;compromised-node&gt;
+
+# Block external access
+kubectl patch service api-gateway -n octollm -p '{"spec":{"type":"ClusterIP"}}'
+
+# Revoke credentials
+./revoke-all-tokens.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Assess Damage</strong> (30 minutes)</p>
+<pre><code class="language-bash"># Check audit logs
+kubectl exec -n octollm postgresql-0 -- psql -U octollm -d octollm -c "\
+    SELECT *
+    FROM audit_logs
+    WHERE timestamp &gt; NOW() - INTERVAL '24 hours'
+    ORDER BY timestamp DESC;"
+
+# Identify compromised data
+./identify-compromised-data.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Preserve Evidence</strong> (15 minutes)</p>
+<pre><code class="language-bash"># Snapshot all volumes
+./snapshot-all-volumes.sh
+
+# Export logs
+kubectl logs --all-containers=true -n octollm &gt; /evidence/logs-$(date +%s).txt
+
+# Backup current state
+./backup-forensic-evidence.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Rebuild from Clean State</strong> (4 hours)</p>
+<pre><code class="language-bash"># Create new cluster
+eksctl create cluster --name octollm-secure --config secure-cluster.yaml
+
+# Deploy with new credentials
+./deploy-octollm.sh --new-credentials
+
+# Restore data from pre-breach backup
+LAST_GOOD_BACKUP=$(find_backup_before_breach)
+./restore-postgres-full.sh ${LAST_GOOD_BACKUP}
+</code></pre>
+</li>
+<li>
+<p><strong>Strengthen Security</strong> (2 hours)</p>
+<pre><code class="language-bash"># Rotate all secrets
+./rotate-all-secrets.sh
+
+# Update security policies
+kubectl apply -f network-policies-strict.yaml
+
+# Enable additional monitoring
+./enable-enhanced-monitoring.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Resume Operations</strong> (30 minutes)</p>
+<pre><code class="language-bash"># Gradual rollout
+./gradual-rollout.sh --canary
+
+# Monitor for suspicious activity
+./monitor-security-metrics.sh
+</code></pre>
+</li>
+</ol>
+<p><strong>Total RTO</strong>: 8 hours (security takes priority over speed)
+<strong>Total RPO</strong>: Varies based on breach timeline</p>
+<h3 id="regional-outage"><a class="header" href="#regional-outage">Regional Outage</a></h3>
+<p><strong>Scenario</strong>: Entire AWS region becomes unavailable.</p>
+<p><strong>Detection</strong>:</p>
+<ul>
+<li>AWS status page shows outage</li>
+<li>All services in region unreachable</li>
+<li>Multi-AZ redundancy failing</li>
+<li>Cross-region health checks failing</li>
+</ul>
+<p><strong>Response Procedure</strong>:</p>
+<ol>
+<li>
+<p><strong>Confirm Outage</strong> (5 minutes)</p>
+<pre><code class="language-bash"># Check AWS status
+aws health describe-events --region us-east-1
+
+# Verify cross-region connectivity
+curl https://health-check.octollm.example.com/us-west-2
+</code></pre>
+</li>
+<li>
+<p><strong>Activate DR Region</strong> (15 minutes)</p>
+<pre><code class="language-bash"># Switch to DR cluster (us-west-2)
+export KUBECONFIG=~/.kube/config-us-west-2
+kubectl cluster-info
+
+# Verify DR cluster status
+kubectl get pods -n octollm
+</code></pre>
+</li>
+<li>
+<p><strong>Sync Data</strong> (1 hour)</p>
+<pre><code class="language-bash"># Promote read replica to primary
+kubectl exec -n octollm postgresql-0 -- psql -U postgres -c "SELECT pg_promote();"
+
+# Verify data currency
+./verify-data-freshness.sh
+
+# If data is stale, restore from S3 (cross-region replicated)
+./restore-postgres-full.sh latest-cross-region-backup.sql.gz
+</code></pre>
+</li>
+<li>
+<p><strong>Update DNS</strong> (15 minutes)</p>
+<pre><code class="language-bash"># Update Route53 to point to DR region
+aws route53 change-resource-record-sets \
+  --hosted-zone-id Z1234567890ABC \
+  --change-batch file://update-dns-to-dr.json
+
+# Verify DNS propagation
+dig api.octollm.example.com
+</code></pre>
+</li>
+<li>
+<p><strong>Monitor Performance</strong> (30 minutes)</p>
+<pre><code class="language-bash"># Ensure DR region can handle load
+kubectl top nodes
+kubectl top pods -n octollm
+
+# Scale if necessary
+kubectl scale deployment orchestrator -n octollm --replicas=5
+</code></pre>
+</li>
+<li>
+<p><strong>Communicate Status</strong> (15 minutes)</p>
+<pre><code class="language-bash"># Notify users of region switch
+./notify-users.sh "Service restored in alternate region"
+
+# Update status page
+./update-status-page.sh "Operational (DR region)"
+</code></pre>
+</li>
+</ol>
+<p><strong>Total RTO</strong>: 2 hours
+<strong>Total RPO</strong>: Depends on replication lag (typically &lt;5 minutes)</p>
+<h3 id="ransomware-attack"><a class="header" href="#ransomware-attack">Ransomware Attack</a></h3>
+<p><strong>Scenario</strong>: Ransomware encrypts data, demands payment.</p>
+<p><strong>Detection</strong>:</p>
+<ul>
+<li>Sudden inability to read data</li>
+<li>Ransom note files appearing</li>
+<li>Unusual file modifications</li>
+<li>Encryption processes detected</li>
+</ul>
+<p><strong>Response Procedure</strong>:</p>
+<ol>
+<li>
+<p><strong>Isolate Immediately</strong> (IMMEDIATE - 5 minutes)</p>
+<pre><code class="language-bash"># Disconnect from network
+kubectl patch service api-gateway -n octollm -p '{"spec":{"type":"ClusterIP"}}'
+
+# Stop all pods
+kubectl scale deployment --all -n octollm --replicas=0
+kubectl scale statefulset --all -n octollm --replicas=0
+
+# Quarantine infected nodes
+kubectl cordon --all
+</code></pre>
+</li>
+<li>
+<p><strong>Assess Damage</strong> (15 minutes)</p>
+<pre><code class="language-bash"># Check which files are encrypted
+./identify-encrypted-files.sh
+
+# Determine infection vector
+./analyze-attack-vector.sh
+
+# Preserve forensic evidence
+./snapshot-compromised-volumes.sh
+</code></pre>
+</li>
+<li>
+<p><strong>DO NOT PAY RANSOM</strong> (policy decision)</p>
+<ul>
+<li>Document the ransom demand</li>
+<li>Report to law enforcement</li>
+<li>Proceed with restoration from backups</li>
+</ul>
+</li>
+<li>
+<p><strong>Rebuild Infrastructure</strong> (2 hours)</p>
+<pre><code class="language-bash"># Create completely new cluster
+eksctl create cluster --name octollm-clean --config cluster.yaml
+
+# Deploy fresh OctoLLM installation
+helm install octollm ./charts/octollm \
+  --namespace octollm \
+  --create-namespace \
+  --values values-production.yaml
+</code></pre>
+</li>
+<li>
+<p><strong>Restore from Clean Backups</strong> (2 hours)</p>
+<pre><code class="language-bash"># Identify last known good backup (before infection)
+LAST_CLEAN_BACKUP=$(identify_clean_backup)
+
+# Verify backup not encrypted
+aws s3 cp s3://octollm-backups/postgresql/${LAST_CLEAN_BACKUP} /tmp/test.sql.gz
+gunzip -t /tmp/test.sql.gz  # Test integrity
+
+# Restore database
+./restore-postgres-full.sh ${LAST_CLEAN_BACKUP}
+
+# Restore vector stores
+./restore-qdrant.sh --all-collections --before-date "2025-11-09"
+</code></pre>
+</li>
+<li>
+<p><strong>Security Hardening</strong> (2 hours)</p>
+<pre><code class="language-bash"># Rotate ALL credentials
+./rotate-all-secrets.sh --force
+
+# Update to latest security patches
+kubectl set image deployment/orchestrator orchestrator=octollm/orchestrator:latest-patched
+
+# Enable enhanced security
+kubectl apply -f network-policies-lockdown.yaml
+kubectl apply -f pod-security-policies-strict.yaml
+</code></pre>
+</li>
+<li>
+<p><strong>Validation</strong> (1 hour)</p>
+<pre><code class="language-bash"># Run security scans
+./run-security-scan.sh
+
+# Verify no malware
+./malware-scan.sh
+
+# Test all functionality
+./integration-tests.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Resume Operations</strong> (30 minutes)</p>
+<pre><code class="language-bash"># Gradual rollout with monitoring
+./gradual-rollout.sh --extra-monitoring
+
+# Notify stakeholders
+./notify-stakeholders.sh "Systems restored, enhanced security enabled"
+</code></pre>
+</li>
+</ol>
+<p><strong>Total RTO</strong>: 8 hours
+<strong>Total RPO</strong>: Depends on when infection started (data loss possible)</p>
+<h3 id="configuration-error"><a class="header" href="#configuration-error">Configuration Error</a></h3>
+<p><strong>Scenario</strong>: Incorrect configuration causes service disruption.</p>
+<p><strong>Detection</strong>:</p>
+<ul>
+<li>Services failing after configuration change</li>
+<li>Validation errors in logs</li>
+<li>Pods in CrashLoopBackOff</li>
+<li>Connectivity issues</li>
+</ul>
+<p><strong>Response Procedure</strong>:</p>
+<ol>
+<li>
+<p><strong>Identify Change</strong> (5 minutes)</p>
+<pre><code class="language-bash"># Check recent changes
+kubectl rollout history deployment/orchestrator -n octollm
+
+# View recent configmap changes
+kubectl describe configmap octollm-config -n octollm
+
+# Check audit logs
+kubectl get events -n octollm --sort-by='.lastTimestamp'
+</code></pre>
+</li>
+<li>
+<p><strong>Rollback Configuration</strong> (5 minutes)</p>
+<pre><code class="language-bash"># Rollback to previous version
+kubectl rollout undo deployment/orchestrator -n octollm
+
+# Or restore from configuration backup
+kubectl apply -f /backups/k8s-configs/latest/configmaps.yaml
+</code></pre>
+</li>
+<li>
+<p><strong>Verify Service Restoration</strong> (10 minutes)</p>
+<pre><code class="language-bash"># Check pod status
+kubectl get pods -n octollm
+
+# Verify services responding
+curl https://api.octollm.example.com/health
+
+# Run smoke tests
+./smoke-tests.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Root Cause Analysis</strong> (30 minutes)</p>
+<pre><code class="language-bash"># Compare configurations
+diff /backups/k8s-configs/latest/configmaps.yaml \
+     /backups/k8s-configs/previous/configmaps.yaml
+
+# Document issue
+./document-incident.sh "Configuration error in orchestrator"
+</code></pre>
+</li>
+<li>
+<p><strong>Fix and Redeploy</strong> (1 hour)</p>
+<pre><code class="language-bash"># Fix configuration
+vim configs/orchestrator-config.yaml
+
+# Validate configuration
+./validate-config.sh configs/orchestrator-config.yaml
+
+# Deploy with canary
+kubectl apply -f configs/orchestrator-config.yaml
+./canary-deploy.sh orchestrator
+</code></pre>
+</li>
+</ol>
+<p><strong>Total RTO</strong>: 1 hour
+<strong>Total RPO</strong>: 0 (no data loss)</p>
+<h3 id="failed-deployment"><a class="header" href="#failed-deployment">Failed Deployment</a></h3>
+<p><strong>Scenario</strong>: New deployment breaks production services.</p>
+<p><strong>Detection</strong>:</p>
+<ul>
+<li>Deployment fails validation</li>
+<li>Pods in Error state</li>
+<li>Increased error rates</li>
+<li>User reports of issues</li>
+</ul>
+<p><strong>Response Procedure</strong>:</p>
+<ol>
+<li>
+<p><strong>Halt Deployment</strong> (IMMEDIATE - 2 minutes)</p>
+<pre><code class="language-bash"># Pause rollout
+kubectl rollout pause deployment/orchestrator -n octollm
+
+# Scale down new version
+kubectl scale deployment/orchestrator -n octollm --replicas=0
+</code></pre>
+</li>
+<li>
+<p><strong>Assess Impact</strong> (5 minutes)</p>
+<pre><code class="language-bash"># Check error rates
+kubectl logs -l app=orchestrator,version=new -n octollm | grep ERROR | wc -l
+
+# Check user impact
+./check-user-impact.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Rollback</strong> (5 minutes)</p>
+<pre><code class="language-bash"># Rollback deployment
+kubectl rollout undo deployment/orchestrator -n octollm
+
+# Wait for rollback to complete
+kubectl rollout status deployment/orchestrator -n octollm
+</code></pre>
+</li>
+<li>
+<p><strong>Verify Services</strong> (10 minutes)</p>
+<pre><code class="language-bash"># Run health checks
+./health-check.sh
+
+# Monitor metrics
+kubectl top pods -n octollm
+
+# Check user-facing functionality
+./smoke-tests.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Investigate Failure</strong> (1 hour)</p>
+<pre><code class="language-bash"># Collect logs
+kubectl logs -l version=failed -n octollm &gt; /tmp/failed-deployment.log
+
+# Analyze errors
+./analyze-deployment-failure.sh /tmp/failed-deployment.log
+
+# Identify root cause
+./root-cause-analysis.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Fix and Retry</strong> (2 hours)</p>
+<pre><code class="language-bash"># Fix issues
+git commit -m "Fix deployment issue: ..."
+
+# Build new version
+docker build -t octollm/orchestrator:v1.2.1-fixed .
+docker push octollm/orchestrator:v1.2.1-fixed
+
+# Deploy with canary
+./canary-deploy.sh orchestrator v1.2.1-fixed
+</code></pre>
+</li>
+</ol>
+<p><strong>Total RTO</strong>: 30 minutes
+<strong>Total RPO</strong>: 0 (no data loss)</p>
+<h3 id="network-partition"><a class="header" href="#network-partition">Network Partition</a></h3>
+<p><strong>Scenario</strong>: Network failure causes cluster split-brain.</p>
+<p><strong>Detection</strong>:</p>
+<ul>
+<li>Nodes reporting as Not Ready</li>
+<li>Services unreachable from some nodes</li>
+<li>Inconsistent data reads</li>
+<li>Replication lag increasing</li>
+</ul>
+<p><strong>Response Procedure</strong>:</p>
+<ol>
+<li>
+<p><strong>Identify Partition</strong> (10 minutes)</p>
+<pre><code class="language-bash"># Check node connectivity
+kubectl get nodes
+
+# Check pod distribution
+kubectl get pods -n octollm -o wide
+
+# Test inter-node connectivity
+./test-network-connectivity.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Determine Primary Partition</strong> (5 minutes)</p>
+<pre><code class="language-bash"># Identify partition with majority of nodes
+TOTAL_NODES=$(kubectl get nodes | wc -l)
+HEALTHY_NODES=$(kubectl get nodes | grep " Ready " | wc -l)
+
+# Primary partition should have &gt;50% of nodes
+if [ $HEALTHY_NODES -gt $((TOTAL_NODES / 2)) ]; then
+    echo "Primary partition identified"
+fi
+</code></pre>
+</li>
+<li>
+<p><strong>Cordon Unreachable Nodes</strong> (5 minutes)</p>
+<pre><code class="language-bash"># Prevent scheduling on partitioned nodes
+kubectl cordon &lt;node-name&gt;
+
+# Drain workloads from partitioned nodes
+kubectl drain &lt;node-name&gt; --ignore-daemonsets --delete-emptydir-data
+</code></pre>
+</li>
+<li>
+<p><strong>Force Reschedule</strong> (10 minutes)</p>
+<pre><code class="language-bash"># Delete pods on partitioned nodes
+kubectl delete pods -n octollm --field-selector spec.nodeName=&lt;partitioned-node&gt;
+
+# Wait for rescheduling on healthy nodes
+kubectl wait --for=condition=ready pod -l app=orchestrator -n octollm --timeout=300s
+</code></pre>
+</li>
+<li>
+<p><strong>Verify Data Consistency</strong> (15 minutes)</p>
+<pre><code class="language-bash"># Check PostgreSQL replication status
+kubectl exec -n octollm postgresql-0 -- psql -U postgres -c "\
+    SELECT client_addr, state, sync_state, replay_lag
+    FROM pg_stat_replication;"
+
+# Run consistency checks
+./verify-data-consistency.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Restore Network</strong> (varies)</p>
+<pre><code class="language-bash"># Work with infrastructure team to restore connectivity
+# Once restored, uncordon nodes
+kubectl uncordon &lt;node-name&gt;
+
+# Verify cluster health
+kubectl get nodes
+kubectl get pods -n octollm
+</code></pre>
+</li>
+</ol>
+<p><strong>Total RTO</strong>: 1 hour (depending on network restoration)
+<strong>Total RPO</strong>: 5 minutes (replication lag)</p>
+<h3 id="data-center-failure"><a class="header" href="#data-center-failure">Data Center Failure</a></h3>
+<p><strong>Scenario</strong>: Entire data center becomes unavailable.</p>
+<p><strong>Detection</strong>:</p>
+<ul>
+<li>All services in availability zone down</li>
+<li>Physical infrastructure alerts</li>
+<li>Cloud provider notifications</li>
+<li>Complete loss of connectivity to AZ</li>
+</ul>
+<p><strong>Response Procedure</strong>:</p>
+<ol>
+<li>
+<p><strong>Confirm Scope</strong> (5 minutes)</p>
+<pre><code class="language-bash"># Check affected availability zones
+kubectl get nodes -o wide
+
+# Identify pods in affected AZ
+kubectl get pods -n octollm -o wide | grep &lt;affected-az&gt;
+</code></pre>
+</li>
+<li>
+<p><strong>Failover to Other AZs</strong> (15 minutes)</p>
+<pre><code class="language-bash"># Cordon nodes in affected AZ
+kubectl cordon -l topology.kubernetes.io/zone=&lt;affected-az&gt;
+
+# Delete pods in affected AZ (force reschedule)
+kubectl delete pods -n octollm --field-selector spec.nodeName=&lt;node-in-affected-az&gt;
+
+# Scale up in healthy AZs
+kubectl scale deployment orchestrator -n octollm --replicas=5
+</code></pre>
+</li>
+<li>
+<p><strong>Verify Redundancy</strong> (10 minutes)</p>
+<pre><code class="language-bash"># Check pod distribution
+kubectl get pods -n octollm -o wide | awk '{print $7}' | sort | uniq -c
+
+# Ensure no single point of failure
+./verify-multi-az-distribution.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Monitor Performance</strong> (30 minutes)</p>
+<pre><code class="language-bash"># Check resource usage in remaining AZs
+kubectl top nodes
+
+# Monitor queue depths
+./monitor-queue-depths.sh
+
+# Scale if necessary
+./autoscale-if-needed.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Data Store Failover</strong> (1 hour)</p>
+<pre><code class="language-bash"># Promote PostgreSQL replica in healthy AZ
+kubectl exec -n octollm postgresql-1 -- psql -U postgres -c "SELECT pg_promote();"
+
+# Update connection strings
+./update-postgres-connection.sh postgresql-1
+
+# Verify data integrity
+./verify-data-integrity.sh
+</code></pre>
+</li>
+<li>
+<p><strong>Long-term Mitigation</strong> (varies)</p>
+<pre><code class="language-bash"># Wait for data center restoration or
+# Permanently shift capacity to other AZs
+./rebalance-cluster.sh
+</code></pre>
+</li>
+</ol>
+<p><strong>Total RTO</strong>: 2 hours
+<strong>Total RPO</strong>: 5 minutes (if replication was working)</p>
+<hr />
+<h2 id="backup-automation"><a class="header" href="#backup-automation">Backup Automation</a></h2>
+<h3 id="automated-backup-jobs"><a class="header" href="#automated-backup-jobs">Automated Backup Jobs</a></h3>
+<p>All backup jobs run automatically on schedules:</p>
+<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Schedule</th><th>Retention</th><th>Storage Class</th></tr></thead><tbody>
+<tr><td>PostgreSQL Full</td><td>Daily (2 AM)</td><td>30 days</td><td>STANDARD_IA → GLACIER</td></tr>
+<tr><td>PostgreSQL WAL</td><td>Continuous</td><td>7 days</td><td>STANDARD</td></tr>
+<tr><td>Qdrant Snapshots</td><td>Every 6 hours</td><td>14 days</td><td>STANDARD_IA</td></tr>
+<tr><td>Redis RDB</td><td>Daily (3 AM)</td><td>7 days</td><td>STANDARD_IA</td></tr>
+<tr><td>Kubernetes Configs</td><td>Daily (1 AM)</td><td>30 days</td><td>STANDARD_IA</td></tr>
+<tr><td>Velero Cluster</td><td>Daily (1 AM)</td><td>30 days</td><td>STANDARD</td></tr>
+</tbody></table>
+</div>
+<h3 id="backup-verification"><a class="header" href="#backup-verification">Backup Verification</a></h3>
+<p>Automated verification ensures backups are restorable:</p>
+<pre><code class="language-python">import boto3
+from datetime import datetime, timedelta
+import structlog
+
+logger = structlog.get_logger()
+
+class BackupVerifier:
+    """Verify backup integrity and completeness."""
+
+    def __init__(self, s3_bucket: str):
+        self.s3_client = boto3.client('s3')
+        self.s3_bucket = s3_bucket
+
+    def verify_all_backups(self) -&gt; dict:
+        """Run verification checks on all backup types."""
+        results = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "postgresql": self.verify_postgresql_backups(),
+            "qdrant": self.verify_qdrant_backups(),
+            "redis": self.verify_redis_backups(),
+            "k8s_configs": self.verify_k8s_config_backups(),
+            "overall_status": "unknown"
+        }
+
+        # Determine overall status
+        statuses = [v["status"] for v in results.values() if isinstance(v, dict) and "status" in v]
+
+        if all(s == "healthy" for s in statuses):
+            results["overall_status"] = "healthy"
+        elif any(s == "critical" for s in statuses):
+            results["overall_status"] = "critical"
+        else:
+            results["overall_status"] = "warning"
+
+        return results
+
+    def verify_postgresql_backups(self) -&gt; dict:
+        """Verify PostgreSQL backup health."""
+        try:
+            # List recent backups
+            response = self.s3_client.list_objects_v2(
+                Bucket=self.s3_bucket,
+                Prefix='postgresql/',
+                MaxKeys=10
+            )
+
+            if 'Contents' not in response or len(response['Contents']) == 0:
+                return {
+                    "status": "critical",
+                    "message": "No PostgreSQL backups found",
+                    "last_backup": None
+                }
+
+            # Get latest backup
+            latest = sorted(response['Contents'], key=lambda x: x['LastModified'], reverse=True)[0]
+            backup_age = datetime.now(latest['LastModified'].tzinfo) - latest['LastModified']
+            size_mb = latest['Size'] / (1024 * 1024)
+
+            # Check if backup is recent (within 25 hours for daily backup)
+            if backup_age &gt; timedelta(hours=25):
+                status = "critical"
+                message = f"Latest backup is {backup_age.days} days old"
+            elif size_mb &lt; 1:
+                status = "critical"
+                message = f"Latest backup is too small: {size_mb:.2f} MB"
+            else:
+                status = "healthy"
+                message = "PostgreSQL backups are current"
+
+            # Check WAL archives
+            wal_response = self.s3_client.list_objects_v2(
+                Bucket=self.s3_bucket,
+                Prefix='wal/',
+                MaxKeys=10
+            )
+
+            wal_status = "healthy" if 'Contents' in wal_response else "warning"
+
+            return {
+                "status": status,
+                "message": message,
+                "last_backup": latest['LastModified'].isoformat(),
+                "backup_age_hours": backup_age.total_seconds() / 3600,
+                "backup_size_mb": size_mb,
+                "wal_status": wal_status,
+                "backup_count": len(response['Contents'])
+            }
+
+        except Exception as e:
+            logger.error("postgresql_backup_verification_failed", error=str(e))
+            return {
+                "status": "critical",
+                "message": f"Verification failed: {str(e)}"
+            }
+
+    def verify_qdrant_backups(self) -&gt; dict:
+        """Verify Qdrant snapshot backups."""
+        try:
+            response = self.s3_client.list_objects_v2(
+                Bucket=self.s3_bucket,
+                Prefix='qdrant/',
+                MaxKeys=50
+            )
+
+            if 'Contents' not in response:
+                return {
+                    "status": "critical",
+                    "message": "No Qdrant backups found"
+                }
+
+            # Group by collection
+            collections = {}
+            for obj in response['Contents']:
+                parts = obj['Key'].split('/')
+                if len(parts) &gt;= 2:
+                    collection = parts[1]
+                    if collection not in collections:
+                        collections[collection] = []
+                    collections[collection].append(obj)
+
+            # Check each collection
+            issues = []
+            for collection, backups in collections.items():
+                latest = max(backups, key=lambda x: x['LastModified'])
+                backup_age = datetime.now(latest['LastModified'].tzinfo) - latest['LastModified']
+
+                if backup_age &gt; timedelta(hours=7):  # 6-hour schedule + 1 hour buffer
+                    issues.append(f"{collection}: {backup_age.total_seconds() / 3600:.1f}h old")
+
+            if issues:
+                return {
+                    "status": "warning",
+                    "message": "Some collections have stale backups",
+                    "issues": issues,
+                    "collections": len(collections)
+                }
+            else:
+                return {
+                    "status": "healthy",
+                    "message": "All Qdrant collections backed up",
+                    "collections": len(collections)
+                }
+
+        except Exception as e:
+            logger.error("qdrant_backup_verification_failed", error=str(e))
+            return {
+                "status": "critical",
+                "message": f"Verification failed: {str(e)}"
+            }
+
+    def verify_redis_backups(self) -&gt; dict:
+        """Verify Redis backup health."""
+        try:
+            response = self.s3_client.list_objects_v2(
+                Bucket=self.s3_bucket,
+                Prefix='redis/',
+                MaxKeys=10
+            )
+
+            if 'Contents' not in response:
+                return {
+                    "status": "warning",
+                    "message": "No Redis backups found (cache is ephemeral)"
+                }
+
+            latest = sorted(response['Contents'], key=lambda x: x['LastModified'], reverse=True)[0]
+            backup_age = datetime.now(latest['LastModified'].tzinfo) - latest['LastModified']
+
+            if backup_age &gt; timedelta(hours=25):
+                status = "warning"
+                message = f"Redis backup is {backup_age.days} days old"
+            else:
+                status = "healthy"
+                message = "Redis backups are current"
+
+            return {
+                "status": status,
+                "message": message,
+                "last_backup": latest['LastModified'].isoformat()
+            }
+
+        except Exception as e:
+            logger.error("redis_backup_verification_failed", error=str(e))
+            return {
+                "status": "warning",
+                "message": f"Verification failed: {str(e)}"
+            }
+
+    def verify_k8s_config_backups(self) -&gt; dict:
+        """Verify Kubernetes configuration backups."""
+        try:
+            response = self.s3_client.list_objects_v2(
+                Bucket=self.s3_bucket,
+                Prefix='k8s-configs/',
+                MaxKeys=10
+            )
+
+            if 'Contents' not in response:
+                return {
+                    "status": "critical",
+                    "message": "No K8s config backups found"
+                }
+
+            latest = sorted(response['Contents'], key=lambda x: x['LastModified'], reverse=True)[0]
+            backup_age = datetime.now(latest['LastModified'].tzinfo) - latest['LastModified']
+
+            if backup_age &gt; timedelta(hours=25):
+                status = "warning"
+                message = f"Config backup is {backup_age.days} days old"
+            else:
+                status = "healthy"
+                message = "K8s config backups are current"
+
+            return {
+                "status": status,
+                "message": message,
+                "last_backup": latest['LastModified'].isoformat()
+            }
+
+        except Exception as e:
+            logger.error("k8s_backup_verification_failed", error=str(e))
+            return {
+                "status": "critical",
+                "message": f"Verification failed: {str(e)}"
+            }
+
+# Run daily verification
+# verifier = BackupVerifier(s3_bucket='octollm-backups')
+# results = verifier.verify_all_backups()
+#
+# if results['overall_status'] == 'critical':
+#     send_alert("CRITICAL: Backup verification failed", results)
+# elif results['overall_status'] == 'warning':
+#     send_alert("WARNING: Backup issues detected", results)
+</code></pre>
+<h3 id="retention-policies"><a class="header" href="#retention-policies">Retention Policies</a></h3>
+<p>Automated retention management with lifecycle policies:</p>
+<pre><code class="language-json">{
+  "Rules": [
+    {
+      "Id": "PostgreSQL-Full-Backup-Lifecycle",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "postgresql/"
+      },
+      "Transitions": [
+        {
+          "Days": 7,
+          "StorageClass": "STANDARD_IA"
+        },
+        {
+          "Days": 30,
+          "StorageClass": "GLACIER_IR"
+        },
+        {
+          "Days": 90,
+          "StorageClass": "DEEP_ARCHIVE"
+        }
+      ],
+      "Expiration": {
+        "Days": 365
+      },
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 30
+      }
+    },
+    {
+      "Id": "WAL-Archive-Lifecycle",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "wal/"
+      },
+      "Expiration": {
+        "Days": 7
+      }
+    },
+    {
+      "Id": "Qdrant-Snapshot-Lifecycle",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "qdrant/"
+      },
+      "Transitions": [
+        {
+          "Days": 7,
+          "StorageClass": "STANDARD_IA"
+        }
+      ],
+      "Expiration": {
+        "Days": 14
+      }
+    },
+    {
+      "Id": "Redis-Backup-Lifecycle",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "redis/"
+      },
+      "Transitions": [
+        {
+          "Days": 3,
+          "StorageClass": "STANDARD_IA"
+        }
+      ],
+      "Expiration": {
+        "Days": 7
+      }
+    }
+  ]
+}
+</code></pre>
+<h3 id="monitoring-and-alerting"><a class="header" href="#monitoring-and-alerting">Monitoring and Alerting</a></h3>
+<p>Comprehensive monitoring of backup health:</p>
+<pre><code class="language-yaml"># Prometheus AlertManager rules
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-backup-alerts
+  namespace: monitoring
+data:
+  backup-alerts.yml: |
+    groups:
+      - name: backup_alerts
+        interval: 5m
+        rules:
+          # PostgreSQL backup age
+          - alert: PostgreSQLBackupStale
+            expr: octollm_postgresql_backup_age_hours &gt; 25
+            for: 1h
+            labels:
+              severity: critical
+              component: postgresql
+            annotations:
+              summary: "PostgreSQL backup is stale"
+              description: "Last PostgreSQL backup is {{ $value }} hours old (threshold: 25h)"
+
+          # PostgreSQL backup size
+          - alert: PostgreSQLBackupTooSmall
+            expr: octollm_postgresql_backup_size_mb &lt; 1
+            for: 5m
+            labels:
+              severity: critical
+              component: postgresql
+            annotations:
+              summary: "PostgreSQL backup suspiciously small"
+              description: "Latest backup is only {{ $value }} MB"
+
+          # Backup failures
+          - alert: BackupFailureRate
+            expr: rate(octollm_postgresql_backup_failures_total[1h]) &gt; 0.1
+            for: 5m
+            labels:
+              severity: warning
+              component: backup
+            annotations:
+              summary: "High backup failure rate"
+              description: "Backup failure rate is {{ $value }}/hour"
+
+          # Qdrant backup missing
+          - alert: QdrantBackupMissing
+            expr: time() - octollm_qdrant_last_backup_timestamp &gt; 25200  # 7 hours
+            for: 1h
+            labels:
+              severity: warning
+              component: qdrant
+            annotations:
+              summary: "Qdrant backup is missing"
+              description: "No Qdrant backup in last 7 hours"
+
+          # Velero backup failures
+          - alert: VeleroBackupFailed
+            expr: velero_backup_failure_total &gt; 0
+            for: 5m
+            labels:
+              severity: critical
+              component: velero
+            annotations:
+              summary: "Velero backup failed"
+              description: "Velero backup has failed {{ $value }} times"
+</code></pre>
+<hr />
+<p>Due to length constraints, I'll continue with the remaining sections in a follow-up. The document is currently at approximately 1,800 lines. Would you like me to complete the remaining sections:</p>
+<ul>
+<li>Testing and Validation</li>
+<li>Compliance and Audit</li>
+<li>Incident Response</li>
+<li>Multi-Region Deployment</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../operations/scaling.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../operations/kubernetes-access.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../operations/scaling.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../operations/kubernetes-access.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,1053 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Phase 3: Operations - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/project-tracking/phases/phase-3.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="phase-3-operations--deployment"><a class="header" href="#phase-3-operations--deployment">Phase 3: Operations &amp; Deployment</a></h1>
+<p><strong>Status</strong>: Not Started
+<strong>Duration</strong>: 4-6 weeks (parallel with Phase 4)
+<strong>Team Size</strong>: 2-3 SREs
+<strong>Prerequisites</strong>: Phase 2 complete
+<strong>Start Date</strong>: TBD
+<strong>Target Completion</strong>: TBD</p>
+<hr />
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Phase 3 establishes production-grade operations infrastructure including comprehensive monitoring, alert</p>
+<p>ing, troubleshooting playbooks, disaster recovery, and performance optimization. This phase ensures the OctoLLM system can be reliably operated in production.</p>
+<p><strong>Key Deliverables</strong>:</p>
+<ol>
+<li>Monitoring Stack - Prometheus, Grafana, Loki, Jaeger</li>
+<li>Alerting System - Alertmanager with PagerDuty integration</li>
+<li>Troubleshooting Playbooks - 10+ comprehensive runbooks</li>
+<li>Disaster Recovery - Automated backups and restoration procedures</li>
+<li>Performance Tuning - Database, application, and cache optimization</li>
+</ol>
+<p><strong>Success Criteria</strong>:</p>
+<ul>
+<li>✅ Monitoring stack operational with 30-day retention</li>
+<li>✅ Alerts firing correctly for simulated incidents</li>
+<li>✅ Backups tested and verified (RTO &lt;4 hours, RPO &lt;1 hour)</li>
+<li>✅ Load tests passing at scale (1,000 concurrent tasks)</li>
+<li>✅ Runbooks tested by on-call team</li>
+</ul>
+<p><strong>Reference</strong>: <code>docs/doc_phases/PHASE-3-COMPLETE-SPECIFICATIONS.md</code> (12,600+ lines)</p>
+<hr />
+<h2 id="sprint-31-monitoring-stack-week-17-18"><a class="header" href="#sprint-31-monitoring-stack-week-17-18">Sprint 3.1: Monitoring Stack [Week 17-18]</a></h2>
+<p><strong>Duration</strong>: 2 weeks
+<strong>Team</strong>: 1-2 SREs
+<strong>Prerequisites</strong>: Kubernetes deployment complete
+<strong>Priority</strong>: CRITICAL</p>
+<h3 id="sprint-goals"><a class="header" href="#sprint-goals">Sprint Goals</a></h3>
+<ul>
+<li>Deploy complete observability stack (Prometheus, Grafana, Loki, Jaeger)</li>
+<li>Instrument all services with metrics</li>
+<li>Create pre-built Grafana dashboards (5+ dashboards)</li>
+<li>Achieve 100% service coverage for metrics collection</li>
+<li>30-day metrics retention</li>
+</ul>
+<h3 id="tasks"><a class="header" href="#tasks">Tasks</a></h3>
+<h4 id="prometheus-deployment-8-hours"><a class="header" href="#prometheus-deployment-8-hours">Prometheus Deployment (8 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Deploy Prometheus Operator</strong> (3 hours)</p>
+<ul>
+<li>Install Prometheus Operator via Helm</li>
+<li>Configure ServiceMonitors for auto-discovery</li>
+<li>Set up 30-day retention</li>
+<li>Code example:
+<pre><code class="language-yaml"># k8s/monitoring/prometheus.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: octollm-prometheus
+  namespace: octollm
+spec:
+  replicas: 2
+  retention: 30d
+  storage:
+    volumeClaimTemplate:
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 100Gi
+  serviceMonitorSelector:
+    matchLabels:
+      app: octollm
+  resources:
+    requests:
+      memory: "4Gi"
+      cpu: "2000m"
+    limits:
+      memory: "8Gi"
+      cpu: "4000m"
+</code></pre>
+</li>
+<li>Files to create: <code>k8s/monitoring/prometheus.yaml</code></li>
+<li>Reference: <code>docs/operations/monitoring-alerting.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create ServiceMonitors</strong> (3 hours)</p>
+<ul>
+<li>ServiceMonitor for Orchestrator</li>
+<li>ServiceMonitor for Reflex Layer</li>
+<li>ServiceMonitor for all Arms</li>
+<li>ServiceMonitor for databases</li>
+<li>Code example:
+<pre><code class="language-yaml"># k8s/monitoring/servicemonitor-orchestrator.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: orchestrator
+  namespace: octollm
+  labels:
+    app: octollm
+spec:
+  selector:
+    matchLabels:
+      app: orchestrator
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+</code></pre>
+</li>
+<li>Files to create: <code>k8s/monitoring/servicemonitor-*.yaml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Configure Prometheus Rules</strong> (2 hours)</p>
+<ul>
+<li>Recording rules for aggregations</li>
+<li>Alert rules (covered in Sprint 3.2)</li>
+<li>Files to create: <code>k8s/monitoring/prometheus-rules.yaml</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="application-metrics-implementation-10-hours"><a class="header" href="#application-metrics-implementation-10-hours">Application Metrics Implementation (10 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Instrument Orchestrator</strong> (3 hours)</p>
+<ul>
+<li>HTTP request metrics (rate, duration, errors by endpoint)</li>
+<li>Task lifecycle metrics (created, completed, failed, duration)</li>
+<li>LLM API metrics (calls, tokens, cost, duration, errors)</li>
+<li>Code example:
+<pre><code class="language-python"># orchestrator/metrics.py
+from prometheus_client import Counter, Histogram, Gauge, generate_latest
+from fastapi import FastAPI, Response
+
+# HTTP metrics
+http_requests_total = Counter(
+    'http_requests_total',
+    'Total HTTP requests',
+    ['method', 'endpoint', 'status']
+)
+
+http_request_duration_seconds = Histogram(
+    'http_request_duration_seconds',
+    'HTTP request duration',
+    ['method', 'endpoint']
+)
+
+# Task metrics
+tasks_created_total = Counter(
+    'tasks_created_total',
+    'Total tasks created',
+    ['task_type']
+)
+
+tasks_completed_total = Counter(
+    'tasks_completed_total',
+    'Total tasks completed',
+    ['task_type', 'status']
+)
+
+task_duration_seconds = Histogram(
+    'task_duration_seconds',
+    'Task execution duration',
+    ['task_type'],
+    buckets=[0.5, 1, 2, 5, 10, 30, 60, 120, 300]
+)
+
+tasks_in_progress = Gauge(
+    'tasks_in_progress',
+    'Tasks currently in progress',
+    ['task_type']
+)
+
+# LLM metrics
+llm_api_calls_total = Counter(
+    'llm_api_calls_total',
+    'Total LLM API calls',
+    ['provider', 'model']
+)
+
+llm_api_tokens_total = Counter(
+    'llm_api_tokens_total',
+    'Total LLM API tokens used',
+    ['provider', 'model', 'type']  # type: prompt, completion
+)
+
+llm_api_cost_total = Counter(
+    'llm_api_cost_total',
+    'Total LLM API cost in USD',
+    ['provider', 'model']
+)
+
+llm_api_duration_seconds = Histogram(
+    'llm_api_duration_seconds',
+    'LLM API call duration',
+    ['provider', 'model']
+)
+
+# Metrics endpoint
+@app.get("/metrics")
+async def metrics():
+    return Response(content=generate_latest(), media_type="text/plain")
+</code></pre>
+</li>
+<li>Files to create: <code>orchestrator/metrics.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Instrument Arms</strong> (4 hours)</p>
+<ul>
+<li>Arm-specific metrics (requests, availability, latency, success rate)</li>
+<li>Memory metrics (operations, query duration, cache hits/misses)</li>
+<li>Similar pattern to Orchestrator for each arm</li>
+<li>Files to create: <code>arms/{arm_name}/metrics.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Instrument Reflex Layer</strong> (2 hours)</p>
+<ul>
+<li>PII detection metrics (detections, types, redactions)</li>
+<li>Injection detection metrics (attempts blocked)</li>
+<li>Cache metrics (hits, misses, hit rate, evictions)</li>
+<li>Code example (Rust):
+<pre><code class="language-rust">// reflex-layer/src/metrics.rs
+use prometheus::{IntCounter, IntCounterVec, HistogramVec, Registry};
+use lazy_static::lazy_static;
+
+lazy_static! {
+    pub static ref HTTP_REQUESTS_TOTAL: IntCounterVec = IntCounterVec::new(
+        prometheus::opts!("http_requests_total", "Total HTTP requests"),
+        &amp;["method", "endpoint", "status"]
+    ).unwrap();
+
+    pub static ref PII_DETECTIONS_TOTAL: IntCounterVec = IntCounterVec::new(
+        prometheus::opts!("pii_detections_total", "Total PII detections"),
+        &amp;["pii_type"]
+    ).unwrap();
+
+    pub static ref INJECTION_BLOCKS_TOTAL: IntCounter = IntCounter::new(
+        "injection_blocks_total",
+        "Total prompt injection attempts blocked"
+    ).unwrap();
+
+    pub static ref CACHE_HITS_TOTAL: IntCounter = IntCounter::new(
+        "cache_hits_total",
+        "Total cache hits"
+    ).unwrap();
+
+    pub static ref CACHE_MISSES_TOTAL: IntCounter = IntCounter::new(
+        "cache_misses_total",
+        "Total cache misses"
+    ).unwrap();
+}
+
+pub fn register_metrics(registry: &amp;Registry) {
+    registry.register(Box::new(HTTP_REQUESTS_TOTAL.clone())).unwrap();
+    registry.register(Box::new(PII_DETECTIONS_TOTAL.clone())).unwrap();
+    registry.register(Box::new(INJECTION_BLOCKS_TOTAL.clone())).unwrap();
+    registry.register(Box::new(CACHE_HITS_TOTAL.clone())).unwrap();
+    registry.register(Box::new(CACHE_MISSES_TOTAL.clone())).unwrap();
+}</code></pre>
+</li>
+<li>Files to create: <code>reflex-layer/src/metrics.rs</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Database Metrics</strong> (1 hour)</p>
+<ul>
+<li>PostgreSQL exporter configuration</li>
+<li>Redis exporter configuration</li>
+<li>Qdrant built-in metrics</li>
+<li>Files to create: <code>k8s/monitoring/postgres-exporter.yaml</code>, <code>k8s/monitoring/redis-exporter.yaml</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="grafana-setup-6-hours"><a class="header" href="#grafana-setup-6-hours">Grafana Setup (6 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Deploy Grafana</strong> (2 hours)</p>
+<ul>
+<li>Helm installation</li>
+<li>Configure Prometheus datasource</li>
+<li>Set up authentication (OIDC or basic auth)</li>
+<li>Persistent storage for dashboards</li>
+<li>Files to create: <code>k8s/monitoring/grafana.yaml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create System Overview Dashboard</strong> (1 hour)</p>
+<ul>
+<li>Task success rate (gauge + graph)</li>
+<li>Overall latency (P50, P95, P99)</li>
+<li>Cost per day/week/month</li>
+<li>Error rate by service</li>
+<li>JSON export in repository</li>
+<li>Files to create: <code>k8s/monitoring/dashboards/system-overview.json</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create Service Health Dashboard</strong> (1 hour)</p>
+<ul>
+<li>Availability per service (uptime %)</li>
+<li>Error rate by endpoint</li>
+<li>Latency distributions</li>
+<li>Request volume</li>
+<li>Files to create: <code>k8s/monitoring/dashboards/service-health.json</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create Resource Usage Dashboard</strong> (1 hour)</p>
+<ul>
+<li>CPU usage by pod</li>
+<li>Memory usage by pod</li>
+<li>Disk I/O</li>
+<li>Network traffic</li>
+<li>Files to create: <code>k8s/monitoring/dashboards/resource-usage.json</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create LLM Cost Tracking Dashboard</strong> (1 hour)</p>
+<ul>
+<li>Tokens used per day/week/month</li>
+<li>Cost breakdown by model</li>
+<li>Cost per task</li>
+<li>Budget tracking with alerts</li>
+<li>Files to create: <code>k8s/monitoring/dashboards/llm-costs.json</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="success-criteria"><a class="header" href="#success-criteria">Success Criteria</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Prometheus scraping all services (100% coverage)</li>
+<li><input disabled="" type="checkbox"/>
+Grafana dashboards display real-time data</li>
+<li><input disabled="" type="checkbox"/>
+Metrics retention 30 days</li>
+<li><input disabled="" type="checkbox"/>
+All critical metrics instrumented</li>
+<li><input disabled="" type="checkbox"/>
+Dashboard JSON exported to repository</li>
+</ul>
+<h3 id="estimated-effort"><a class="header" href="#estimated-effort">Estimated Effort</a></h3>
+<ul>
+<li>Development: 24 hours</li>
+<li>Testing: 4 hours</li>
+<li>Documentation: 2 hours</li>
+<li><strong>Total</strong>: 30 hours (~2 weeks for 1 SRE)</li>
+</ul>
+<hr />
+<h2 id="sprint-32-alerting-and-runbooks-week-18-19"><a class="header" href="#sprint-32-alerting-and-runbooks-week-18-19">Sprint 3.2: Alerting and Runbooks [Week 18-19]</a></h2>
+<p><strong>Duration</strong>: 1 week
+<strong>Team</strong>: 1-2 SREs
+<strong>Prerequisites</strong>: Monitoring stack deployed
+<strong>Priority</strong>: CRITICAL</p>
+<h3 id="sprint-goals-1"><a class="header" href="#sprint-goals-1">Sprint Goals</a></h3>
+<ul>
+<li>Deploy Alertmanager with notification routing</li>
+<li>Define 20+ alert rules across all services</li>
+<li>Create 10+ comprehensive runbooks</li>
+<li>Set up on-call rotation and escalation</li>
+<li>Test alerts with simulated incidents</li>
+</ul>
+<h3 id="tasks-1"><a class="header" href="#tasks-1">Tasks</a></h3>
+<h4 id="alertmanager-setup-6-hours"><a class="header" href="#alertmanager-setup-6-hours">Alertmanager Setup (6 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Deploy Alertmanager</strong> (2 hours)</p>
+<ul>
+<li>Helm installation</li>
+<li>Configure notification channels (Slack, PagerDuty, email)</li>
+<li>Set up alert grouping and routing</li>
+<li>Code example:
+<pre><code class="language-yaml"># k8s/monitoring/alertmanager-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: octollm
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+      slack_api_url: '{{ .SlackWebhookURL }}'
+
+    route:
+      group_by: ['alertname', 'cluster', 'service']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 12h
+      receiver: 'default'
+      routes:
+      - match:
+          severity: critical
+        receiver: 'pagerduty'
+        continue: true
+      - match:
+          severity: warning
+        receiver: 'slack'
+
+    receivers:
+    - name: 'default'
+      email_configs:
+      - to: 'team@octollm.io'
+        from: 'alerts@octollm.io'
+        smarthost: 'smtp.gmail.com:587'
+
+    - name: 'slack'
+      slack_configs:
+      - channel: '#octollm-alerts'
+        title: '{{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+    - name: 'pagerduty'
+      pagerduty_configs:
+      - service_key: '{{ .PagerDutyServiceKey }}'
+        description: '{{ .GroupLabels.alertname }}'
+</code></pre>
+</li>
+<li>Files to create: <code>k8s/monitoring/alertmanager-config.yaml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Configure Notification Channels</strong> (2 hours)</p>
+<ul>
+<li>Slack webhook integration</li>
+<li>PagerDuty service key setup</li>
+<li>Email SMTP configuration</li>
+<li>Test notifications</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Set Up Alert Routing</strong> (2 hours)</p>
+<ul>
+<li>Route critical alerts to PagerDuty</li>
+<li>Route warnings to Slack</li>
+<li>Route info to email</li>
+<li>Configure inhibit rules (suppress redundant alerts)</li>
+</ul>
+</li>
+</ul>
+<h4 id="alert-rules-definition-8-hours"><a class="header" href="#alert-rules-definition-8-hours">Alert Rules Definition (8 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Service Availability Alerts</strong> (2 hours)</p>
+<ul>
+<li>Service down (&gt;1 minute)</li>
+<li>High error rate (&gt;5% for 5 minutes)</li>
+<li>Low uptime (&lt;95% over 24 hours)</li>
+<li>Code example:
+<pre><code class="language-yaml"># k8s/monitoring/alert-rules/service-availability.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: service-availability
+  namespace: octollm
+spec:
+  groups:
+  - name: service_availability
+    interval: 30s
+    rules:
+    - alert: ServiceDown
+      expr: up{job=~"orchestrator|reflex-layer|.*-arm"} == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Service {{ $labels.job }} is down"
+        description: "{{ $labels.job }} has been down for more than 1 minute"
+
+    - alert: HighErrorRate
+      expr: |
+        (
+          sum(rate(http_requests_total{status=~"5.."}[5m])) by (job)
+          /
+          sum(rate(http_requests_total[5m])) by (job)
+        ) &gt; 0.05
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High error rate on {{ $labels.job }}"
+        description: "{{ $labels.job }} has &gt;5% error rate for 5 minutes"
+
+    - alert: LowUptime
+      expr: avg_over_time(up{job=~"orchestrator|reflex-layer|.*-arm"}[24h]) &lt; 0.95
+      labels:
+        severity: warning
+      annotations:
+        summary: "Low uptime for {{ $labels.job }}"
+        description: "{{ $labels.job }} uptime &lt;95% over last 24 hours"
+</code></pre>
+</li>
+<li>Files to create: <code>k8s/monitoring/alert-rules/service-availability.yaml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Performance Alerts</strong> (2 hours)</p>
+<ul>
+<li>High latency (P95 &gt;30s for tasks)</li>
+<li>Low throughput (&lt;10 tasks/minute)</li>
+<li>Task timeout rate (&gt;10%)</li>
+<li>Files to create: <code>k8s/monitoring/alert-rules/performance.yaml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Resource Alerts</strong> (2 hours)</p>
+<ul>
+<li>High CPU (&gt;80% for 10 minutes)</li>
+<li>High memory (&gt;90% for 5 minutes)</li>
+<li>Disk space low (&lt;15% free)</li>
+<li>Files to create: <code>k8s/monitoring/alert-rules/resources.yaml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Database Alerts</strong> (1 hour)</p>
+<ul>
+<li>Connection pool exhausted</li>
+<li>Replication lag (&gt;60s)</li>
+<li>Slow queries (&gt;10s)</li>
+<li>Files to create: <code>k8s/monitoring/alert-rules/database.yaml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>LLM Cost Alerts</strong> (1 hour)</p>
+<ul>
+<li>Daily spend &gt;$500</li>
+<li>Monthly spend &gt;$10,000</li>
+<li>Unexpected spike (&gt;2x average)</li>
+<li>Files to create: <code>k8s/monitoring/alert-rules/llm-costs.yaml</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="runbook-creation-10-hours"><a class="header" href="#runbook-creation-10-hours">Runbook Creation (10 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create Runbook Template</strong> (1 hour)</p>
+<ul>
+<li>Standard structure (Symptoms, Diagnosis, Resolution, Prevention)</li>
+<li>Code examples for common commands</li>
+<li>Files to create: <code>docs/operations/runbooks/TEMPLATE.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Service Unavailable Runbook</strong> (1 hour)</p>
+<ul>
+<li>Check pod status</li>
+<li>Review recent deployments</li>
+<li>Inspect logs</li>
+<li>Restart procedures</li>
+<li>Files to create: <code>docs/operations/runbooks/service-unavailable.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>High Latency Runbook</strong> (1 hour)</p>
+<ul>
+<li>Identify bottleneck (database, LLM API, network)</li>
+<li>Profile slow requests</li>
+<li>Check resource utilization</li>
+<li>Optimization steps</li>
+<li>Files to create: <code>docs/operations/runbooks/high-latency.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Database Connection Issues Runbook</strong> (1 hour)</p>
+<ul>
+<li>Check connection pool status</li>
+<li>Verify credentials</li>
+<li>Test network connectivity</li>
+<li>Restart database clients</li>
+<li>Files to create: <code>docs/operations/runbooks/database-connection.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Memory Leak Runbook</strong> (1 hour)</p>
+<ul>
+<li>Identify leaking service</li>
+<li>Profile memory usage</li>
+<li>Restart procedures</li>
+<li>Long-term fixes</li>
+<li>Files to create: <code>docs/operations/runbooks/memory-leak.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Task Routing Failure Runbook</strong> (1 hour)</p>
+<ul>
+<li>Check arm registration</li>
+<li>Verify capability matching</li>
+<li>Review routing logs</li>
+<li>Manual task reassignment</li>
+<li>Files to create: <code>docs/operations/runbooks/task-routing-failure.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>LLM API Failure Runbook</strong> (1 hour)</p>
+<ul>
+<li>Check API rate limits</li>
+<li>Verify API keys</li>
+<li>Test fallback providers</li>
+<li>Manual retry procedures</li>
+<li>Files to create: <code>docs/operations/runbooks/llm-api-failure.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Cache Performance Runbook</strong> (1 hour)</p>
+<ul>
+<li>Check Redis health</li>
+<li>Analyze eviction rate</li>
+<li>Warm cache</li>
+<li>Tune TTL settings</li>
+<li>Files to create: <code>docs/operations/runbooks/cache-performance.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Resource Exhaustion Runbook</strong> (1 hour)</p>
+<ul>
+<li>Identify resource-hungry pods</li>
+<li>Scale up resources</li>
+<li>Clean up old data</li>
+<li>Implement limits</li>
+<li>Files to create: <code>docs/operations/runbooks/resource-exhaustion.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Security Violation Runbook</strong> (1 hour)</p>
+<ul>
+<li>Review security logs</li>
+<li>Block malicious IPs</li>
+<li>Revoke compromised tokens</li>
+<li>Incident response</li>
+<li>Files to create: <code>docs/operations/runbooks/security-violation.md</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="on-call-setup-4-hours"><a class="header" href="#on-call-setup-4-hours">On-Call Setup (4 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Define On-Call Rotation</strong> (2 hours)</p>
+<ul>
+<li>Primary, secondary, escalation roles</li>
+<li>Rotation schedule (weekly)</li>
+<li>Handoff procedures</li>
+<li>PagerDuty configuration</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Document Escalation Procedures</strong> (1 hour)</p>
+<ul>
+<li>Level 1: On-call Engineer (15 minutes)</li>
+<li>Level 2: Senior Engineer (30 minutes)</li>
+<li>Level 3: Engineering Lead (60 minutes)</li>
+<li>Files to create: <code>docs/operations/on-call-guide.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create On-Call Runbook Index</strong> (1 hour)</p>
+<ul>
+<li>Categorized runbook list</li>
+<li>Quick reference commands</li>
+<li>Common issue resolutions</li>
+<li>Files to create: <code>docs/operations/on-call-quick-reference.md</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="success-criteria-1"><a class="header" href="#success-criteria-1">Success Criteria</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Alertmanager routing alerts correctly</li>
+<li><input disabled="" type="checkbox"/>
+All notification channels tested</li>
+<li><input disabled="" type="checkbox"/>
+20+ alert rules defined</li>
+<li><input disabled="" type="checkbox"/>
+10+ runbooks created and tested</li>
+<li><input disabled="" type="checkbox"/>
+On-call rotation configured</li>
+<li><input disabled="" type="checkbox"/>
+Simulated incidents resolved using runbooks</li>
+</ul>
+<h3 id="estimated-effort-1"><a class="header" href="#estimated-effort-1">Estimated Effort</a></h3>
+<ul>
+<li>Development: 20 hours</li>
+<li>Testing: 4 hours</li>
+<li>Documentation: 4 hours</li>
+<li><strong>Total</strong>: 28 hours (~1 week for 2 SREs)</li>
+</ul>
+<hr />
+<h2 id="sprint-33-disaster-recovery-week-19-20"><a class="header" href="#sprint-33-disaster-recovery-week-19-20">Sprint 3.3: Disaster Recovery [Week 19-20]</a></h2>
+<p><strong>(Abbreviated for space - full version would be 1,500-2,000 lines)</strong></p>
+<h3 id="sprint-goals-2"><a class="header" href="#sprint-goals-2">Sprint Goals</a></h3>
+<ul>
+<li>Implement automated backup systems for all databases</li>
+<li>Create point-in-time recovery (PITR) procedures</li>
+<li>Deploy Velero for cluster backups</li>
+<li>Test disaster recovery scenarios (RTO &lt;4 hours, RPO &lt;1 hour)</li>
+<li>Document and automate restore procedures</li>
+</ul>
+<h3 id="key-tasks-summary"><a class="header" href="#key-tasks-summary">Key Tasks (Summary)</a></h3>
+<ol>
+<li>PostgreSQL Backups (WAL archiving, pg_basebackup, daily full backups)</li>
+<li>Qdrant Backups (snapshot-based, 6-hour schedule)</li>
+<li>Redis Persistence (RDB + AOF)</li>
+<li>Velero Cluster Backups (daily full, hourly critical)</li>
+<li>Backup Verification (automated testing)</li>
+<li>Disaster Scenario Testing (10 scenarios)</li>
+</ol>
+<p><strong>Reference</strong>: <code>docs/operations/disaster-recovery.md</code> (2,779 lines)</p>
+<hr />
+<h2 id="sprint-34-performance-tuning-week-20-22"><a class="header" href="#sprint-34-performance-tuning-week-20-22">Sprint 3.4: Performance Tuning [Week 20-22]</a></h2>
+<p><strong>(Abbreviated for space - full version would be 1,200-1,500 lines)</strong></p>
+<h3 id="sprint-goals-3"><a class="header" href="#sprint-goals-3">Sprint Goals</a></h3>
+<ul>
+<li>Optimize database performance (indexes, query tuning, connection pooling)</li>
+<li>Tune application-level performance (async ops, batching, compression)</li>
+<li>Implement multi-level caching strategies</li>
+<li>Optimize LLM API usage (batching, model selection, streaming)</li>
+<li>Run load tests and identify bottlenecks</li>
+<li>Achieve P95 latency &lt;30s, throughput &gt;1,000 tasks/sec</li>
+</ul>
+<h3 id="key-tasks-summary-1"><a class="header" href="#key-tasks-summary-1">Key Tasks (Summary)</a></h3>
+<ol>
+<li>Database Optimization (PostgreSQL tuning, index optimization)</li>
+<li>Application Tuning (async operations, request batching)</li>
+<li>Cache Optimization (L1 in-memory, L2 Redis, cache warming)</li>
+<li>LLM API Optimization (batching, streaming, model selection)</li>
+<li>Load Testing (k6 scripts: progressive, stress, soak tests)</li>
+<li>Profiling and Bottleneck Identification</li>
+</ol>
+<p><strong>Reference</strong>: <code>docs/operations/performance-tuning.md</code></p>
+<hr />
+<h2 id="sprint-35-troubleshooting-automation-week-21-22"><a class="header" href="#sprint-35-troubleshooting-automation-week-21-22">Sprint 3.5: Troubleshooting Automation [Week 21-22]</a></h2>
+<p><strong>(Abbreviated for space - full version would be 800-1,000 lines)</strong></p>
+<h3 id="sprint-goals-4"><a class="header" href="#sprint-goals-4">Sprint Goals</a></h3>
+<ul>
+<li>Implement health check endpoints with deep health checks</li>
+<li>Create auto-remediation scripts for common issues</li>
+<li>Build diagnostic tools and debug endpoints</li>
+<li>Set up performance dashboards for real-time monitoring</li>
+<li>Automate routine troubleshooting tasks</li>
+</ul>
+<h3 id="key-tasks-summary-2"><a class="header" href="#key-tasks-summary-2">Key Tasks (Summary)</a></h3>
+<ol>
+<li>Deep Health Checks (dependency health, database connectivity)</li>
+<li>Auto-Remediation Scripts (restart policies, self-healing)</li>
+<li>Diagnostic Tools (debug endpoints, log aggregation)</li>
+<li>Performance Dashboards (real-time metrics, SLO tracking)</li>
+</ol>
+<hr />
+<h2 id="phase-3-summary"><a class="header" href="#phase-3-summary">Phase 3 Summary</a></h2>
+<p><strong>Total Tasks</strong>: 50+ operations tasks across 5 sprints
+<strong>Estimated Duration</strong>: 4-6 weeks with 2-3 SREs
+<strong>Total Estimated Hours</strong>: ~120 hours development + ~20 hours testing + ~15 hours documentation = 155 hours</p>
+<p><strong>Deliverables</strong>:</p>
+<ul>
+<li>Complete monitoring stack (Prometheus, Grafana, Alertmanager)</li>
+<li>Alerting with runbooks (20+ alerts, 10+ runbooks)</li>
+<li>Automated backups and disaster recovery (RTO &lt;4hr, RPO &lt;1hr)</li>
+<li>Performance tuning and load testing</li>
+<li>Troubleshooting automation</li>
+</ul>
+<p><strong>Completion Checklist</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Monitoring stack operational with 30-day retention</li>
+<li><input disabled="" type="checkbox"/>
+Alerts firing correctly for simulated incidents</li>
+<li><input disabled="" type="checkbox"/>
+Backups tested and verified (recovery scenarios passed)</li>
+<li><input disabled="" type="checkbox"/>
+Load tests passing at scale (1,000 concurrent tasks)</li>
+<li><input disabled="" type="checkbox"/>
+Runbooks tested by on-call team</li>
+<li><input disabled="" type="checkbox"/>
+Performance targets met (P95 &lt;30s, &gt;1,000 tasks/sec)</li>
+<li><input disabled="" type="checkbox"/>
+Documentation complete and up-to-date</li>
+</ul>
+<p><strong>Next Phase</strong>: Phase 5 (Security Hardening) - After Phase 4 complete</p>
+<hr />
+<p><strong>Document Version</strong>: 1.0
+<strong>Last Updated</strong>: 2025-11-10
+<strong>Maintained By</strong>: OctoLLM Project Management Team</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../project-tracking/phases/phase-2.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../project-tracking/phases/phase-4.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../project-tracking/phases/phase-2.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../project-tracking/phases/phase-4.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,1018 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>RetrievalResult Schema - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/api/schemas/retrieval-result.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="retrievalresult-schema-reference"><a class="header" href="#retrievalresult-schema-reference">RetrievalResult Schema Reference</a></h1>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The <strong>RetrievalResult</strong> (also called <code>SearchResponse</code>) schema represents the output from the Retriever arm after performing knowledge base searches. It includes ranked results, relevance scores, optional LLM-generated synthesis, and citations for Retrieval-Augmented Generation (RAG) workflows.</p>
+<p><strong>Used By</strong>: Retriever Arm (output), Orchestrator (for RAG), Coder Arm (for context)
+<strong>Primary Endpoint</strong>: <code>POST /search</code>
+<strong>Format</strong>: JSON</p>
+<hr />
+<h2 id="structure"><a class="header" href="#structure">Structure</a></h2>
+<h3 id="retrievalresult-searchresponse"><a class="header" href="#retrievalresult-searchresponse">RetrievalResult (SearchResponse)</a></h3>
+<p>Complete search response with results, synthesis, and citations.</p>
+<pre><code class="language-typescript">interface RetrievalResult {
+  results: SearchResult[];          // Required: Ordered list of results
+  query: string;                    // Required: Original query (echo)
+  method_used: SearchMethod;        // Required: Method used
+  total_results: number;            // Required: Number of results
+  synthesis?: string;               // Optional: LLM summary with citations
+  citations?: string[];             // Optional: Source URLs in citation order
+  metadata?: RetrievalMetadata;     // Optional: Additional info
+}
+
+interface SearchResult {
+  content: string;                  // Required: Retrieved content
+  source: string;                   // Required: Source URL or identifier
+  relevance_score: number;          // Required: 0.0-1.0 relevance
+  rank: number;                     // Required: 1-indexed rank
+  metadata?: ResultMetadata;        // Optional: Additional metadata
+}
+
+type SearchMethod = 'vector' | 'keyword' | 'hybrid';
+
+interface RetrievalMetadata {
+  search_duration_ms: number;       // Search execution time
+  synthesis_duration_ms?: number;   // Synthesis generation time
+  vector_model?: string;            // Embedding model used
+  database_used: string;            // Vector DB (Qdrant, Weaviate, etc.)
+  reranked: boolean;                // Whether results were reranked
+}
+
+interface ResultMetadata {
+  title?: string;                   // Document title
+  date?: string;                    // Publication date (ISO 8601)
+  author?: string;                  // Author name
+  language?: string;                // Document language
+  severity?: string;                // Severity (for CVEs, vulnerabilities)
+  cvss_score?: number;              // CVSS score (0-10)
+  tags?: string[];                  // Tags/categories
+  snippet_start?: number;           // Character offset in original doc
+  snippet_length?: number;          // Length of content snippet
+  [key: string]: any;               // Additional custom metadata
+}
+</code></pre>
+<hr />
+<h2 id="field-definitions"><a class="header" href="#field-definitions">Field Definitions</a></h2>
+<h3 id="results-required"><a class="header" href="#results-required"><code>results</code> (required)</a></h3>
+<p><strong>Type</strong>: array of SearchResult objects
+<strong>Description</strong>: Ordered list of search results, ranked by relevance (highest first)</p>
+<p><strong>Ordering</strong>:</p>
+<ul>
+<li>Results are sorted by <code>relevance_score</code> in descending order</li>
+<li>Rank 1 = most relevant result</li>
+<li>Empty array if no results match criteria</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "results": [
+    {
+      "content": "Use parameterized queries to prevent SQL injection...",
+      "source": "https://owasp.org/sql-injection-prevention",
+      "relevance_score": 0.94,
+      "rank": 1
+    },
+    {
+      "content": "Input validation with allowlists is another defense...",
+      "source": "https://portswigger.net/web-security/sql-injection",
+      "relevance_score": 0.87,
+      "rank": 2
+    }
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="resultscontent-required"><a class="header" href="#resultscontent-required"><code>results[].content</code> (required)</a></h3>
+<p><strong>Type</strong>: string
+<strong>Constraints</strong>: 1-5000 characters
+<strong>Description</strong>: Retrieved content snippet from the source document</p>
+<p><strong>Format</strong>:</p>
+<ul>
+<li>Plain text (no HTML markup)</li>
+<li>Trimmed to relevant context window</li>
+<li>May be truncated with "..." if exceeds max length</li>
+<li>Surrounding context included for clarity</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<pre><code class="language-json">// Well-formed content
+"Use parameterized queries to prevent SQL injection. This technique separates SQL code from user input, making injection impossible. Example: cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))"
+
+// Truncated content
+"Nginx HTTP/2 buffer overflow vulnerability allows remote code execution... [see full advisory for details]"
+</code></pre>
+<hr />
+<h3 id="resultssource-required"><a class="header" href="#resultssource-required"><code>results[].source</code> (required)</a></h3>
+<p><strong>Type</strong>: string
+<strong>Constraints</strong>: Valid URL or identifier
+<strong>Description</strong>: Source URL or document identifier where content was retrieved</p>
+<p><strong>Format</strong>:</p>
+<ul>
+<li>Full URLs (https://example.com/path)</li>
+<li>Internal document IDs (doc_abc123)</li>
+<li>File paths (documents/security/vuln-report.pdf)</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<pre><code class="language-json">"https://nvd.nist.gov/vuln/detail/CVE-2024-12345"
+"https://owasp.org/sql-injection-prevention"
+"doc_nginx_security_2024_001"
+"documents/vulnerabilities/nginx-http2.pdf"
+</code></pre>
+<hr />
+<h3 id="resultsrelevance_score-required"><a class="header" href="#resultsrelevance_score-required"><code>results[].relevance_score</code> (required)</a></h3>
+<p><strong>Type</strong>: number
+<strong>Constraints</strong>: 0.0-1.0
+<strong>Description</strong>: Relevance score indicating how well the result matches the query</p>
+<p><strong>Scoring Methodology</strong>:</p>
+<p><strong>Vector Search</strong>:</p>
+<ul>
+<li>Cosine similarity between query embedding and document embedding</li>
+<li>Range: 0.0 (orthogonal) to 1.0 (identical)</li>
+</ul>
+<p><strong>Keyword Search</strong>:</p>
+<ul>
+<li>TF-IDF or BM25 scoring, normalized to 0-1 range</li>
+<li>Factors: term frequency, inverse document frequency, document length</li>
+</ul>
+<p><strong>Hybrid Search</strong>:</p>
+<ul>
+<li>Weighted combination of vector and keyword scores</li>
+<li>Default: 0.7 × vector_score + 0.3 × keyword_score</li>
+</ul>
+<p><strong>Score Interpretation</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Range</th><th>Interpretation</th><th>Quality</th></tr></thead><tbody>
+<tr><td>0.9-1.0</td><td>Excellent match</td><td>Highly relevant, exact match likely</td></tr>
+<tr><td>0.7-0.89</td><td>Good match</td><td>Relevant, on-topic</td></tr>
+<tr><td>0.5-0.69</td><td>Fair match</td><td>Somewhat relevant, may need filtering</td></tr>
+<tr><td>0.3-0.49</td><td>Weak match</td><td>Tangentially related</td></tr>
+<tr><td>0.0-0.29</td><td>Poor match</td><td>Likely irrelevant</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "results": [
+    {"relevance_score": 0.94, "rank": 1},  // Excellent
+    {"relevance_score": 0.87, "rank": 2},  // Good
+    {"relevance_score": 0.62, "rank": 3}   // Fair
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="resultsrank-required"><a class="header" href="#resultsrank-required"><code>results[].rank</code> (required)</a></h3>
+<p><strong>Type</strong>: integer
+<strong>Constraints</strong>: &gt;= 1
+<strong>Description</strong>: 1-indexed rank of the result in the ordered list</p>
+<p><strong>Ranking</strong>:</p>
+<ul>
+<li>Rank 1 = highest relevance_score</li>
+<li>Sequential ordering (1, 2, 3, ...)</li>
+<li>No gaps even if scores are identical</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">[
+  {"rank": 1, "relevance_score": 0.94},
+  {"rank": 2, "relevance_score": 0.87},
+  {"rank": 3, "relevance_score": 0.87}  // Same score, next rank
+]
+</code></pre>
+<hr />
+<h3 id="resultsmetadata-optional"><a class="header" href="#resultsmetadata-optional"><code>results[].metadata</code> (optional)</a></h3>
+<p><strong>Type</strong>: object
+<strong>Description</strong>: Additional structured information about the result</p>
+<p><strong>Common Metadata Fields</strong>:</p>
+<p><strong>Document Metadata</strong>:</p>
+<ul>
+<li><code>title</code>: Document title</li>
+<li><code>date</code>: Publication date (ISO 8601)</li>
+<li><code>author</code>: Author name</li>
+<li><code>language</code>: Document language (ISO 639-1 code)</li>
+</ul>
+<p><strong>Security Metadata</strong> (for CVEs, vulnerabilities):</p>
+<ul>
+<li><code>severity</code>: none | low | medium | high | critical</li>
+<li><code>cvss_score</code>: 0.0-10.0 CVSS score</li>
+<li><code>cve_id</code>: CVE identifier (e.g., "CVE-2024-12345")</li>
+<li><code>affected_versions</code>: Affected software versions</li>
+</ul>
+<p><strong>Content Metadata</strong>:</p>
+<ul>
+<li><code>tags</code>: Array of tags/categories</li>
+<li><code>snippet_start</code>: Character offset in original document</li>
+<li><code>snippet_length</code>: Length of content snippet</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "metadata": {
+    "title": "Nginx HTTP/2 Buffer Overflow Vulnerability",
+    "date": "2024-02-15T10:30:00Z",
+    "author": "NIST NVD",
+    "language": "en",
+    "severity": "high",
+    "cvss_score": 7.5,
+    "cve_id": "CVE-2024-12345",
+    "affected_versions": "&lt; 1.24.0",
+    "tags": ["nginx", "http2", "buffer-overflow", "rce"]
+  }
+}
+</code></pre>
+<hr />
+<h3 id="query-required"><a class="header" href="#query-required"><code>query</code> (required)</a></h3>
+<p><strong>Type</strong>: string
+<strong>Description</strong>: Original search query echoed back in the response</p>
+<p><strong>Purpose</strong>:</p>
+<ul>
+<li>Confirms query was processed correctly</li>
+<li>Useful for logging and debugging</li>
+<li>Enables query correlation</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "query": "What are common nginx vulnerabilities?",
+  "results": [...]
+}
+</code></pre>
+<hr />
+<h3 id="method_used-required"><a class="header" href="#method_used-required"><code>method_used</code> (required)</a></h3>
+<p><strong>Type</strong>: enum - <code>'vector'</code> | <code>'keyword'</code> | <code>'hybrid'</code>
+<strong>Description</strong>: Search method that was actually used</p>
+<p><strong>Method Characteristics</strong>:</p>
+<p><strong>vector</strong> - Semantic similarity search</p>
+<ul>
+<li>Uses embedding models (e.g., text-embedding-ada-002)</li>
+<li>Finds semantically similar content</li>
+<li>Best for: conceptual queries, synonyms, paraphrasing</li>
+</ul>
+<p><strong>keyword</strong> - Traditional keyword matching</p>
+<ul>
+<li>Uses TF-IDF or BM25 algorithms</li>
+<li>Finds exact or fuzzy keyword matches</li>
+<li>Best for: specific terms, product names, IDs</li>
+</ul>
+<p><strong>hybrid</strong> - Combination of vector and keyword</p>
+<ul>
+<li>Weighted combination (default: 70% vector, 30% keyword)</li>
+<li>Reranking step to merge results</li>
+<li>Best for: most queries, balance of precision and recall</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "query": "SQL injection prevention",
+  "method": "vector",  // Requested method
+  "method_used": "hybrid"  // Actually used (auto-upgraded)
+}
+</code></pre>
+<p><strong>Note</strong>: The system may auto-upgrade to <code>hybrid</code> if <code>vector</code> or <code>keyword</code> alone returns few results.</p>
+<hr />
+<h3 id="total_results-required"><a class="header" href="#total_results-required"><code>total_results</code> (required)</a></h3>
+<p><strong>Type</strong>: integer
+<strong>Constraints</strong>: &gt;= 0
+<strong>Description</strong>: Total number of results returned (may be less than requested <code>limit</code> if filtered)</p>
+<p><strong>Examples</strong>:</p>
+<pre><code class="language-json">{"total_results": 10}  // Returned 10 results
+{"total_results": 0}   // No matching results
+</code></pre>
+<hr />
+<h3 id="synthesis-optional"><a class="header" href="#synthesis-optional"><code>synthesis</code> (optional)</a></h3>
+<p><strong>Type</strong>: string
+<strong>Constraints</strong>: 100-2000 characters
+<strong>Description</strong>: LLM-generated summary of the results with numbered citations</p>
+<p><strong>Format</strong>:</p>
+<ul>
+<li>Plain text summary</li>
+<li>Inline citations [1], [2], [3] corresponding to <code>citations</code> array</li>
+<li>Synthesizes information from multiple sources</li>
+<li>2-5 sentences typical</li>
+</ul>
+<p><strong>Generation</strong>:</p>
+<ul>
+<li>Only generated if <code>include_citations: true</code> in request</li>
+<li>Uses GPT-3.5-turbo or similar model</li>
+<li>Costs ~500-1500 tokens per synthesis</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "synthesis": "Nginx has several known vulnerabilities including buffer overflow in HTTP/2 [1] and remote code execution via malformed headers [2]. The HTTP/2 buffer overflow affects versions prior to 1.24.0, with a CVSS score of 7.5. The RCE vulnerability is more critical with CVSS 9.8 and affects versions below 1.24.1.",
+  "citations": [
+    "https://nvd.nist.gov/vuln/detail/CVE-2024-12345",
+    "https://security.nginx.org/advisories/2024/001"
+  ]
+}
+</code></pre>
+<p><strong>When Not Present</strong>:</p>
+<ul>
+<li><code>include_citations: false</code> in request</li>
+<li>No results to synthesize</li>
+<li>Synthesis generation failed (fallback to empty)</li>
+</ul>
+<hr />
+<h3 id="citations-optional"><a class="header" href="#citations-optional"><code>citations</code> (optional)</a></h3>
+<p><strong>Type</strong>: array of strings (URLs)
+<strong>Description</strong>: Source URLs in citation order matching [1], [2], [3] in synthesis</p>
+<p><strong>Format</strong>:</p>
+<ul>
+<li>Array index 0 = citation [1]</li>
+<li>Array index 1 = citation [2]</li>
+<li>etc.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "synthesis": "SQL injection can be prevented using parameterized queries [1], input validation [2], and ORM frameworks [3].",
+  "citations": [
+    "https://owasp.org/sql-injection-prevention",
+    "https://portswigger.net/web-security/sql-injection",
+    "https://docs.sqlalchemy.org/en/14/core/tutorial.html"
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="metadata-optional"><a class="header" href="#metadata-optional"><code>metadata</code> (optional)</a></h3>
+<p><strong>Type</strong>: object
+<strong>Description</strong>: Additional information about the search process</p>
+<p><strong>Common Metadata Fields</strong>:</p>
+<ul>
+<li><code>search_duration_ms</code>: Search execution time (vector/keyword search)</li>
+<li><code>synthesis_duration_ms</code>: Synthesis generation time (LLM call)</li>
+<li><code>vector_model</code>: Embedding model used (e.g., "text-embedding-ada-002")</li>
+<li><code>database_used</code>: Vector database (e.g., "qdrant", "weaviate")</li>
+<li><code>reranked</code>: Whether results were reranked after hybrid search</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "metadata": {
+    "search_duration_ms": 450,
+    "synthesis_duration_ms": 1200,
+    "vector_model": "text-embedding-ada-002",
+    "database_used": "qdrant",
+    "reranked": true
+  }
+}
+</code></pre>
+<hr />
+<h2 id="complete-examples"><a class="header" href="#complete-examples">Complete Examples</a></h2>
+<h3 id="example-1-hybrid-search-with-synthesis"><a class="header" href="#example-1-hybrid-search-with-synthesis">Example 1: Hybrid Search with Synthesis</a></h3>
+<pre><code class="language-json">{
+  "results": [
+    {
+      "content": "Nginx HTTP/2 buffer overflow vulnerability (CVE-2024-12345) allows remote attackers to execute arbitrary code. Affects versions prior to 1.24.0. CVSS score: 7.5 (High).",
+      "source": "https://nvd.nist.gov/vuln/detail/CVE-2024-12345",
+      "relevance_score": 0.92,
+      "rank": 1,
+      "metadata": {
+        "title": "CVE-2024-12345",
+        "date": "2024-02-15T10:30:00Z",
+        "severity": "high",
+        "cvss_score": 7.5,
+        "cve_id": "CVE-2024-12345",
+        "affected_versions": "&lt; 1.24.0"
+      }
+    },
+    {
+      "content": "Remote code execution via malformed HTTP headers in Nginx. This vulnerability (CVE-2024-67890) is critical with CVSS 9.8, affecting versions below 1.24.1.",
+      "source": "https://security.nginx.org/advisories/2024/001",
+      "relevance_score": 0.88,
+      "rank": 2,
+      "metadata": {
+        "title": "Nginx RCE Advisory",
+        "date": "2024-03-01T14:15:00Z",
+        "severity": "critical",
+        "cvss_score": 9.8,
+        "cve_id": "CVE-2024-67890",
+        "affected_versions": "&lt; 1.24.1"
+      }
+    }
+  ],
+  "query": "What are common nginx vulnerabilities?",
+  "method_used": "hybrid",
+  "total_results": 2,
+  "synthesis": "Nginx has several known vulnerabilities including buffer overflow in HTTP/2 [1] and remote code execution via malformed headers [2]. The HTTP/2 buffer overflow affects versions prior to 1.24.0, with a CVSS score of 7.5. The RCE vulnerability is more critical with CVSS 9.8 and affects versions below 1.24.1.",
+  "citations": [
+    "https://nvd.nist.gov/vuln/detail/CVE-2024-12345",
+    "https://security.nginx.org/advisories/2024/001"
+  ],
+  "metadata": {
+    "search_duration_ms": 450,
+    "synthesis_duration_ms": 1200,
+    "vector_model": "text-embedding-ada-002",
+    "database_used": "qdrant",
+    "reranked": true
+  }
+}
+</code></pre>
+<hr />
+<h3 id="example-2-vector-search-without-synthesis"><a class="header" href="#example-2-vector-search-without-synthesis">Example 2: Vector Search without Synthesis</a></h3>
+<pre><code class="language-json">{
+  "results": [
+    {
+      "content": "Use parameterized queries to prevent SQL injection. This technique separates SQL code from user input, making injection impossible. Example: cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))",
+      "source": "https://owasp.org/sql-injection-prevention",
+      "relevance_score": 0.94,
+      "rank": 1,
+      "metadata": {
+        "title": "SQL Injection Prevention Cheat Sheet",
+        "date": "2024-01-10T09:00:00Z",
+        "author": "OWASP",
+        "language": "en",
+        "tags": ["sql-injection", "prevention", "security"]
+      }
+    },
+    {
+      "content": "Input validation with allowlists is another defense against SQL injection. Only allow known-safe characters and reject all others.",
+      "source": "https://portswigger.net/web-security/sql-injection",
+      "relevance_score": 0.87,
+      "rank": 2,
+      "metadata": {
+        "title": "SQL Injection",
+        "author": "PortSwigger",
+        "language": "en",
+        "tags": ["sql-injection", "input-validation"]
+      }
+    },
+    {
+      "content": "ORM frameworks like SQLAlchemy automatically use parameterized queries, providing built-in SQL injection protection.",
+      "source": "https://docs.sqlalchemy.org/en/14/core/tutorial.html",
+      "relevance_score": 0.82,
+      "rank": 3,
+      "metadata": {
+        "title": "SQLAlchemy Core Tutorial",
+        "language": "en",
+        "tags": ["orm", "sqlalchemy", "python"]
+      }
+    }
+  ],
+  "query": "SQL injection prevention techniques",
+  "method_used": "vector",
+  "total_results": 3,
+  "metadata": {
+    "search_duration_ms": 320,
+    "vector_model": "text-embedding-ada-002",
+    "database_used": "qdrant",
+    "reranked": false
+  }
+}
+</code></pre>
+<hr />
+<h3 id="example-3-keyword-search-with-filters"><a class="header" href="#example-3-keyword-search-with-filters">Example 3: Keyword Search with Filters</a></h3>
+<pre><code class="language-json">{
+  "results": [
+    {
+      "content": "XSS attack vectors include stored XSS, reflected XSS, and DOM-based XSS. All three types can execute malicious JavaScript in the victim's browser.",
+      "source": "https://owasp.org/xss-attack-vectors",
+      "relevance_score": 0.89,
+      "rank": 1,
+      "metadata": {
+        "title": "Cross-Site Scripting (XSS) Attack Vectors",
+        "date": "2024-06-01T12:00:00Z",
+        "severity": "high",
+        "tags": ["xss", "javascript", "web-security"]
+      }
+    },
+    {
+      "content": "DOM-based XSS occurs when JavaScript reads from the DOM and writes to a dangerous sink like innerHTML without proper sanitization.",
+      "source": "https://portswigger.net/web-security/cross-site-scripting/dom-based",
+      "relevance_score": 0.76,
+      "rank": 2,
+      "metadata": {
+        "title": "DOM-based XSS",
+        "date": "2024-05-15T10:30:00Z",
+        "severity": "medium",
+        "tags": ["xss", "dom", "javascript"]
+      }
+    }
+  ],
+  "query": "XSS attack vectors",
+  "method_used": "keyword",
+  "total_results": 2,
+  "metadata": {
+    "search_duration_ms": 180,
+    "database_used": "qdrant",
+    "reranked": false
+  }
+}
+</code></pre>
+<hr />
+<h3 id="example-4-no-results"><a class="header" href="#example-4-no-results">Example 4: No Results</a></h3>
+<pre><code class="language-json">{
+  "results": [],
+  "query": "blahblahblah nonexistent query xyz123",
+  "method_used": "hybrid",
+  "total_results": 0,
+  "metadata": {
+    "search_duration_ms": 250,
+    "vector_model": "text-embedding-ada-002",
+    "database_used": "qdrant",
+    "reranked": false
+  }
+}
+</code></pre>
+<hr />
+<h2 id="usage-patterns"><a class="header" href="#usage-patterns">Usage Patterns</a></h2>
+<h3 id="pattern-1-rag-retrieval-augmented-generation"><a class="header" href="#pattern-1-rag-retrieval-augmented-generation">Pattern 1: RAG (Retrieval-Augmented Generation)</a></h3>
+<p>Use retrieval results as context for code generation or analysis.</p>
+<pre><code class="language-python">from octollm_sdk import RetrieverClient, CoderClient
+
+retriever = RetrieverClient(bearer_token="service_token_abc123")
+coder = CoderClient(bearer_token="service_token_abc123")
+
+# 1. Retrieve relevant security knowledge
+retrieval_result = await retriever.search({
+    "query": "How to prevent SQL injection in Python?",
+    "method": "hybrid",
+    "limit": 5,
+    "include_citations": True
+})
+
+# 2. Use synthesis as context for code generation
+code_result = await coder.process_code({
+    "request_type": "generate",
+    "language": "python",
+    "instruction": f"""
+        Create a secure database query function.
+
+        Security Context:
+        {retrieval_result.synthesis}
+
+        Sources: {', '.join(retrieval_result.citations)}
+    """,
+    "constraints": ["Follow OWASP guidelines", "Use parameterized queries"]
+})
+
+print("Generated code:")
+print(code_result.code)
+</code></pre>
+<hr />
+<h3 id="pattern-2-filtering-by-relevance-score"><a class="header" href="#pattern-2-filtering-by-relevance-score">Pattern 2: Filtering by Relevance Score</a></h3>
+<p>Only accept high-confidence results.</p>
+<pre><code class="language-typescript">function filterHighConfidenceResults(
+  result: RetrievalResult,
+  minScore: number = 0.7
+): SearchResult[] {
+  return result.results.filter(r =&gt; r.relevance_score &gt;= minScore);
+}
+
+// Example usage
+const retrieval = await retrieverClient.search({
+  query: "nginx CVE 2024",
+  method: "hybrid",
+  limit: 20
+});
+
+const highConfidence = filterHighConfidenceResults(retrieval, 0.8);
+console.log(`${highConfidence.length}/${retrieval.total_results} results are high-confidence`);
+</code></pre>
+<hr />
+<h3 id="pattern-3-citation-extraction-for-reports"><a class="header" href="#pattern-3-citation-extraction-for-reports">Pattern 3: Citation Extraction for Reports</a></h3>
+<p>Extract citations for inclusion in security reports.</p>
+<pre><code class="language-python">def format_citations(result: RetrievalResult) -&gt; str:
+    """Format citations for inclusion in reports."""
+    if not result.citations:
+        return "No citations available"
+
+    citations_text = []
+    for i, url in enumerate(result.citations, start=1):
+        # Try to get title from metadata
+        matching_result = next(
+            (r for r in result.results if r.source == url),
+            None
+        )
+        title = matching_result.metadata.get("title", url) if matching_result else url
+        citations_text.append(f"[{i}] {title}\n    {url}")
+
+    return "\n".join(citations_text)
+
+# Example usage
+retrieval = await retriever.search({
+    "query": "nginx vulnerabilities 2024",
+    "method": "hybrid",
+    "limit": 10,
+    "include_citations": True
+})
+
+print("=== SUMMARY ===")
+print(retrieval.synthesis)
+print("\n=== SOURCES ===")
+print(format_citations(retrieval))
+
+# Output:
+# === SUMMARY ===
+# Nginx has several known vulnerabilities...
+#
+# === SOURCES ===
+# [1] CVE-2024-12345
+#     https://nvd.nist.gov/vuln/detail/CVE-2024-12345
+# [2] Nginx RCE Advisory
+#     https://security.nginx.org/advisories/2024/001
+</code></pre>
+<hr />
+<h3 id="pattern-4-grouping-results-by-metadata"><a class="header" href="#pattern-4-grouping-results-by-metadata">Pattern 4: Grouping Results by Metadata</a></h3>
+<p>Group results by severity, date, or other metadata.</p>
+<pre><code class="language-typescript">function groupBySeverity(result: RetrievalResult): Record&lt;string, SearchResult[]&gt; {
+  const groups: Record&lt;string, SearchResult[]&gt; = {
+    critical: [],
+    high: [],
+    medium: [],
+    low: [],
+    none: []
+  };
+
+  for (const r of result.results) {
+    const severity = r.metadata?.severity || 'none';
+    if (groups[severity]) {
+      groups[severity].push(r);
+    }
+  }
+
+  return groups;
+}
+
+// Example usage
+const retrieval = await retrieverClient.search({
+  query: "web application vulnerabilities",
+  method: "hybrid",
+  limit: 50,
+  filters: {
+    published_after: "2024-01-01"
+  }
+});
+
+const bySeverity = groupBySeverity(retrieval);
+console.log("Results by severity:");
+for (const [severity, results] of Object.entries(bySeverity)) {
+  if (results.length &gt; 0) {
+    console.log(`  ${severity.toUpperCase()}: ${results.length}`);
+  }
+}
+</code></pre>
+<hr />
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<h3 id="1-always-check-total_results-before-processing"><a class="header" href="#1-always-check-total_results-before-processing">1. Always Check <code>total_results</code> Before Processing</a></h3>
+<p><strong>Why</strong>: Empty results need different handling
+<strong>How</strong>: Check count first</p>
+<pre><code class="language-typescript">if (result.total_results === 0) {
+  console.log("No results found, try broader query");
+  return;
+}
+
+// Process results
+result.results.forEach(r =&gt; console.log(r.content));
+</code></pre>
+<hr />
+<h3 id="2-filter-by-relevance-score-for-quality"><a class="header" href="#2-filter-by-relevance-score-for-quality">2. Filter by Relevance Score for Quality</a></h3>
+<p><strong>Why</strong>: Low-relevance results are often noise
+<strong>How</strong>: Set minimum threshold</p>
+<pre><code class="language-python">MIN_RELEVANCE = 0.7
+high_quality = [r for r in result.results if r.relevance_score &gt;= MIN_RELEVANCE]
+</code></pre>
+<hr />
+<h3 id="3-use-synthesis-for-quick-summaries-results-for-details"><a class="header" href="#3-use-synthesis-for-quick-summaries-results-for-details">3. Use Synthesis for Quick Summaries, Results for Details</a></h3>
+<p><strong>Why</strong>: Synthesis is concise but loses detail
+<strong>How</strong>: Show synthesis first, results on demand</p>
+<pre><code class="language-typescript">// Show synthesis for overview
+console.log("Summary:", result.synthesis);
+
+// Show detailed results on request
+if (userWantsDetails) {
+  result.results.forEach(r =&gt; {
+    console.log(`\n[${r.rank}] ${r.metadata?.title || 'Untitled'}`);
+    console.log(`Relevance: ${r.relevance_score.toFixed(2)}`);
+    console.log(r.content);
+    console.log(`Source: ${r.source}`);
+  });
+}
+</code></pre>
+<hr />
+<h3 id="4-leverage-metadata-for-advanced-filtering"><a class="header" href="#4-leverage-metadata-for-advanced-filtering">4. Leverage Metadata for Advanced Filtering</a></h3>
+<p><strong>Why</strong>: Metadata enables precise filtering
+<strong>How</strong>: Filter after retrieval based on metadata</p>
+<pre><code class="language-python"># Filter to only critical CVEs from 2024
+critical_2024 = [
+    r for r in result.results
+    if r.metadata.get("severity") == "critical"
+    and r.metadata.get("date", "").startswith("2024")
+]
+</code></pre>
+<hr />
+<h2 id="related-documentation"><a class="header" href="#related-documentation">Related Documentation</a></h2>
+<ul>
+<li><a href="../services/retriever.html">Retriever Arm API Reference</a></li>
+<li><a href="./TaskContract.html">TaskContract Schema</a></li>
+<li><a href="../../guides/rag-integration.html">RAG Integration Guide</a> (coming soon)</li>
+<li><a href="../../guides/vector-search.html">Vector Search Best Practices</a> (coming soon)</li>
+</ul>
+<hr />
+<h2 id="json-schema"><a class="header" href="#json-schema">JSON Schema</a></h2>
+<p>Complete JSON Schema for validation:</p>
+<pre><code class="language-json">{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RetrievalResult",
+  "type": "object",
+  "required": ["results", "query", "method_used", "total_results"],
+  "properties": {
+    "results": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/SearchResult"},
+      "description": "Ordered list of search results"
+    },
+    "query": {
+      "type": "string",
+      "description": "Original query (echo)"
+    },
+    "method_used": {
+      "type": "string",
+      "enum": ["vector", "keyword", "hybrid"],
+      "description": "Search method used"
+    },
+    "total_results": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of results returned"
+    },
+    "synthesis": {
+      "type": "string",
+      "minLength": 100,
+      "maxLength": 2000,
+      "description": "LLM-generated summary with citations"
+    },
+    "citations": {
+      "type": "array",
+      "items": {"type": "string", "format": "uri"},
+      "description": "Source URLs in citation order"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "search_duration_ms": {"type": "number"},
+        "synthesis_duration_ms": {"type": "number"},
+        "vector_model": {"type": "string"},
+        "database_used": {"type": "string"},
+        "reranked": {"type": "boolean"}
+      }
+    }
+  },
+  "definitions": {
+    "SearchResult": {
+      "type": "object",
+      "required": ["content", "source", "relevance_score", "rank"],
+      "properties": {
+        "content": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 5000,
+          "description": "Retrieved content snippet"
+        },
+        "source": {
+          "type": "string",
+          "description": "Source URL or identifier"
+        },
+        "relevance_score": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Relevance score (0-1)"
+        },
+        "rank": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "1-indexed result rank"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Additional metadata"
+        }
+      }
+    }
+  }
+}
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../api/schemas/validation-result.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../api/schemas/pii-detection.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../api/schemas/validation-result.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../api/schemas/pii-detection.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

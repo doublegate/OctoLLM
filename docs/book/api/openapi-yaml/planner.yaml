@@ -1,0 +1,225 @@
+openapi: 3.0.3
+info:
+  title: OctoLLM Planner Arm API
+  description: |
+    Task decomposition and planning specialist. Breaks down complex goals into concrete,
+    ordered subtasks with acceptance criteria.
+
+    **Technology**: Python 3.11+ / FastAPI
+    **Port**: 8002
+    **Cost Tier**: 2 (Medium - uses GPT-3.5-turbo)
+    **Average Latency**: 1-3 seconds
+  version: 0.3.0
+
+servers:
+  - url: http://localhost:8002
+    description: Local development
+  - url: http://planner:8002
+    description: Docker Compose / Kubernetes internal
+
+tags:
+  - name: planning
+  - name: health
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      tags:
+        - health
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                  version:
+                    type: string
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      operationId: getMetrics
+      tags:
+        - health
+      responses:
+        '200':
+          description: Metrics
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /capabilities:
+    get:
+      summary: Get capabilities
+      operationId: getCapabilities
+      tags:
+        - health
+      responses:
+        '200':
+          description: Capabilities list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capabilities:
+                    type: array
+                    items:
+                      type: string
+                example:
+                  capabilities:
+                    - task_decomposition
+                    - goal_analysis
+                    - acceptance_criteria_generation
+
+  /plan:
+    post:
+      summary: Create execution plan
+      description: Decomposes a goal into ordered subtasks with acceptance criteria
+      operationId: createPlan
+      tags:
+        - planning
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+            example:
+              goal: "Research and exploit CVE-2024-12345 in nginx"
+              constraints:
+                - "Use only public sources"
+                - "Complete within 60 seconds"
+              context:
+                target: "nginx/1.24.0"
+      responses:
+        '200':
+          description: Plan created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+              example:
+                plan_id: plan_abc123
+                steps:
+                  - step_number: 1
+                    action: "Search for CVE-2024-12345 details"
+                    arm_id: retriever
+                    acceptance_criteria:
+                      - "CVE description retrieved"
+                      - "Affected versions identified"
+                    estimated_duration_seconds: 10
+                  - step_number: 2
+                    action: "Generate exploitation proof-of-concept"
+                    arm_id: coder
+                    acceptance_criteria:
+                      - "Working PoC code generated"
+                      - "Includes safety warnings"
+                    estimated_duration_seconds: 20
+                  - step_number: 3
+                    action: "Validate exploitation code"
+                    arm_id: judge
+                    acceptance_criteria:
+                      - "Code syntax valid"
+                      - "Ethical considerations included"
+                    estimated_duration_seconds: 5
+                total_estimated_duration: 35
+                confidence: 0.88
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    PlanRequest:
+      type: object
+      required:
+        - goal
+      properties:
+        goal:
+          type: string
+          minLength: 10
+          maxLength: 1000
+          example: "Research CVE-2024-12345"
+        constraints:
+          type: array
+          items:
+            type: string
+          example:
+            - "Use only public sources"
+        context:
+          type: object
+          additionalProperties: true
+
+    PlanResponse:
+      type: object
+      required:
+        - plan_id
+        - steps
+        - confidence
+      properties:
+        plan_id:
+          type: string
+          pattern: '^plan_[a-zA-Z0-9]+$'
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanStep'
+        total_estimated_duration:
+          type: integer
+          description: Total estimated duration in seconds
+        confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+
+    PlanStep:
+      type: object
+      required:
+        - step_number
+        - action
+        - arm_id
+        - acceptance_criteria
+      properties:
+        step_number:
+          type: integer
+          minimum: 1
+        action:
+          type: string
+          description: What to do in this step
+        arm_id:
+          type: string
+          description: Which arm should execute this step
+          enum:
+            - planner
+            - executor
+            - retriever
+            - coder
+            - judge
+            - safety-guardian
+        acceptance_criteria:
+          type: array
+          items:
+            type: string
+          description: Success conditions for this step
+        estimated_duration_seconds:
+          type: integer
+          description: Estimated time for this step
+        dependencies:
+          type: array
+          items:
+            type: integer
+          description: Step numbers that must complete first

@@ -1,0 +1,1026 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Planner Arm - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/components/arms/planner-arm.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="planner-arm-task-decomposition-and-planning"><a class="header" href="#planner-arm-task-decomposition-and-planning">Planner Arm: Task Decomposition and Planning</a></h1>
+<p><strong>Components</strong> &gt; <strong>Arms</strong> &gt; Planner Arm</p>
+<p><strong>Component</strong>: Planner Arm (Task Decomposition Specialist)
+<strong>Version</strong>: 1.0
+<strong>Last Updated</strong>: 2025-11-10
+<strong>Technology</strong>: Python 3.11+ / FastAPI
+<strong>Cost Tier</strong>: 2 (Medium)
+<strong>Average Latency</strong>: 1-2 seconds</p>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#core-functionality">Core Functionality</a></li>
+<li><a href="#architecture">Architecture</a></li>
+<li><a href="#implementation-details">Implementation Details</a></li>
+<li><a href="#api-specification">API Specification</a></li>
+<li><a href="#data-structures">Data Structures</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#performance-characteristics">Performance Characteristics</a></li>
+<li><a href="#testing">Testing</a></li>
+<li><a href="#error-handling">Error Handling</a></li>
+<li><a href="#deployment">Deployment</a></li>
+<li><a href="#see-also">See Also</a></li>
+</ul>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The Planner Arm is a specialized component responsible for decomposing complex tasks into sequential subtasks with clear acceptance criteria, dependencies, and arm assignments. It serves as the strategic thinking component that bridges high-level goals with executable action plans.</p>
+<h3 id="design-goals"><a class="header" href="#design-goals">Design Goals</a></h3>
+<ul>
+<li><strong>Intelligent Decomposition</strong>: Break complex goals into manageable, executable steps</li>
+<li><strong>Dependency Awareness</strong>: Identify and track prerequisite relationships between steps</li>
+<li><strong>Arm Selection</strong>: Match subtasks to the most appropriate specialized arms</li>
+<li><strong>Quality Planning</strong>: Generate plans that maximize success probability</li>
+<li><strong>Cost Awareness</strong>: Balance thoroughness with resource efficiency</li>
+</ul>
+<h3 id="key-capabilities"><a class="header" href="#key-capabilities">Key Capabilities</a></h3>
+<ol>
+<li><strong>Goal Parsing</strong>: Extract intent and requirements from natural language</li>
+<li><strong>Subtask Generation</strong>: Create 3-7 well-defined execution steps</li>
+<li><strong>Dependency Resolution</strong>: Establish correct execution order</li>
+<li><strong>Arm Selection</strong>: Match capabilities to subtasks</li>
+<li><strong>Acceptance Criteria</strong>: Define clear success conditions</li>
+<li><strong>Cost Estimation</strong>: Predict resource requirements</li>
+</ol>
+<h2 id="core-functionality"><a class="header" href="#core-functionality">Core Functionality</a></h2>
+<h3 id="task-decomposition-algorithm"><a class="header" href="#task-decomposition-algorithm">Task Decomposition Algorithm</a></h3>
+<p>The Planner Arm uses an LLM-based approach with structured prompting to generate execution plans:</p>
+<pre><code class="language-python">from typing import List, Dict, Any, Optional
+from pydantic import BaseModel, Field
+import openai
+import json
+
+class SubTask(BaseModel):
+    """A single step in the execution plan."""
+    step: int
+    action: str = Field(..., description="What to do")
+    required_arm: str = Field(..., description="Which arm executes this")
+    acceptance_criteria: List[str] = Field(..., description="Success conditions")
+    depends_on: List[int] = Field(default_factory=list, description="Prerequisite steps")
+    estimated_cost_tier: int = Field(1, ge=1, le=5)
+    estimated_duration_seconds: int = Field(30, ge=1)
+
+class PlanResponse(BaseModel):
+    """Complete execution plan."""
+    plan: List[SubTask]
+    rationale: str = Field(..., description="Why this approach")
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    total_estimated_duration: int
+    complexity_score: float = Field(..., ge=0.0, le=1.0)
+
+class PlannerArm:
+    """Task decomposition specialist."""
+
+    def __init__(self, llm_model: str = "gpt-3.5-turbo"):
+        self.model = llm_model
+        self.system_prompt = self._build_system_prompt()
+
+    def _build_system_prompt(self) -&gt; str:
+        return """You are an expert task planner for a distributed AI system.
+
+Available arms and their capabilities:
+- planner: Task decomposition, dependency resolution
+- retriever: Search knowledge bases, documentation, web
+- coder: Write/debug/refactor code, static analysis
+- executor: Run shell commands, API calls, web scraping
+- judge: Validate outputs, fact-check, quality assurance
+- guardian: PII detection, safety checks, policy enforcement
+
+Your task: Break down complex goals into 3-7 clear, executable steps.
+
+For each step specify:
+1. **action**: Clear, imperative description ("Search for...", "Generate...")
+2. **required_arm**: Which arm should execute (match capabilities)
+3. **acceptance_criteria**: 2-3 verifiable success conditions
+4. **depends_on**: List of prerequisite step numbers (empty for first step)
+5. **estimated_cost_tier**: 1=cheap, 5=expensive
+6. **estimated_duration_seconds**: Realistic time estimate
+
+Rules:
+- Steps must be sequential and logically ordered
+- Each step must have clear acceptance criteria
+- Dependencies must reference earlier steps only
+- Prefer specialized arms over generalists
+- Include validation steps for critical outputs
+- Always end with a verification/quality check step
+
+Output valid JSON matching the PlanResponse schema."""
+
+    async def generate_plan(
+        self,
+        goal: str,
+        constraints: List[str],
+        context: Dict[str, Any]
+    ) -&gt; PlanResponse:
+        """Generate execution plan for goal."""
+
+        user_prompt = f"""Goal: {goal}
+
+Constraints:
+{chr(10).join(f"- {c}" for c in constraints) if constraints else "None"}
+
+Context:
+{context if context else "None"}
+
+Generate a detailed execution plan with 3-7 steps."""
+
+        try:
+            response = await openai.ChatCompletion.acreate(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.3,  # Lower for consistency
+                max_tokens=2000,
+                response_format={"type": "json_object"}
+            )
+
+            plan_data = json.loads(response.choices[0].message.content)
+
+            # Calculate total duration
+            total_duration = sum(
+                step.get("estimated_duration_seconds", 30)
+                for step in plan_data["plan"]
+            )
+            plan_data["total_estimated_duration"] = total_duration
+
+            # Validate dependencies
+            self._validate_dependencies(plan_data["plan"])
+
+            return PlanResponse(**plan_data)
+
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse plan JSON: {e}")
+        except Exception as e:
+            raise RuntimeError(f"Planning failed: {e}")
+
+    def _validate_dependencies(self, steps: List[Dict]) -&gt; None:
+        """Ensure dependencies reference valid steps."""
+        step_numbers = {step["step"] for step in steps}
+
+        for step in steps:
+            for dep in step.get("depends_on", []):
+                if dep not in step_numbers:
+                    raise ValueError(
+                        f"Step {step['step']} depends on non-existent step {dep}"
+                    )
+                if dep &gt;= step["step"]:
+                    raise ValueError(
+                        f"Step {step['step']} cannot depend on later step {dep}"
+                    )
+</code></pre>
+<h3 id="planning-flow"><a class="header" href="#planning-flow">Planning Flow</a></h3>
+<pre><code class="language-mermaid">flowchart TD
+    START([Receive Planning Request]) --&gt; PARSE[Parse Goal &amp; Constraints]
+    PARSE --&gt; LLM[Call LLM for Plan Generation]
+    LLM --&gt; VALIDATE{Valid JSON?}
+
+    VALIDATE --&gt;|No| RETRY{Retry Count &lt; 3?}
+    RETRY --&gt;|Yes| LLM
+    RETRY --&gt;|No| ERROR([Return Error])
+
+    VALIDATE --&gt;|Yes| DEP_CHECK[Validate Dependencies]
+    DEP_CHECK --&gt; DEP_VALID{Dependencies Valid?}
+
+    DEP_VALID --&gt;|No| ERROR
+    DEP_VALID --&gt;|Yes| ESTIMATE[Calculate Estimates]
+
+    ESTIMATE --&gt; CONFIDENCE[Assess Confidence]
+    CONFIDENCE --&gt; RETURN([Return Plan])
+
+    style START fill:#90EE90
+    style RETURN fill:#90EE90
+    style ERROR fill:#FFB6C1
+</code></pre>
+<h3 id="decision-tree-for-arm-selection"><a class="header" href="#decision-tree-for-arm-selection">Decision Tree for Arm Selection</a></h3>
+<pre><code class="language-mermaid">graph TD
+    ACTION[Action Description] --&gt; KEYWORDS[Extract Keywords]
+
+    KEYWORDS --&gt; CODE{Contains code&lt;br/&gt;keywords?}
+    CODE --&gt;|Yes| CODER[Assign: Coder]
+
+    CODE --&gt;|No| SEARCH{Contains search&lt;br/&gt;keywords?}
+    SEARCH --&gt;|Yes| RETRIEVER[Assign: Retriever]
+
+    SEARCH --&gt;|No| EXEC{Contains execution&lt;br/&gt;keywords?}
+    EXEC --&gt;|Yes| EXECUTOR[Assign: Executor]
+
+    EXEC --&gt;|No| VALIDATE{Contains validation&lt;br/&gt;keywords?}
+    VALIDATE --&gt;|Yes| JUDGE[Assign: Judge]
+
+    VALIDATE --&gt;|No| SAFETY{Contains safety&lt;br/&gt;keywords?}
+    SAFETY --&gt;|Yes| GUARDIAN[Assign: Guardian]
+
+    SAFETY --&gt;|No| DEFAULT[Assign: Planner]
+</code></pre>
+<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
+<h3 id="component-integration"><a class="header" href="#component-integration">Component Integration</a></h3>
+<pre><code class="language-mermaid">graph TB
+    subgraph "Planner Arm"
+        PARSER[Intent Parser]
+        GENERATOR[Plan Generator]
+        VALIDATOR[Dependency Validator]
+        ESTIMATOR[Cost Estimator]
+    end
+
+    subgraph "External Services"
+        LLM[LLM API&lt;br/&gt;GPT-3.5/GPT-4]
+        REGISTRY[Arm Registry&lt;br/&gt;Capability Database]
+    end
+
+    ORCHESTRATOR[Orchestrator] --&gt;|Plan Request| PARSER
+    PARSER --&gt; GENERATOR
+    GENERATOR --&gt; LLM
+    GENERATOR --&gt; REGISTRY
+    LLM --&gt; VALIDATOR
+    VALIDATOR --&gt; ESTIMATOR
+    ESTIMATOR --&gt;|Plan Response| ORCHESTRATOR
+</code></pre>
+<h2 id="implementation-details"><a class="header" href="#implementation-details">Implementation Details</a></h2>
+<h3 id="complete-fastapi-implementation"><a class="header" href="#complete-fastapi-implementation">Complete FastAPI Implementation</a></h3>
+<pre><code class="language-python">from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi.responses import JSONResponse
+import structlog
+from datetime import datetime
+import uuid
+
+logger = structlog.get_logger()
+
+app = FastAPI(title="Planner Arm", version="1.0.0")
+
+# Global planner instance
+planner = PlannerArm(llm_model="gpt-3.5-turbo")
+
+class PlanRequest(BaseModel):
+    """Incoming planning request."""
+    goal: str = Field(..., description="What to accomplish")
+    constraints: List[str] = Field(default_factory=list)
+    context: Dict[str, Any] = Field(default_factory=dict)
+    request_id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
+
+@app.post("/plan", response_model=PlanResponse)
+async def create_plan(request: PlanRequest):
+    """Generate execution plan for given goal."""
+
+    logger.info(
+        "planner.plan.request",
+        request_id=request.request_id,
+        goal=request.goal[:100]
+    )
+
+    start_time = datetime.utcnow()
+
+    try:
+        plan = await planner.generate_plan(
+            goal=request.goal,
+            constraints=request.constraints,
+            context=request.context
+        )
+
+        duration_ms = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+
+        logger.info(
+            "planner.plan.success",
+            request_id=request.request_id,
+            steps=len(plan.plan),
+            duration_ms=duration_ms,
+            confidence=plan.confidence
+        )
+
+        return plan
+
+    except ValueError as e:
+        logger.error(
+            "planner.plan.validation_error",
+            request_id=request.request_id,
+            error=str(e)
+        )
+        raise HTTPException(status_code=400, detail=str(e))
+
+    except RuntimeError as e:
+        logger.error(
+            "planner.plan.runtime_error",
+            request_id=request.request_id,
+            error=str(e)
+        )
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {
+        "status": "healthy",
+        "version": "1.0.0",
+        "model": planner.model,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+@app.get("/capabilities")
+async def get_capabilities():
+    """Return arm capabilities."""
+    return {
+        "arm_id": "planner",
+        "capabilities": [
+            "planning",
+            "task_decomposition",
+            "dependency_resolution",
+            "arm_selection"
+        ],
+        "cost_tier": 2,
+        "average_latency_ms": 1500,
+        "success_rate": 0.92
+    }
+
+@app.get("/metrics")
+async def get_metrics():
+    """Prometheus metrics endpoint."""
+    # Implement metrics collection
+    return {"metrics": "not implemented"}
+</code></pre>
+<h2 id="api-specification"><a class="header" href="#api-specification">API Specification</a></h2>
+<h3 id="post-plan"><a class="header" href="#post-plan">POST /plan</a></h3>
+<p>Generate an execution plan for a given goal.</p>
+<p><strong>Request Body:</strong></p>
+<pre><code class="language-json">{
+  "goal": "Fix authentication bug and add tests",
+  "constraints": [
+    "Don't modify database schema",
+    "Complete in &lt;5 minutes",
+    "Maintain backward compatibility"
+  ],
+  "context": {
+    "repository": "https://github.com/example/repo",
+    "affected_files": ["auth/login.py"]
+  }
+}
+</code></pre>
+<p><strong>Response (200 OK):</strong></p>
+<pre><code class="language-json">{
+  "plan": [
+    {
+      "step": 1,
+      "action": "Search codebase for authentication logic and recent bug reports",
+      "required_arm": "retriever",
+      "acceptance_criteria": [
+        "Found auth/login.py implementation",
+        "Identified related test files",
+        "Located bug reports or issue references"
+      ],
+      "depends_on": [],
+      "estimated_cost_tier": 1,
+      "estimated_duration_seconds": 20
+    },
+    {
+      "step": 2,
+      "action": "Analyze authentication code to identify the bug",
+      "required_arm": "coder",
+      "acceptance_criteria": [
+        "Root cause identified with line number",
+        "Explanation of why bug occurs",
+        "Proposed fix approach validated"
+      ],
+      "depends_on": [1],
+      "estimated_cost_tier": 3,
+      "estimated_duration_seconds": 60
+    },
+    {
+      "step": 3,
+      "action": "Generate code patch to fix authentication bug",
+      "required_arm": "coder",
+      "acceptance_criteria": [
+        "Patch addresses root cause",
+        "No breaking changes to API",
+        "Code follows project style guide"
+      ],
+      "depends_on": [2],
+      "estimated_cost_tier": 4,
+      "estimated_duration_seconds": 45
+    },
+    {
+      "step": 4,
+      "action": "Generate test case that reproduces the bug scenario",
+      "required_arm": "coder",
+      "acceptance_criteria": [
+        "Test fails on old code",
+        "Test passes on patched code",
+        "Test covers edge cases"
+      ],
+      "depends_on": [3],
+      "estimated_cost_tier": 3,
+      "estimated_duration_seconds": 40
+    },
+    {
+      "step": 5,
+      "action": "Run full test suite to verify no regressions",
+      "required_arm": "executor",
+      "acceptance_criteria": [
+        "All existing tests pass",
+        "New test passes",
+        "No test timeouts or errors"
+      ],
+      "depends_on": [4],
+      "estimated_cost_tier": 2,
+      "estimated_duration_seconds": 90
+    },
+    {
+      "step": 6,
+      "action": "Validate fix meets acceptance criteria and constraints",
+      "required_arm": "judge",
+      "acceptance_criteria": [
+        "All original acceptance criteria met",
+        "No database schema changes",
+        "Backward compatibility maintained"
+      ],
+      "depends_on": [5],
+      "estimated_cost_tier": 2,
+      "estimated_duration_seconds": 30
+    }
+  ],
+  "rationale": "This plan follows a systematic debugging workflow: locate code, identify bug, fix it, test thoroughly, and validate. Each step has clear outputs that feed into the next, ensuring quality and meeting all constraints.",
+  "confidence": 0.88,
+  "total_estimated_duration": 285,
+  "complexity_score": 0.65
+}
+</code></pre>
+<p><strong>Error Responses:</strong></p>
+<ul>
+<li><strong>400 Bad Request</strong>: Invalid dependencies or malformed plan</li>
+<li><strong>500 Internal Server Error</strong>: LLM API failure or planning error</li>
+<li><strong>503 Service Unavailable</strong>: LLM service temporarily unavailable</li>
+</ul>
+<h2 id="data-structures"><a class="header" href="#data-structures">Data Structures</a></h2>
+<p>All data structures use Pydantic models for validation and serialization:</p>
+<pre><code class="language-python">class SubTask(BaseModel):
+    """A single step in the execution plan."""
+    step: int
+    action: str = Field(..., description="What to do")
+    required_arm: str = Field(..., description="Which arm executes this")
+    acceptance_criteria: List[str] = Field(..., description="Success conditions")
+    depends_on: List[int] = Field(default_factory=list, description="Prerequisite steps")
+    estimated_cost_tier: int = Field(1, ge=1, le=5)
+    estimated_duration_seconds: int = Field(30, ge=1)
+
+class PlanResponse(BaseModel):
+    """Complete execution plan."""
+    plan: List[SubTask]
+    rationale: str = Field(..., description="Why this approach")
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    total_estimated_duration: int
+    complexity_score: float = Field(..., ge=0.0, le=1.0)
+
+class PlanRequest(BaseModel):
+    """Incoming planning request."""
+    goal: str = Field(..., description="What to accomplish")
+    constraints: List[str] = Field(default_factory=list)
+    context: Dict[str, Any] = Field(default_factory=dict)
+    request_id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
+</code></pre>
+<h2 id="configuration"><a class="header" href="#configuration">Configuration</a></h2>
+<h3 id="environment-variables"><a class="header" href="#environment-variables">Environment Variables</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Variable</th><th>Required</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>OPENAI_API_KEY</code></td><td>Yes</td><td>-</td><td>OpenAI API key</td></tr>
+<tr><td><code>LLM_MODEL</code></td><td>No</td><td><code>gpt-3.5-turbo</code></td><td>Model to use for planning</td></tr>
+<tr><td><code>MAX_PLAN_STEPS</code></td><td>No</td><td><code>7</code></td><td>Maximum steps in plan</td></tr>
+<tr><td><code>MIN_PLAN_STEPS</code></td><td>No</td><td><code>3</code></td><td>Minimum steps in plan</td></tr>
+<tr><td><code>PLANNING_TEMPERATURE</code></td><td>No</td><td><code>0.3</code></td><td>LLM temperature (0.0-1.0)</td></tr>
+<tr><td><code>MAX_TOKENS</code></td><td>No</td><td><code>2000</code></td><td>Max tokens for LLM response</td></tr>
+<tr><td><code>TIMEOUT_SECONDS</code></td><td>No</td><td><code>10</code></td><td>Planning timeout</td></tr>
+<tr><td><code>LOG_LEVEL</code></td><td>No</td><td><code>INFO</code></td><td>Logging level</td></tr>
+</tbody></table>
+</div>
+<h3 id="configuration-file"><a class="header" href="#configuration-file">Configuration File</a></h3>
+<pre><code class="language-yaml"># planner-config.yaml
+model:
+  provider: "openai"
+  name: "gpt-3.5-turbo"
+  temperature: 0.3
+  max_tokens: 2000
+
+planning:
+  min_steps: 3
+  max_steps: 7
+  require_validation_step: true
+  require_dependency_check: true
+
+arms:
+  - id: "retriever"
+    capabilities: ["search", "knowledge_retrieval"]
+  - id: "coder"
+    capabilities: ["code_generation", "debugging"]
+  - id: "executor"
+    capabilities: ["shell", "api_calls"]
+  - id: "judge"
+    capabilities: ["validation", "fact_checking"]
+  - id: "guardian"
+    capabilities: ["pii_detection", "safety_check"]
+</code></pre>
+<h2 id="performance-characteristics"><a class="header" href="#performance-characteristics">Performance Characteristics</a></h2>
+<h3 id="latency-breakdown"><a class="header" href="#latency-breakdown">Latency Breakdown</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Target Latency</th><th>Notes</th></tr></thead><tbody>
+<tr><td>Parse Intent</td><td>&lt;50ms</td><td>Local processing</td></tr>
+<tr><td>LLM Call</td><td>1-2s</td><td>Dominates latency</td></tr>
+<tr><td>Dependency Validation</td><td>&lt;20ms</td><td>Deterministic checks</td></tr>
+<tr><td>Cost Estimation</td><td>&lt;10ms</td><td>Simple arithmetic</td></tr>
+<tr><td>Total (P50)</td><td>1.2s</td><td>Average case</td></tr>
+<tr><td>Total (P95)</td><td>2.5s</td><td>Complex plans</td></tr>
+</tbody></table>
+</div>
+<h3 id="resource-requirements"><a class="header" href="#resource-requirements">Resource Requirements</a></h3>
+<p><strong>Per Instance:</strong></p>
+<ul>
+<li>CPU: 200m (0.2 cores) baseline, 500m under load</li>
+<li>Memory: 256Mi baseline, 512Mi under load</li>
+<li>Disk: Negligible (&lt;100Mi)</li>
+</ul>
+<h3 id="success-rate-metrics"><a class="header" href="#success-rate-metrics">Success Rate Metrics</a></h3>
+<ul>
+<li><strong>Overall Success Rate</strong>: &gt;92%</li>
+<li><strong>Valid JSON Rate</strong>: &gt;98%</li>
+<li><strong>Dependency Validation Pass Rate</strong>: &gt;95%</li>
+<li><strong>Plan Execution Success Rate</strong>: &gt;88% (downstream)</li>
+</ul>
+<h3 id="cost-analysis"><a class="header" href="#cost-analysis">Cost Analysis</a></h3>
+<ul>
+<li><strong>Cost Tier</strong>: 2 (Medium)</li>
+<li><strong>LLM Cost per Plan</strong>: $0.002-0.005 (GPT-3.5)</li>
+<li><strong>Requests per Dollar</strong>: 200-500</li>
+<li><strong>Monthly Cost (1000 plans)</strong>: $2-5</li>
+</ul>
+<h2 id="testing"><a class="header" href="#testing">Testing</a></h2>
+<h3 id="unit-tests"><a class="header" href="#unit-tests">Unit Tests</a></h3>
+<pre><code class="language-python">import pytest
+from unittest.mock import AsyncMock, patch
+
+@pytest.mark.asyncio
+async def test_plan_generation():
+    """Test basic plan generation."""
+    planner = PlannerArm()
+
+    plan = await planner.generate_plan(
+        goal="Write a function to sort a list",
+        constraints=["Use Python", "Include doctests"],
+        context={}
+    )
+
+    assert len(plan.plan) &gt;= 3
+    assert len(plan.plan) &lt;= 7
+    assert all(step.step == idx + 1 for idx, step in enumerate(plan.plan))
+    assert plan.confidence &gt; 0.5
+
+    # Validate dependencies
+    for step in plan.plan:
+        for dep in step.depends_on:
+            assert dep &lt; step.step
+
+@pytest.mark.asyncio
+async def test_complex_plan_with_dependencies():
+    """Test complex plan with multiple dependencies."""
+    planner = PlannerArm()
+
+    plan = await planner.generate_plan(
+        goal="Build and deploy a REST API",
+        constraints=["Use FastAPI", "Include tests", "Deploy to Kubernetes"],
+        context={"language": "Python"}
+    )
+
+    # Should have multiple dependent steps
+    dependent_steps = [s for s in plan.plan if s.depends_on]
+    assert len(dependent_steps) &gt; 0
+
+    # Should include different arms
+    arms_used = {s.required_arm for s in plan.plan}
+    assert "coder" in arms_used
+    assert "executor" in arms_used or "judge" in arms_used
+
+@pytest.mark.asyncio
+async def test_dependency_validation():
+    """Test dependency validation catches errors."""
+    planner = PlannerArm()
+
+    invalid_steps = [
+        {"step": 1, "action": "Do A", "depends_on": []},
+        {"step": 2, "action": "Do B", "depends_on": [3]},  # Invalid: depends on future
+        {"step": 3, "action": "Do C", "depends_on": [1]}
+    ]
+
+    with pytest.raises(ValueError, match="cannot depend on later step"):
+        planner._validate_dependencies(invalid_steps)
+
+@pytest.mark.asyncio
+async def test_invalid_json_handling():
+    """Test handling of invalid JSON from LLM."""
+    planner = PlannerArm()
+
+    with patch.object(openai.ChatCompletion, 'acreate') as mock_create:
+        mock_create.return_value = AsyncMock(
+            choices=[AsyncMock(message=AsyncMock(content="Invalid JSON {"))]
+        )
+
+        with pytest.raises(ValueError, match="Failed to parse plan JSON"):
+            await planner.generate_plan("Test goal", [], {})
+</code></pre>
+<h3 id="integration-tests"><a class="header" href="#integration-tests">Integration Tests</a></h3>
+<pre><code class="language-python">@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_end_to_end_planning():
+    """Test complete planning workflow with real LLM."""
+    planner = PlannerArm(llm_model="gpt-3.5-turbo")
+
+    plan = await planner.generate_plan(
+        goal="Create a Python script to analyze CSV data",
+        constraints=[
+            "Use pandas library",
+            "Include error handling",
+            "Output results to JSON"
+        ],
+        context={
+            "experience_level": "intermediate",
+            "data_source": "sales_data.csv"
+        }
+    )
+
+    # Verify plan structure
+    assert isinstance(plan, PlanResponse)
+    assert 3 &lt;= len(plan.plan) &lt;= 7
+    assert plan.confidence &gt; 0.6
+
+    # Verify steps are properly ordered
+    for idx, step in enumerate(plan.plan):
+        assert step.step == idx + 1
+
+    # Verify all dependencies are valid
+    for step in plan.plan:
+        for dep in step.depends_on:
+            assert dep &lt; step.step
+
+    # Verify arms are assigned
+    for step in plan.plan:
+        assert step.required_arm in [
+            "retriever", "coder", "executor", "judge", "guardian", "planner"
+        ]
+</code></pre>
+<h2 id="error-handling"><a class="header" href="#error-handling">Error Handling</a></h2>
+<h3 id="error-types"><a class="header" href="#error-types">Error Types</a></h3>
+<pre><code class="language-python">class PlanningError(Exception):
+    """Base exception for planning errors."""
+    pass
+
+class InvalidDependencyError(PlanningError):
+    """Raised when dependencies are invalid."""
+    pass
+
+class PlanningTimeoutError(PlanningError):
+    """Raised when planning exceeds timeout."""
+    pass
+
+class LLMError(PlanningError):
+    """Raised when LLM API fails."""
+    pass
+</code></pre>
+<h3 id="error-recovery-strategies"><a class="header" href="#error-recovery-strategies">Error Recovery Strategies</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Error Type</th><th>Strategy</th><th>Max Retries</th></tr></thead><tbody>
+<tr><td>LLM Timeout</td><td>Retry with exponential backoff</td><td>3</td></tr>
+<tr><td>Invalid JSON</td><td>Parse with lenient mode, retry</td><td>2</td></tr>
+<tr><td>Invalid Dependencies</td><td>Auto-fix if possible, else fail</td><td>1</td></tr>
+<tr><td>LLM Rate Limit</td><td>Wait and retry</td><td>5</td></tr>
+<tr><td>Malformed Plan</td><td>Simplify goal, retry</td><td>1</td></tr>
+</tbody></table>
+</div>
+<h2 id="deployment"><a class="header" href="#deployment">Deployment</a></h2>
+<h3 id="dockerfile"><a class="header" href="#dockerfile">Dockerfile</a></h3>
+<pre><code class="language-dockerfile">FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application
+COPY . .
+
+# Set environment
+ENV PYTHONUNBUFFERED=1
+ENV LOG_LEVEL=INFO
+
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+</code></pre>
+<h3 id="kubernetes-manifest"><a class="header" href="#kubernetes-manifest">Kubernetes Manifest</a></h3>
+<pre><code class="language-yaml">apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: planner-arm
+  namespace: octollm
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: planner-arm
+  template:
+    metadata:
+      labels:
+        app: planner-arm
+        component: arm
+    spec:
+      containers:
+        - name: planner
+          image: octollm/planner-arm:1.0.0
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: llm-credentials
+                  key: openai-api-key
+            - name: LLM_MODEL
+              value: "gpt-3.5-turbo"
+            - name: LOG_LEVEL
+              value: "INFO"
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: planner-arm
+  namespace: octollm
+spec:
+  selector:
+    app: planner-arm
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+</code></pre>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="../orchestrator.html">Orchestrator Specification</a> - For task coordination</li>
+<li><a href="../../api/component-contracts.html">Arm API Contracts</a> - Standard message formats</li>
+<li><a href="../../implementation/memory-systems.html">Memory Systems</a> - Knowledge storage</li>
+<li><a href="../../testing/strategy.html">Testing Strategy</a> - Testing approaches</li>
+</ul>
+<hr />
+<p><strong>Document Version</strong>: 1.0
+<strong>Last Updated</strong>: 2025-11-10
+<strong>Maintainer</strong>: OctoLLM Core Team</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../components/arms.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../components/arms/executor-arm.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../components/arms.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../components/arms/executor-arm.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

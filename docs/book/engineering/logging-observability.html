@@ -1,0 +1,1030 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Logging &amp; Observability - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/engineering/logging-observability.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="logging-and-observability"><a class="header" href="#logging-and-observability">Logging and Observability</a></h1>
+<p><strong>Last Updated</strong>: 2025-11-10
+<strong>Status</strong>: Production Standard
+<strong>Applies To</strong>: All OctoLLM components</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This document defines logging and observability standards for the OctoLLM project. Proper observability enables effective debugging, performance monitoring, and incident response in production environments.</p>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ul>
+<li><a href="#logging-standards">Logging Standards</a></li>
+<li><a href="#structured-logging">Structured Logging</a></li>
+<li><a href="#log-levels">Log Levels</a></li>
+<li><a href="#metrics">Metrics</a></li>
+<li><a href="#distributed-tracing">Distributed Tracing</a></li>
+<li><a href="#request-ids">Request IDs</a></li>
+<li><a href="#log-aggregation">Log Aggregation</a></li>
+<li><a href="#observability-tools">Observability Tools</a></li>
+</ul>
+<hr />
+<h2 id="logging-standards"><a class="header" href="#logging-standards">Logging Standards</a></h2>
+<h3 id="python-logging-with-structlog"><a class="header" href="#python-logging-with-structlog">Python Logging with structlog</a></h3>
+<p><strong>Configuration</strong>:</p>
+<pre><code class="language-python"># octollm/logging_config.py
+import logging
+import structlog
+from typing import Any, Dict
+
+def configure_logging(
+    level: str = "INFO",
+    json_logs: bool = True,
+    service_name: str = "octollm"
+) -&gt; None:
+    """Configure structured logging for the application."""
+
+    # Configure standard library logging
+    logging.basicConfig(
+        format="%(message)s",
+        level=level,
+        handlers=[logging.StreamHandler()]
+    )
+
+    # Shared processors for all loggers
+    shared_processors = [
+        structlog.contextvars.merge_contextvars,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.add_logger_name,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.UnicodeDecoder(),
+    ]
+
+    # Add service metadata
+    def add_service_context(
+        logger: Any,
+        method_name: str,
+        event_dict: Dict[str, Any]
+    ) -&gt; Dict[str, Any]:
+        """Add service-level context to all logs."""
+        event_dict["service"] = service_name
+        event_dict["environment"] = os.getenv("ENVIRONMENT", "development")
+        event_dict["version"] = os.getenv("APP_VERSION", "unknown")
+        return event_dict
+
+    shared_processors.insert(0, add_service_context)
+
+    if json_logs:
+        # JSON output for production
+        structlog.configure(
+            processors=shared_processors + [
+                structlog.processors.JSONRenderer()
+            ],
+            wrapper_class=structlog.stdlib.BoundLogger,
+            context_class=dict,
+            logger_factory=structlog.stdlib.LoggerFactory(),
+            cache_logger_on_first_use=True,
+        )
+    else:
+        # Human-readable output for development
+        structlog.configure(
+            processors=shared_processors + [
+                structlog.dev.ConsoleRenderer()
+            ],
+            wrapper_class=structlog.stdlib.BoundLogger,
+            context_class=dict,
+            logger_factory=structlog.stdlib.LoggerFactory(),
+            cache_logger_on_first_use=True,
+        )
+
+
+# Initialize logging
+configure_logging(
+    level=os.getenv("LOG_LEVEL", "INFO"),
+    json_logs=os.getenv("JSON_LOGS", "true").lower() == "true",
+    service_name=os.getenv("SERVICE_NAME", "octollm")
+)
+</code></pre>
+<h3 id="rust-logging-with-tracing"><a class="header" href="#rust-logging-with-tracing">Rust Logging with tracing</a></h3>
+<p><strong>Configuration</strong>:</p>
+<pre><code class="language-rust">// src/logging.rs
+use tracing_subscriber::{
+    fmt,
+    prelude::*,
+    EnvFilter,
+};
+use tracing_appender::rolling::{RollingFileAppender, Rotation};
+
+pub fn configure_logging(service_name: &amp;str) {
+    let env_filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new("info"));
+
+    // JSON formatting for production
+    let json_layer = fmt::layer()
+        .json()
+        .with_current_span(true)
+        .with_span_list(true);
+
+    // File appender
+    let file_appender = RollingFileAppender::new(
+        Rotation::DAILY,
+        "/var/log/octollm",
+        format!("{}.log", service_name)
+    );
+
+    let file_layer = fmt::layer()
+        .json()
+        .with_writer(file_appender);
+
+    tracing_subscriber::registry()
+        .with(env_filter)
+        .with(json_layer)
+        .with(file_layer)
+        .init();
+
+    tracing::info!(
+        service = service_name,
+        "Logging initialized"
+    );
+}</code></pre>
+<hr />
+<h2 id="structured-logging"><a class="header" href="#structured-logging">Structured Logging</a></h2>
+<h3 id="python-structured-logs"><a class="header" href="#python-structured-logs">Python Structured Logs</a></h3>
+<pre><code class="language-python">import structlog
+
+logger = structlog.get_logger(__name__)
+
+# Basic structured log
+logger.info(
+    "task.created",
+    task_id="task-123",
+    user_id="user-456",
+    priority=5
+)
+
+# Output (JSON):
+# {
+#   "event": "task.created",
+#   "task_id": "task-123",
+#   "user_id": "user-456",
+#   "priority": 5,
+#   "timestamp": "2025-11-10T10:30:45.123456Z",
+#   "level": "info",
+#   "logger": "octollm.orchestrator",
+#   "service": "octollm-orchestrator",
+#   "environment": "production"
+# }
+
+# Contextual logging with bind
+logger = logger.bind(
+    task_id="task-123",
+    user_id="user-456"
+)
+
+logger.info("task.processing.started")
+logger.info("task.arm.selected", arm="coder")
+logger.info("task.processing.completed", duration_ms=1234)
+
+# All logs include task_id and user_id automatically
+</code></pre>
+<h3 id="request-scoped-context"><a class="header" href="#request-scoped-context">Request-Scoped Context</a></h3>
+<pre><code class="language-python">from contextvars import ContextVar
+from typing import Optional
+import uuid
+
+# Context variable for request ID
+request_id_var: ContextVar[Optional[str]] = ContextVar(
+    "request_id",
+    default=None
+)
+
+def set_request_context(request_id: Optional[str] = None):
+    """Set request context for logging."""
+    if request_id is None:
+        request_id = str(uuid.uuid4())
+    request_id_var.set(request_id)
+    structlog.contextvars.bind_contextvars(
+        request_id=request_id
+    )
+    return request_id
+
+
+# FastAPI middleware
+from fastapi import FastAPI, Request
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class LoggingMiddleware(BaseHTTPMiddleware):
+    """Add request ID to all logs."""
+
+    async def dispatch(self, request: Request, call_next):
+        request_id = request.headers.get("X-Request-ID")
+        set_request_context(request_id)
+
+        logger.info(
+            "request.started",
+            method=request.method,
+            path=request.url.path,
+            client=request.client.host
+        )
+
+        response = await call_next(request)
+
+        logger.info(
+            "request.completed",
+            method=request.method,
+            path=request.url.path,
+            status_code=response.status_code
+        )
+
+        response.headers["X-Request-ID"] = request_id_var.get()
+        return response
+
+app = FastAPI()
+app.add_middleware(LoggingMiddleware)
+</code></pre>
+<h3 id="rust-structured-logs"><a class="header" href="#rust-structured-logs">Rust Structured Logs</a></h3>
+<pre><code class="language-rust">use tracing::{info, warn, error, instrument};
+
+// Basic structured log
+info!(
+    task_id = "task-123",
+    user_id = "user-456",
+    priority = 5,
+    "Task created"
+);
+
+// Instrument function for automatic tracing
+#[instrument(skip(config))]
+async fn process_task(
+    task_id: &amp;str,
+    config: &amp;Config
+) -&gt; Result&lt;String, Error&gt; {
+    info!("Processing task");
+
+    let result = execute(task_id).await?;
+
+    info!(
+        duration_ms = result.duration,
+        "Task completed"
+    );
+
+    Ok(result.output)
+}
+
+// All logs within this function automatically include task_id</code></pre>
+<hr />
+<h2 id="log-levels"><a class="header" href="#log-levels">Log Levels</a></h2>
+<h3 id="level-guidelines"><a class="header" href="#level-guidelines">Level Guidelines</a></h3>
+<p><strong>DEBUG</strong>:</p>
+<ul>
+<li>Detailed diagnostic information</li>
+<li>Variable values and state</li>
+<li>Only enabled in development or troubleshooting</li>
+</ul>
+<pre><code class="language-python">logger.debug(
+    "task.routing.evaluation",
+    task_id=task.task_id,
+    arm="coder",
+    score=0.85,
+    capabilities=["python", "code-generation"]
+)
+</code></pre>
+<p><strong>INFO</strong>:</p>
+<ul>
+<li>Normal operational events</li>
+<li>Task lifecycle events</li>
+<li>State transitions</li>
+</ul>
+<pre><code class="language-python">logger.info(
+    "task.processing.started",
+    task_id=task.task_id,
+    priority=task.priority
+)
+
+logger.info(
+    "task.processing.completed",
+    task_id=task.task_id,
+    duration_ms=result.duration
+)
+</code></pre>
+<p><strong>WARNING</strong>:</p>
+<ul>
+<li>Degraded operation</li>
+<li>Recoverable errors</li>
+<li>Unexpected but handled conditions</li>
+</ul>
+<pre><code class="language-python">logger.warning(
+    "cache.miss",
+    key=cache_key,
+    fallback="database"
+)
+
+logger.warning(
+    "arm.slow_response",
+    arm="coder",
+    duration_ms=5000,
+    threshold_ms=1000
+)
+</code></pre>
+<p><strong>ERROR</strong>:</p>
+<ul>
+<li>Operation failed</li>
+<li>Requires attention</li>
+<li>User impact</li>
+</ul>
+<pre><code class="language-python">logger.error(
+    "task.processing.failed",
+    task_id=task.task_id,
+    error=str(e),
+    error_code=e.error_code,
+    exc_info=True
+)
+</code></pre>
+<p><strong>CRITICAL</strong>:</p>
+<ul>
+<li>System failure</li>
+<li>Immediate action required</li>
+<li>Data loss risk</li>
+</ul>
+<pre><code class="language-python">logger.critical(
+    "database.connection.lost",
+    database="primary",
+    error=str(e),
+    exc_info=True
+)
+</code></pre>
+<hr />
+<h2 id="metrics"><a class="header" href="#metrics">Metrics</a></h2>
+<h3 id="prometheus-metrics"><a class="header" href="#prometheus-metrics">Prometheus Metrics</a></h3>
+<p><strong>Counter</strong>: Monotonically increasing values</p>
+<pre><code class="language-python">from prometheus_client import Counter
+
+# Request counter
+http_requests_total = Counter(
+    'http_requests_total',
+    'Total HTTP requests',
+    ['method', 'endpoint', 'status']
+)
+
+# Task counter
+tasks_created_total = Counter(
+    'tasks_created_total',
+    'Total tasks created',
+    ['priority', 'source']
+)
+
+# Error counter
+errors_total = Counter(
+    'errors_total',
+    'Total errors',
+    ['error_type', 'component']
+)
+
+# Usage
+http_requests_total.labels(
+    method="POST",
+    endpoint="/api/v1/tasks",
+    status="200"
+).inc()
+
+tasks_created_total.labels(
+    priority="high",
+    source="api"
+).inc()
+</code></pre>
+<p><strong>Histogram</strong>: Distribution of values</p>
+<pre><code class="language-python">from prometheus_client import Histogram
+
+# Request duration
+http_request_duration_seconds = Histogram(
+    'http_request_duration_seconds',
+    'HTTP request duration',
+    ['method', 'endpoint'],
+    buckets=[0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0, 10.0]
+)
+
+# Task processing duration
+task_duration_seconds = Histogram(
+    'task_duration_seconds',
+    'Task processing duration',
+    ['arm', 'priority'],
+    buckets=[0.1, 0.5, 1.0, 5.0, 10.0, 30.0, 60.0, 120.0]
+)
+
+# LLM API latency
+llm_api_latency_seconds = Histogram(
+    'llm_api_latency_seconds',
+    'LLM API call latency',
+    ['provider', 'model'],
+    buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 30.0]
+)
+
+# Usage
+with http_request_duration_seconds.labels(
+    method="POST",
+    endpoint="/api/v1/tasks"
+).time():
+    result = await process_request()
+</code></pre>
+<p><strong>Gauge</strong>: Current value</p>
+<pre><code class="language-python">from prometheus_client import Gauge
+
+# Tasks in progress
+tasks_in_progress = Gauge(
+    'tasks_in_progress',
+    'Number of tasks currently being processed',
+    ['arm']
+)
+
+# Database connections
+db_connections = Gauge(
+    'db_connections',
+    'Number of active database connections',
+    ['pool']
+)
+
+# Cache size
+cache_size_bytes = Gauge(
+    'cache_size_bytes',
+    'Current cache size in bytes',
+    ['cache_name']
+)
+
+# Usage
+tasks_in_progress.labels(arm="coder").inc()
+# ... process task ...
+tasks_in_progress.labels(arm="coder").dec()
+
+# Set absolute value
+db_connections.labels(pool="primary").set(10)
+</code></pre>
+<h3 id="custom-metrics-middleware"><a class="header" href="#custom-metrics-middleware">Custom Metrics Middleware</a></h3>
+<pre><code class="language-python">from fastapi import FastAPI, Request
+import time
+
+app = FastAPI()
+
+@app.middleware("http")
+async def metrics_middleware(request: Request, call_next):
+    """Record metrics for all HTTP requests."""
+    start_time = time.time()
+
+    # Increment request counter
+    http_requests_total.labels(
+        method=request.method,
+        endpoint=request.url.path,
+        status="in_progress"
+    ).inc()
+
+    try:
+        response = await call_next(request)
+
+        # Record duration
+        duration = time.time() - start_time
+        http_request_duration_seconds.labels(
+            method=request.method,
+            endpoint=request.url.path
+        ).observe(duration)
+
+        # Update counter with final status
+        http_requests_total.labels(
+            method=request.method,
+            endpoint=request.url.path,
+            status=str(response.status_code)
+        ).inc()
+
+        return response
+
+    except Exception as e:
+        # Record error
+        errors_total.labels(
+            error_type=type(e).__name__,
+            component="http"
+        ).inc()
+        raise
+</code></pre>
+<hr />
+<h2 id="distributed-tracing"><a class="header" href="#distributed-tracing">Distributed Tracing</a></h2>
+<h3 id="opentelemetry-integration"><a class="header" href="#opentelemetry-integration">OpenTelemetry Integration</a></h3>
+<pre><code class="language-python">from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+
+# Configure tracer
+trace.set_tracer_provider(TracerProvider())
+tracer = trace.get_tracer(__name__)
+
+# Configure exporter (Jaeger)
+otlp_exporter = OTLPSpanExporter(
+    endpoint="http://jaeger:4317",
+    insecure=True
+)
+
+trace.get_tracer_provider().add_span_processor(
+    BatchSpanProcessor(otlp_exporter)
+)
+
+# Instrument FastAPI
+FastAPIInstrumentor.instrument_app(app)
+
+# Instrument HTTP client
+HTTPXClientInstrumentor().instrument()
+
+# Manual span creation
+async def process_task(task: TaskContract) -&gt; str:
+    """Process task with distributed tracing."""
+    with tracer.start_as_current_span("process_task") as span:
+        span.set_attribute("task.id", task.task_id)
+        span.set_attribute("task.priority", task.priority)
+
+        # Planning phase
+        with tracer.start_as_current_span("plan_task"):
+            plan = await planner.plan(task)
+            span.set_attribute("plan.steps", len(plan.steps))
+
+        # Execution phase
+        with tracer.start_as_current_span("execute_task"):
+            result = await executor.execute(plan)
+            span.set_attribute("result.status", result.status)
+
+        return result.output
+</code></pre>
+<h3 id="span-propagation"><a class="header" href="#span-propagation">Span Propagation</a></h3>
+<pre><code class="language-python">from opentelemetry.propagate import inject, extract
+
+async def call_arm(arm_url: str, task: TaskContract) -&gt; str:
+    """Call arm with trace context propagation."""
+    headers = {}
+
+    # Inject trace context into headers
+    inject(headers)
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{arm_url}/execute",
+            json=task.dict(),
+            headers=headers
+        )
+        return response.json()
+
+
+# Arm receiving request
+@app.post("/execute")
+async def execute(request: Request, task: TaskContract):
+    """Execute task with trace context."""
+    # Extract trace context from headers
+    ctx = extract(request.headers)
+
+    with tracer.start_as_current_span(
+        "arm.execute",
+        context=ctx
+    ) as span:
+        span.set_attribute("arm.name", "coder")
+        result = await process(task)
+        return result
+</code></pre>
+<hr />
+<h2 id="request-ids"><a class="header" href="#request-ids">Request IDs</a></h2>
+<h3 id="request-id-propagation"><a class="header" href="#request-id-propagation">Request ID Propagation</a></h3>
+<pre><code class="language-python">import uuid
+from typing import Optional
+
+def generate_request_id() -&gt; str:
+    """Generate unique request ID."""
+    return f"req_{uuid.uuid4().hex[:16]}"
+
+
+class RequestIDMiddleware(BaseHTTPMiddleware):
+    """Propagate request IDs through the system."""
+
+    async def dispatch(self, request: Request, call_next):
+        # Get or generate request ID
+        request_id = (
+            request.headers.get("X-Request-ID")
+            or generate_request_id()
+        )
+
+        # Store in context
+        set_request_context(request_id)
+
+        # Add to all outgoing requests
+        async def http_client_with_request_id():
+            async with httpx.AsyncClient() as client:
+                client.headers["X-Request-ID"] = request_id
+                return client
+
+        # Process request
+        response = await call_next(request)
+
+        # Add to response
+        response.headers["X-Request-ID"] = request_id
+
+        return response
+</code></pre>
+<h3 id="correlation-in-logs"><a class="header" href="#correlation-in-logs">Correlation in Logs</a></h3>
+<pre><code class="language-python">async def process_distributed_task(task: TaskContract):
+    """Process task across multiple services."""
+    request_id = request_id_var.get()
+
+    logger.info(
+        "orchestrator.processing.started",
+        request_id=request_id,
+        task_id=task.task_id
+    )
+
+    # Call planner arm
+    plan = await call_arm("planner", task)
+    logger.info(
+        "orchestrator.planner.completed",
+        request_id=request_id,
+        task_id=task.task_id,
+        steps=len(plan.steps)
+    )
+
+    # Call executor arm
+    result = await call_arm("executor", plan)
+    logger.info(
+        "orchestrator.executor.completed",
+        request_id=request_id,
+        task_id=task.task_id
+    )
+
+    # All logs from all services will have the same request_id
+    # enabling correlation across service boundaries
+</code></pre>
+<hr />
+<h2 id="log-aggregation"><a class="header" href="#log-aggregation">Log Aggregation</a></h2>
+<h3 id="loki-integration"><a class="header" href="#loki-integration">Loki Integration</a></h3>
+<p><strong>Promtail Configuration</strong> (<code>promtail-config.yml</code>):</p>
+<pre><code class="language-yaml">server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Docker containers
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: 'container'
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: 'stream'
+
+  # Application logs
+  - job_name: octollm
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: octollm
+          __path__: /var/log/octollm/*.log
+</code></pre>
+<h3 id="query-examples"><a class="header" href="#query-examples">Query Examples</a></h3>
+<pre><code class="language-bash"># All logs for a specific request
+{service="octollm-orchestrator"} |= "req_abc123"
+
+# Error logs from any service
+{service=~"octollm-.*"} | json | level="error"
+
+# Task processing logs
+{service="octollm-orchestrator"} | json | event=~"task\\..*"
+
+# Slow requests (&gt;1s)
+{service=~"octollm-.*"} | json | duration_ms &gt; 1000
+
+# LLM API errors
+{service=~"octollm-.*"} | json | error_code="LLM_API_ERROR"
+</code></pre>
+<hr />
+<h2 id="observability-tools"><a class="header" href="#observability-tools">Observability Tools</a></h2>
+<h3 id="grafana-dashboards"><a class="header" href="#grafana-dashboards">Grafana Dashboards</a></h3>
+<p><strong>Orchestrator Dashboard</strong>:</p>
+<pre><code class="language-json">{
+  "dashboard": {
+    "title": "OctoLLM Orchestrator",
+    "panels": [
+      {
+        "title": "Request Rate",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{service=\"octollm-orchestrator\"}[5m])"
+          }
+        ]
+      },
+      {
+        "title": "Request Duration (P95)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
+          }
+        ]
+      },
+      {
+        "title": "Error Rate",
+        "targets": [
+          {
+            "expr": "rate(errors_total{service=\"octollm-orchestrator\"}[5m])"
+          }
+        ]
+      },
+      {
+        "title": "Tasks In Progress",
+        "targets": [
+          {
+            "expr": "tasks_in_progress"
+          }
+        ]
+      }
+    ]
+  }
+}
+</code></pre>
+<h3 id="alert-configuration"><a class="header" href="#alert-configuration">Alert Configuration</a></h3>
+<p><strong>Prometheus Alert Rules</strong>:</p>
+<pre><code class="language-yaml">groups:
+  - name: octollm_alerts
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          rate(errors_total[5m]) &gt; 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }} errors/sec"
+
+      - alert: SlowRequests
+        expr: |
+          histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) &gt; 5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow request processing"
+          description: "P95 latency is {{ $value }}s"
+
+      - alert: ServiceDown
+        expr: |
+          up{job=~"octollm-.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+</code></pre>
+<hr />
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<ol>
+<li><strong>Use structured logging</strong>: Always use structured logs (JSON) in production</li>
+<li><strong>Include context</strong>: Add relevant context (task_id, user_id, request_id)</li>
+<li><strong>Consistent naming</strong>: Use consistent event names (dot-notation)</li>
+<li><strong>Log at boundaries</strong>: Log at service boundaries and state transitions</li>
+<li><strong>Don't log secrets</strong>: Never log passwords, API keys, or PII</li>
+<li><strong>Use appropriate levels</strong>: Follow log level guidelines strictly</li>
+<li><strong>Add metrics</strong>: Complement logs with metrics for aggregation</li>
+<li><strong>Correlation IDs</strong>: Use request IDs for distributed tracing</li>
+<li><strong>Sample when needed</strong>: Use sampling for high-volume debug logs</li>
+<li><strong>Monitor your monitoring</strong>: Alert on logging/metrics failures</li>
+</ol>
+<hr />
+<p><strong>Last Review</strong>: 2025-11-10
+<strong>Next Review</strong>: 2026-02-10 (Quarterly)
+<strong>Owner</strong>: Engineering Team</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../engineering/error-handling.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../engineering/performance-optimization.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../engineering/error-handling.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../engineering/performance-optimization.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

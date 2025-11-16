@@ -1,0 +1,308 @@
+openapi: 3.0.3
+info:
+  title: OctoLLM Executor Arm API
+  description: |
+    Sandboxed command execution with capability-based access control. Executes shell commands,
+    HTTP requests, and scripts in isolated Docker containers.
+
+    **Technology**: Rust 1.75+ / Axum
+    **Port**: 8003
+    **Cost Tier**: 3 (Medium-High - sandboxing overhead)
+    **Average Latency**: 0.5-5 seconds
+  version: 0.3.0
+
+servers:
+  - url: http://localhost:8003
+    description: Local development
+  - url: http://executor:8003
+    description: Docker Compose / Kubernetes internal
+
+tags:
+  - name: execution
+  - name: health
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      tags:
+        - health
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  version:
+                    type: string
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      operationId: getMetrics
+      tags:
+        - health
+      responses:
+        '200':
+          description: Metrics
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /capabilities:
+    get:
+      summary: Get capabilities
+      operationId: getCapabilities
+      tags:
+        - health
+      responses:
+        '200':
+          description: Capabilities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capabilities:
+                    type: array
+                    items:
+                      type: string
+                  allowed_commands:
+                    type: array
+                    items:
+                      type: string
+                example:
+                  capabilities:
+                    - shell_execution
+                    - http_requests
+                    - python_execution
+                  allowed_commands:
+                    - echo
+                    - ls
+                    - cat
+                    - curl
+                    - python3
+
+  /execute:
+    post:
+      summary: Execute command in sandbox
+      description: |
+        Executes a command in an isolated sandbox with capability-based access control.
+        All commands run as non-root users with resource limits.
+      operationId: executeCommand
+      tags:
+        - execution
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecutionRequest'
+            examples:
+              shell_command:
+                summary: Shell command execution
+                value:
+                  action_type: shell
+                  command: ls
+                  args:
+                    - "-la"
+                    - "/tmp"
+                  timeout_seconds: 10
+                  capability_token: tok_abc123xyz
+                  metadata:
+                    task_id: task_123
+              http_request:
+                summary: HTTP request
+                value:
+                  action_type: http
+                  command: curl
+                  args:
+                    - "-X"
+                    - "GET"
+                    - "https://api.github.com/repos/octollm/octollm"
+                  timeout_seconds: 30
+                  capability_token: tok_abc123xyz
+      responses:
+        '200':
+          description: Execution completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionResult'
+              examples:
+                success:
+                  summary: Successful execution
+                  value:
+                    success: true
+                    stdout: "total 32\ndrwxrwxrwt 10 root root 4096 Nov 11 10:30 ."
+                    stderr: ""
+                    exit_code: 0
+                    duration_ms: 45
+                    provenance:
+                      arm_id: executor
+                      timestamp: "2025-11-11T10:30:00Z"
+                      action_type: shell
+                      command_hash: sha256_abc123
+                      capabilities_used:
+                        - ShellRead
+                        - FilesystemRead
+                failed:
+                  summary: Failed execution
+                  value:
+                    success: false
+                    stdout: ""
+                    stderr: "ls: cannot access '/forbidden': Permission denied"
+                    exit_code: 2
+                    duration_ms: 12
+        '403':
+          description: Command not allowed or insufficient capabilities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  error:
+                    type: string
+                  error_type:
+                    type: string
+                  allowed_commands:
+                    type: array
+                    items:
+                      type: string
+              example:
+                success: false
+                error: "Command 'rm' not in allowlist"
+                error_type: CapabilityViolation
+                allowed_commands:
+                  - echo
+                  - cat
+                  - ls
+        '408':
+          description: Execution timeout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  error:
+                    type: string
+                  error_type:
+                    type: string
+                  duration_ms:
+                    type: integer
+              example:
+                success: false
+                error: "Command execution exceeded timeout of 30 seconds"
+                error_type: ExecutionTimeout
+                duration_ms: 30000
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Capability token with required permissions
+
+  schemas:
+    ExecutionRequest:
+      type: object
+      required:
+        - action_type
+        - command
+        - capability_token
+      properties:
+        action_type:
+          type: string
+          enum:
+            - shell
+            - http
+            - python
+          description: Type of execution
+        command:
+          type: string
+          description: Command to execute
+          example: ls
+        args:
+          type: array
+          items:
+            type: string
+          description: Command arguments
+          example:
+            - "-la"
+        timeout_seconds:
+          type: integer
+          minimum: 1
+          maximum: 300
+          default: 30
+          description: Execution timeout
+        capability_token:
+          type: string
+          description: Authorization token with required capabilities
+          pattern: '^tok_[a-zA-Z0-9]+$'
+        metadata:
+          type: object
+          additionalProperties: true
+
+    ExecutionResult:
+      type: object
+      required:
+        - success
+        - stdout
+        - stderr
+        - exit_code
+        - duration_ms
+        - provenance
+      properties:
+        success:
+          type: boolean
+          description: Whether execution succeeded
+        stdout:
+          type: string
+          description: Standard output
+        stderr:
+          type: string
+          description: Standard error
+        exit_code:
+          type: integer
+          description: Process exit code
+        duration_ms:
+          type: integer
+          description: Execution duration in milliseconds
+        provenance:
+          $ref: '#/components/schemas/ProvenanceMetadata'
+
+    ProvenanceMetadata:
+      type: object
+      required:
+        - arm_id
+        - timestamp
+        - action_type
+        - command_hash
+      properties:
+        arm_id:
+          type: string
+          example: executor
+        timestamp:
+          type: string
+          format: date-time
+        action_type:
+          type: string
+        command_hash:
+          type: string
+          description: SHA-256 hash of command
+        capabilities_used:
+          type: array
+          items:
+            type: string

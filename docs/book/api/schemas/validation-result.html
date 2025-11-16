@@ -1,0 +1,1061 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>ValidationResult Schema - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/api/schemas/validation-result.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="validationresult-schema-reference"><a class="header" href="#validationresult-schema-reference">ValidationResult Schema Reference</a></h1>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The <strong>ValidationResult</strong> schema represents the output from the Judge arm after validating outputs against schemas, acceptance criteria, facts, and quality standards. This multi-layer validation ensures outputs are structurally correct, factually accurate, and meet quality thresholds.</p>
+<p><strong>Used By</strong>: Judge Arm (output), Orchestrator (for decision-making)
+<strong>Primary Endpoint</strong>: <code>POST /validate</code>
+<strong>Format</strong>: JSON</p>
+<hr />
+<h2 id="structure"><a class="header" href="#structure">Structure</a></h2>
+<h3 id="validationresult"><a class="header" href="#validationresult">ValidationResult</a></h3>
+<p>Complete validation output with issues, confidence, and quality metrics.</p>
+<pre><code class="language-typescript">interface ValidationResult {
+  valid: boolean;                   // Required: No errors (warnings/info OK)
+  confidence: number;               // Required: 0.0-1.0 confidence score
+  issues: ValidationIssue[];        // Required: List of issues found
+  passed_criteria: string[];        // Optional: Criteria that passed
+  failed_criteria: string[];        // Optional: Criteria that failed
+  quality_score: number;            // Required: 0.0-1.0 overall quality
+  metadata: ValidationMetadata;     // Optional: Additional info
+}
+
+interface ValidationIssue {
+  severity: 'error' | 'warning' | 'info';  // Required: Issue severity
+  type: string;                            // Required: Issue type
+  message: string;                         // Required: Human-readable description
+  location: string;                        // Optional: Where the issue was found
+  suggestion: string;                      // Optional: How to fix it
+}
+
+interface ValidationMetadata {
+  validation_types_run: string[];   // Types executed (schema, facts, etc.)
+  total_issues: number;             // Total issue count
+  error_count: number;              // Number of errors
+  warning_count: number;            // Number of warnings
+  info_count: number;               // Number of info messages
+  duration_ms: number;              // Validation execution time
+  model?: string;                   // LLM model used (if applicable)
+}
+</code></pre>
+<hr />
+<h2 id="field-definitions"><a class="header" href="#field-definitions">Field Definitions</a></h2>
+<h3 id="valid-required"><a class="header" href="#valid-required"><code>valid</code> (required)</a></h3>
+<p><strong>Type</strong>: boolean
+<strong>Description</strong>: Whether the output is considered valid (no errors)</p>
+<p><strong>Validation Logic</strong>:</p>
+<ul>
+<li><code>true</code>: No issues with <code>severity: 'error'</code> (warnings and info are acceptable)</li>
+<li><code>false</code>: At least one issue with <code>severity: 'error'</code></li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<pre><code class="language-json">// Valid output (warnings OK)
+{
+  "valid": true,
+  "issues": [
+    {"severity": "warning", "message": "Consider adding docstring"},
+    {"severity": "info", "message": "Code style follows PEP 8"}
+  ]
+}
+
+// Invalid output (errors present)
+{
+  "valid": false,
+  "issues": [
+    {"severity": "error", "message": "Missing required field 'tests'"},
+    {"severity": "warning", "message": "Function name could be more descriptive"}
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="confidence-required"><a class="header" href="#confidence-required"><code>confidence</code> (required)</a></h3>
+<p><strong>Type</strong>: number
+<strong>Constraints</strong>: 0.0-1.0
+<strong>Description</strong>: Confidence in the validation result (higher = more certain)</p>
+<p><strong>Confidence Levels</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Range</th><th>Interpretation</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>0.9-1.0</td><td>Very High</td><td>Extremely confident in validation</td></tr>
+<tr><td>0.7-0.89</td><td>High</td><td>Confident, minor ambiguities</td></tr>
+<tr><td>0.5-0.69</td><td>Medium</td><td>Moderate confidence, some uncertainty</td></tr>
+<tr><td>0.3-0.49</td><td>Low</td><td>Significant uncertainty</td></tr>
+<tr><td>0.0-0.29</td><td>Very Low</td><td>Highly uncertain, review manually</td></tr>
+</tbody></table>
+</div>
+<p><strong>Factors Affecting Confidence</strong>:</p>
+<ul>
+<li>Clear vs ambiguous acceptance criteria</li>
+<li>Availability of trusted sources for fact-checking</li>
+<li>Complexity of schema validation</li>
+<li>Presence of hallucination indicators</li>
+<li>Quality of LLM reasoning (if used)</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<pre><code class="language-typescript">// High confidence - clear violations
+{
+  valid: false,
+  confidence: 0.95,
+  issues: [
+    {severity: "error", message: "Missing required field 'email'"}
+  ]
+}
+
+// Low confidence - ambiguous criteria
+{
+  valid: true,
+  confidence: 0.45,
+  issues: [
+    {severity: "warning", message: "Criterion 'code is good' is subjective"}
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="issues-required"><a class="header" href="#issues-required"><code>issues</code> (required)</a></h3>
+<p><strong>Type</strong>: array of ValidationIssue objects
+<strong>Description</strong>: List of all issues found during validation</p>
+<h4 id="validationissue-structure"><a class="header" href="#validationissue-structure">ValidationIssue Structure</a></h4>
+<h5 id="severity-required"><a class="header" href="#severity-required"><code>severity</code> (required)</a></h5>
+<p><strong>Type</strong>: enum - <code>'error'</code> | <code>'warning'</code> | <code>'info'</code>
+<strong>Description</strong>: Severity level of the issue</p>
+<p><strong>Severity Definitions</strong>:</p>
+<p><strong>error</strong> - Blocking issue, prevents output acceptance</p>
+<ul>
+<li>Missing required fields</li>
+<li>Schema violations</li>
+<li>Failed acceptance criteria</li>
+<li>Factual hallucinations</li>
+<li>Critical quality issues</li>
+</ul>
+<p><strong>warning</strong> - Non-blocking issue, should be addressed but not critical</p>
+<ul>
+<li>Suboptimal implementations</li>
+<li>Style inconsistencies</li>
+<li>Minor quality concerns</li>
+<li>Deprecated patterns</li>
+</ul>
+<p><strong>info</strong> - Informational, no action required</p>
+<ul>
+<li>Best practice suggestions</li>
+<li>Optimization opportunities</li>
+<li>Context notes</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "issues": [
+    {
+      "severity": "error",
+      "type": "schema_violation",
+      "message": "Missing required field 'tests'"
+    },
+    {
+      "severity": "warning",
+      "type": "style_issue",
+      "message": "Function name uses camelCase instead of snake_case"
+    },
+    {
+      "severity": "info",
+      "type": "optimization",
+      "message": "Consider using list comprehension for better performance"
+    }
+  ]
+}
+</code></pre>
+<h5 id="type-required"><a class="header" href="#type-required"><code>type</code> (required)</a></h5>
+<p><strong>Type</strong>: string
+<strong>Description</strong>: Categorizes the issue for filtering and tracking</p>
+<p><strong>Common Issue Types</strong>:</p>
+<p><strong>Schema Validation</strong>:</p>
+<ul>
+<li><code>schema_violation</code> - Output doesn't match expected schema</li>
+<li><code>missing_field</code> - Required field is absent</li>
+<li><code>invalid_type</code> - Field has wrong data type</li>
+<li><code>constraint_violation</code> - Field violates constraints (min/max, regex, etc.)</li>
+</ul>
+<p><strong>Criteria Validation</strong>:</p>
+<ul>
+<li><code>criteria_not_met</code> - Acceptance criterion failed</li>
+<li><code>criteria_ambiguous</code> - Criterion is unclear or subjective</li>
+</ul>
+<p><strong>Fact Checking</strong>:</p>
+<ul>
+<li><code>fact_mismatch</code> - Stated fact contradicts trusted sources</li>
+<li><code>unsupported_claim</code> - Claim not found in sources</li>
+<li><code>source_missing</code> - Citation lacks source</li>
+</ul>
+<p><strong>Hallucination Detection</strong>:</p>
+<ul>
+<li><code>hallucination</code> - LLM fabricated information</li>
+<li><code>confidence_mismatch</code> - High confidence on uncertain facts</li>
+<li><code>detail_inconsistency</code> - Details contradict each other</li>
+</ul>
+<p><strong>Quality Assessment</strong>:</p>
+<ul>
+<li><code>readability_issue</code> - Code/text is hard to understand</li>
+<li><code>complexity_issue</code> - Unnecessarily complex solution</li>
+<li><code>performance_issue</code> - Inefficient implementation</li>
+<li><code>security_issue</code> - Potential security vulnerability</li>
+<li><code>style_issue</code> - Code style inconsistencies</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "issues": [
+    {"type": "schema_violation", "message": "..."},
+    {"type": "hallucination", "message": "..."},
+    {"type": "security_issue", "message": "..."}
+  ]
+}
+</code></pre>
+<h5 id="message-required"><a class="header" href="#message-required"><code>message</code> (required)</a></h5>
+<p><strong>Type</strong>: string
+<strong>Constraints</strong>: 10-500 characters
+<strong>Description</strong>: Human-readable description of the issue</p>
+<p><strong>Best Practices</strong>:</p>
+<ul>
+<li>Be specific and actionable</li>
+<li>Include relevant details (field names, expected vs actual values)</li>
+<li>Use clear, non-technical language when possible</li>
+<li>Avoid jargon unless necessary</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<pre><code class="language-json">// Good messages
+"Missing required field 'email' in user object"
+"CVSS score stated as 9.8 but actual score is 7.5 according to NVD"
+"Function 'calc_avg' has cyclomatic complexity of 15 (max recommended: 10)"
+
+// Bad messages
+"Schema error"  // Too vague
+"The code doesn't follow best practices"  // Not specific
+</code></pre>
+<h5 id="location-optional"><a class="header" href="#location-optional"><code>location</code> (optional)</a></h5>
+<p><strong>Type</strong>: string
+<strong>Description</strong>: Where the issue was found (field path, line number, function name)</p>
+<p><strong>Format Examples</strong>:</p>
+<pre><code class="language-json">// Field paths (dot notation)
+"user.profile.email"
+"tasks[2].status"
+
+// Code locations
+"function:calculate_average"
+"line:42"
+"file:auth.py:line:87"
+
+// General locations
+"root"
+"N/A"
+</code></pre>
+<h5 id="suggestion-optional"><a class="header" href="#suggestion-optional"><code>suggestion</code> (optional)</a></h5>
+<p><strong>Type</strong>: string
+<strong>Constraints</strong>: 10-500 characters
+<strong>Description</strong>: Actionable advice on how to fix the issue</p>
+<p><strong>Examples</strong>:</p>
+<pre><code class="language-json">{
+  "issue": "Missing required field 'tests'",
+  "suggestion": "Add a 'tests' field containing unit tests for the code"
+},
+{
+  "issue": "Function has no docstring",
+  "suggestion": "Add a docstring explaining parameters, return value, and example usage"
+},
+{
+  "issue": "CVSS score mismatch",
+  "suggestion": "Update CVSS score to 7.5 based on https://nvd.nist.gov/vuln/detail/CVE-2024-12345"
+}
+</code></pre>
+<hr />
+<h3 id="passed_criteria-optional"><a class="header" href="#passed_criteria-optional"><code>passed_criteria</code> (optional)</a></h3>
+<p><strong>Type</strong>: array of strings
+<strong>Description</strong>: Acceptance criteria that were successfully met</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "passed_criteria": [
+    "Code implements sorting functionality",
+    "Function has proper naming",
+    "Edge cases are handled"
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="failed_criteria-optional"><a class="header" href="#failed_criteria-optional"><code>failed_criteria</code> (optional)</a></h3>
+<p><strong>Type</strong>: array of strings
+<strong>Description</strong>: Acceptance criteria that were not met</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "failed_criteria": [
+    "Tests are included",
+    "Performance is O(n log n) or better"
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="quality_score-required"><a class="header" href="#quality_score-required"><code>quality_score</code> (required)</a></h3>
+<p><strong>Type</strong>: number
+<strong>Constraints</strong>: 0.0-1.0
+<strong>Description</strong>: Overall quality assessment of the output</p>
+<p><strong>Quality Scoring Rubric</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Score Range</th><th>Grade</th><th>Interpretation</th></tr></thead><tbody>
+<tr><td>0.9-1.0</td><td>Excellent</td><td>Production-ready, minimal issues</td></tr>
+<tr><td>0.7-0.89</td><td>Good</td><td>Minor improvements needed</td></tr>
+<tr><td>0.5-0.69</td><td>Fair</td><td>Moderate issues, rework suggested</td></tr>
+<tr><td>0.3-0.49</td><td>Poor</td><td>Significant issues, major rework required</td></tr>
+<tr><td>0.0-0.29</td><td>Very Poor</td><td>Unacceptable quality, restart recommended</td></tr>
+</tbody></table>
+</div>
+<p><strong>Factors Considered</strong>:</p>
+<ul>
+<li>Correctness (does it work?)</li>
+<li>Completeness (meets all requirements?)</li>
+<li>Readability (easy to understand?)</li>
+<li>Maintainability (easy to modify?)</li>
+<li>Performance (efficient?)</li>
+<li>Security (safe from vulnerabilities?)</li>
+<li>Style (consistent formatting?)</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "quality_score": 0.85,
+  "issues": [
+    {"severity": "warning", "type": "style_issue", "message": "Minor style inconsistency"},
+    {"severity": "info", "type": "optimization", "message": "Could use list comprehension"}
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="metadata-optional"><a class="header" href="#metadata-optional"><code>metadata</code> (optional)</a></h3>
+<p><strong>Type</strong>: object
+<strong>Description</strong>: Additional information about the validation process</p>
+<p><strong>Common Metadata Fields</strong>:</p>
+<ul>
+<li><code>validation_types_run</code>: Types of validation performed</li>
+<li><code>total_issues</code>: Total number of issues found</li>
+<li><code>error_count</code>: Number of errors</li>
+<li><code>warning_count</code>: Number of warnings</li>
+<li><code>info_count</code>: Number of info messages</li>
+<li><code>duration_ms</code>: Validation execution time</li>
+<li><code>model</code>: LLM model used (if applicable)</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "metadata": {
+    "validation_types_run": ["schema", "criteria", "quality"],
+    "total_issues": 3,
+    "error_count": 1,
+    "warning_count": 1,
+    "info_count": 1,
+    "duration_ms": 1250,
+    "model": "gpt-3.5-turbo"
+  }
+}
+</code></pre>
+<hr />
+<h2 id="complete-examples"><a class="header" href="#complete-examples">Complete Examples</a></h2>
+<h3 id="example-1-valid-output-with-warnings"><a class="header" href="#example-1-valid-output-with-warnings">Example 1: Valid Output with Warnings</a></h3>
+<pre><code class="language-json">{
+  "valid": true,
+  "confidence": 0.88,
+  "issues": [
+    {
+      "severity": "warning",
+      "type": "style_issue",
+      "message": "Function name uses camelCase instead of snake_case",
+      "location": "function:sortList",
+      "suggestion": "Rename to 'sort_list' to follow Python naming conventions"
+    },
+    {
+      "severity": "info",
+      "type": "optimization",
+      "message": "Consider adding type hints for better code clarity",
+      "location": "function:sortList",
+      "suggestion": "Add type hints like 'def sort_list(lst: List[int]) -&gt; List[int]:'"
+    }
+  ],
+  "passed_criteria": [
+    "Code implements sorting functionality",
+    "Tests are included",
+    "Edge cases are handled"
+  ],
+  "failed_criteria": [],
+  "quality_score": 0.82,
+  "metadata": {
+    "validation_types_run": ["schema", "criteria", "quality"],
+    "total_issues": 2,
+    "error_count": 0,
+    "warning_count": 1,
+    "info_count": 1,
+    "duration_ms": 950,
+    "model": "gpt-3.5-turbo"
+  }
+}
+</code></pre>
+<hr />
+<h3 id="example-2-invalid-output-schema-violation"><a class="header" href="#example-2-invalid-output-schema-violation">Example 2: Invalid Output (Schema Violation)</a></h3>
+<pre><code class="language-json">{
+  "valid": false,
+  "confidence": 0.95,
+  "issues": [
+    {
+      "severity": "error",
+      "type": "missing_field",
+      "message": "Missing required field 'tests'",
+      "location": "root",
+      "suggestion": "Add a 'tests' field containing unit tests for the code"
+    },
+    {
+      "severity": "error",
+      "type": "criteria_not_met",
+      "message": "Acceptance criterion not met: Tests are included",
+      "location": "N/A",
+      "suggestion": "Review output and ensure tests are included"
+    },
+    {
+      "severity": "warning",
+      "type": "style_issue",
+      "message": "Function lacks docstring",
+      "location": "function:sort_list",
+      "suggestion": "Add docstring explaining parameters and return value"
+    }
+  ],
+  "passed_criteria": [
+    "Code implements sorting functionality"
+  ],
+  "failed_criteria": [
+    "Tests are included"
+  ],
+  "quality_score": 0.55,
+  "metadata": {
+    "validation_types_run": ["schema", "criteria", "quality"],
+    "total_issues": 3,
+    "error_count": 2,
+    "warning_count": 1,
+    "info_count": 0,
+    "duration_ms": 1150
+  }
+}
+</code></pre>
+<hr />
+<h3 id="example-3-hallucination-detection"><a class="header" href="#example-3-hallucination-detection">Example 3: Hallucination Detection</a></h3>
+<pre><code class="language-json">{
+  "valid": false,
+  "confidence": 0.72,
+  "issues": [
+    {
+      "severity": "error",
+      "type": "hallucination",
+      "message": "CVSS score stated as 9.8 but actual score is 7.5 according to NVD",
+      "location": "summary:cvss_score",
+      "suggestion": "Update CVSS score to 7.5 based on https://nvd.nist.gov/vuln/detail/CVE-2024-12345"
+    },
+    {
+      "severity": "error",
+      "type": "hallucination",
+      "message": "Affected versions claim 'prior to 1.24.0' but actually 'prior to 1.24.1'",
+      "location": "summary:affected_versions",
+      "suggestion": "Correct affected versions to 'prior to 1.24.1'"
+    },
+    {
+      "severity": "error",
+      "type": "unsupported_claim",
+      "message": "Discoverer 'Alice Smith' not found in sources",
+      "location": "summary:discoverer",
+      "suggestion": "Remove unsupported claim or provide valid source"
+    },
+    {
+      "severity": "warning",
+      "type": "fact_mismatch",
+      "message": "Discovery date stated as March but actual date is February",
+      "location": "summary:discovery_date",
+      "suggestion": "Correct discovery date to February 2024"
+    }
+  ],
+  "passed_criteria": [],
+  "failed_criteria": [
+    "All facts are supported by trusted sources",
+    "No hallucinations present"
+  ],
+  "quality_score": 0.35,
+  "metadata": {
+    "validation_types_run": ["facts", "hallucination"],
+    "total_issues": 4,
+    "error_count": 3,
+    "warning_count": 1,
+    "info_count": 0,
+    "duration_ms": 2800,
+    "model": "gpt-3.5-turbo"
+  }
+}
+</code></pre>
+<hr />
+<h3 id="example-4-quality-assessment-low-score"><a class="header" href="#example-4-quality-assessment-low-score">Example 4: Quality Assessment (Low Score)</a></h3>
+<pre><code class="language-json">{
+  "valid": true,
+  "confidence": 0.68,
+  "issues": [
+    {
+      "severity": "warning",
+      "type": "complexity_issue",
+      "message": "Function has cyclomatic complexity of 15 (recommended max: 10)",
+      "location": "function:calculate_statistics",
+      "suggestion": "Refactor into smaller helper functions"
+    },
+    {
+      "severity": "warning",
+      "type": "performance_issue",
+      "message": "Nested loops result in O(n²) complexity",
+      "location": "function:find_duplicates",
+      "suggestion": "Use a set-based approach for O(n) complexity"
+    },
+    {
+      "severity": "warning",
+      "type": "security_issue",
+      "message": "User input not sanitized before use in shell command",
+      "location": "line:87",
+      "suggestion": "Use subprocess with parameterized commands instead of shell=True"
+    },
+    {
+      "severity": "warning",
+      "type": "readability_issue",
+      "message": "Variable name 'x' is not descriptive",
+      "location": "function:process_data",
+      "suggestion": "Rename to descriptive name like 'user_count' or 'total_items'"
+    },
+    {
+      "severity": "info",
+      "type": "style_issue",
+      "message": "Line length exceeds 88 characters (PEP 8 recommendation)",
+      "location": "line:42",
+      "suggestion": "Break line into multiple lines"
+    }
+  ],
+  "passed_criteria": [
+    "Code is functional",
+    "Tests pass"
+  ],
+  "failed_criteria": [],
+  "quality_score": 0.52,
+  "metadata": {
+    "validation_types_run": ["quality"],
+    "total_issues": 5,
+    "error_count": 0,
+    "warning_count": 4,
+    "info_count": 1,
+    "duration_ms": 3500,
+    "model": "gpt-4"
+  }
+}
+</code></pre>
+<hr />
+<h2 id="usage-patterns"><a class="header" href="#usage-patterns">Usage Patterns</a></h2>
+<h3 id="pattern-1-interpreting-validation-results"><a class="header" href="#pattern-1-interpreting-validation-results">Pattern 1: Interpreting Validation Results</a></h3>
+<pre><code class="language-typescript">function interpretValidationResult(result: ValidationResult): string {
+  if (result.valid &amp;&amp; result.quality_score &gt;= 0.8) {
+    return '✅ Output is excellent and ready to use';
+  }
+
+  if (result.valid &amp;&amp; result.quality_score &gt;= 0.6) {
+    return '⚠️ Output is acceptable but could be improved';
+  }
+
+  if (result.valid &amp;&amp; result.quality_score &lt; 0.6) {
+    return '⚠️ Output is valid but quality is below threshold';
+  }
+
+  if (!result.valid &amp;&amp; result.confidence &gt; 0.8) {
+    return '❌ Output is invalid (high confidence)';
+  }
+
+  if (!result.valid &amp;&amp; result.confidence &lt; 0.5) {
+    return '❓ Output may be invalid (low confidence, manual review needed)';
+  }
+
+  return '❌ Output is invalid';
+}
+</code></pre>
+<hr />
+<h3 id="pattern-2-filtering-issues-by-severity"><a class="header" href="#pattern-2-filtering-issues-by-severity">Pattern 2: Filtering Issues by Severity</a></h3>
+<pre><code class="language-python">def get_blocking_issues(result: ValidationResult) -&gt; List[ValidationIssue]:
+    """Get only error-level issues that block acceptance."""
+    return [issue for issue in result.issues if issue.severity == "error"]
+
+def has_security_issues(result: ValidationResult) -&gt; bool:
+    """Check if any security issues were found."""
+    return any(issue.type == "security_issue" for issue in result.issues)
+
+# Example usage
+result = await judge_client.validate(output)
+
+blocking = get_blocking_issues(result)
+if blocking:
+    print(f"❌ {len(blocking)} blocking issues found:")
+    for issue in blocking:
+        print(f"  - {issue.message}")
+
+if has_security_issues(result):
+    print("🔒 Security issues detected, review required")
+</code></pre>
+<hr />
+<h3 id="pattern-3-automatic-retry-with-lower-quality-threshold"><a class="header" href="#pattern-3-automatic-retry-with-lower-quality-threshold">Pattern 3: Automatic Retry with Lower Quality Threshold</a></h3>
+<pre><code class="language-typescript">async function validateWithRetry(
+  output: any,
+  minQualityScore: number = 0.8,
+  maxRetries: number = 3
+): Promise&lt;ValidationResult&gt; {
+  let currentQuality = minQualityScore;
+
+  for (let attempt = 1; attempt &lt;= maxRetries; attempt++) {
+    const result = await judgeClient.validate({
+      output,
+      validationTypes: ['schema', 'criteria', 'quality']
+    });
+
+    // If valid and meets quality threshold, return
+    if (result.valid &amp;&amp; result.quality_score &gt;= currentQuality) {
+      console.log(`✅ Validation passed (attempt ${attempt})`);
+      return result;
+    }
+
+    // Lower quality threshold for subsequent attempts
+    currentQuality = Math.max(0.5, currentQuality - 0.1);
+
+    console.log(`❌ Attempt ${attempt} failed (quality: ${result.quality_score.toFixed(2)})`);
+
+    if (attempt &lt; maxRetries) {
+      console.log(`Retrying with lower threshold: ${currentQuality.toFixed(2)}...`);
+    }
+  }
+
+  throw new Error('Validation failed after maximum retries');
+}
+</code></pre>
+<hr />
+<h3 id="pattern-4-issue-aggregation-and-reporting"><a class="header" href="#pattern-4-issue-aggregation-and-reporting">Pattern 4: Issue Aggregation and Reporting</a></h3>
+<pre><code class="language-python">from collections import defaultdict
+
+def generate_validation_report(result: ValidationResult) -&gt; str:
+    """Generate human-readable validation report."""
+
+    report = []
+    report.append(f"Validation Result: {'✅ PASS' if result.valid else '❌ FAIL'}")
+    report.append(f"Confidence: {result.confidence:.2f}")
+    report.append(f"Quality Score: {result.quality_score:.2f}")
+    report.append("")
+
+    # Group issues by severity
+    issues_by_severity = defaultdict(list)
+    for issue in result.issues:
+        issues_by_severity[issue.severity].append(issue)
+
+    # Report errors
+    if "error" in issues_by_severity:
+        report.append(f"🔴 ERRORS ({len(issues_by_severity['error'])})")
+        for issue in issues_by_severity["error"]:
+            report.append(f"  • [{issue.type}] {issue.message}")
+            if issue.suggestion:
+                report.append(f"    → {issue.suggestion}")
+        report.append("")
+
+    # Report warnings
+    if "warning" in issues_by_severity:
+        report.append(f"🟡 WARNINGS ({len(issues_by_severity['warning'])})")
+        for issue in issues_by_severity["warning"]:
+            report.append(f"  • [{issue.type}] {issue.message}")
+        report.append("")
+
+    # Report criteria results
+    if result.passed_criteria:
+        report.append(f"✅ PASSED CRITERIA ({len(result.passed_criteria)})")
+        for criterion in result.passed_criteria:
+            report.append(f"  • {criterion}")
+        report.append("")
+
+    if result.failed_criteria:
+        report.append(f"❌ FAILED CRITERIA ({len(result.failed_criteria)})")
+        for criterion in result.failed_criteria:
+            report.append(f"  • {criterion}")
+        report.append("")
+
+    return "\n".join(report)
+
+# Example usage
+result = await judge_client.validate(output)
+print(generate_validation_report(result))
+</code></pre>
+<hr />
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<h3 id="1-always-check-both-valid-and-quality_score"><a class="header" href="#1-always-check-both-valid-and-quality_score">1. Always Check Both <code>valid</code> and <code>quality_score</code></a></h3>
+<p><strong>Why</strong>: An output can be valid but still low quality
+<strong>How</strong>: Set minimum thresholds for both</p>
+<pre><code class="language-python">if result.valid and result.quality_score &gt;= 0.7:
+    accept_output(output)
+else:
+    reject_output(output)
+</code></pre>
+<hr />
+<h3 id="2-filter-issues-by-severity-for-decision-making"><a class="header" href="#2-filter-issues-by-severity-for-decision-making">2. Filter Issues by Severity for Decision-Making</a></h3>
+<p><strong>Why</strong>: Not all issues are blocking
+<strong>How</strong>: Only treat errors as blocking, warnings as advisory</p>
+<pre><code class="language-typescript">const errors = result.issues.filter(i =&gt; i.severity === 'error');
+if (errors.length === 0) {
+  // Accept with warnings
+  acceptWithWarnings(output, result);
+} else {
+  // Reject due to errors
+  reject(output, errors);
+}
+</code></pre>
+<hr />
+<h3 id="3-use-confidence-scores-for-manual-review-triggers"><a class="header" href="#3-use-confidence-scores-for-manual-review-triggers">3. Use Confidence Scores for Manual Review Triggers</a></h3>
+<p><strong>Why</strong>: Low confidence indicates uncertainty
+<strong>How</strong>: Trigger manual review for low confidence</p>
+<pre><code class="language-python">if result.confidence &lt; 0.6:
+    send_for_manual_review(output, result)
+elif result.valid:
+    accept_automatically(output)
+else:
+    reject_automatically(output)
+</code></pre>
+<hr />
+<h3 id="4-track-issue-types-over-time"><a class="header" href="#4-track-issue-types-over-time">4. Track Issue Types Over Time</a></h3>
+<p><strong>Why</strong>: Identify patterns and improve prompts
+<strong>How</strong>: Log issue types for analysis</p>
+<pre><code class="language-typescript">// Track issue types in metrics
+for (const issue of result.issues) {
+  metrics.recordIssue(issue.type, issue.severity);
+}
+
+// Analyze trends
+const commonIssues = metrics.getTopIssues(limit: 10);
+console.log('Most common issues:', commonIssues);
+</code></pre>
+<hr />
+<h2 id="related-documentation"><a class="header" href="#related-documentation">Related Documentation</a></h2>
+<ul>
+<li><a href="../services/judge.html">Judge Arm API Reference</a></li>
+<li><a href="./TaskContract.html">TaskContract Schema</a></li>
+<li><a href="../../guides/validation-types.html">Validation Types Guide</a> (coming soon)</li>
+<li><a href="../../guides/quality-metrics.html">Quality Metrics Guide</a> (coming soon)</li>
+</ul>
+<hr />
+<h2 id="json-schema"><a class="header" href="#json-schema">JSON Schema</a></h2>
+<p>Complete JSON Schema for validation:</p>
+<pre><code class="language-json">{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ValidationResult",
+  "type": "object",
+  "required": ["valid", "confidence", "issues", "quality_score"],
+  "properties": {
+    "valid": {
+      "type": "boolean",
+      "description": "Whether output is valid (no errors)"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Confidence in validation result"
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ValidationIssue"
+      },
+      "description": "List of issues found"
+    },
+    "passed_criteria": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Acceptance criteria that passed"
+    },
+    "failed_criteria": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Acceptance criteria that failed"
+    },
+    "quality_score": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Overall quality score"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "validation_types_run": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "total_issues": {"type": "integer"},
+        "error_count": {"type": "integer"},
+        "warning_count": {"type": "integer"},
+        "info_count": {"type": "integer"},
+        "duration_ms": {"type": "number"},
+        "model": {"type": "string"}
+      }
+    }
+  },
+  "definitions": {
+    "ValidationIssue": {
+      "type": "object",
+      "required": ["severity", "type", "message"],
+      "properties": {
+        "severity": {
+          "type": "string",
+          "enum": ["error", "warning", "info"],
+          "description": "Issue severity level"
+        },
+        "type": {
+          "type": "string",
+          "description": "Issue type (e.g., schema_violation, hallucination)"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 500,
+          "description": "Human-readable issue description"
+        },
+        "location": {
+          "type": "string",
+          "description": "Where the issue was found"
+        },
+        "suggestion": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 500,
+          "description": "How to fix the issue"
+        }
+      }
+    }
+  }
+}
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../api/schemas/code-generation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../api/schemas/retrieval-result.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../api/schemas/code-generation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../api/schemas/retrieval-result.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

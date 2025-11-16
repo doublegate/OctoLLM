@@ -1,0 +1,3022 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Phase 5: Security - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/project-tracking/phases/phase-5.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="phase-5-security-hardening"><a class="header" href="#phase-5-security-hardening">Phase 5: Security Hardening</a></h1>
+<p><strong>Status</strong>: Not Started
+<strong>Duration</strong>: 8-10 weeks
+<strong>Team Size</strong>: 3-4 engineers (2 security specialists, 1 DevOps, 1 Python/Rust)
+<strong>Prerequisites</strong>: Phase 2 complete (all arms deployed)
+<strong>Start Date</strong>: TBD
+<strong>Target Completion</strong>: TBD</p>
+<hr />
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Phase 5 implements comprehensive security hardening across all system layers, establishing defense-in-depth with capability-based access control, container sandboxing, PII protection, security testing automation, and comprehensive audit logging.</p>
+<p><strong>Key Deliverables</strong>:</p>
+<ol>
+<li>Capability System - JWT-based time-limited permissions with automatic rotation</li>
+<li>Container Sandboxing - gVisor, seccomp profiles, resource limits, network policies</li>
+<li>PII Protection - Multi-layer detection (regex + NER), redaction, differential privacy</li>
+<li>Security Testing - SAST, DAST, dependency scanning, penetration testing automation</li>
+<li>Audit Logging - Immutable provenance tracking, compliance reporting (GDPR, CCPA, SOC 2)</li>
+</ol>
+<p><strong>Success Criteria</strong>:</p>
+<ul>
+<li>✅ Zero high-severity vulnerabilities in production</li>
+<li>✅ PII detection &gt;99% accuracy (F1 score)</li>
+<li>✅ Container escapes blocked (100% in testing)</li>
+<li>✅ All API calls authenticated and authorized</li>
+<li>✅ Audit logs immutable and complete (100% coverage)</li>
+<li>✅ GDPR/CCPA compliance verified</li>
+<li>✅ Penetration test passed with no critical findings</li>
+</ul>
+<p><strong>Reference</strong>: <code>docs/doc_phases/PHASE-5-COMPLETE-SPECIFICATIONS.md</code> (12,500+ lines)</p>
+<hr />
+<h2 id="sprint-51-capability-system-week-23-24"><a class="header" href="#sprint-51-capability-system-week-23-24">Sprint 5.1: Capability System [Week 23-24]</a></h2>
+<p><strong>Duration</strong>: 2 weeks
+<strong>Team</strong>: 2 engineers (1 security specialist, 1 Python)
+<strong>Prerequisites</strong>: Phase 2 complete (all arms deployed)
+<strong>Priority</strong>: CRITICAL</p>
+<h3 id="sprint-goals"><a class="header" href="#sprint-goals">Sprint Goals</a></h3>
+<ul>
+<li>Implement JWT-based capability tokens with time-limited scopes</li>
+<li>Create capability validation middleware for all arms</li>
+<li>Set up automatic token rotation and revocation</li>
+<li>Implement least-privilege principle for all operations</li>
+<li>Audit all capability grants and usage</li>
+<li>Document capability design patterns</li>
+</ul>
+<h3 id="architecture-decisions"><a class="header" href="#architecture-decisions">Architecture Decisions</a></h3>
+<p><strong>Token Format</strong>: JWT with custom claims for capabilities
+<strong>Signing Algorithm</strong>: RS256 (asymmetric) for key rotation
+<strong>Token Lifetime</strong>: 15 minutes default, 1 hour maximum
+<strong>Storage</strong>: Redis for active tokens, PostgreSQL for audit trail
+<strong>Revocation Strategy</strong>: Token blocklist + short TTL</p>
+<h3 id="tasks"><a class="header" href="#tasks">Tasks</a></h3>
+<h4 id="capability-token-generation-8-hours"><a class="header" href="#capability-token-generation-8-hours">Capability Token Generation (8 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Design Capability Schema</strong> (2 hours)</p>
+<ul>
+<li>Define capability types (read, write, execute, admin)</li>
+<li>Define resource scopes (task_id, arm_id, global)</li>
+<li>Define constraint types (time_limit, cost_limit, data_limit)</li>
+<li>Code example:
+<pre><code class="language-python"># orchestrator/auth/capabilities.py
+from typing import List, Optional, Dict, Any
+from datetime import datetime, timedelta
+from pydantic import BaseModel, Field
+import jwt
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+
+class CapabilityScope(BaseModel):
+    """Defines what resources a capability grants access to."""
+    resource_type: str  # "task", "arm", "memory", "global"
+    resource_id: Optional[str] = None  # Specific ID or "*" for all
+    actions: List[str]  # ["read", "write", "execute", "delete"]
+
+class CapabilityConstraints(BaseModel):
+    """Constraints on capability usage."""
+    max_cost_tokens: Optional[int] = None
+    max_execution_time_seconds: Optional[int] = None
+    allowed_tools: Optional[List[str]] = None
+    blocked_hosts: List[str] = Field(default_factory=list)
+    allowed_hosts: Optional[List[str]] = None
+    max_output_size_bytes: Optional[int] = None
+
+class CapabilityToken(BaseModel):
+    """JWT payload for capability tokens."""
+    sub: str  # Subject (arm_id or user_id)
+    iss: str = "octollm-orchestrator"  # Issuer
+    aud: str  # Audience (target arm or service)
+    exp: datetime  # Expiration time
+    nbf: datetime  # Not before time
+    iat: datetime  # Issued at time
+    jti: str  # JWT ID (unique token identifier)
+    scopes: List[CapabilityScope]
+    constraints: CapabilityConstraints
+    task_id: Optional[str] = None  # Associated task
+    parent_token_id: Optional[str] = None  # Token delegation chain
+
+class CapabilityManager:
+    """Manages capability token lifecycle."""
+
+    def __init__(
+        self,
+        private_key_path: str,
+        public_key_path: str,
+        redis_client: Redis,
+        db_session: AsyncSession
+    ):
+        """Initialize capability manager with RSA keys."""
+        self.redis = redis_client
+        self.db = db_session
+
+        # Load RSA keys
+        with open(private_key_path, "rb") as f:
+            self.private_key = serialization.load_pem_private_key(
+                f.read(),
+                password=None,
+                backend=default_backend()
+            )
+
+        with open(public_key_path, "rb") as f:
+            self.public_key = serialization.load_pem_public_key(
+                f.read(),
+                backend=default_backend()
+            )
+
+    async def issue_token(
+        self,
+        subject: str,
+        audience: str,
+        scopes: List[CapabilityScope],
+        constraints: CapabilityConstraints,
+        lifetime_seconds: int = 900,  # 15 minutes default
+        task_id: Optional[str] = None
+    ) -&gt; str:
+        """Issue a new capability token."""
+        import uuid
+
+        now = datetime.utcnow()
+        token_id = str(uuid.uuid4())
+
+        payload = CapabilityToken(
+            sub=subject,
+            aud=audience,
+            exp=now + timedelta(seconds=lifetime_seconds),
+            nbf=now,
+            iat=now,
+            jti=token_id,
+            scopes=scopes,
+            constraints=constraints,
+            task_id=task_id
+        )
+
+        # Sign token
+        token = jwt.encode(
+            payload.dict(),
+            self.private_key,
+            algorithm="RS256"
+        )
+
+        # Store in Redis for revocation checks
+        await self.redis.setex(
+            f"capability:{token_id}",
+            lifetime_seconds,
+            token
+        )
+
+        # Audit log
+        await self._log_token_issuance(payload)
+
+        return token
+
+    async def validate_token(
+        self,
+        token: str,
+        required_scope: CapabilityScope
+    ) -&gt; CapabilityToken:
+        """Validate token and check if it grants required scope."""
+        try:
+            # Decode and verify signature
+            payload = jwt.decode(
+                token,
+                self.public_key,
+                algorithms=["RS256"],
+                options={"verify_exp": True}
+            )
+
+            capability = CapabilityToken(**payload)
+
+            # Check if token is revoked
+            token_exists = await self.redis.exists(f"capability:{capability.jti}")
+            if not token_exists:
+                raise ValueError("Token has been revoked")
+
+            # Check if token grants required scope
+            if not self._has_scope(capability, required_scope):
+                raise PermissionError(f"Token does not grant required scope: {required_scope}")
+
+            # Audit log
+            await self._log_token_usage(capability, required_scope)
+
+            return capability
+
+        except jwt.ExpiredSignatureError:
+            raise ValueError("Token has expired")
+        except jwt.InvalidTokenError as e:
+            raise ValueError(f"Invalid token: {e}")
+
+    def _has_scope(
+        self,
+        capability: CapabilityToken,
+        required_scope: CapabilityScope
+    ) -&gt; bool:
+        """Check if capability grants required scope."""
+        for scope in capability.scopes:
+            # Check resource type matches
+            if scope.resource_type != required_scope.resource_type:
+                continue
+
+            # Check resource ID matches (or is wildcard)
+            if scope.resource_id not in (required_scope.resource_id, "*"):
+                continue
+
+            # Check all required actions are granted
+            if all(action in scope.actions for action in required_scope.actions):
+                return True
+
+        return False
+
+    async def revoke_token(self, token_id: str):
+        """Revoke a token before expiration."""
+        await self.redis.delete(f"capability:{token_id}")
+        await self._log_token_revocation(token_id)
+
+    async def _log_token_issuance(self, capability: CapabilityToken):
+        """Log token issuance to database."""
+        # Implementation: Insert into audit_logs table
+        pass
+
+    async def _log_token_usage(self, capability: CapabilityToken, scope: CapabilityScope):
+        """Log token usage to database."""
+        # Implementation: Insert into audit_logs table
+        pass
+
+    async def _log_token_revocation(self, token_id: str):
+        """Log token revocation to database."""
+        # Implementation: Insert into audit_logs table
+        pass
+</code></pre>
+</li>
+<li>Files to create: <code>orchestrator/auth/capabilities.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Generate RSA Key Pair</strong> (1 hour)</p>
+<ul>
+<li>Create key generation script</li>
+<li>Store in Kubernetes secrets</li>
+<li>Implement key rotation strategy</li>
+<li>Code example:
+<pre><code class="language-python"># scripts/generate_capability_keys.py
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+import os
+
+def generate_rsa_keys(key_size: int = 4096):
+    """Generate RSA key pair for capability tokens."""
+
+    # Generate private key
+    private_key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=key_size,
+        backend=default_backend()
+    )
+
+    # Serialize private key
+    private_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+
+    # Generate public key
+    public_key = private_key.public_key()
+    public_pem = public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+
+    # Write to files
+    os.makedirs("keys", exist_ok=True)
+
+    with open("keys/capability_private_key.pem", "wb") as f:
+        f.write(private_pem)
+    os.chmod("keys/capability_private_key.pem", 0o600)
+
+    with open("keys/capability_public_key.pem", "wb") as f:
+        f.write(public_pem)
+
+    print("Generated RSA keys:")
+    print("  Private: keys/capability_private_key.pem")
+    print("  Public: keys/capability_public_key.pem")
+    print("\nAdd to Kubernetes secrets:")
+    print("  kubectl create secret generic capability-keys \\")
+    print("    --from-file=private=keys/capability_private_key.pem \\")
+    print("    --from-file=public=keys/capability_public_key.pem \\")
+    print("    -n octollm")
+
+if __name__ == "__main__":
+    generate_rsa_keys()
+</code></pre>
+</li>
+<li>Files to create: <code>scripts/generate_capability_keys.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Token Refresh Endpoint</strong> (2 hours)</p>
+<ul>
+<li>FastAPI endpoint for token renewal</li>
+<li>Validate existing token before refresh</li>
+<li>Prevent token chaining abuse</li>
+<li>Code example:
+<pre><code class="language-python"># orchestrator/api/auth.py
+from fastapi import APIRouter, Depends, HTTPException, Header
+from typing import Optional
+
+router = APIRouter(prefix="/auth", tags=["authentication"])
+
+async def get_capability_manager() -&gt; CapabilityManager:
+    """Dependency injection for capability manager."""
+    # Implementation: Get from app state
+    pass
+
+@router.post("/token/refresh", response_model=Dict[str, Any])
+async def refresh_token(
+    authorization: str = Header(...),
+    manager: CapabilityManager = Depends(get_capability_manager)
+) -&gt; Dict[str, Any]:
+    """Refresh an existing capability token.
+
+    Args:
+        authorization: Bearer token to refresh
+
+    Returns:
+        New token with same scopes and constraints
+
+    Raises:
+        HTTPException: If token is invalid or expired
+    """
+    # Extract token from Authorization header
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+
+    old_token = authorization[7:]
+
+    try:
+        # Validate old token (this also checks expiration)
+        capability = await manager.validate_token(
+            old_token,
+            CapabilityScope(resource_type="global", actions=["refresh"])
+        )
+    except ValueError as e:
+        # Token expired - allow refresh if within grace period (5 minutes)
+        try:
+            payload = jwt.decode(
+                old_token,
+                manager.public_key,
+                algorithms=["RS256"],
+                options={"verify_exp": False}  # Skip expiration check
+            )
+            capability = CapabilityToken(**payload)
+
+            # Check if within grace period
+            grace_period_seconds = 300  # 5 minutes
+            if (datetime.utcnow() - capability.exp).total_seconds() &gt; grace_period_seconds:
+                raise HTTPException(status_code=401, detail="Token expired beyond grace period")
+        except Exception:
+            raise HTTPException(status_code=401, detail=str(e))
+    except PermissionError:
+        raise HTTPException(status_code=403, detail="Token does not have refresh permission")
+
+    # Issue new token with same scopes
+    new_token = await manager.issue_token(
+        subject=capability.sub,
+        audience=capability.aud,
+        scopes=capability.scopes,
+        constraints=capability.constraints,
+        task_id=capability.task_id
+    )
+
+    # Revoke old token
+    await manager.revoke_token(capability.jti)
+
+    return {
+        "access_token": new_token,
+        "token_type": "Bearer",
+        "expires_in": 900  # 15 minutes
+    }
+</code></pre>
+</li>
+<li>Files to create: <code>orchestrator/api/auth.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create Capability Middleware</strong> (3 hours)</p>
+<ul>
+<li>FastAPI middleware for automatic validation</li>
+<li>Extract and validate tokens from headers</li>
+<li>Inject validated capability into request state</li>
+<li>Code example:
+<pre><code class="language-python"># orchestrator/middleware/auth.py
+from fastapi import Request, HTTPException
+from starlette.middleware.base import BaseHTTPMiddleware
+from typing import Callable
+
+class CapabilityMiddleware(BaseHTTPMiddleware):
+    """Middleware to validate capability tokens on all requests."""
+
+    def __init__(
+        self,
+        app,
+        capability_manager: CapabilityManager,
+        public_paths: List[str] = None
+    ):
+        super().__init__(app)
+        self.manager = capability_manager
+        self.public_paths = public_paths or ["/health", "/metrics", "/docs", "/openapi.json"]
+
+    async def dispatch(self, request: Request, call_next: Callable):
+        """Validate capability token for protected endpoints."""
+
+        # Skip authentication for public paths
+        if request.url.path in self.public_paths:
+            return await call_next(request)
+
+        # Extract token from Authorization header
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
+
+        token = auth_header[7:]
+
+        # Determine required scope based on request
+        required_scope = self._get_required_scope(request)
+
+        # Validate token
+        try:
+            capability = await self.manager.validate_token(token, required_scope)
+        except ValueError as e:
+            raise HTTPException(status_code=401, detail=str(e))
+        except PermissionError as e:
+            raise HTTPException(status_code=403, detail=str(e))
+
+        # Inject capability into request state
+        request.state.capability = capability
+
+        # Continue processing request
+        response = await call_next(request)
+
+        return response
+
+    def _get_required_scope(self, request: Request) -&gt; CapabilityScope:
+        """Determine required scope based on HTTP method and path."""
+
+        # Parse path to extract resource type and ID
+        path_parts = request.url.path.strip("/").split("/")
+
+        if len(path_parts) &gt;= 2 and path_parts[0] == "tasks":
+            resource_type = "task"
+            resource_id = path_parts[1] if len(path_parts) &gt; 1 else None
+        elif len(path_parts) &gt;= 2 and path_parts[0] == "arms":
+            resource_type = "arm"
+            resource_id = path_parts[1] if len(path_parts) &gt; 1 else None
+        else:
+            resource_type = "global"
+            resource_id = None
+
+        # Determine actions based on HTTP method
+        method_to_actions = {
+            "GET": ["read"],
+            "POST": ["write"],
+            "PUT": ["write"],
+            "PATCH": ["write"],
+            "DELETE": ["delete"]
+        }
+        actions = method_to_actions.get(request.method, ["read"])
+
+        return CapabilityScope(
+            resource_type=resource_type,
+            resource_id=resource_id,
+            actions=actions
+        )
+</code></pre>
+</li>
+<li>Files to create: <code>orchestrator/middleware/auth.py</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="arm-integration-6-hours"><a class="header" href="#arm-integration-6-hours">Arm Integration (6 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Add Capability Validation to All Arms</strong> (4 hours)</p>
+<ul>
+<li>Planner Arm: Validate planning capabilities</li>
+<li>Executor Arm: Validate execution capabilities with tool constraints</li>
+<li>Coder Arm: Validate code generation capabilities</li>
+<li>Judge Arm: Validate validation capabilities</li>
+<li>Safety Guardian Arm: Validate PII detection capabilities</li>
+<li>Retriever Arm: Validate search capabilities</li>
+<li>Code example (Executor Arm):
+<pre><code class="language-rust">// arms/executor/src/auth.rs
+use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
+use serde::{Deserialize, Serialize};
+use chrono::{DateTime, Utc};
+use std::collections::HashSet;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CapabilityScope {
+    pub resource_type: String,
+    pub resource_id: Option&lt;String&gt;,
+    pub actions: Vec&lt;String&gt;,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CapabilityConstraints {
+    pub max_execution_time_seconds: Option&lt;u64&gt;,
+    pub allowed_tools: Option&lt;Vec&lt;String&gt;&gt;,
+    pub blocked_hosts: Vec&lt;String&gt;,
+    pub allowed_hosts: Option&lt;Vec&lt;String&gt;&gt;,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CapabilityToken {
+    pub sub: String,
+    pub aud: String,
+    pub exp: i64,
+    pub jti: String,
+    pub scopes: Vec&lt;CapabilityScope&gt;,
+    pub constraints: CapabilityConstraints,
+    pub task_id: Option&lt;String&gt;,
+}
+
+pub struct CapabilityValidator {
+    public_key: DecodingKey,
+}
+
+impl CapabilityValidator {
+    pub fn new(public_key_pem: &amp;str) -&gt; Result&lt;Self, Box&lt;dyn std::error::Error&gt;&gt; {
+        let public_key = DecodingKey::from_rsa_pem(public_key_pem.as_bytes())?;
+        Ok(Self { public_key })
+    }
+
+    pub fn validate_token(
+        &amp;self,
+        token: &amp;str,
+        required_scope: &amp;CapabilityScope,
+    ) -&gt; Result&lt;CapabilityToken, Box&lt;dyn std::error::Error&gt;&gt; {
+        // Decode and verify token
+        let mut validation = Validation::new(Algorithm::RS256);
+        validation.set_audience(&amp;["executor-arm"]);
+
+        let token_data = decode::&lt;CapabilityToken&gt;(
+            token,
+            &amp;self.public_key,
+            &amp;validation,
+        )?;
+
+        let capability = token_data.claims;
+
+        // Check if token grants required scope
+        if !self.has_scope(&amp;capability, required_scope) {
+            return Err("Token does not grant required scope".into());
+        }
+
+        Ok(capability)
+    }
+
+    fn has_scope(
+        &amp;self,
+        capability: &amp;CapabilityToken,
+        required_scope: &amp;CapabilityScope,
+    ) -&gt; bool {
+        for scope in &amp;capability.scopes {
+            // Check resource type matches
+            if scope.resource_type != required_scope.resource_type {
+                continue;
+            }
+
+            // Check resource ID matches (or is wildcard)
+            let resource_id_match = match (&amp;scope.resource_id, &amp;required_scope.resource_id) {
+                (Some(id1), Some(id2)) =&gt; id1 == id2 || id1 == "*",
+                (Some(id), None) =&gt; id == "*",
+                (None, _) =&gt; false,
+            };
+
+            if !resource_id_match {
+                continue;
+            }
+
+            // Check all required actions are granted
+            let required_actions: HashSet&lt;_&gt; = required_scope.actions.iter().collect();
+            let granted_actions: HashSet&lt;_&gt; = scope.actions.iter().collect();
+
+            if required_actions.is_subset(&amp;granted_actions) {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    pub fn validate_tool_execution(
+        &amp;self,
+        capability: &amp;CapabilityToken,
+        tool_name: &amp;str,
+    ) -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+        // Check if tool is allowed
+        if let Some(allowed_tools) = &amp;capability.constraints.allowed_tools {
+            if !allowed_tools.contains(&amp;tool_name.to_string()) {
+                return Err(format!("Tool '{}' not allowed by capability", tool_name).into());
+            }
+        }
+
+        Ok(())
+    }
+
+    pub fn validate_host_access(
+        &amp;self,
+        capability: &amp;CapabilityToken,
+        host: &amp;str,
+    ) -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+        // Check blocked hosts
+        if capability.constraints.blocked_hosts.iter().any(|h| h == host) {
+            return Err(format!("Host '{}' is blocked", host).into());
+        }
+
+        // Check allowed hosts (if specified)
+        if let Some(allowed_hosts) = &amp;capability.constraints.allowed_hosts {
+            if !allowed_hosts.iter().any(|h| h == host) {
+                return Err(format!("Host '{}' not in allowed list", host).into());
+            }
+        }
+
+        Ok(())
+    }
+}
+
+// Integration with Actix-web
+use actix_web::{
+    dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
+    Error, HttpMessage, HttpResponse,
+};
+use futures::future::LocalBoxFuture;
+use std::rc::Rc;
+
+pub struct CapabilityAuth {
+    validator: Rc&lt;CapabilityValidator&gt;,
+}
+
+impl CapabilityAuth {
+    pub fn new(public_key_pem: &amp;str) -&gt; Result&lt;Self, Box&lt;dyn std::error::Error&gt;&gt; {
+        let validator = CapabilityValidator::new(public_key_pem)?;
+        Ok(Self {
+            validator: Rc::new(validator),
+        })
+    }
+}
+
+impl&lt;S, B&gt; Transform&lt;S, ServiceRequest&gt; for CapabilityAuth
+where
+    S: Service&lt;ServiceRequest, Response = ServiceResponse&lt;B&gt;, Error = Error&gt; + 'static,
+    S::Future: 'static,
+    B: 'static,
+{
+    type Response = ServiceResponse&lt;B&gt;;
+    type Error = Error;
+    type InitError = ();
+    type Transform = CapabilityAuthMiddleware&lt;S&gt;;
+    type Future = std::future::Ready&lt;Result&lt;Self::Transform, Self::InitError&gt;&gt;;
+
+    fn new_transform(&amp;self, service: S) -&gt; Self::Future {
+        std::future::ready(Ok(CapabilityAuthMiddleware {
+            service: Rc::new(service),
+            validator: self.validator.clone(),
+        }))
+    }
+}
+
+pub struct CapabilityAuthMiddleware&lt;S&gt; {
+    service: Rc&lt;S&gt;,
+    validator: Rc&lt;CapabilityValidator&gt;,
+}
+
+impl&lt;S, B&gt; Service&lt;ServiceRequest&gt; for CapabilityAuthMiddleware&lt;S&gt;
+where
+    S: Service&lt;ServiceRequest, Response = ServiceResponse&lt;B&gt;, Error = Error&gt; + 'static,
+    S::Future: 'static,
+    B: 'static,
+{
+    type Response = ServiceResponse&lt;B&gt;;
+    type Error = Error;
+    type Future = LocalBoxFuture&lt;'static, Result&lt;Self::Response, Self::Error&gt;&gt;;
+
+    forward_ready!(service);
+
+    fn call(&amp;self, req: ServiceRequest) -&gt; Self::Future {
+        let validator = self.validator.clone();
+        let service = self.service.clone();
+
+        Box::pin(async move {
+            // Extract token from Authorization header
+            let auth_header = req.headers().get("Authorization");
+
+            let token = if let Some(value) = auth_header {
+                let auth_str = value.to_str().map_err(|_| {
+                    actix_web::error::ErrorUnauthorized("Invalid authorization header")
+                })?;
+
+                if !auth_str.starts_with("Bearer ") {
+                    return Err(actix_web::error::ErrorUnauthorized("Invalid authorization format"));
+                }
+
+                &amp;auth_str[7..]
+            } else {
+                return Err(actix_web::error::ErrorUnauthorized("Missing authorization header"));
+            };
+
+            // Validate token
+            let required_scope = CapabilityScope {
+                resource_type: "arm".to_string(),
+                resource_id: Some("executor".to_string()),
+                actions: vec!["execute".to_string()],
+            };
+
+            let capability = validator.validate_token(token, &amp;required_scope)
+                .map_err(|e| actix_web::error::ErrorForbidden(e.to_string()))?;
+
+            // Store capability in request extensions
+            req.extensions_mut().insert(capability);
+
+            // Continue processing
+            service.call(req).await
+        })
+    }
+}</code></pre>
+</li>
+<li>Files to update: <code>arms/executor/src/auth.rs</code>, <code>arms/executor/src/main.rs</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Test Capability Enforcement</strong> (2 hours)</p>
+<ul>
+<li>Unit tests for token validation</li>
+<li>Integration tests for denied access</li>
+<li>Test token expiration handling</li>
+<li>Test constraint enforcement</li>
+<li>Code example:
+<pre><code class="language-python"># tests/test_capabilities.py
+import pytest
+from datetime import datetime, timedelta
+import jwt
+
+@pytest.mark.asyncio
+async def test_token_validation_success(capability_manager):
+    """Test successful token validation."""
+    scopes = [
+        CapabilityScope(
+            resource_type="task",
+            resource_id="task-123",
+            actions=["read", "write"]
+        )
+    ]
+    constraints = CapabilityConstraints(max_cost_tokens=1000)
+
+    token = await capability_manager.issue_token(
+        subject="planner-arm",
+        audience="orchestrator",
+        scopes=scopes,
+        constraints=constraints
+    )
+
+    required_scope = CapabilityScope(
+        resource_type="task",
+        resource_id="task-123",
+        actions=["read"]
+    )
+
+    validated = await capability_manager.validate_token(token, required_scope)
+    assert validated.sub == "planner-arm"
+
+@pytest.mark.asyncio
+async def test_token_validation_insufficient_scope(capability_manager):
+    """Test token validation fails with insufficient scope."""
+    scopes = [
+        CapabilityScope(
+            resource_type="task",
+            resource_id="task-123",
+            actions=["read"]
+        )
+    ]
+    constraints = CapabilityConstraints()
+
+    token = await capability_manager.issue_token(
+        subject="planner-arm",
+        audience="orchestrator",
+        scopes=scopes,
+        constraints=constraints
+    )
+
+    required_scope = CapabilityScope(
+        resource_type="task",
+        resource_id="task-123",
+        actions=["write"]  # Not granted
+    )
+
+    with pytest.raises(PermissionError):
+        await capability_manager.validate_token(token, required_scope)
+
+@pytest.mark.asyncio
+async def test_token_expiration(capability_manager):
+    """Test token expires after TTL."""
+    scopes = [CapabilityScope(resource_type="global", actions=["read"])]
+    constraints = CapabilityConstraints()
+
+    # Issue token with 1 second lifetime
+    token = await capability_manager.issue_token(
+        subject="test",
+        audience="test",
+        scopes=scopes,
+        constraints=constraints,
+        lifetime_seconds=1
+    )
+
+    # Wait for expiration
+    await asyncio.sleep(2)
+
+    required_scope = CapabilityScope(resource_type="global", actions=["read"])
+    with pytest.raises(ValueError, match="expired"):
+        await capability_manager.validate_token(token, required_scope)
+
+@pytest.mark.asyncio
+async def test_token_revocation(capability_manager):
+    """Test token can be revoked."""
+    scopes = [CapabilityScope(resource_type="global", actions=["read"])]
+    constraints = CapabilityConstraints()
+
+    token = await capability_manager.issue_token(
+        subject="test",
+        audience="test",
+        scopes=scopes,
+        constraints=constraints
+    )
+
+    # Decode to get token ID
+    payload = jwt.decode(
+        token,
+        capability_manager.public_key,
+        algorithms=["RS256"],
+        options={"verify_exp": False}
+    )
+
+    # Revoke token
+    await capability_manager.revoke_token(payload["jti"])
+
+    # Validation should fail
+    required_scope = CapabilityScope(resource_type="global", actions=["read"])
+    with pytest.raises(ValueError, match="revoked"):
+        await capability_manager.validate_token(token, required_scope)
+</code></pre>
+</li>
+<li>Files to create: <code>tests/test_capabilities.py</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="documentation-and-deployment-2-hours"><a class="header" href="#documentation-and-deployment-2-hours">Documentation and Deployment (2 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Document Capability Patterns</strong> (1 hour)</p>
+<ul>
+<li>Least-privilege examples</li>
+<li>Token delegation patterns</li>
+<li>Constraint design guidelines</li>
+<li>Files to create: <code>docs/security/capability-patterns.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Update Kubernetes Deployments</strong> (1 hour)</p>
+<ul>
+<li>Mount RSA public key in all arm pods</li>
+<li>Environment variables for key paths</li>
+<li>Secret rotation procedures</li>
+<li>Code example:
+<pre><code class="language-yaml"># k8s/arms/executor-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: executor-arm
+  namespace: octollm
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: executor-arm
+        image: octollm/executor-arm:latest
+        env:
+        - name: CAPABILITY_PUBLIC_KEY_PATH
+          value: /etc/octollm/keys/capability_public_key.pem
+        volumeMounts:
+        - name: capability-keys
+          mountPath: /etc/octollm/keys
+          readOnly: true
+      volumes:
+      - name: capability-keys
+        secret:
+          secretName: capability-keys
+          items:
+          - key: public
+            path: capability_public_key.pem
+</code></pre>
+</li>
+<li>Files to update: All arm deployment YAML files</li>
+</ul>
+</li>
+</ul>
+<h3 id="testing-requirements"><a class="header" href="#testing-requirements">Testing Requirements</a></h3>
+<h4 id="unit-tests"><a class="header" href="#unit-tests">Unit Tests</a></h4>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Token generation and validation (20 test cases)</li>
+<li><input disabled="" type="checkbox"/>
+Scope matching logic (15 test cases)</li>
+<li><input disabled="" type="checkbox"/>
+Constraint enforcement (10 test cases)</li>
+<li><input disabled="" type="checkbox"/>
+Key rotation (5 test cases)</li>
+</ul>
+<h4 id="integration-tests"><a class="header" href="#integration-tests">Integration Tests</a></h4>
+<ul>
+<li><input disabled="" type="checkbox"/>
+End-to-end token flow (orchestrator → arm → validation)</li>
+<li><input disabled="" type="checkbox"/>
+Token refresh workflow</li>
+<li><input disabled="" type="checkbox"/>
+Multi-arm delegation chains</li>
+<li><input disabled="" type="checkbox"/>
+Revocation propagation</li>
+</ul>
+<h4 id="security-tests"><a class="header" href="#security-tests">Security Tests</a></h4>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Token forgery attempts (invalid signatures)</li>
+<li><input disabled="" type="checkbox"/>
+Scope escalation attempts</li>
+<li><input disabled="" type="checkbox"/>
+Expired token usage</li>
+<li><input disabled="" type="checkbox"/>
+Replay attack prevention</li>
+</ul>
+<h3 id="documentation-deliverables"><a class="header" href="#documentation-deliverables">Documentation Deliverables</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Capability system architecture diagram (Mermaid)</li>
+<li><input disabled="" type="checkbox"/>
+Token lifecycle documentation</li>
+<li><input disabled="" type="checkbox"/>
+Scope design guidelines</li>
+<li><input disabled="" type="checkbox"/>
+Key rotation runbook</li>
+<li><input disabled="" type="checkbox"/>
+Troubleshooting guide (common auth failures)</li>
+</ul>
+<h3 id="success-criteria"><a class="header" href="#success-criteria">Success Criteria</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+All API endpoints require valid capability tokens</li>
+<li><input disabled="" type="checkbox"/>
+Token validation latency &lt;5ms (P95)</li>
+<li><input disabled="" type="checkbox"/>
+Zero privilege escalation vulnerabilities in testing</li>
+<li><input disabled="" type="checkbox"/>
+Audit logs capture 100% of token operations</li>
+<li><input disabled="" type="checkbox"/>
+Key rotation procedure tested and documented</li>
+</ul>
+<h3 id="common-pitfalls"><a class="header" href="#common-pitfalls">Common Pitfalls</a></h3>
+<ol>
+<li><strong>Clock Skew</strong>: Use NTP synchronization across all nodes to prevent token expiration issues</li>
+<li><strong>Key Rotation Downtime</strong>: Implement graceful key rotation with overlapping validity periods</li>
+<li><strong>Token Size</strong>: Keep scopes minimal to avoid large JWT payloads (&gt;1KB impacts performance)</li>
+<li><strong>Revocation Lag</strong>: Redis eviction policies can cause revoked tokens to persist—use explicit TTL checks</li>
+<li><strong>Constraint Bypass</strong>: Validate constraints at execution time, not just at token issuance</li>
+</ol>
+<h3 id="estimated-effort"><a class="header" href="#estimated-effort">Estimated Effort</a></h3>
+<ul>
+<li>Development: 16 hours</li>
+<li>Testing: 4 hours</li>
+<li>Documentation: 2 hours</li>
+<li><strong>Total</strong>: 22 hours (~1 week for 2 engineers)</li>
+</ul>
+<h3 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h3>
+<ul>
+<li><strong>Prerequisites</strong>: Redis cluster, PostgreSQL for audit logs</li>
+<li><strong>Blocking</strong>: None</li>
+<li><strong>Blocked By</strong>: Sprint 5.1 must complete before Sprint 5.2 (sandboxing needs capability validation)</li>
+</ul>
+<hr />
+<h2 id="sprint-52-container-sandboxing-week-25-26"><a class="header" href="#sprint-52-container-sandboxing-week-25-26">Sprint 5.2: Container Sandboxing [Week 25-26]</a></h2>
+<p><strong>Duration</strong>: 2 weeks
+<strong>Team</strong>: 2 engineers (1 security specialist, 1 DevOps)
+<strong>Prerequisites</strong>: Sprint 5.1 complete (capability system)
+<strong>Priority</strong>: CRITICAL</p>
+<h3 id="sprint-goals-1"><a class="header" href="#sprint-goals-1">Sprint Goals</a></h3>
+<ul>
+<li>Implement gVisor runtime for Executor Arm containers</li>
+<li>Create seccomp profiles for syscall filtering</li>
+<li>Set up resource limits (CPU, memory, network)</li>
+<li>Implement network policies for egress control</li>
+<li>Test container escape prevention</li>
+<li>Document sandbox configuration</li>
+</ul>
+<h3 id="architecture-decisions-1"><a class="header" href="#architecture-decisions-1">Architecture Decisions</a></h3>
+<p><strong>Container Runtime</strong>: gVisor (runsc) for syscall-level isolation
+<strong>Seccomp Mode</strong>: Allowlist-based (deny all, allow specific syscalls)
+<strong>Resource Limits</strong>: cgroups v2 with memory, CPU, and I/O constraints
+<strong>Network Policy</strong>: Default deny egress, explicit allow for required services
+<strong>Storage</strong>: Ephemeral volumes only (no persistent data in sandboxes)</p>
+<h3 id="tasks-1"><a class="header" href="#tasks-1">Tasks</a></h3>
+<h4 id="gvisor-integration-10-hours"><a class="header" href="#gvisor-integration-10-hours">gVisor Integration (10 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Install gVisor Runtime</strong> (2 hours)</p>
+<ul>
+<li>Install runsc on Kubernetes nodes</li>
+<li>Configure containerd to use runsc</li>
+<li>Test runtime with sample workload</li>
+<li>Code example:
+<pre><code class="language-bash"># Install gVisor on Kubernetes nodes
+# scripts/install-gvisor.sh
+#!/bin/bash
+set -e
+
+echo "Installing gVisor runtime..."
+
+# Download runsc binary
+ARCH=$(uname -m)
+URL=https://storage.googleapis.com/gvisor/releases/release/latest/${ARCH}
+
+wget ${URL}/runsc ${URL}/runsc.sha512
+sha512sum -c runsc.sha512
+rm -f runsc.sha512
+
+# Install runsc
+chmod +x runsc
+sudo mv runsc /usr/local/bin/
+
+# Configure containerd
+cat &lt;&lt;EOF | sudo tee /etc/containerd/config.toml
+version = 2
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
+  runtime_type = "io.containerd.runsc.v1"
+EOF
+
+# Restart containerd
+sudo systemctl restart containerd
+
+echo "gVisor runtime installed successfully"
+</code></pre>
+</li>
+<li>Files to create: <code>scripts/install-gvisor.sh</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create RuntimeClass for gVisor</strong> (1 hour)</p>
+<ul>
+<li>Define RuntimeClass resource</li>
+<li>Configure platform-specific settings</li>
+<li>Code example:
+<pre><code class="language-yaml"># k8s/security/gvisor-runtimeclass.yaml
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: gvisor
+handler: runsc
+scheduling:
+  nodeSelector:
+    gvisor: "enabled"
+  tolerations:
+  - key: gvisor
+    operator: Exists
+    effect: NoSchedule
+</code></pre>
+</li>
+<li>Files to create: <code>k8s/security/gvisor-runtimeclass.yaml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Update Executor Arm Pod Spec</strong> (2 hours)</p>
+<ul>
+<li>Add runtimeClassName to pod spec</li>
+<li>Configure security context</li>
+<li>Test execution under gVisor</li>
+<li>Code example:
+<pre><code class="language-yaml"># k8s/arms/executor-deployment.yaml (updated)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: executor-arm
+  namespace: octollm
+spec:
+  replicas: 3
+  template:
+    spec:
+      runtimeClassName: gvisor  # Use gVisor runtime
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: Localhost
+          localhostProfile: executor-arm.json
+      containers:
+      - name: executor-arm
+        image: octollm/executor-arm:latest
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+            ephemeral-storage: "1Gi"
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+            ephemeral-storage: "500Mi"
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir:
+          sizeLimit: 500Mi
+</code></pre>
+</li>
+<li>Files to update: <code>k8s/arms/executor-deployment.yaml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Benchmark gVisor Performance</strong> (3 hours)</p>
+<ul>
+<li>Measure syscall overhead</li>
+<li>Compare runc vs runsc latency</li>
+<li>Optimize for common workloads</li>
+<li>Code example:
+<pre><code class="language-python"># scripts/benchmark_gvisor.py
+import subprocess
+import time
+import statistics
+from typing import List, Dict
+
+def benchmark_runtime(runtime: str, iterations: int = 100) -&gt; Dict[str, float]:
+    """Benchmark container runtime performance."""
+
+    results = {
+        "startup_times": [],
+        "syscall_times": [],
+        "network_times": []
+    }
+
+    for i in range(iterations):
+        # Test 1: Container startup time
+        start = time.time()
+        subprocess.run([
+            "kubectl", "run", f"test-{runtime}-{i}",
+            "--image=alpine:latest",
+            "--restart=Never",
+            "--rm",
+            f"--overrides={{\"spec\":{{\"runtimeClassName\":\"{runtime}\"}}}}",
+            "--", "echo", "hello"
+        ], check=True, capture_output=True)
+        startup_time = time.time() - start
+        results["startup_times"].append(startup_time)
+
+        time.sleep(0.5)  # Avoid rate limiting
+
+    # Calculate statistics
+    return {
+        "startup_p50": statistics.median(results["startup_times"]),
+        "startup_p95": statistics.quantiles(results["startup_times"], n=20)[18],
+        "startup_p99": statistics.quantiles(results["startup_times"], n=100)[98],
+    }
+
+if __name__ == "__main__":
+    print("Benchmarking runc (default runtime)...")
+    runc_results = benchmark_runtime("runc")
+
+    print("\nBenchmarking runsc (gVisor)...")
+    runsc_results = benchmark_runtime("gvisor")
+
+    print("\n=== Results ===")
+    print("\nrunc (default):")
+    for metric, value in runc_results.items():
+        print(f"  {metric}: {value:.3f}s")
+
+    print("\nrunsc (gVisor):")
+    for metric, value in runsc_results.items():
+        print(f"  {metric}: {value:.3f}s")
+
+    print("\nOverhead:")
+    for metric in runc_results:
+        overhead = ((runsc_results[metric] - runc_results[metric]) / runc_results[metric]) * 100
+        print(f"  {metric}: +{overhead:.1f}%")
+</code></pre>
+</li>
+<li>Files to create: <code>scripts/benchmark_gvisor.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Document gVisor Limitations</strong> (2 hours)</p>
+<ul>
+<li>Incompatible syscalls and features</li>
+<li>Performance characteristics</li>
+<li>Troubleshooting guide</li>
+<li>Files to create: <code>docs/security/gvisor-limitations.md</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="seccomp-profiles-8-hours"><a class="header" href="#seccomp-profiles-8-hours">Seccomp Profiles (8 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create Seccomp Profile for Executor Arm</strong> (4 hours)</p>
+<ul>
+<li>Audit required syscalls</li>
+<li>Create allowlist profile</li>
+<li>Test with realistic workloads</li>
+<li>Code example:
+<pre><code class="language-json">{
+  "defaultAction": "SCMP_ACT_ERRNO",
+  "architectures": [
+    "SCMP_ARCH_X86_64",
+    "SCMP_ARCH_X86",
+    "SCMP_ARCH_X32"
+  ],
+  "syscalls": [
+    {
+      "names": [
+        "accept",
+        "accept4",
+        "access",
+        "arch_prctl",
+        "bind",
+        "brk",
+        "capget",
+        "capset",
+        "chdir",
+        "clone",
+        "close",
+        "connect",
+        "dup",
+        "dup2",
+        "dup3",
+        "epoll_create",
+        "epoll_create1",
+        "epoll_ctl",
+        "epoll_pwait",
+        "epoll_wait",
+        "execve",
+        "exit",
+        "exit_group",
+        "fchdir",
+        "fchown",
+        "fcntl",
+        "fstat",
+        "fstatfs",
+        "futex",
+        "getcwd",
+        "getdents",
+        "getdents64",
+        "getegid",
+        "geteuid",
+        "getgid",
+        "getpid",
+        "getppid",
+        "getrlimit",
+        "getsockname",
+        "getsockopt",
+        "gettid",
+        "getuid",
+        "ioctl",
+        "listen",
+        "lseek",
+        "madvise",
+        "memfd_create",
+        "mmap",
+        "mprotect",
+        "munmap",
+        "nanosleep",
+        "newfstatat",
+        "open",
+        "openat",
+        "pipe",
+        "pipe2",
+        "poll",
+        "ppoll",
+        "prctl",
+        "pread64",
+        "prlimit64",
+        "pwrite64",
+        "read",
+        "readlink",
+        "readv",
+        "recvfrom",
+        "recvmsg",
+        "rt_sigaction",
+        "rt_sigprocmask",
+        "rt_sigreturn",
+        "sched_getaffinity",
+        "sched_yield",
+        "sendmsg",
+        "sendto",
+        "set_robust_list",
+        "set_tid_address",
+        "setgid",
+        "setgroups",
+        "setsockopt",
+        "setuid",
+        "shutdown",
+        "sigaltstack",
+        "socket",
+        "socketpair",
+        "stat",
+        "statfs",
+        "tgkill",
+        "uname",
+        "unlink",
+        "wait4",
+        "write",
+        "writev"
+      ],
+      "action": "SCMP_ACT_ALLOW"
+    }
+  ]
+}
+</code></pre>
+</li>
+<li>Files to create: <code>k8s/security/seccomp-profiles/executor-arm.json</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Audit Syscall Usage</strong> (2 hours)</p>
+<ul>
+<li>Use strace to capture syscalls</li>
+<li>Identify minimum required set</li>
+<li>Code example:
+<pre><code class="language-bash"># scripts/audit_syscalls.sh
+#!/bin/bash
+set -e
+
+echo "Auditing syscalls for executor-arm..."
+
+# Run executor-arm under strace
+POD_NAME=$(kubectl get pods -n octollm -l app=executor-arm -o jsonpath='{.items[0].metadata.name}')
+
+kubectl exec -n octollm $POD_NAME -- \
+  strace -c -f -o /tmp/strace.log \
+  /usr/local/bin/executor-arm --dry-run
+
+# Extract syscall names
+kubectl exec -n octollm $POD_NAME -- \
+  cat /tmp/strace.log | \
+  awk '{print $6}' | \
+  sort | uniq &gt; required_syscalls.txt
+
+echo "Required syscalls saved to required_syscalls.txt"
+</code></pre>
+</li>
+<li>Files to create: <code>scripts/audit_syscalls.sh</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Test Seccomp Profile</strong> (2 hours)</p>
+<ul>
+<li>Deploy with profile enabled</li>
+<li>Verify functionality</li>
+<li>Test syscall blocking</li>
+<li>Code example:
+<pre><code class="language-python"># tests/test_seccomp.py
+import pytest
+import subprocess
+
+def test_allowed_syscalls():
+    """Test that allowed syscalls work."""
+    # Deploy executor-arm with seccomp profile
+    subprocess.run([
+        "kubectl", "apply", "-f", "k8s/arms/executor-deployment.yaml"
+    ], check=True)
+
+    # Wait for pod to be ready
+    subprocess.run([
+        "kubectl", "wait", "--for=condition=ready",
+        "pod", "-l", "app=executor-arm",
+        "-n", "octollm", "--timeout=60s"
+    ], check=True)
+
+    # Test basic functionality (should succeed)
+    result = subprocess.run([
+        "kubectl", "exec", "-n", "octollm",
+        "deployment/executor-arm", "--",
+        "ls", "/tmp"
+    ], capture_output=True)
+
+    assert result.returncode == 0
+
+def test_blocked_syscalls():
+    """Test that blocked syscalls are denied."""
+    # Attempt to use ptrace (should be blocked)
+    result = subprocess.run([
+        "kubectl", "exec", "-n", "octollm",
+        "deployment/executor-arm", "--",
+        "strace", "ls"
+    ], capture_output=True)
+
+    # Should fail due to seccomp blocking ptrace
+    assert result.returncode != 0
+    assert b"Operation not permitted" in result.stderr
+</code></pre>
+</li>
+<li>Files to create: <code>tests/test_seccomp.py</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="network-policies-4-hours"><a class="header" href="#network-policies-4-hours">Network Policies (4 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create Default Deny Policy</strong> (1 hour)</p>
+<ul>
+<li>Block all ingress by default</li>
+<li>Block all egress by default</li>
+<li>Code example:
+<pre><code class="language-yaml"># k8s/security/network-policies/default-deny.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: octollm
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+</code></pre>
+</li>
+<li>Files to create: <code>k8s/security/network-policies/default-deny.yaml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create Executor Arm Egress Policy</strong> (2 hours)</p>
+<ul>
+<li>Allow DNS resolution</li>
+<li>Allow orchestrator communication</li>
+<li>Allow allowlisted external hosts</li>
+<li>Code example:
+<pre><code class="language-yaml"># k8s/security/network-policies/executor-arm-egress.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: executor-arm-egress
+  namespace: octollm
+spec:
+  podSelector:
+    matchLabels:
+      app: executor-arm
+  policyTypes:
+  - Egress
+  egress:
+  # Allow DNS resolution
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+
+  # Allow orchestrator communication
+  - to:
+    - podSelector:
+        matchLabels:
+          app: orchestrator
+    ports:
+    - protocol: TCP
+      port: 8000
+
+  # Allow Redis
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+
+  # Allow specific external hosts (e.g., package registries)
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+    # Note: This allows HTTPS to any host. In production, use egress
+    # gateways with FQDN filtering for more granular control.
+</code></pre>
+</li>
+<li>Files to create: <code>k8s/security/network-policies/executor-arm-egress.yaml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Test Network Isolation</strong> (1 hour)</p>
+<ul>
+<li>Verify blocked connections fail</li>
+<li>Verify allowed connections succeed</li>
+<li>Code example:
+<pre><code class="language-bash"># scripts/test_network_policy.sh
+#!/bin/bash
+set -e
+
+echo "Testing network policies..."
+
+POD_NAME=$(kubectl get pods -n octollm -l app=executor-arm -o jsonpath='{.items[0].metadata.name}')
+
+# Test 1: DNS should work
+echo "Test 1: DNS resolution (should succeed)"
+kubectl exec -n octollm $POD_NAME -- nslookup google.com
+echo "✓ DNS resolution works"
+
+# Test 2: Orchestrator communication should work
+echo "Test 2: Orchestrator communication (should succeed)"
+kubectl exec -n octollm $POD_NAME -- \
+  curl -f http://orchestrator:8000/health
+echo "✓ Orchestrator communication works"
+
+# Test 3: Blocked host should fail
+echo "Test 3: Blocked host (should fail)"
+if kubectl exec -n octollm $POD_NAME -- \
+  curl -f --max-time 5 http://malicious-host.com; then
+  echo "✗ FAIL: Blocked host was accessible"
+  exit 1
+else
+  echo "✓ Blocked host correctly denied"
+fi
+
+echo "All network policy tests passed"
+</code></pre>
+</li>
+<li>Files to create: <code>scripts/test_network_policy.sh</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="resource-limits-2-hours"><a class="header" href="#resource-limits-2-hours">Resource Limits (2 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Configure Resource Quotas</strong> (1 hour)</p>
+<ul>
+<li>Set namespace-level quotas</li>
+<li>Prevent resource exhaustion attacks</li>
+<li>Code example:
+<pre><code class="language-yaml"># k8s/security/resource-quota.yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: octollm-quota
+  namespace: octollm
+spec:
+  hard:
+    requests.cpu: "100"
+    requests.memory: 200Gi
+    limits.cpu: "200"
+    limits.memory: 400Gi
+    persistentvolumeclaims: "50"
+    pods: "200"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: octollm-limits
+  namespace: octollm
+spec:
+  limits:
+  - max:
+      cpu: "4"
+      memory: 8Gi
+    min:
+      cpu: "100m"
+      memory: 128Mi
+    default:
+      cpu: "1"
+      memory: 2Gi
+    defaultRequest:
+      cpu: "500m"
+      memory: 1Gi
+    type: Container
+  - max:
+      cpu: "8"
+      memory: 16Gi
+    min:
+      cpu: "200m"
+      memory: 256Mi
+    type: Pod
+</code></pre>
+</li>
+<li>Files to create: <code>k8s/security/resource-quota.yaml</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Test Resource Limit Enforcement</strong> (1 hour)</p>
+<ul>
+<li>Test OOM kill behavior</li>
+<li>Test CPU throttling</li>
+<li>Verify graceful degradation</li>
+<li>Files to create: <code>tests/test_resource_limits.py</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="testing-requirements-1"><a class="header" href="#testing-requirements-1">Testing Requirements</a></h3>
+<h4 id="unit-tests-1"><a class="header" href="#unit-tests-1">Unit Tests</a></h4>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Seccomp profile validation (10 test cases)</li>
+<li><input disabled="" type="checkbox"/>
+Network policy syntax (5 test cases)</li>
+<li><input disabled="" type="checkbox"/>
+Resource limit calculations (5 test cases)</li>
+</ul>
+<h4 id="integration-tests-1"><a class="header" href="#integration-tests-1">Integration Tests</a></h4>
+<ul>
+<li><input disabled="" type="checkbox"/>
+gVisor runtime execution</li>
+<li><input disabled="" type="checkbox"/>
+Syscall blocking enforcement</li>
+<li><input disabled="" type="checkbox"/>
+Network policy enforcement</li>
+<li><input disabled="" type="checkbox"/>
+Resource limit enforcement</li>
+<li><input disabled="" type="checkbox"/>
+Container escape attempts (should all fail)</li>
+</ul>
+<h4 id="security-tests-1"><a class="header" href="#security-tests-1">Security Tests</a></h4>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Kernel exploit attempts (CVE-based tests)</li>
+<li><input disabled="" type="checkbox"/>
+Container breakout scenarios</li>
+<li><input disabled="" type="checkbox"/>
+Resource exhaustion attacks</li>
+<li><input disabled="" type="checkbox"/>
+Network scanning from containers</li>
+</ul>
+<h3 id="documentation-deliverables-1"><a class="header" href="#documentation-deliverables-1">Documentation Deliverables</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+gVisor deployment guide</li>
+<li><input disabled="" type="checkbox"/>
+Seccomp profile maintenance runbook</li>
+<li><input disabled="" type="checkbox"/>
+Network policy design patterns</li>
+<li><input disabled="" type="checkbox"/>
+Resource sizing guidelines</li>
+<li><input disabled="" type="checkbox"/>
+Container escape test report</li>
+</ul>
+<h3 id="success-criteria-1"><a class="header" href="#success-criteria-1">Success Criteria</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+All executor containers run under gVisor</li>
+<li><input disabled="" type="checkbox"/>
+Seccomp profiles block &gt;99% of unnecessary syscalls</li>
+<li><input disabled="" type="checkbox"/>
+Network policies enforce zero-trust model</li>
+<li><input disabled="" type="checkbox"/>
+Resource limits prevent DoS attacks</li>
+<li><input disabled="" type="checkbox"/>
+Zero successful container escapes in testing</li>
+</ul>
+<h3 id="common-pitfalls-1"><a class="header" href="#common-pitfalls-1">Common Pitfalls</a></h3>
+<ol>
+<li><strong>gVisor Compatibility</strong>: Some syscalls are not supported—audit carefully before deployment</li>
+<li><strong>Performance Overhead</strong>: gVisor adds 10-30% latency—budget accordingly in SLAs</li>
+<li><strong>Debugging Difficulty</strong>: strace doesn't work with seccomp—use audit logs instead</li>
+<li><strong>Network Policy Gaps</strong>: DNS caching can mask policy violations—test with cache cleared</li>
+<li><strong>OOM Kill Loops</strong>: Set memory requests = limits to avoid unexpected evictions</li>
+</ol>
+<h3 id="estimated-effort-1"><a class="header" href="#estimated-effort-1">Estimated Effort</a></h3>
+<ul>
+<li>Development: 24 hours</li>
+<li>Testing: 6 hours</li>
+<li>Documentation: 3 hours</li>
+<li><strong>Total</strong>: 33 hours (~2 weeks for 2 engineers)</li>
+</ul>
+<h3 id="dependencies-1"><a class="header" href="#dependencies-1">Dependencies</a></h3>
+<ul>
+<li><strong>Prerequisites</strong>: Sprint 5.1 (capability system for token validation)</li>
+<li><strong>Blocking</strong>: None</li>
+<li><strong>Blocked By</strong>: None (can run in parallel with Sprint 5.3)</li>
+</ul>
+<hr />
+<h2 id="sprint-53-pii-protection-week-27-28"><a class="header" href="#sprint-53-pii-protection-week-27-28">Sprint 5.3: PII Protection [Week 27-28]</a></h2>
+<p><strong>Duration</strong>: 2 weeks
+<strong>Team</strong>: 2 engineers (1 ML, 1 Python)
+<strong>Prerequisites</strong>: Phase 2 complete (Safety Guardian Arm deployed)
+<strong>Priority</strong>: HIGH</p>
+<h3 id="sprint-goals-2"><a class="header" href="#sprint-goals-2">Sprint Goals</a></h3>
+<ul>
+<li>Implement multi-layer PII detection (regex + NER + LLM)</li>
+<li>Create redaction strategies (masking, tokenization, suppression)</li>
+<li>Add differential privacy for aggregated data</li>
+<li>Achieve &gt;99% PII detection accuracy (F1 score)</li>
+<li>Ensure GDPR/CCPA compliance</li>
+<li>Document PII handling procedures</li>
+</ul>
+<h3 id="architecture-decisions-2"><a class="header" href="#architecture-decisions-2">Architecture Decisions</a></h3>
+<p><strong>Detection Layers</strong>:</p>
+<ol>
+<li><strong>Regex Layer</strong>: Fast pattern matching for common formats (SSN, credit cards, emails)</li>
+<li><strong>NER Layer</strong>: Presidio with spaCy models for contextual detection (names, locations)</li>
+<li><strong>LLM Layer</strong>: GPT-4 for ambiguous cases and false positive reduction</li>
+</ol>
+<p><strong>Redaction Strategy</strong>: Context-dependent (complete suppression for SSNs, partial masking for emails)
+<strong>Storage</strong>: Never store raw PII—always redact before persisting
+<strong>Compliance</strong>: GDPR right to erasure, CCPA opt-out, audit trail for all PII access</p>
+<h3 id="tasks-2"><a class="header" href="#tasks-2">Tasks</a></h3>
+<h4 id="multi-layer-detection-12-hours"><a class="header" href="#multi-layer-detection-12-hours">Multi-Layer Detection (12 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Enhance Regex Patterns</strong> (3 hours)</p>
+<ul>
+<li>Add patterns for all major PII types</li>
+<li>Implement confidence scoring</li>
+<li>Reduce false positives</li>
+<li>Code example:
+<pre><code class="language-python"># arms/safety_guardian/pii/regex_detector.py
+import re
+from typing import List, Dict, Any, Tuple
+from dataclasses import dataclass
+
+@dataclass
+class PIIMatch:
+    """A detected PII instance."""
+    pii_type: str
+    value: str
+    start: int
+    end: int
+    confidence: float
+
+class RegexPIIDetector:
+    """Fast regex-based PII detection."""
+
+    # Comprehensive regex patterns with confidence scores
+    PATTERNS = {
+        "ssn": (
+            r"\b\d{3}-\d{2}-\d{4}\b",  # 123-45-6789
+            0.95
+        ),
+        "ssn_no_dashes": (
+            r"\b\d{9}\b",  # 123456789 (lower confidence, many false positives)
+            0.50
+        ),
+        "credit_card": (
+            r"\b(?:\d{4}[-\s]?){3}\d{4}\b",  # 1234-5678-9012-3456
+            0.90
+        ),
+        "email": (
+            r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
+            0.85
+        ),
+        "phone_us": (
+            r"\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b",
+            0.80
+        ),
+        "ip_address": (
+            r"\b(?:\d{1,3}\.){3}\d{1,3}\b",
+            0.70  # Many false positives (version numbers, etc.)
+        ),
+        "passport_us": (
+            r"\b[0-9]{9}\b",  # US passport number
+            0.60  # Low confidence without context
+        ),
+        "drivers_license": (
+            r"\b[A-Z]{1,2}\d{5,7}\b",  # State-dependent format
+            0.65
+        ),
+        "bank_account": (
+            r"\b\d{8,17}\b",  # Generic account number
+            0.50  # Very low confidence without context
+        ),
+        "date_of_birth": (
+            r"\b(?:0[1-9]|1[0-2])[/-](?:0[1-9]|[12]\d|3[01])[/-](?:19|20)\d{2}\b",
+            0.75
+        ),
+        "address": (
+            r"\b\d{1,5}\s\w+\s(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Lane|Ln|Drive|Dr|Court|Ct|Circle|Cir)\b",
+            0.70
+        ),
+    }
+
+    def __init__(self, confidence_threshold: float = 0.70):
+        """Initialize detector with confidence threshold."""
+        self.confidence_threshold = confidence_threshold
+        self.compiled_patterns = {
+            pii_type: (re.compile(pattern, re.IGNORECASE), confidence)
+            for pii_type, (pattern, confidence) in self.PATTERNS.items()
+        }
+
+    def detect(self, text: str) -&gt; List[PIIMatch]:
+        """Detect PII in text using regex patterns."""
+        matches = []
+
+        for pii_type, (pattern, base_confidence) in self.compiled_patterns.items():
+            for match in pattern.finditer(text):
+                value = match.group()
+
+                # Apply heuristics to adjust confidence
+                confidence = self._adjust_confidence(
+                    pii_type, value, base_confidence, text, match.start()
+                )
+
+                if confidence &gt;= self.confidence_threshold:
+                    matches.append(PIIMatch(
+                        pii_type=pii_type,
+                        value=value,
+                        start=match.start(),
+                        end=match.end(),
+                        confidence=confidence
+                    ))
+
+        # Remove overlapping matches (keep highest confidence)
+        matches = self._remove_overlaps(matches)
+
+        return matches
+
+    def _adjust_confidence(
+        self,
+        pii_type: str,
+        value: str,
+        base_confidence: float,
+        text: str,
+        position: int
+    ) -&gt; float:
+        """Adjust confidence based on context and validation."""
+        confidence = base_confidence
+
+        # Validation checks
+        if pii_type == "credit_card":
+            if not self._luhn_check(value.replace("-", "").replace(" ", "")):
+                confidence *= 0.5  # Failed Luhn check
+
+        elif pii_type == "ssn":
+            # SSNs can't start with 000, 666, or 900-999
+            ssn_digits = value.replace("-", "")
+            area = int(ssn_digits[:3])
+            if area == 0 or area == 666 or area &gt;= 900:
+                confidence *= 0.3
+
+        elif pii_type == "email":
+            # Check for common non-PII email patterns
+            if any(domain in value.lower() for domain in ["example.com", "test.com", "localhost"]):
+                confidence *= 0.5
+
+        # Context checks
+        context_window = 50
+        context_start = max(0, position - context_window)
+        context_end = min(len(text), position + len(value) + context_window)
+        context = text[context_start:context_end].lower()
+
+        # Boost confidence if PII-related keywords are nearby
+        pii_keywords = ["ssn", "social security", "credit card", "phone", "email", "address"]
+        if any(keyword in context for keyword in pii_keywords):
+            confidence *= 1.1  # Boost by 10%
+
+        # Reduce confidence if in code or structured data
+        code_indicators = ["```", "def ", "class ", "function", "var ", "const ", "{", "}"]
+        if any(indicator in context for indicator in code_indicators):
+            confidence *= 0.7  # Reduce by 30%
+
+        return min(confidence, 1.0)
+
+    def _luhn_check(self, card_number: str) -&gt; bool:
+        """Validate credit card using Luhn algorithm."""
+        def digits_of(n):
+            return [int(d) for d in str(n)]
+
+        digits = digits_of(card_number)
+        odd_digits = digits[-1::-2]
+        even_digits = digits[-2::-2]
+        checksum = sum(odd_digits)
+        for d in even_digits:
+            checksum += sum(digits_of(d * 2))
+        return checksum % 10 == 0
+
+    def _remove_overlaps(self, matches: List[PIIMatch]) -&gt; List[PIIMatch]:
+        """Remove overlapping matches, keeping highest confidence."""
+        if not matches:
+            return []
+
+        # Sort by start position
+        matches = sorted(matches, key=lambda m: m.start)
+
+        # Remove overlaps
+        result = [matches[0]]
+        for match in matches[1:]:
+            prev = result[-1]
+            if match.start &lt; prev.end:
+                # Overlapping - keep higher confidence
+                if match.confidence &gt; prev.confidence:
+                    result[-1] = match
+            else:
+                result.append(match)
+
+        return result
+</code></pre>
+</li>
+<li>Files to update: <code>arms/safety_guardian/pii/regex_detector.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Integrate Presidio NER</strong> (4 hours)</p>
+<ul>
+<li>Install Presidio framework</li>
+<li>Configure spaCy models</li>
+<li>Create custom recognizers</li>
+<li>Code example:
+<pre><code class="language-python"># arms/safety_guardian/pii/ner_detector.py
+from presidio_analyzer import AnalyzerEngine, RecognizerRegistry, Pattern, PatternRecognizer
+from presidio_analyzer.nlp_engine import NlpEngineProvider
+from typing import List, Dict, Any
+import spacy
+
+class NERPIIDetector:
+    """NER-based PII detection using Presidio."""
+
+    def __init__(self, model_name: str = "en_core_web_lg"):
+        """Initialize Presidio with spaCy model."""
+
+        # Configure NLP engine
+        configuration = {
+            "nlp_engine_name": "spacy",
+            "models": [{"lang_code": "en", "model_name": model_name}],
+        }
+        provider = NlpEngineProvider(nlp_configuration=configuration)
+        nlp_engine = provider.create_engine()
+
+        # Create custom recognizers
+        registry = RecognizerRegistry()
+        registry.load_predefined_recognizers(nlp_engine=nlp_engine)
+
+        # Add custom recognizers
+        self._add_custom_recognizers(registry)
+
+        # Create analyzer
+        self.analyzer = AnalyzerEngine(
+            nlp_engine=nlp_engine,
+            registry=registry
+        )
+
+    def _add_custom_recognizers(self, registry: RecognizerRegistry):
+        """Add custom PII recognizers."""
+
+        # Medical record numbers
+        mrn_recognizer = PatternRecognizer(
+            supported_entity="MEDICAL_RECORD_NUMBER",
+            patterns=[
+                Pattern(
+                    name="mrn_pattern",
+                    regex=r"\bMRN[-:\s]?\d{6,10}\b",
+                    score=0.85
+                )
+            ]
+        )
+        registry.add_recognizer(mrn_recognizer)
+
+        # Employee IDs
+        employee_id_recognizer = PatternRecognizer(
+            supported_entity="EMPLOYEE_ID",
+            patterns=[
+                Pattern(
+                    name="employee_id_pattern",
+                    regex=r"\bEMP[-:\s]?\d{5,8}\b",
+                    score=0.80
+                )
+            ]
+        )
+        registry.add_recognizer(employee_id_recognizer)
+
+    def detect(self, text: str, language: str = "en") -&gt; List[PIIMatch]:
+        """Detect PII using NER."""
+
+        results = self.analyzer.analyze(
+            text=text,
+            language=language,
+            entities=None,  # All entity types
+            score_threshold=0.70
+        )
+
+        # Convert to PIIMatch format
+        matches = []
+        for result in results:
+            matches.append(PIIMatch(
+                pii_type=result.entity_type.lower(),
+                value=text[result.start:result.end],
+                start=result.start,
+                end=result.end,
+                confidence=result.score
+            ))
+
+        return matches
+</code></pre>
+</li>
+<li>Files to create: <code>arms/safety_guardian/pii/ner_detector.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement LLM-Based Detection</strong> (3 hours)</p>
+<ul>
+<li>Use GPT-4 for ambiguous cases</li>
+<li>Few-shot prompting for PII identification</li>
+<li>Code example:
+<pre><code class="language-python"># arms/safety_guardian/pii/llm_detector.py
+from openai import AsyncOpenAI
+from typing import List, Dict, Any
+import json
+
+class LLMPIIDetector:
+    """LLM-based PII detection for ambiguous cases."""
+
+    def __init__(self, openai_client: AsyncOpenAI):
+        self.client = openai_client
+
+    async def detect(self, text: str, uncertain_spans: List[Tuple[int, int]]) -&gt; List[PIIMatch]:
+        """Use LLM to classify uncertain text spans as PII or not."""
+
+        if not uncertain_spans:
+            return []
+
+        # Build prompt with few-shot examples
+        prompt = self._build_prompt(text, uncertain_spans)
+
+        # Call LLM
+        response = await self.client.chat.completions.create(
+            model="gpt-4-turbo-preview",
+            messages=[
+                {"role": "system", "content": "You are a PII detection expert. Identify personally identifiable information in the given text spans."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.0,
+            response_format={"type": "json_object"}
+        )
+
+        # Parse response
+        result = json.loads(response.choices[0].message.content)
+
+        matches = []
+        for item in result.get("detections", []):
+            matches.append(PIIMatch(
+                pii_type=item["type"],
+                value=item["value"],
+                start=item["start"],
+                end=item["end"],
+                confidence=item["confidence"]
+            ))
+
+        return matches
+
+    def _build_prompt(self, text: str, spans: List[Tuple[int, int]]) -&gt; str:
+        """Build few-shot prompt for PII detection."""
+
+        prompt = """Analyze the following text spans and determine if they contain PII (Personally Identifiable Information).
+
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+<p>For each span, return:</p>
+<ul>
+<li>type: The type of PII (e.g., "name", "ssn", "email", "phone", "address", "none")</li>
+<li>value: The detected PII value</li>
+<li>start: Start position in text</li>
+<li>end: End position in text</li>
+<li>confidence: Detection confidence (0.0-1.0)</li>
+</ul>
+<p>Examples:</p>
+<p>Text: "Contact John Smith at john@example.com"
+Spans: [(8, 18), (22, 39)]
+Output: {
+"detections": [
+{"type": "name", "value": "John Smith", "start": 8, "end": 18, "confidence": 0.95},
+{"type": "email", "value": "john@example.com", "start": 22, "end": 39, "confidence": 0.90}
+]
+}</p>
+<p>Text: "The patient's glucose level was 120 mg/dL"
+Spans: [(34, 37)]
+Output: {
+"detections": [
+{"type": "none", "value": "120", "start": 34, "end": 37, "confidence": 0.85}
+]
+}</p>
+<p>Now analyze:</p>
+<p>Text: """
+prompt += f""{text}"\n\nSpans: {spans}\n\nOutput:"</p>
+<pre><code>        return prompt
+```
+</code></pre>
+<ul>
+<li>
+<p>Files to create: <code>arms/safety_guardian/pii/llm_detector.py</code></p>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create Unified Detection Pipeline</strong> (2 hours)</p>
+<ul>
+<li>Combine all detection layers</li>
+<li>Aggregate results with confidence voting</li>
+<li>Code example:
+<pre><code class="language-python"># arms/safety_guardian/pii/unified_detector.py
+from typing import List, Dict, Any
+from collections import defaultdict
+
+class UnifiedPIIDetector:
+    """Multi-layer PII detection with confidence aggregation."""
+
+    def __init__(
+        self,
+        regex_detector: RegexPIIDetector,
+        ner_detector: NERPIIDetector,
+        llm_detector: LLMPIIDetector
+    ):
+        self.regex = regex_detector
+        self.ner = ner_detector
+        self.llm = llm_detector
+
+    async def detect(self, text: str) -&gt; List[PIIMatch]:
+        """Detect PII using all layers and aggregate results."""
+
+        # Layer 1: Regex detection (fast)
+        regex_matches = self.regex.detect(text)
+
+        # Layer 2: NER detection (medium speed)
+        ner_matches = self.ner.detect(text)
+
+        # Combine regex and NER results
+        all_matches = regex_matches + ner_matches
+
+        # Identify uncertain spans (low confidence or conflicting)
+        uncertain_spans = self._find_uncertain_spans(all_matches)
+
+        # Layer 3: LLM detection for uncertain spans (slow)
+        if uncertain_spans:
+            llm_matches = await self.llm.detect(text, uncertain_spans)
+            all_matches.extend(llm_matches)
+
+        # Aggregate overlapping detections
+        final_matches = self._aggregate_matches(all_matches)
+
+        return final_matches
+
+    def _find_uncertain_spans(
+        self,
+        matches: List[PIIMatch],
+        uncertainty_threshold: float = 0.80
+    ) -&gt; List[Tuple[int, int]]:
+        """Identify spans with low confidence or conflicts."""
+
+        uncertain = []
+
+        # Group matches by position
+        position_groups = defaultdict(list)
+        for match in matches:
+            position_groups[(match.start, match.end)].append(match)
+
+        for (start, end), group in position_groups.items():
+            # Check for low confidence
+            max_confidence = max(m.confidence for m in group)
+            if max_confidence &lt; uncertainty_threshold:
+                uncertain.append((start, end))
+                continue
+
+            # Check for conflicting types
+            types = set(m.pii_type for m in group)
+            if len(types) &gt; 1:
+                uncertain.append((start, end))
+
+        return uncertain
+
+    def _aggregate_matches(self, matches: List[PIIMatch]) -&gt; List[PIIMatch]:
+        """Aggregate overlapping matches using confidence voting."""
+
+        if not matches:
+            return []
+
+        # Group overlapping matches
+        groups = []
+        sorted_matches = sorted(matches, key=lambda m: m.start)
+
+        current_group = [sorted_matches[0]]
+        for match in sorted_matches[1:]:
+            # Check if overlaps with current group
+            if any(self._overlaps(match, m) for m in current_group):
+                current_group.append(match)
+            else:
+                groups.append(current_group)
+                current_group = [match]
+        groups.append(current_group)
+
+        # For each group, select best match
+        final_matches = []
+        for group in groups:
+            # Weighted voting by confidence
+            type_scores = defaultdict(float)
+            for match in group:
+                type_scores[match.pii_type] += match.confidence
+
+            best_type = max(type_scores, key=type_scores.get)
+            best_match = max(
+                (m for m in group if m.pii_type == best_type),
+                key=lambda m: m.confidence
+            )
+
+            final_matches.append(best_match)
+
+        return final_matches
+
+    def _overlaps(self, match1: PIIMatch, match2: PIIMatch) -&gt; bool:
+        """Check if two matches overlap."""
+        return not (match1.end &lt;= match2.start or match2.end &lt;= match1.start)
+</code></pre>
+</li>
+<li>Files to create: <code>arms/safety_guardian/pii/unified_detector.py</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="redaction-strategies-8-hours"><a class="header" href="#redaction-strategies-8-hours">Redaction Strategies (8 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Implement Context-Aware Redaction</strong> (4 hours)</p>
+<ul>
+<li>Different strategies per PII type</li>
+<li>Preserve data utility where possible</li>
+<li>Code example:
+<pre><code class="language-python"># arms/safety_guardian/pii/redactor.py
+from typing import List, Dict, Any, Callable
+import hashlib
+import secrets
+
+class PIIRedactor:
+    """Context-aware PII redaction."""
+
+    def __init__(self, salt: str = None):
+        """Initialize redactor with salt for tokenization."""
+        self.salt = salt or secrets.token_hex(16)
+
+        # Define redaction strategies per PII type
+        self.strategies: Dict[str, Callable] = {
+            "ssn": self._redact_complete,
+            "credit_card": self._redact_complete,
+            "bank_account": self._redact_complete,
+            "passport_us": self._redact_complete,
+            "email": self._redact_partial_email,
+            "phone_us": self._redact_partial_phone,
+            "name": self._redact_tokenize,
+            "address": self._redact_partial_address,
+            "date_of_birth": self._redact_partial_date,
+            "ip_address": self._redact_partial_ip,
+        }
+
+    def redact(self, text: str, matches: List[PIIMatch]) -&gt; str:
+        """Redact PII from text using context-aware strategies."""
+
+        # Sort matches by position (reverse order to preserve positions)
+        sorted_matches = sorted(matches, key=lambda m: m.start, reverse=True)
+
+        redacted_text = text
+        for match in sorted_matches:
+            strategy = self.strategies.get(
+                match.pii_type,
+                self._redact_complete  # Default to complete redaction
+            )
+
+            replacement = strategy(match)
+            redacted_text = (
+                redacted_text[:match.start] +
+                replacement +
+                redacted_text[match.end:]
+            )
+
+        return redacted_text
+
+    def _redact_complete(self, match: PIIMatch) -&gt; str:
+        """Completely redact PII (replace with placeholder)."""
+        return f"[REDACTED_{match.pii_type.upper()}]"
+
+    def _redact_partial_email(self, match: PIIMatch) -&gt; str:
+        """Partially redact email (keep domain)."""
+        email = match.value
+        if "@" in email:
+            local, domain = email.split("@", 1)
+            # Keep first character of local part
+            redacted_local = local[0] + "***" if local else "***"
+            return f"{redacted_local}@{domain}"
+        return "[REDACTED_EMAIL]"
+
+    def _redact_partial_phone(self, match: PIIMatch) -&gt; str:
+        """Partially redact phone number (keep last 4 digits)."""
+        import re
+        digits = re.sub(r'\D', '', match.value)
+        if len(digits) &gt;= 10:
+            return f"***-***-{digits[-4:]}"
+        return "[REDACTED_PHONE]"
+
+    def _redact_partial_address(self, match: PIIMatch) -&gt; str:
+        """Partially redact address (keep city/state if present)."""
+        # Simplistic: Just redact street number
+        import re
+        return re.sub(r'\d+', '***', match.value)
+
+    def _redact_partial_date(self, match: PIIMatch) -&gt; str:
+        """Partially redact date of birth (keep year)."""
+        import re
+        # Attempt to extract year
+        year_match = re.search(r'(19|20)\d{2}', match.value)
+        if year_match:
+            year = year_match.group()
+            return f"**/**/{ year}"
+        return "[REDACTED_DOB]"
+
+    def _redact_partial_ip(self, match: PIIMatch) -&gt; str:
+        """Partially redact IP address (keep first two octets)."""
+        parts = match.value.split(".")
+        if len(parts) == 4:
+            return f"{parts[0]}.{parts[1]}.*.*"
+        return "[REDACTED_IP]"
+
+    def _redact_tokenize(self, match: PIIMatch) -&gt; str:
+        """Tokenize PII (consistent hash for same value)."""
+        # Create deterministic hash
+        token_input = f"{match.value}{self.salt}"
+        hash_value = hashlib.sha256(token_input.encode()).hexdigest()[:12]
+        return f"[TOKEN_{match.pii_type.upper()}_{hash_value}]"
+</code></pre>
+</li>
+<li>Files to create: <code>arms/safety_guardian/pii/redactor.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Add Differential Privacy</strong> (2 hours)</p>
+<ul>
+<li>Implement Laplace mechanism for aggregated data</li>
+<li>Configure privacy budget (epsilon)</li>
+<li>Code example:
+<pre><code class="language-python"># arms/safety_guardian/privacy/differential_privacy.py
+import numpy as np
+from typing import List, Dict, Any
+
+class DifferentialPrivacy:
+    """Differential privacy for aggregated data."""
+
+    def __init__(self, epsilon: float = 1.0, delta: float = 1e-5):
+        """Initialize with privacy budget."""
+        self.epsilon = epsilon
+        self.delta = delta
+
+    def add_laplace_noise(
+        self,
+        true_value: float,
+        sensitivity: float = 1.0
+    ) -&gt; float:
+        """Add Laplace noise to a numeric value."""
+        scale = sensitivity / self.epsilon
+        noise = np.random.laplace(0, scale)
+        return true_value + noise
+
+    def add_gaussian_noise(
+        self,
+        true_value: float,
+        sensitivity: float = 1.0
+    ) -&gt; float:
+        """Add Gaussian noise (for (epsilon, delta)-DP)."""
+        sigma = np.sqrt(2 * np.log(1.25 / self.delta)) * sensitivity / self.epsilon
+        noise = np.random.normal(0, sigma)
+        return true_value + noise
+
+    def privatize_histogram(
+        self,
+        histogram: Dict[str, int],
+        sensitivity: float = 1.0
+    ) -&gt; Dict[str, int]:
+        """Add noise to histogram counts."""
+        noisy_histogram = {}
+        for key, count in histogram.items():
+            noisy_count = self.add_laplace_noise(count, sensitivity)
+            # Ensure non-negative
+            noisy_histogram[key] = max(0, int(round(noisy_count)))
+        return noisy_histogram
+
+    def privatize_average(
+        self,
+        values: List[float],
+        lower_bound: float,
+        upper_bound: float
+    ) -&gt; float:
+        """Compute differentially private average."""
+        # Clip values to bounds
+        clipped = [max(lower_bound, min(upper_bound, v)) for v in values]
+
+        # Sensitivity is (upper_bound - lower_bound) / n
+        sensitivity = (upper_bound - lower_bound) / len(clipped)
+
+        true_avg = sum(clipped) / len(clipped)
+        return self.add_laplace_noise(true_avg, sensitivity)
+</code></pre>
+</li>
+<li>Files to create: <code>arms/safety_guardian/privacy/differential_privacy.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create Audit Trail for PII Access</strong> (2 hours)</p>
+<ul>
+<li>Log all PII detection events</li>
+<li>Track redaction decisions</li>
+<li>GDPR/CCPA compliance reporting</li>
+<li>Files to update: <code>orchestrator/audit/pii_logger.py</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="testing-and-compliance-4-hours"><a class="header" href="#testing-and-compliance-4-hours">Testing and Compliance (4 hours)</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>Create PII Detection Test Suite</strong> (2 hours)</p>
+<ul>
+<li>Benchmark dataset with labeled PII</li>
+<li>Calculate precision, recall, F1 score</li>
+<li>Target: &gt;99% F1 score</li>
+<li>Code example:
+<pre><code class="language-python"># tests/test_pii_detection.py
+import pytest
+from typing import List, Tuple
+
+# Test dataset with labeled PII
+TEST_CASES = [
+    (
+        "My SSN is 123-45-6789 and email is john@example.com",
+        [("ssn", 10, 21), ("email", 36, 53)]
+    ),
+    (
+        "Call me at (555) 123-4567 or 555-987-6543",
+        [("phone_us", 11, 25), ("phone_us", 29, 41)]
+    ),
+    (
+        "John Smith lives at 123 Main Street, New York, NY 10001",
+        [("name", 0, 10), ("address", 20, 56)]
+    ),
+    # ... 100+ more test cases
+]
+
+@pytest.mark.asyncio
+async def test_pii_detection_accuracy(unified_detector):
+    """Test PII detection accuracy on benchmark dataset."""
+
+    true_positives = 0
+    false_positives = 0
+    false_negatives = 0
+
+    for text, expected_pii in TEST_CASES:
+        detected = await unified_detector.detect(text)
+
+        # Convert to set of (type, start, end) tuples
+        detected_set = {(m.pii_type, m.start, m.end) for m in detected}
+        expected_set = set(expected_pii)
+
+        tp = len(detected_set &amp; expected_set)
+        fp = len(detected_set - expected_set)
+        fn = len(expected_set - detected_set)
+
+        true_positives += tp
+        false_positives += fp
+        false_negatives += fn
+
+    # Calculate metrics
+    precision = true_positives / (true_positives + false_positives)
+    recall = true_positives / (true_positives + false_negatives)
+    f1_score = 2 * (precision * recall) / (precision + recall)
+
+    print(f"Precision: {precision:.3f}")
+    print(f"Recall: {recall:.3f}")
+    print(f"F1 Score: {f1_score:.3f}")
+
+    # Assert F1 score &gt; 99%
+    assert f1_score &gt;= 0.99, f"F1 score {f1_score:.3f} below target 0.99"
+</code></pre>
+</li>
+<li>Files to create: <code>tests/test_pii_detection.py</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>GDPR Compliance Verification</strong> (1 hour)</p>
+<ul>
+<li>Right to erasure (delete all user data)</li>
+<li>Data portability (export user data)</li>
+<li>Consent management</li>
+<li>Files to create: <code>docs/compliance/gdpr-procedures.md</code></li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"/>
+<strong>CCPA Compliance Verification</strong> (1 hour)</p>
+<ul>
+<li>Opt-out mechanisms</li>
+<li>Data disclosure reporting</li>
+<li>Files to create: <code>docs/compliance/ccpa-procedures.md</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="testing-requirements-2"><a class="header" href="#testing-requirements-2">Testing Requirements</a></h3>
+<h4 id="unit-tests-2"><a class="header" href="#unit-tests-2">Unit Tests</a></h4>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Regex pattern accuracy (30 test cases per pattern)</li>
+<li><input disabled="" type="checkbox"/>
+NER model accuracy (50 test cases)</li>
+<li><input disabled="" type="checkbox"/>
+LLM detection accuracy (20 test cases)</li>
+<li><input disabled="" type="checkbox"/>
+Redaction strategies (15 test cases)</li>
+<li><input disabled="" type="checkbox"/>
+Differential privacy noise distribution (10 test cases)</li>
+</ul>
+<h4 id="integration-tests-2"><a class="header" href="#integration-tests-2">Integration Tests</a></h4>
+<ul>
+<li><input disabled="" type="checkbox"/>
+End-to-end detection pipeline</li>
+<li><input disabled="" type="checkbox"/>
+Multi-layer aggregation</li>
+<li><input disabled="" type="checkbox"/>
+Redaction preservation of data utility</li>
+<li><input disabled="" type="checkbox"/>
+Audit log completeness</li>
+</ul>
+<h4 id="performance-tests"><a class="header" href="#performance-tests">Performance Tests</a></h4>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Detection latency (&lt;100ms for regex, &lt;500ms for NER, &lt;2s for LLM)</li>
+<li><input disabled="" type="checkbox"/>
+Throughput (&gt;100 requests/second)</li>
+</ul>
+<h3 id="documentation-deliverables-2"><a class="header" href="#documentation-deliverables-2">Documentation Deliverables</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+PII detection architecture diagram</li>
+<li><input disabled="" type="checkbox"/>
+Supported PII types reference</li>
+<li><input disabled="" type="checkbox"/>
+Redaction strategy guide</li>
+<li><input disabled="" type="checkbox"/>
+Differential privacy parameter tuning</li>
+<li><input disabled="" type="checkbox"/>
+GDPR/CCPA compliance procedures</li>
+</ul>
+<h3 id="success-criteria-2"><a class="header" href="#success-criteria-2">Success Criteria</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+F1 score &gt;99% on benchmark dataset</li>
+<li><input disabled="" type="checkbox"/>
+Zero PII stored in database (all redacted)</li>
+<li><input disabled="" type="checkbox"/>
+Audit trail for 100% of PII access</li>
+<li><input disabled="" type="checkbox"/>
+GDPR/CCPA compliance verified</li>
+<li><input disabled="" type="checkbox"/>
+Detection latency &lt;2s (P95)</li>
+</ul>
+<h3 id="common-pitfalls-2"><a class="header" href="#common-pitfalls-2">Common Pitfalls</a></h3>
+<ol>
+<li><strong>False Positives</strong>: Version numbers (e.g., "1.2.3.4") detected as IP addresses—use context checks</li>
+<li><strong>False Negatives</strong>: International formats (non-US phone numbers, addresses)—expand regex patterns</li>
+<li><strong>Performance</strong>: LLM detection is slow—only use for uncertain spans</li>
+<li><strong>Context Loss</strong>: Aggressive redaction removes too much context—use partial redaction</li>
+<li><strong>Compliance Gaps</strong>: Missing audit logs for read operations—log all PII access, not just writes</li>
+</ol>
+<h3 id="estimated-effort-2"><a class="header" href="#estimated-effort-2">Estimated Effort</a></h3>
+<ul>
+<li>Development: 24 hours</li>
+<li>Testing: 6 hours</li>
+<li>Documentation: 3 hours</li>
+<li><strong>Total</strong>: 33 hours (~2 weeks for 2 engineers)</li>
+</ul>
+<h3 id="dependencies-2"><a class="header" href="#dependencies-2">Dependencies</a></h3>
+<ul>
+<li><strong>Prerequisites</strong>: Safety Guardian Arm deployed (Phase 2)</li>
+<li><strong>Blocking</strong>: None</li>
+<li><strong>Blocked By</strong>: None (can run in parallel with other sprints)</li>
+</ul>
+<hr />
+<h2 id="sprint-54-security-testing-week-29-30"><a class="header" href="#sprint-54-security-testing-week-29-30">Sprint 5.4: Security Testing [Week 29-30]</a></h2>
+<p><strong>(Abbreviated for space - full version would be 1,000-1,200 lines)</strong></p>
+<h3 id="sprint-goals-3"><a class="header" href="#sprint-goals-3">Sprint Goals</a></h3>
+<ul>
+<li>Set up SAST (Bandit, Semgrep, cargo-audit)</li>
+<li>Set up DAST (ZAP, Burp Suite, custom scanners)</li>
+<li>Implement dependency vulnerability scanning</li>
+<li>Conduct penetration testing</li>
+<li>Automate security testing in CI/CD</li>
+<li>Create security testing runbooks</li>
+</ul>
+<h3 id="key-tasks-summary"><a class="header" href="#key-tasks-summary">Key Tasks (Summary)</a></h3>
+<ol>
+<li>
+<p><strong>SAST Integration</strong> (8 hours)</p>
+<ul>
+<li>Configure Bandit for Python code scanning</li>
+<li>Configure Semgrep with custom rules</li>
+<li>Configure cargo-audit for Rust dependencies</li>
+<li>Integrate into GitHub Actions CI</li>
+</ul>
+</li>
+<li>
+<p><strong>DAST Integration</strong> (8 hours)</p>
+<ul>
+<li>Set up OWASP ZAP for API testing</li>
+<li>Create custom exploit scripts</li>
+<li>Test for OWASP Top 10 vulnerabilities</li>
+<li>Automate in staging environment</li>
+</ul>
+</li>
+<li>
+<p><strong>Dependency Scanning</strong> (4 hours)</p>
+<ul>
+<li>Configure Dependabot for automated PRs</li>
+<li>Set up Snyk for vulnerability monitoring</li>
+<li>Create dependency update policy</li>
+</ul>
+</li>
+<li>
+<p><strong>Penetration Testing</strong> (12 hours)</p>
+<ul>
+<li>Contract external security firm</li>
+<li>Conduct internal testing (OWASP testing guide)</li>
+<li>Document findings and remediation</li>
+<li>Retest after fixes</li>
+</ul>
+</li>
+<li>
+<p><strong>CI/CD Integration</strong> (4 hours)</p>
+<ul>
+<li>Add security gates to pipeline</li>
+<li>Block deploys on critical vulnerabilities</li>
+<li>Generate security reports</li>
+</ul>
+</li>
+</ol>
+<h3 id="estimated-effort-36-hours-2-weeks-for-2-engineers"><a class="header" href="#estimated-effort-36-hours-2-weeks-for-2-engineers">Estimated Effort: 36 hours (~2 weeks for 2 engineers)</a></h3>
+<hr />
+<h2 id="sprint-55-audit-logging-week-31-32"><a class="header" href="#sprint-55-audit-logging-week-31-32">Sprint 5.5: Audit Logging [Week 31-32]</a></h2>
+<p><strong>(Abbreviated for space - full version would be 800-1,000 lines)</strong></p>
+<h3 id="sprint-goals-4"><a class="header" href="#sprint-goals-4">Sprint Goals</a></h3>
+<ul>
+<li>Implement provenance tracking for all artifacts</li>
+<li>Create immutable audit log storage (WORM)</li>
+<li>Build compliance reporting dashboards</li>
+<li>Ensure 100% coverage of security events</li>
+<li>Document audit log retention policies</li>
+<li>Create forensic analysis procedures</li>
+</ul>
+<h3 id="key-tasks-summary-1"><a class="header" href="#key-tasks-summary-1">Key Tasks (Summary)</a></h3>
+<ol>
+<li>
+<p><strong>Provenance Tracking</strong> (8 hours)</p>
+<ul>
+<li>Track artifact lineage (inputs → processing → outputs)</li>
+<li>Record all LLM calls with prompts and responses</li>
+<li>Store task execution graphs</li>
+<li>Cryptographic signing of artifacts</li>
+</ul>
+</li>
+<li>
+<p><strong>Immutable Audit Logs</strong> (8 hours)</p>
+<ul>
+<li>Use PostgreSQL with append-only tables</li>
+<li>Implement Write-Once-Read-Many (WORM) storage</li>
+<li>Merkle tree for tamper detection</li>
+<li>Archive to S3 Glacier for long-term retention</li>
+</ul>
+</li>
+<li>
+<p><strong>Compliance Reporting</strong> (6 hours)</p>
+<ul>
+<li>Build Grafana dashboards for SOC 2, ISO 27001</li>
+<li>Automate report generation</li>
+<li>GDPR/CCPA data access reports</li>
+</ul>
+</li>
+<li>
+<p><strong>Security Event Monitoring</strong> (6 hours)</p>
+<ul>
+<li>Monitor for anomalous access patterns</li>
+<li>Alert on suspicious activities</li>
+<li>Integration with SIEM systems</li>
+</ul>
+</li>
+<li>
+<p><strong>Forensic Procedures</strong> (4 hours)</p>
+<ul>
+<li>Document incident response runbooks</li>
+<li>Create audit log analysis tools</li>
+<li>Train team on forensic investigation</li>
+</ul>
+</li>
+</ol>
+<h3 id="estimated-effort-32-hours-2-weeks-for-2-engineers"><a class="header" href="#estimated-effort-32-hours-2-weeks-for-2-engineers">Estimated Effort: 32 hours (~2 weeks for 2 engineers)</a></h3>
+<hr />
+<h2 id="phase-5-summary"><a class="header" href="#phase-5-summary">Phase 5 Summary</a></h2>
+<p><strong>Total Tasks</strong>: 60+ security hardening tasks across 5 sprints
+<strong>Estimated Duration</strong>: 8-10 weeks with 3-4 engineers
+<strong>Total Estimated Hours</strong>: ~160 hours development + ~30 hours testing + ~20 hours documentation = 210 hours</p>
+<p><strong>Deliverables</strong>:</p>
+<ul>
+<li>Capability-based access control system</li>
+<li>Container sandboxing with gVisor</li>
+<li>Multi-layer PII protection (&gt;99% accuracy)</li>
+<li>Comprehensive security testing automation</li>
+<li>Immutable audit logging with compliance reporting</li>
+</ul>
+<p><strong>Completion Checklist</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+All API calls require capability tokens</li>
+<li><input disabled="" type="checkbox"/>
+All containers run under gVisor with seccomp</li>
+<li><input disabled="" type="checkbox"/>
+PII detection F1 score &gt;99%</li>
+<li><input disabled="" type="checkbox"/>
+Zero high-severity vulnerabilities in production</li>
+<li><input disabled="" type="checkbox"/>
+100% security event audit coverage</li>
+<li><input disabled="" type="checkbox"/>
+GDPR/CCPA compliance verified</li>
+<li><input disabled="" type="checkbox"/>
+Penetration test passed</li>
+</ul>
+<p><strong>Next Phase</strong>: Phase 6 (Production Readiness)</p>
+<hr />
+<p><strong>Document Version</strong>: 1.0
+<strong>Last Updated</strong>: 2025-11-10
+<strong>Maintained By</strong>: OctoLLM Security Team</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../project-tracking/phases/phase-4.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../project-tracking/phases/phase-6.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../project-tracking/phases/phase-4.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../project-tracking/phases/phase-6.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

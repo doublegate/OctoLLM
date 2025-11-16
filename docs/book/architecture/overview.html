@@ -3,12 +3,12 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Overview - OctoLLM Documentation</title>
+        <title>System Overview - OctoLLM Documentation</title>
 
 
         <!-- Custom HTML head -->
 
-        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling">
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
@@ -181,27 +181,117 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="architecture-overview"><a class="header" href="#architecture-overview">Architecture Overview</a></h1>
-<p>OctoLLM is designed as a distributed AI system with hierarchical processing.</p>
-<h2 id="system-layers"><a class="header" href="#system-layers">System Layers</a></h2>
+                        <h1 id="system-architecture-overview"><a class="header" href="#system-architecture-overview">System Architecture Overview</a></h1>
+<p>OctoLLM implements a five-layer architecture inspired by octopus neurobiology, combining distributed intelligence with centralized governance.</p>
+<h2 id="architecture-layers"><a class="header" href="#architecture-layers">Architecture Layers</a></h2>
+<h3 id="layer-1-ingress-api-gateway--reflex"><a class="header" href="#layer-1-ingress-api-gateway--reflex">Layer 1: Ingress (API Gateway + Reflex)</a></h3>
+<p><strong>Purpose</strong>: Fast preprocessing and caching before expensive LLM processing.</p>
+<p><strong>Technology</strong>: NGINX/Traefik + Rust
+<strong>Latency Target</strong>: &lt;10ms cache hits, &lt;50ms reflex decisions
+<strong>Current Status</strong>: ✅ COMPLETE (Sprint 1.1, v1.1.0)</p>
+<p><strong>Key Features</strong>:</p>
+<ul>
+<li>Redis caching with &lt;5ms latency (2x better than target)</li>
+<li>Pattern matching and PII detection &lt;8ms (6x better than target)</li>
+<li>Request routing based on complexity</li>
+<li>Rate limiting and input validation</li>
+</ul>
+<p><a href="../components/reflex-layer.html">Details: Reflex Layer Component</a></p>
+<h3 id="layer-2-orchestration-the-brain"><a class="header" href="#layer-2-orchestration-the-brain">Layer 2: Orchestration (The Brain)</a></h3>
+<p><strong>Purpose</strong>: Strategic planning, task decomposition, and arm coordination.</p>
+<p><strong>Technology</strong>: Python + FastAPI, LangChain/LlamaIndex
+<strong>Model</strong>: GPT-4 or Claude Opus
+<strong>Current Status</strong>: ✅ COMPLETE (Sprint 1.2, v1.2.0)</p>
+<p><strong>Main Loop</strong>:</p>
 <ol>
-<li><strong>Ingress Layer</strong> - API Gateway + Reflex preprocessing</li>
-<li><strong>Orchestration Layer</strong> - The Brain (strategic planning)</li>
-<li><strong>Execution Layer</strong> - The Arms (specialized modules)</li>
-<li><strong>Persistence Layer</strong> - Distributed memory stores</li>
-<li><strong>Observability Layer</strong> - Metrics, logs, tracing</li>
+<li>Cache check (via Reflex Layer)</li>
+<li>Plan generation (task decomposition)</li>
+<li>Step execution (arm delegation)</li>
+<li>Result integration (combining outputs)</li>
+<li>Validation (quality assurance)</li>
 </ol>
-<p>For detailed architecture documentation, see the <a href="https://github.com/doublegate/OctoLLM/blob/main/ref-docs/OctoLLM-Architecture-Implementation.md">ref-docs/OctoLLM-Architecture-Implementation.md</a> in the repository.</p>
+<p><a href="../components/orchestrator.html">Details: Orchestrator Component</a></p>
+<h3 id="layer-3-execution-the-arms"><a class="header" href="#layer-3-execution-the-arms">Layer 3: Execution (The Arms)</a></h3>
+<p><strong>Purpose</strong>: Domain-specific execution with local decision-making.</p>
+<p><strong>Arms Implemented</strong>:</p>
+<ul>
+<li>✅ <strong>Reflex Layer</strong> (v1.1.0) - Pattern matching, caching</li>
+<li>✅ <strong>Orchestrator</strong> (v1.2.0) - Coordination, planning</li>
+<li>🚧 <strong>Planner Arm</strong> (Planned Sprint 1.3) - Task decomposition</li>
+<li>⏳ <strong>Tool Executor</strong> - Sandboxed command execution</li>
+<li>⏳ <strong>Retriever</strong> - Knowledge base search</li>
+<li>⏳ <strong>Coder</strong> - Code generation/debugging</li>
+<li>⏳ <strong>Judge</strong> - Output validation</li>
+<li>⏳ <strong>Safety Guardian</strong> - PII detection, filtering</li>
+</ul>
+<p><a href="../components/arms.html">Details: Arms Overview</a></p>
+<h3 id="layer-4-persistence"><a class="header" href="#layer-4-persistence">Layer 4: Persistence</a></h3>
+<p><strong>Purpose</strong>: Global memory, caching, and vector stores.</p>
+<p><strong>Components</strong>:</p>
+<ul>
+<li><strong>PostgreSQL</strong>: Global semantic memory (tasks, decisions, provenance)</li>
+<li><strong>Redis</strong>: High-speed caching (responses, embeddings)</li>
+<li><strong>Qdrant/Weaviate</strong>: Vector stores for semantic search</li>
+</ul>
+<p><strong>Current Status</strong>: ✅ PostgreSQL + Redis operational (Sprint 1.2)</p>
+<h3 id="layer-5-observability"><a class="header" href="#layer-5-observability">Layer 5: Observability</a></h3>
+<p><strong>Purpose</strong>: Monitoring, logging, and tracing for debugging and optimization.</p>
+<p><strong>Stack</strong>:</p>
+<ul>
+<li><strong>Prometheus</strong>: Metrics collection (latency, throughput, errors)</li>
+<li><strong>Loki</strong>: Centralized logging</li>
+<li><strong>Jaeger</strong>: Distributed tracing</li>
+<li><strong>Grafana</strong>: Dashboards and alerting</li>
+</ul>
+<p><strong>Current Status</strong>: ⏳ Planned (Phase 3)</p>
+<h2 id="data-flow"><a class="header" href="#data-flow">Data Flow</a></h2>
+<pre><code>User Request
+    ↓
+[API Gateway] → Reflex Layer (cache check, pattern match)
+    ↓
+[Orchestrator] (task decomposition, planning)
+    ↓
+[Arms] (parallel execution, specialized processing)
+    ↓
+[Orchestrator] (result aggregation, validation)
+    ↓
+[API Gateway] → User Response
+</code></pre>
+<p>Detailed flow: <a href="./data-flow.html">Data Flow Documentation</a></p>
+<h2 id="key-design-principles"><a class="header" href="#key-design-principles">Key Design Principles</a></h2>
+<ol>
+<li><strong>Modular Specialization</strong>: Each component excels at one thing</li>
+<li><strong>Distributed Autonomy with Centralized Governance</strong>: Arms decide locally, brain coordinates globally</li>
+<li><strong>Defense in Depth</strong>: Multiple security layers (reflex, capability isolation, PII sanitization)</li>
+<li><strong>Hierarchical Processing</strong>: Expensive resources reserved for complex problems</li>
+<li><strong>Active Inference</strong>: System proactively reduces uncertainty</li>
+</ol>
+<p><a href="./layers.html">Details: Architecture Principles</a></p>
+<h2 id="performance-metrics"><a class="header" href="#performance-metrics">Performance Metrics</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Metric</th><th>Target</th><th>Current</th></tr></thead><tbody>
+<tr><td>Reflex Layer</td><td>Cache Hit Latency</td><td>&lt;10ms</td><td>&lt;5ms ✅</td></tr>
+<tr><td>Reflex Layer</td><td>Pattern Match</td><td>&lt;50ms</td><td>&lt;8ms ✅</td></tr>
+<tr><td>Orchestrator</td><td>API Latency (P95)</td><td>&lt;500ms</td><td>&lt;100ms ✅</td></tr>
+<tr><td>Orchestrator</td><td>DB Query (P95)</td><td>&lt;10ms</td><td>&lt;5ms ✅</td></tr>
+</tbody></table>
+</div>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="./layers.html">Layer Architecture Details</a></li>
+<li><a href="./data-structures.html">Data Structures</a></li>
+<li><a href="./swarm-decision-making.html">Swarm Decision Making</a></li>
+<li><a href="./adr.html">Architecture Decision Records</a></li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../overview/roadmap.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../architecture/concept.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../architecture/layers.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -211,11 +301,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../overview/roadmap.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../architecture/concept.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../architecture/layers.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

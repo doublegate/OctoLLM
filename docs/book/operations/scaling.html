@@ -1,0 +1,2185 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Scaling - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/operations/scaling.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="octollm-scaling-guide-comprehensive-auto-scaling-and-performance-optimization"><a class="header" href="#octollm-scaling-guide-comprehensive-auto-scaling-and-performance-optimization">OctoLLM Scaling Guide: Comprehensive Auto-Scaling and Performance Optimization</a></h1>
+<p><strong>Version</strong>: 1.0
+<strong>Last Updated</strong>: 2025-11-10
+<strong>Estimated Time</strong>: 3-4 hours
+<strong>Difficulty</strong>: Advanced
+<strong>Target</strong>: Production-grade horizontal and vertical scaling</p>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#scaling-strategies">Scaling Strategies</a></li>
+<li><a href="#horizontal-pod-autoscaling-hpa">Horizontal Pod Autoscaling (HPA)</a></li>
+<li><a href="#vertical-pod-autoscaling-vpa">Vertical Pod Autoscaling (VPA)</a></li>
+<li><a href="#cluster-autoscaling">Cluster Autoscaling</a></li>
+<li><a href="#database-scaling">Database Scaling</a></li>
+<li><a href="#caching-strategies">Caching Strategies</a></li>
+<li><a href="#load-testing">Load Testing</a></li>
+<li><a href="#cost-optimization">Cost Optimization</a></li>
+<li><a href="#performance-monitoring">Performance Monitoring</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ol>
+<hr />
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This guide provides comprehensive scaling strategies for OctoLLM, covering horizontal scaling (adding more pods), vertical scaling (increasing pod resources), cluster scaling (adding more nodes), and database scaling (read replicas and sharding).</p>
+<h3 id="scaling-objectives"><a class="header" href="#scaling-objectives">Scaling Objectives</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Metric</th><th>Target</th><th>Scaling Strategy</th></tr></thead><tbody>
+<tr><td><strong>Request Latency (P95)</strong></td><td>&lt;500ms</td><td>HPA based on latency</td></tr>
+<tr><td><strong>Request Latency (P99)</strong></td><td>&lt;2s</td><td>HPA + VPA optimization</td></tr>
+<tr><td><strong>Throughput</strong></td><td>1000+ req/sec</td><td>HPA + cluster autoscaling</td></tr>
+<tr><td><strong>Resource Utilization</strong></td><td>60-80% CPU/Memory</td><td>VPA + right-sizing</td></tr>
+<tr><td><strong>Cost Efficiency</strong></td><td>&lt;$5 per 1M requests</td><td>HPA min replicas + spot instances</td></tr>
+<tr><td><strong>Availability</strong></td><td>99.9% uptime</td><td>Multi-replica + PDB</td></tr>
+</tbody></table>
+</div>
+<h3 id="architecture-for-scaling"><a class="header" href="#architecture-for-scaling">Architecture for Scaling</a></h3>
+<pre><code class="language-mermaid">graph TB
+    subgraph "Load Distribution"
+        LB[Load Balancer]
+        ING[Ingress Controller]
+    end
+
+    subgraph "Application Tier - Auto-Scaling"
+        REFLEX[Reflex Layer&lt;br/&gt;3-20 replicas&lt;br/&gt;HPA: CPU 60%]
+        ORCH[Orchestrator&lt;br/&gt;2-10 replicas&lt;br/&gt;HPA: CPU 70%]
+
+        subgraph "Arms - Independent HPA"
+            PLANNER[Planner&lt;br/&gt;1-5 replicas]
+            EXEC[Executor&lt;br/&gt;1-10 replicas]
+            CODER[Coder&lt;br/&gt;1-8 replicas]
+            JUDGE[Judge&lt;br/&gt;1-5 replicas]
+            GUARD[Guardian&lt;br/&gt;2-10 replicas]
+            RETR[Retriever&lt;br/&gt;1-8 replicas]
+        end
+    end
+
+    subgraph "Data Tier - Scaling"
+        PG_PRIMARY[(PostgreSQL Primary)]
+        PG_REPLICA1[(PG Replica 1)]
+        PG_REPLICA2[(PG Replica 2)]
+        REDIS_CLUSTER[(Redis Cluster&lt;br/&gt;6 nodes)]
+        QDRANT_SHARD1[(Qdrant Shard 1)]
+        QDRANT_SHARD2[(Qdrant Shard 2)]
+    end
+
+    subgraph "Infrastructure"
+        CA[Cluster Autoscaler]
+        NODES[Kubernetes Nodes&lt;br/&gt;3-20 nodes]
+    end
+
+    LB --&gt; ING
+    ING --&gt; REFLEX
+    REFLEX --&gt; ORCH
+    ORCH --&gt; PLANNER &amp; EXEC &amp; CODER &amp; JUDGE &amp; GUARD &amp; RETR
+
+    ORCH -.read.-&gt; PG_REPLICA1 &amp; PG_REPLICA2
+    ORCH -.write.-&gt; PG_PRIMARY
+    PG_PRIMARY -.replicate.-&gt; PG_REPLICA1 &amp; PG_REPLICA2
+
+    REFLEX --&gt; REDIS_CLUSTER
+    RETR --&gt; QDRANT_SHARD1 &amp; QDRANT_SHARD2
+
+    CA --&gt; NODES
+</code></pre>
+<hr />
+<h2 id="scaling-strategies"><a class="header" href="#scaling-strategies">Scaling Strategies</a></h2>
+<h3 id="1-reactive-scaling-hpa"><a class="header" href="#1-reactive-scaling-hpa">1. Reactive Scaling (HPA)</a></h3>
+<p><strong>Description</strong>: Scale based on current metrics (CPU, memory, custom metrics)</p>
+<p><strong>Advantages</strong>:</p>
+<ul>
+<li>Automatic response to load changes</li>
+<li>No manual intervention required</li>
+<li>Cost-efficient (scale down when idle)</li>
+</ul>
+<p><strong>Disadvantages</strong>:</p>
+<ul>
+<li>Lag time between metric breach and new pods ready (~2-3 minutes)</li>
+<li>Can't anticipate traffic spikes</li>
+</ul>
+<p><strong>Best For</strong>: Steady-state workloads with gradual load changes</p>
+<h3 id="2-predictive-scaling-keda"><a class="header" href="#2-predictive-scaling-keda">2. Predictive Scaling (KEDA)</a></h3>
+<p><strong>Description</strong>: Scale based on predicted metrics using historical data</p>
+<p><strong>Advantages</strong>:</p>
+<ul>
+<li>Proactive scaling before load arrives</li>
+<li>Better for spiky traffic patterns</li>
+<li>Reduces cold start delays</li>
+</ul>
+<p><strong>Disadvantages</strong>:</p>
+<ul>
+<li>Requires historical data for prediction</li>
+<li>More complex configuration</li>
+</ul>
+<p><strong>Best For</strong>: Workloads with predictable patterns (e.g., business hours traffic)</p>
+<h3 id="3-manual-scaling"><a class="header" href="#3-manual-scaling">3. Manual Scaling</a></h3>
+<p><strong>Description</strong>: Administrator manually sets replica count</p>
+<p><strong>Advantages</strong>:</p>
+<ul>
+<li>Full control over resource allocation</li>
+<li>Predictable costs</li>
+</ul>
+<p><strong>Disadvantages</strong>:</p>
+<ul>
+<li>No automatic response to load</li>
+<li>Risk of under/over-provisioning</li>
+</ul>
+<p><strong>Best For</strong>: Development, testing, or very stable workloads</p>
+<hr />
+<h2 id="horizontal-pod-autoscaling-hpa"><a class="header" href="#horizontal-pod-autoscaling-hpa">Horizontal Pod Autoscaling (HPA)</a></h2>
+<h3 id="hpa-overview"><a class="header" href="#hpa-overview">HPA Overview</a></h3>
+<p>Horizontal Pod Autoscaler automatically scales the number of pod replicas based on observed metrics. OctoLLM uses HPA for all stateless components.</p>
+<h3 id="orchestrator-hpa"><a class="header" href="#orchestrator-hpa">Orchestrator HPA</a></h3>
+<pre><code class="language-yaml"># k8s/hpa/orchestrator-hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: orchestrator-hpa
+  namespace: octollm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: orchestrator
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    # Custom metric: Task queue depth
+    - type: Pods
+      pods:
+        metric:
+          name: octollm_task_queue_depth
+        target:
+          type: AverageValue
+          averageValue: "10"
+    # Custom metric: API latency (P95)
+    - type: Pods
+      pods:
+        metric:
+          name: octollm_api_latency_p95_seconds
+        target:
+          type: AverageValue
+          averageValue: "0.5"  # 500ms
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # Wait 5 min before scaling down
+      policies:
+        - type: Percent
+          value: 50  # Scale down max 50% of current replicas
+          periodSeconds: 60
+        - type: Pods
+          value: 2  # Or max 2 pods at a time
+          periodSeconds: 60
+      selectPolicy: Min  # Use most conservative policy
+    scaleUp:
+      stabilizationWindowSeconds: 0  # Scale up immediately
+      policies:
+        - type: Percent
+          value: 100  # Can double replicas
+          periodSeconds: 60
+        - type: Pods
+          value: 4  # Or add max 4 pods at a time
+          periodSeconds: 60
+      selectPolicy: Max  # Use most aggressive policy
+</code></pre>
+<h3 id="reflex-layer-hpa"><a class="header" href="#reflex-layer-hpa">Reflex Layer HPA</a></h3>
+<pre><code class="language-yaml"># k8s/hpa/reflex-layer-hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: reflex-layer-hpa
+  namespace: octollm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: reflex-layer
+  minReplicas: 3  # Higher minimum for high throughput
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60  # Lower threshold for faster response
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 75
+    # Custom metric: Request rate
+    - type: Pods
+      pods:
+        metric:
+          name: octollm_reflex_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "500"  # 500 req/sec per pod
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 180  # 3 minutes
+      policies:
+        - type: Percent
+          value: 30
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 150  # Can add 150% of current replicas
+          periodSeconds: 30  # Every 30 seconds
+      selectPolicy: Max
+</code></pre>
+<h3 id="arm-specific-hpas"><a class="header" href="#arm-specific-hpas">Arm-Specific HPAs</a></h3>
+<p><strong>Planner Arm</strong>:</p>
+<pre><code class="language-yaml"># k8s/hpa/planner-arm-hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: planner-arm-hpa
+  namespace: octollm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: planner-arm
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 75
+    # Custom: Planning requests queue
+    - type: Pods
+      pods:
+        metric:
+          name: octollm_planner_queue_depth
+        target:
+          type: AverageValue
+          averageValue: "5"
+</code></pre>
+<p><strong>Executor Arm</strong> (highest scaling needs):</p>
+<pre><code class="language-yaml"># k8s/hpa/executor-arm-hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: executor-arm-hpa
+  namespace: octollm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: executor-arm
+  minReplicas: 1
+  maxReplicas: 10  # Highest max for high execution demand
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    # Custom: Execution queue depth
+    - type: Pods
+      pods:
+        metric:
+          name: octollm_executor_queue_depth
+        target:
+          type: AverageValue
+          averageValue: "8"
+</code></pre>
+<p><strong>Coder Arm</strong>:</p>
+<pre><code class="language-yaml"># k8s/hpa/coder-arm-hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: coder-arm-hpa
+  namespace: octollm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: coder-arm
+  minReplicas: 1
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 75
+    - type: Pods
+      pods:
+        metric:
+          name: octollm_coder_queue_depth
+        target:
+          type: AverageValue
+          averageValue: "6"
+</code></pre>
+<p><strong>Judge Arm</strong>:</p>
+<pre><code class="language-yaml"># k8s/hpa/judge-arm-hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: judge-arm-hpa
+  namespace: octollm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: judge-arm
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+</code></pre>
+<p><strong>Guardian Arm</strong> (critical security component):</p>
+<pre><code class="language-yaml"># k8s/hpa/guardian-arm-hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: guardian-arm-hpa
+  namespace: octollm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: guardian-arm
+  minReplicas: 2  # Always keep 2 for security
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 65
+    # PII detection is CPU-intensive
+    - type: Pods
+      pods:
+        metric:
+          name: octollm_guardian_pii_checks_per_second
+        target:
+          type: AverageValue
+          averageValue: "100"
+</code></pre>
+<p><strong>Retriever Arm</strong>:</p>
+<pre><code class="language-yaml"># k8s/hpa/retriever-arm-hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: retriever-arm-hpa
+  namespace: octollm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: retriever-arm
+  minReplicas: 1
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    # Custom: Vector search latency
+    - type: Pods
+      pods:
+        metric:
+          name: octollm_retriever_latency_p95_seconds
+        target:
+          type: AverageValue
+          averageValue: "0.2"  # 200ms
+</code></pre>
+<h3 id="custom-metrics-implementation"><a class="header" href="#custom-metrics-implementation">Custom Metrics Implementation</a></h3>
+<p>To enable custom metrics-based HPA, you need to expose Prometheus metrics and configure the Prometheus Adapter:</p>
+<p><strong>1. Application Metrics</strong> (already implemented in <code>docs/engineering/logging-observability.md</code>):</p>
+<pre><code class="language-python"># orchestrator/metrics.py
+from prometheus_client import Gauge
+
+TASK_QUEUE_DEPTH = Gauge(
+    'octollm_task_queue_depth',
+    'Number of tasks waiting in queue',
+    ['component']
+)
+
+API_LATENCY_P95 = Gauge(
+    'octollm_api_latency_p95_seconds',
+    'API latency at 95th percentile',
+    ['endpoint']
+)
+</code></pre>
+<p><strong>2. Prometheus Adapter Configuration</strong>:</p>
+<pre><code class="language-yaml"># k8s/monitoring/prometheus-adapter-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adapter-config
+  namespace: monitoring
+data:
+  config.yaml: |
+    rules:
+      # Task queue depth metric
+      - seriesQuery: 'octollm_task_queue_depth'
+        resources:
+          overrides:
+            namespace: {resource: "namespace"}
+            pod: {resource: "pod"}
+        name:
+          matches: "^octollm_task_queue_depth"
+          as: "octollm_task_queue_depth"
+        metricsQuery: 'avg_over_time(octollm_task_queue_depth[1m])'
+
+      # API latency metric
+      - seriesQuery: 'octollm_api_latency_p95_seconds'
+        resources:
+          overrides:
+            namespace: {resource: "namespace"}
+            pod: {resource: "pod"}
+        name:
+          matches: "^octollm_api_latency_p95_seconds"
+          as: "octollm_api_latency_p95_seconds"
+        metricsQuery: 'max_over_time(octollm_api_latency_p95_seconds[1m])'
+
+      # Reflex requests per second
+      - seriesQuery: 'octollm_reflex_http_requests_total'
+        resources:
+          overrides:
+            namespace: {resource: "namespace"}
+            pod: {resource: "pod"}
+        name:
+          matches: "^octollm_reflex_http_requests_total"
+          as: "octollm_reflex_requests_per_second"
+        metricsQuery: 'rate(octollm_reflex_http_requests_total[1m])'
+</code></pre>
+<p><strong>3. Deploy Prometheus Adapter</strong>:</p>
+<pre><code class="language-bash"># Add Prometheus Community Helm repo
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+# Install Prometheus Adapter
+helm install prometheus-adapter prometheus-community/prometheus-adapter \
+  --namespace monitoring \
+  --create-namespace \
+  --set prometheus.url=http://prometheus-server.monitoring.svc \
+  --set prometheus.port=80 \
+  -f k8s/monitoring/prometheus-adapter-config.yaml
+</code></pre>
+<p><strong>4. Verify Custom Metrics</strong>:</p>
+<pre><code class="language-bash"># Check available custom metrics
+kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1" | jq .
+
+# Query specific metric
+kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/octollm/pods/*/octollm_task_queue_depth" | jq .
+</code></pre>
+<hr />
+<h2 id="vertical-pod-autoscaling-vpa"><a class="header" href="#vertical-pod-autoscaling-vpa">Vertical Pod Autoscaling (VPA)</a></h2>
+<h3 id="vpa-overview"><a class="header" href="#vpa-overview">VPA Overview</a></h3>
+<p>Vertical Pod Autoscaler automatically adjusts CPU and memory requests/limits based on actual usage patterns. Use VPA when:</p>
+<ul>
+<li>You don't know optimal resource requests</li>
+<li>Resource usage varies significantly over time</li>
+<li>You want right-sizing recommendations</li>
+</ul>
+<p><strong>Important</strong>: VPA and HPA can conflict if both scale on CPU/memory. Use VPA in "Recommendation" mode with HPA, or use VPA for custom metrics only.</p>
+<h3 id="orchestrator-vpa"><a class="header" href="#orchestrator-vpa">Orchestrator VPA</a></h3>
+<pre><code class="language-yaml"># k8s/vpa/orchestrator-vpa.yaml
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: orchestrator-vpa
+  namespace: octollm
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: orchestrator
+  updatePolicy:
+    updateMode: "Recreate"  # Options: Off, Initial, Recreate, Auto
+  resourcePolicy:
+    containerPolicies:
+      - containerName: orchestrator
+        minAllowed:
+          cpu: 200m
+          memory: 512Mi
+        maxAllowed:
+          cpu: 4000m
+          memory: 8Gi
+        controlledResources: ["cpu", "memory"]
+        # Scaling mode: Off (recommendations only), Auto (apply automatically)
+        mode: Auto
+</code></pre>
+<h3 id="vpa-update-modes"><a class="header" href="#vpa-update-modes">VPA Update Modes</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Mode</th><th>Description</th><th>Use Case</th></tr></thead><tbody>
+<tr><td><strong>Off</strong></td><td>Only provide recommendations</td><td>Testing, analysis</td></tr>
+<tr><td><strong>Initial</strong></td><td>Set requests on pod creation only</td><td>Stable workloads with HPA</td></tr>
+<tr><td><strong>Recreate</strong></td><td>Update by evicting and recreating pods</td><td>Stateless apps, can tolerate restarts</td></tr>
+<tr><td><strong>Auto</strong></td><td>Update in-place (requires k8s 1.27+)</td><td>Best option if supported</td></tr>
+</tbody></table>
+</div>
+<h3 id="combined-hpa--vpa-strategy"><a class="header" href="#combined-hpa--vpa-strategy">Combined HPA + VPA Strategy</a></h3>
+<p><strong>Option 1: VPA in "Off" mode (Recommendations Only)</strong></p>
+<pre><code class="language-yaml"># k8s/vpa/orchestrator-vpa-recommendations.yaml
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: orchestrator-vpa
+  namespace: octollm
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: orchestrator
+  updatePolicy:
+    updateMode: "Off"  # Only recommendations, no automatic updates
+</code></pre>
+<p>Then manually review recommendations:</p>
+<pre><code class="language-bash"># Get VPA recommendations
+kubectl describe vpa orchestrator-vpa -n octollm
+
+# Example output:
+# Recommendation:
+#   Container Recommendations:
+#     Container Name:  orchestrator
+#     Lower Bound:
+#       Cpu:     500m
+#       Memory:  1Gi
+#     Target:
+#       Cpu:     1000m
+#       Memory:  2Gi
+#     Uncapped Target:
+#       Cpu:     1500m
+#       Memory:  3Gi
+#     Upper Bound:
+#       Cpu:     2000m
+#       Memory:  4Gi
+</code></pre>
+<p><strong>Option 2: HPA for horizontal scaling, VPA for vertical (separate metrics)</strong></p>
+<pre><code class="language-yaml"># HPA scales on custom metrics (queue depth)
+# VPA scales on CPU/memory
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: orchestrator-hpa
+spec:
+  metrics:
+    # Only custom metrics, no CPU/memory
+    - type: Pods
+      pods:
+        metric:
+          name: octollm_task_queue_depth
+        target:
+          type: AverageValue
+          averageValue: "10"
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: orchestrator-vpa
+spec:
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+      - containerName: orchestrator
+        # VPA manages CPU/memory
+        controlledResources: ["cpu", "memory"]
+</code></pre>
+<h3 id="vpa-for-all-components"><a class="header" href="#vpa-for-all-components">VPA for All Components</a></h3>
+<pre><code class="language-bash"># Apply VPAs for all arms
+for arm in planner executor coder judge guardian retriever; do
+  cat &lt;&lt;EOF | kubectl apply -f -
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: ${arm}-arm-vpa
+  namespace: octollm
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ${arm}-arm
+  updatePolicy:
+    updateMode: "Off"  # Recommendations only with HPA
+  resourcePolicy:
+    containerPolicies:
+      - containerName: ${arm}
+        minAllowed:
+          cpu: 100m
+          memory: 256Mi
+        maxAllowed:
+          cpu: 2000m
+          memory: 4Gi
+        controlledResources: ["cpu", "memory"]
+EOF
+done
+</code></pre>
+<hr />
+<h2 id="cluster-autoscaling"><a class="header" href="#cluster-autoscaling">Cluster Autoscaling</a></h2>
+<h3 id="cluster-autoscaler-overview"><a class="header" href="#cluster-autoscaler-overview">Cluster Autoscaler Overview</a></h3>
+<p>Cluster Autoscaler automatically adds or removes nodes based on pod resource requests. It scales the cluster when:</p>
+<ul>
+<li>Pods are unschedulable due to insufficient resources</li>
+<li>Nodes are underutilized (&lt;50% for extended period)</li>
+</ul>
+<h3 id="gke-cluster-autoscaler"><a class="header" href="#gke-cluster-autoscaler">GKE Cluster Autoscaler</a></h3>
+<pre><code class="language-bash"># Enable Cluster Autoscaler on GKE
+gcloud container clusters update CLUSTER_NAME \
+  --enable-autoscaling \
+  --min-nodes 3 \
+  --max-nodes 20 \
+  --zone ZONE
+
+# Per node pool
+gcloud container node-pools update POOL_NAME \
+  --cluster=CLUSTER_NAME \
+  --enable-autoscaling \
+  --min-nodes=1 \
+  --max-nodes=10 \
+  --zone=ZONE
+</code></pre>
+<h3 id="eks-cluster-autoscaler"><a class="header" href="#eks-cluster-autoscaler">EKS Cluster Autoscaler</a></h3>
+<pre><code class="language-yaml"># k8s/cluster-autoscaler/eks-cluster-autoscaler.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cluster-autoscaler
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cluster-autoscaler
+  template:
+    metadata:
+      labels:
+        app: cluster-autoscaler
+    spec:
+      serviceAccountName: cluster-autoscaler
+      containers:
+        - name: cluster-autoscaler
+          image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.28.0
+          command:
+            - ./cluster-autoscaler
+            - --v=4
+            - --stderrthreshold=info
+            - --cloud-provider=aws
+            - --skip-nodes-with-local-storage=false
+            - --expander=least-waste
+            - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/CLUSTER_NAME
+            - --balance-similar-node-groups
+            - --skip-nodes-with-system-pods=false
+          env:
+            - name: AWS_REGION
+              value: us-west-2
+          resources:
+            requests:
+              cpu: 100m
+              memory: 300Mi
+            limits:
+              cpu: 100m
+              memory: 300Mi
+</code></pre>
+<h3 id="aks-cluster-autoscaler"><a class="header" href="#aks-cluster-autoscaler">AKS Cluster Autoscaler</a></h3>
+<pre><code class="language-bash"># Enable on AKS
+az aks update \
+  --resource-group RESOURCE_GROUP \
+  --name CLUSTER_NAME \
+  --enable-cluster-autoscaler \
+  --min-count 3 \
+  --max-count 20
+</code></pre>
+<h3 id="node-affinity-and-taintstolerations"><a class="header" href="#node-affinity-and-taintstolerations">Node Affinity and Taints/Tolerations</a></h3>
+<p><strong>Database Node Pool</strong> (high IOPS, no application pods):</p>
+<pre><code class="language-yaml"># k8s/nodes/database-nodepool-taint.yaml
+# Apply taint to database nodes
+kubectl taint nodes DB_NODE_NAME dedicated=database:NoSchedule
+
+# PostgreSQL StatefulSet with toleration
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql
+spec:
+  template:
+    spec:
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "database"
+          effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - database
+</code></pre>
+<p><strong>Arm Pod Distribution</strong> (spread across availability zones):</p>
+<pre><code class="language-yaml"># k8s/deployments/executor-arm-with-affinity.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: executor-arm
+spec:
+  template:
+    spec:
+      affinity:
+        # Prefer spreading across zones
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - executor-arm
+                topologyKey: topology.kubernetes.io/zone
+        # Require at least 2 different nodes
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - executor-arm
+              topologyKey: kubernetes.io/hostname
+</code></pre>
+<hr />
+<h2 id="database-scaling"><a class="header" href="#database-scaling">Database Scaling</a></h2>
+<h3 id="postgresql-read-replicas"><a class="header" href="#postgresql-read-replicas">PostgreSQL Read Replicas</a></h3>
+<p><strong>Primary-Replica Setup with pgpool-II</strong>:</p>
+<pre><code class="language-yaml"># k8s/databases/postgresql-replica.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-replica
+  namespace: octollm
+spec:
+  serviceName: postgresql-replica
+  replicas: 2  # 2 read replicas
+  selector:
+    matchLabels:
+      app: postgresql-replica
+  template:
+    metadata:
+      labels:
+        app: postgresql-replica
+    spec:
+      containers:
+        - name: postgresql
+          image: postgres:15-alpine
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
+            - name: POSTGRES_REPLICATION_MODE
+              value: "slave"
+            - name: POSTGRES_MASTER_HOST
+              value: "postgresql-primary.octollm.svc.cluster.local"
+            - name: POSTGRES_REPLICATION_USER
+              value: "replicator"
+            - name: POSTGRES_REPLICATION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: replication-password
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: octollm-fast-ssd
+        resources:
+          requests:
+            storage: 50Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-replica
+  namespace: octollm
+spec:
+  selector:
+    app: postgresql-replica
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
+</code></pre>
+<p><strong>Application Configuration for Read Replicas</strong>:</p>
+<pre><code class="language-python"># orchestrator/database.py
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+import random
+
+# Connection strings
+PRIMARY_URL = "postgresql://user:pass@postgresql-primary:5432/octollm"
+REPLICA_URLS = [
+    "postgresql://user:pass@postgresql-replica-0:5432/octollm",
+    "postgresql://user:pass@postgresql-replica-1:5432/octollm",
+]
+
+# Create engines
+primary_engine = create_engine(PRIMARY_URL, pool_size=10, max_overflow=20)
+replica_engines = [
+    create_engine(url, pool_size=5, max_overflow=10) for url in REPLICA_URLS
+]
+
+# Session makers
+PrimarySession = sessionmaker(bind=primary_engine)
+ReplicaSession = sessionmaker(bind=random.choice(replica_engines))
+
+# Usage
+def get_task(task_id: str):
+    """Read from replica"""
+    session = ReplicaSession()
+    return session.query(Task).filter(Task.id == task_id).first()
+
+def create_task(task: Task):
+    """Write to primary"""
+    session = PrimarySession()
+    session.add(task)
+    session.commit()
+</code></pre>
+<h3 id="qdrant-scaling-and-sharding"><a class="header" href="#qdrant-scaling-and-sharding">Qdrant Scaling and Sharding</a></h3>
+<p><strong>Qdrant Cluster Setup</strong> (3 nodes with sharding):</p>
+<pre><code class="language-yaml"># k8s/databases/qdrant-cluster.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: qdrant
+  namespace: octollm
+spec:
+  serviceName: qdrant
+  replicas: 3
+  selector:
+    matchLabels:
+      app: qdrant
+  template:
+    metadata:
+      labels:
+        app: qdrant
+    spec:
+      containers:
+        - name: qdrant
+          image: qdrant/qdrant:v1.7.0
+          ports:
+            - containerPort: 6333
+              name: http
+            - containerPort: 6334
+              name: grpc
+          env:
+            - name: QDRANT_CLUSTER_ENABLED
+              value: "true"
+            - name: QDRANT_CLUSTER_P2P_PORT
+              value: "6335"
+            # Use StatefulSet pod names for cluster discovery
+            - name: QDRANT_CLUSTER_BOOTSTRAP_PEERS
+              value: "qdrant-0.qdrant:6335,qdrant-1.qdrant:6335,qdrant-2.qdrant:6335"
+          volumeMounts:
+            - name: data
+              mountPath: /qdrant/storage
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: 2000m
+              memory: 8Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: octollm-fast-ssd
+        resources:
+          requests:
+            storage: 100Gi
+</code></pre>
+<p><strong>Qdrant Collection with Sharding</strong>:</p>
+<pre><code class="language-python"># arms/retriever/memory_setup.py
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams, ShardingMethod
+
+client = QdrantClient(url="http://qdrant:6333")
+
+# Create collection with sharding
+client.create_collection(
+    collection_name="knowledge_base",
+    vectors_config=VectorParams(
+        size=384,
+        distance=Distance.COSINE
+    ),
+    shard_number=6,  # 2 shards per node × 3 nodes
+    sharding_method=ShardingMethod.AUTO,
+    replication_factor=2,  # Each shard replicated 2x for redundancy
+    write_consistency_factor=1,  # Acknowledge after 1 replica writes
+)
+</code></pre>
+<h3 id="redis-cluster-mode"><a class="header" href="#redis-cluster-mode">Redis Cluster Mode</a></h3>
+<p><strong>Redis Cluster Deployment</strong> (6 nodes: 3 masters + 3 replicas):</p>
+<pre><code class="language-yaml"># k8s/databases/redis-cluster.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-cluster
+  namespace: octollm
+spec:
+  serviceName: redis-cluster
+  replicas: 6
+  selector:
+    matchLabels:
+      app: redis-cluster
+  template:
+    metadata:
+      labels:
+        app: redis-cluster
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          command:
+            - redis-server
+            - --cluster-enabled
+            - "yes"
+            - --cluster-config-file
+            - /data/nodes.conf
+            - --cluster-node-timeout
+            - "5000"
+            - --appendonly
+            - "yes"
+            - --maxmemory
+            - "2gb"
+            - --maxmemory-policy
+            - "allkeys-lru"
+          ports:
+            - containerPort: 6379
+              name: client
+            - containerPort: 16379
+              name: gossip
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: 1000m
+              memory: 3Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: octollm-fast-ssd
+        resources:
+          requests:
+            storage: 20Gi
+</code></pre>
+<p><strong>Initialize Redis Cluster</strong>:</p>
+<pre><code class="language-bash"># Wait for all pods to be ready
+kubectl wait --for=condition=ready pod -l app=redis-cluster -n octollm --timeout=300s
+
+# Create cluster (3 masters, 3 replicas)
+kubectl exec -it redis-cluster-0 -n octollm -- redis-cli --cluster create \
+  redis-cluster-0.redis-cluster:6379 \
+  redis-cluster-1.redis-cluster:6379 \
+  redis-cluster-2.redis-cluster:6379 \
+  redis-cluster-3.redis-cluster:6379 \
+  redis-cluster-4.redis-cluster:6379 \
+  redis-cluster-5.redis-cluster:6379 \
+  --cluster-replicas 1 \
+  --cluster-yes
+
+# Verify cluster
+kubectl exec -it redis-cluster-0 -n octollm -- redis-cli cluster info
+kubectl exec -it redis-cluster-0 -n octollm -- redis-cli cluster nodes
+</code></pre>
+<hr />
+<h2 id="caching-strategies"><a class="header" href="#caching-strategies">Caching Strategies</a></h2>
+<h3 id="multi-tier-caching-architecture"><a class="header" href="#multi-tier-caching-architecture">Multi-Tier Caching Architecture</a></h3>
+<pre><code class="language-mermaid">graph TB
+    REQ[Request]
+
+    subgraph "L1 Cache - In-Memory"
+        L1[Python @lru_cache&lt;br/&gt;TTL: 60s&lt;br/&gt;Size: 128 entries]
+    end
+
+    subgraph "L2 Cache - Redis"
+        L2[Redis Cluster&lt;br/&gt;TTL: 5 min&lt;br/&gt;Size: 10GB]
+    end
+
+    subgraph "L3 Cache - Database Result Cache"
+        L3[PostgreSQL Materialized Views&lt;br/&gt;Refresh: 1 hour]
+    end
+
+    subgraph "Source"
+        DB[(Database)]
+        LLM[LLM API]
+        VECTOR[(Vector DB)]
+    end
+
+    REQ --&gt; L1
+    L1 --&gt;|Miss| L2
+    L2 --&gt;|Miss| L3
+    L3 --&gt;|Miss| DB &amp; LLM &amp; VECTOR
+
+    DB &amp; LLM &amp; VECTOR -.Populate.-&gt; L3
+    L3 -.Populate.-&gt; L2
+    L2 -.Populate.-&gt; L1
+</code></pre>
+<h3 id="l1-in-memory-caching-python"><a class="header" href="#l1-in-memory-caching-python">L1: In-Memory Caching (Python)</a></h3>
+<pre><code class="language-python"># orchestrator/caching.py
+from functools import lru_cache
+from typing import Dict, Any
+import time
+import hashlib
+
+class TTLCache:
+    """Time-based LRU cache"""
+    def __init__(self, maxsize: int = 128, ttl: int = 60):
+        self.maxsize = maxsize
+        self.ttl = ttl
+        self.cache: Dict[str, tuple[Any, float]] = {}
+
+    def get(self, key: str) -&gt; Any:
+        if key in self.cache:
+            value, timestamp = self.cache[key]
+            if time.time() - timestamp &lt; self.ttl:
+                return value
+            else:
+                del self.cache[key]  # Expired
+        return None
+
+    def set(self, key: str, value: Any):
+        if len(self.cache) &gt;= self.maxsize:
+            # Evict oldest entry
+            oldest_key = min(self.cache.keys(), key=lambda k: self.cache[k][1])
+            del self.cache[oldest_key]
+        self.cache[key] = (value, time.time())
+
+# Global cache instance
+task_cache = TTLCache(maxsize=256, ttl=120)  # 2 minutes
+
+def cache_key(*args, **kwargs) -&gt; str:
+    """Generate cache key from arguments"""
+    key_data = str(args) + str(sorted(kwargs.items()))
+    return hashlib.md5(key_data.encode()).hexdigest()
+
+# Usage with decorator
+def cached_task_result(ttl: int = 60):
+    def decorator(func):
+        cache = TTLCache(ttl=ttl)
+
+        def wrapper(*args, **kwargs):
+            key = cache_key(*args, **kwargs)
+            result = cache.get(key)
+            if result is not None:
+                return result
+
+            result = func(*args, **kwargs)
+            cache.set(key, result)
+            return result
+
+        return wrapper
+    return decorator
+
+# Example usage
+@cached_task_result(ttl=120)
+def get_arm_capabilities(arm_id: str) -&gt; Dict:
+    """Expensive operation to fetch arm capabilities"""
+    # This will be cached for 2 minutes
+    return fetch_from_database(arm_id)
+</code></pre>
+<h3 id="l2-redis-caching"><a class="header" href="#l2-redis-caching">L2: Redis Caching</a></h3>
+<pre><code class="language-python"># orchestrator/redis_cache.py
+import redis
+import json
+from typing import Any, Optional
+import pickle
+
+class RedisCache:
+    """Redis-backed cache with automatic serialization"""
+
+    def __init__(self, redis_url: str, default_ttl: int = 300):
+        self.client = redis.from_url(redis_url, decode_responses=False)
+        self.default_ttl = default_ttl
+
+    def get(self, key: str) -&gt; Optional[Any]:
+        """Get cached value"""
+        value = self.client.get(key)
+        if value:
+            return pickle.loads(value)
+        return None
+
+    def set(self, key: str, value: Any, ttl: Optional[int] = None):
+        """Set cached value with TTL"""
+        serialized = pickle.dumps(value)
+        self.client.setex(key, ttl or self.default_ttl, serialized)
+
+    def delete(self, key: str):
+        """Invalidate cache entry"""
+        self.client.delete(key)
+
+    def exists(self, key: str) -&gt; bool:
+        """Check if key exists"""
+        return self.client.exists(key) &gt; 0
+
+    def get_many(self, keys: list[str]) -&gt; dict[str, Any]:
+        """Get multiple cached values"""
+        values = self.client.mget(keys)
+        return {
+            key: pickle.loads(val) if val else None
+            for key, val in zip(keys, values)
+        }
+
+    def set_many(self, items: dict[str, Any], ttl: Optional[int] = None):
+        """Set multiple cached values"""
+        pipe = self.client.pipeline()
+        for key, value in items.items():
+            serialized = pickle.dumps(value)
+            pipe.setex(key, ttl or self.default_ttl, serialized)
+        pipe.execute()
+
+# Global cache instance
+cache = RedisCache(redis_url="redis://redis-cluster:6379", default_ttl=300)
+
+# Usage example
+def get_task_result(task_id: str) -&gt; Dict:
+    cache_key = f"task:result:{task_id}"
+
+    # Try L1 cache first (in-memory)
+    result = task_cache.get(cache_key)
+    if result:
+        return result
+
+    # Try L2 cache (Redis)
+    result = cache.get(cache_key)
+    if result:
+        # Populate L1 cache
+        task_cache.set(cache_key, result)
+        return result
+
+    # Fetch from database
+    result = fetch_task_from_db(task_id)
+
+    # Populate both caches
+    cache.set(cache_key, result, ttl=600)  # 10 minutes in Redis
+    task_cache.set(cache_key, result)      # 2 minutes in memory
+
+    return result
+</code></pre>
+<h3 id="cache-warming-strategy"><a class="header" href="#cache-warming-strategy">Cache Warming Strategy</a></h3>
+<pre><code class="language-python"># orchestrator/cache_warming.py
+import asyncio
+from typing import List
+import logging
+
+logger = logging.getLogger(__name__)
+
+class CacheWarmer:
+    """Proactively warm caches for frequently accessed data"""
+
+    def __init__(self, redis_cache: RedisCache):
+        self.cache = redis_cache
+
+    async def warm_arm_capabilities(self):
+        """Pre-cache arm capabilities"""
+        arm_ids = ["planner", "executor", "coder", "judge", "guardian", "retriever"]
+
+        for arm_id in arm_ids:
+            try:
+                capabilities = await fetch_arm_capabilities(arm_id)
+                cache_key = f"arm:capabilities:{arm_id}"
+                self.cache.set(cache_key, capabilities, ttl=3600)  # 1 hour
+                logger.info(f"Warmed cache for arm: {arm_id}")
+            except Exception as e:
+                logger.error(f"Failed to warm cache for arm {arm_id}: {e}")
+
+    async def warm_common_queries(self):
+        """Pre-cache results of common queries"""
+        common_queries = [
+            "SELECT * FROM entities WHERE entity_type = 'tool' LIMIT 100",
+            "SELECT * FROM recent_tasks ORDER BY created_at DESC LIMIT 50",
+        ]
+
+        for query in common_queries:
+            try:
+                result = await execute_query(query)
+                cache_key = f"query:{hash(query)}"
+                self.cache.set(cache_key, result, ttl=600)  # 10 minutes
+            except Exception as e:
+                logger.error(f"Failed to warm cache for query: {e}")
+
+    async def warm_on_startup(self):
+        """Warm caches on application startup"""
+        logger.info("Starting cache warming...")
+        await asyncio.gather(
+            self.warm_arm_capabilities(),
+            self.warm_common_queries(),
+        )
+        logger.info("Cache warming complete")
+
+    async def warm_periodically(self, interval: int = 300):
+        """Periodically refresh caches"""
+        while True:
+            await asyncio.sleep(interval)
+            await self.warm_on_startup()
+
+# Usage in FastAPI startup
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.on_event("startup")
+async def startup_event():
+    warmer = CacheWarmer(redis_cache=cache)
+    await warmer.warm_on_startup()
+
+    # Start background warming task
+    asyncio.create_task(warmer.warm_periodically(interval=600))  # Every 10 min
+</code></pre>
+<h3 id="cache-invalidation-patterns"><a class="header" href="#cache-invalidation-patterns">Cache Invalidation Patterns</a></h3>
+<pre><code class="language-python"># orchestrator/cache_invalidation.py
+
+class CacheInvalidator:
+    """Intelligent cache invalidation"""
+
+    def __init__(self, redis_cache: RedisCache):
+        self.cache = redis_cache
+
+    def invalidate_task(self, task_id: str):
+        """Invalidate all caches related to a task"""
+        patterns = [
+            f"task:result:{task_id}",
+            f"task:status:{task_id}",
+            f"task:plan:{task_id}",
+        ]
+        for pattern in patterns:
+            self.cache.delete(pattern)
+
+    def invalidate_arm(self, arm_id: str):
+        """Invalidate arm-related caches"""
+        self.cache.delete(f"arm:capabilities:{arm_id}")
+        self.cache.delete(f"arm:status:{arm_id}")
+
+    def invalidate_pattern(self, pattern: str):
+        """Invalidate all keys matching pattern"""
+        # Use Redis SCAN for large key spaces
+        cursor = 0
+        while True:
+            cursor, keys = self.cache.client.scan(cursor, match=pattern, count=100)
+            if keys:
+                self.cache.client.delete(*keys)
+            if cursor == 0:
+                break
+
+# Usage example: Invalidate on update
+def update_task_result(task_id: str, result: Dict):
+    # Update database
+    save_to_database(task_id, result)
+
+    # Invalidate caches
+    invalidator = CacheInvalidator(cache)
+    invalidator.invalidate_task(task_id)
+</code></pre>
+<hr />
+<h2 id="load-testing"><a class="header" href="#load-testing">Load Testing</a></h2>
+<h3 id="k6-load-testing-scripts"><a class="header" href="#k6-load-testing-scripts">K6 Load Testing Scripts</a></h3>
+<p><strong>Basic Load Test</strong>:</p>
+<pre><code class="language-javascript">// tests/load/basic-load-test.js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { Rate } from 'k6/metrics';
+
+// Custom metrics
+const errorRate = new Rate('errors');
+
+// Test configuration
+export const options = {
+  stages: [
+    { duration: '2m', target: 100 },   // Ramp up to 100 users
+    { duration: '5m', target: 100 },   // Stay at 100 users
+    { duration: '2m', target: 200 },   // Ramp up to 200 users
+    { duration: '5m', target: 200 },   // Stay at 200 users
+    { duration: '2m', target: 0 },     // Ramp down to 0 users
+  ],
+  thresholds: {
+    http_req_duration: ['p(95)&lt;500', 'p(99)&lt;2000'],  // 95% &lt; 500ms, 99% &lt; 2s
+    http_req_failed: ['rate&lt;0.05'],                   // Error rate &lt; 5%
+    errors: ['rate&lt;0.1'],                             // Custom error rate &lt; 10%
+  },
+};
+
+// API base URL
+const BASE_URL = 'https://octollm.example.com/api/v1';
+
+// Sample tasks
+const tasks = [
+  { goal: 'List files in /tmp directory', priority: 'low' },
+  { goal: 'Write a Python function to sort a list', priority: 'medium' },
+  { goal: 'Analyze security of a web application', priority: 'high' },
+];
+
+export default function () {
+  // Select random task
+  const task = tasks[Math.floor(Math.random() * tasks.length)];
+
+  // Submit task
+  const submitRes = http.post(
+    `${BASE_URL}/tasks`,
+    JSON.stringify(task),
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer YOUR_API_KEY'
+      },
+    }
+  );
+
+  check(submitRes, {
+    'task submitted': (r) =&gt; r.status === 202,
+    'task_id returned': (r) =&gt; JSON.parse(r.body).task_id !== undefined,
+  });
+
+  if (submitRes.status !== 202) {
+    errorRate.add(1);
+    return;
+  }
+
+  const taskId = JSON.parse(submitRes.body).task_id;
+
+  // Poll for completion (max 30 seconds)
+  let completed = false;
+  for (let i = 0; i &lt; 30 &amp;&amp; !completed; i++) {
+    sleep(1);
+
+    const statusRes = http.get(`${BASE_URL}/tasks/${taskId}`);
+    check(statusRes, {
+      'status check successful': (r) =&gt; r.status === 200,
+    });
+
+    if (statusRes.status === 200) {
+      const status = JSON.parse(statusRes.body).status;
+      if (status === 'completed' || status === 'failed') {
+        completed = true;
+
+        check(statusRes, {
+          'task completed successfully': (r) =&gt; JSON.parse(r.body).status === 'completed',
+        });
+      }
+    }
+  }
+
+  if (!completed) {
+    errorRate.add(1);
+  }
+
+  sleep(1);  // Think time between requests
+}
+</code></pre>
+<p><strong>Stress Test</strong> (push beyond capacity):</p>
+<pre><code class="language-javascript">// tests/load/stress-test.js
+import http from 'k6/http';
+import { check } from 'k6';
+
+export const options = {
+  stages: [
+    { duration: '2m', target: 100 },
+    { duration: '5m', target: 500 },   // Push to 500 users
+    { duration: '5m', target: 1000 },  // Push to 1000 users
+    { duration: '5m', target: 2000 },  // Push to 2000 users (likely breaking point)
+    { duration: '5m', target: 0 },
+  ],
+  thresholds: {
+    // Relaxed thresholds for stress test
+    http_req_duration: ['p(50)&lt;1000'],  // Median &lt; 1s
+    http_req_failed: ['rate&lt;0.5'],      // Allow higher error rate
+  },
+};
+
+const BASE_URL = 'https://octollm.example.com/api/v1';
+
+export default function () {
+  const res = http.post(
+    `${BASE_URL}/tasks`,
+    JSON.stringify({ goal: 'Simple task', priority: 'low' }),
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+
+  check(res, {
+    'request completed': (r) =&gt; r.status &gt;= 200 &amp;&amp; r.status &lt; 500,
+  });
+}
+</code></pre>
+<p><strong>Soak Test</strong> (sustained load):</p>
+<pre><code class="language-javascript">// tests/load/soak-test.js
+export const options = {
+  stages: [
+    { duration: '5m', target: 100 },      // Ramp up
+    { duration: '3h', target: 100 },      // Stay at 100 users for 3 hours
+    { duration: '5m', target: 0 },        // Ramp down
+  ],
+  thresholds: {
+    http_req_duration: ['p(95)&lt;500'],
+    http_req_failed: ['rate&lt;0.01'],       // Very low error rate
+  },
+};
+
+// Same test logic as basic-load-test.js
+</code></pre>
+<p><strong>Run Load Tests</strong>:</p>
+<pre><code class="language-bash"># Install k6
+# macOS
+brew install k6
+
+# Linux
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+sudo apt-get update
+sudo apt-get install k6
+
+# Run tests
+k6 run tests/load/basic-load-test.js
+
+# Run with custom VUs and duration
+k6 run --vus 100 --duration 10m tests/load/basic-load-test.js
+
+# Run stress test
+k6 run tests/load/stress-test.js
+
+# Run soak test
+k6 run tests/load/soak-test.js
+
+# Output results to InfluxDB for Grafana
+k6 run --out influxdb=http://localhost:8086/k6 tests/load/basic-load-test.js
+</code></pre>
+<hr />
+<h2 id="cost-optimization"><a class="header" href="#cost-optimization">Cost Optimization</a></h2>
+<h3 id="cost-analysis"><a class="header" href="#cost-analysis">Cost Analysis</a></h3>
+<p><strong>Monthly Cost Breakdown</strong> (estimated for medium load):</p>
+<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Resources</th><th>Monthly Cost (AWS)</th><th>Monthly Cost (GCP)</th></tr></thead><tbody>
+<tr><td><strong>Kubernetes Control Plane</strong></td><td>1 master node</td><td>$73 (EKS)</td><td>$73 (GKE)</td></tr>
+<tr><td><strong>Worker Nodes</strong></td><td>4 × c5.2xlarge (8 vCPU, 16GB)</td><td>$550</td><td>$500</td></tr>
+<tr><td><strong>Database Storage</strong></td><td>500 GB SSD</td><td>$50</td><td>$85</td></tr>
+<tr><td><strong>Load Balancer</strong></td><td>1 ALB</td><td>$20</td><td>$20</td></tr>
+<tr><td><strong>Data Transfer</strong></td><td>1 TB egress</td><td>$90</td><td>$120</td></tr>
+<tr><td><strong>LLM API Costs</strong></td><td>10M tokens/day</td><td>$300 (GPT-3.5)</td><td>Same</td></tr>
+<tr><td><strong>Total</strong></td><td>-</td><td><strong>$1,083</strong></td><td><strong>$1,098</strong></td></tr>
+</tbody></table>
+</div>
+<h3 id="cost-optimization-strategies"><a class="header" href="#cost-optimization-strategies">Cost Optimization Strategies</a></h3>
+<p><strong>1. Spot Instances for Non-Critical Workloads</strong>:</p>
+<pre><code class="language-yaml"># k8s/nodes/spot-nodepool.yaml (AWS)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spot-nodepool-config
+  namespace: kube-system
+data:
+  spot-instances.yaml: |
+    # Use spot instances for executor and coder arms (can tolerate interruptions)
+    nodeSelector:
+      node-type: spot
+    tolerations:
+      - key: "spot"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+</code></pre>
+<pre><code class="language-bash"># Create spot instance node group (EKS)
+eksctl create nodegroup \
+  --cluster=octollm \
+  --name=spot-workers \
+  --instance-types=c5.2xlarge,c5.xlarge \
+  --spot \
+  --nodes-min=1 \
+  --nodes-max=10
+
+# GKE
+gcloud container node-pools create spot-workers \
+  --cluster=octollm \
+  --spot \
+  --machine-type=n2-standard-8 \
+  --num-nodes=2 \
+  --enable-autoscaling \
+  --min-nodes=1 \
+  --max-nodes=10
+</code></pre>
+<p><strong>2. Reserved Capacity for Baseline Load</strong>:</p>
+<pre><code class="language-bash"># Reserve capacity for 2 always-on nodes (40-60% discount)
+# AWS: Purchase EC2 Reserved Instances
+# GCP: Purchase Committed Use Discounts
+# Azure: Purchase Reserved VM Instances
+
+# Example savings:
+# On-Demand: c5.2xlarge = $0.34/hr × 24 × 30 = $245/month
+# Reserved (1-year): $0.20/hr × 24 × 30 = $145/month
+# Savings: $100/month per node = $200/month for 2 nodes
+</code></pre>
+<p><strong>3. Right-Size Pods with VPA</strong>:</p>
+<pre><code class="language-bash"># Use VPA recommendations to reduce over-provisioning
+# Example: Orchestrator initially allocated 2 CPU, 4GB RAM
+# VPA recommendation: 1 CPU, 2GB RAM (50% reduction)
+# Savings: $20-30/month per pod × 2 replicas = $40-60/month
+</code></pre>
+<p><strong>4. LLM API Cost Optimization</strong>:</p>
+<pre><code class="language-python"># orchestrator/llm_optimization.py
+from typing import Dict, Any
+
+class LLMCostOptimizer:
+    """Optimize LLM API costs"""
+
+    # Model pricing (per 1K tokens)
+    PRICING = {
+        "gpt-4": {"input": 0.03, "output": 0.06},
+        "gpt-4-turbo": {"input": 0.01, "output": 0.03},
+        "gpt-3.5-turbo": {"input": 0.001, "output": 0.002},
+        "claude-3-opus": {"input": 0.015, "output": 0.075},
+        "claude-3-sonnet": {"input": 0.003, "output": 0.015},
+    }
+
+    def select_model(self, task_complexity: str, max_budget: float) -&gt; str:
+        """Select cheapest model that meets requirements"""
+
+        if task_complexity == "high":
+            # Use expensive model for complex tasks
+            return "gpt-4-turbo"
+        elif task_complexity == "medium":
+            # Use mid-tier model
+            return "gpt-3.5-turbo"
+        else:
+            # Use cheapest model for simple tasks
+            return "gpt-3.5-turbo"
+
+    def estimate_cost(self, model: str, tokens: int) -&gt; float:
+        """Estimate cost for token usage"""
+        pricing = self.PRICING.get(model, self.PRICING["gpt-3.5-turbo"])
+        # Assume 50/50 split input/output
+        cost = (tokens / 2 / 1000 * pricing["input"]) + \
+               (tokens / 2 / 1000 * pricing["output"])
+        return cost
+
+    async def call_with_budget(self, prompt: str, max_cost: float) -&gt; Dict[str, Any]:
+        """Call LLM with cost constraints"""
+        estimated_tokens = len(prompt.split()) * 1.3  # Rough estimate
+
+        # Find cheapest model under budget
+        for model in ["gpt-3.5-turbo", "gpt-4-turbo", "gpt-4"]:
+            estimated_cost = self.estimate_cost(model, estimated_tokens)
+            if estimated_cost &lt;= max_cost:
+                return await call_llm(model, prompt)
+
+        raise ValueError(f"No model available under budget ${max_cost}")
+
+# Use in Orchestrator
+optimizer = LLMCostOptimizer()
+model = optimizer.select_model(task_complexity="low", max_budget=0.01)
+</code></pre>
+<p><strong>5. Caching to Reduce LLM Calls</strong>:</p>
+<pre><code class="language-python"># Target: 40% cache hit rate = 40% reduction in LLM costs
+# Example: $300/month LLM costs × 40% = $120/month savings
+</code></pre>
+<p><strong>6. Scale to Zero for Dev/Staging</strong>:</p>
+<pre><code class="language-yaml"># k8s/dev/scale-to-zero.yaml
+# Use KEDA with cron scaling for dev environments
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: orchestrator-cron-scaling
+  namespace: octollm-dev
+spec:
+  scaleTargetRef:
+    name: orchestrator
+  minReplicaCount: 0  # Scale to zero
+  maxReplicaCount: 2
+  triggers:
+    # Scale up during business hours only
+    - type: cron
+      metadata:
+        timezone: America/Los_Angeles
+        start: 0 9 * * 1-5    # 9 AM Mon-Fri
+        end: 0 18 * * 1-5      # 6 PM Mon-Fri
+        desiredReplicas: "1"
+</code></pre>
+<p><strong>Total Estimated Savings</strong>:</p>
+<ul>
+<li>Spot instances: $200/month</li>
+<li>Reserved capacity: $200/month</li>
+<li>Right-sizing: $60/month</li>
+<li>LLM caching: $120/month</li>
+<li>Dev scale-to-zero: $100/month</li>
+<li><strong>Total</strong>: ~$680/month savings (38% reduction)</li>
+</ul>
+<hr />
+<h2 id="performance-monitoring"><a class="header" href="#performance-monitoring">Performance Monitoring</a></h2>
+<h3 id="grafana-dashboards-for-scaling"><a class="header" href="#grafana-dashboards-for-scaling">Grafana Dashboards for Scaling</a></h3>
+<pre><code class="language-json">{
+  "dashboard": {
+    "title": "OctoLLM Auto-Scaling Dashboard",
+    "panels": [
+      {
+        "title": "HPA Current Replicas",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "kube_horizontalpodautoscaler_status_current_replicas{namespace=\"octollm\"}",
+            "legendFormat": "{{horizontalpodautoscaler}} - current"
+          },
+          {
+            "expr": "kube_horizontalpodautoscaler_status_desired_replicas{namespace=\"octollm\"}",
+            "legendFormat": "{{horizontalpodautoscaler}} - desired"
+          }
+        ]
+      },
+      {
+        "title": "HPA Scaling Events",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(kube_horizontalpodautoscaler_status_current_replicas{namespace=\"octollm\"}[5m])",
+            "legendFormat": "{{horizontalpodautoscaler}}"
+          }
+        ]
+      },
+      {
+        "title": "CPU Utilization vs HPA Target",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "avg(rate(container_cpu_usage_seconds_total{namespace=\"octollm\"}[5m])) by (pod) * 100",
+            "legendFormat": "{{pod}} - actual"
+          },
+          {
+            "expr": "kube_horizontalpodautoscaler_spec_target_metric{namespace=\"octollm\",metric_name=\"cpu\"}",
+            "legendFormat": "HPA target"
+          }
+        ]
+      },
+      {
+        "title": "Cluster Node Count",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count(kube_node_info)"
+          }
+        ]
+      },
+      {
+        "title": "Pod Scheduling Latency",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(scheduler_scheduling_duration_seconds_bucket[5m]))",
+            "legendFormat": "P95 scheduling latency"
+          }
+        ]
+      },
+      {
+        "title": "Unschedulable Pods",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(kube_pod_status_phase{namespace=\"octollm\",phase=\"Pending\"})"
+          }
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": { "type": "gt", "params": [5] },
+              "query": { "params": ["A", "5m", "now"] }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+</code></pre>
+<h3 id="scaling-metrics-to-track"><a class="header" href="#scaling-metrics-to-track">Scaling Metrics to Track</a></h3>
+<pre><code class="language-python"># orchestrator/scaling_metrics.py
+from prometheus_client import Gauge, Counter, Histogram
+
+# Scaling decision metrics
+SCALING_DECISION = Counter(
+    'octollm_scaling_decision_total',
+    'Number of scaling decisions',
+    ['component', 'direction']  # direction: up, down, none
+)
+
+POD_REPLICA_COUNT = Gauge(
+    'octollm_pod_replicas',
+    'Current number of pod replicas',
+    ['component']
+)
+
+SCALING_LAG_SECONDS = Histogram(
+    'octollm_scaling_lag_seconds',
+    'Time from metric breach to new pod ready',
+    ['component'],
+    buckets=[10, 30, 60, 120, 180, 300]  # 10s to 5min
+)
+
+# Track when scaling is triggered
+def record_scaling_event(component: str, direction: str, lag_seconds: float):
+    SCALING_DECISION.labels(component=component, direction=direction).inc()
+    SCALING_LAG_SECONDS.labels(component=component).observe(lag_seconds)
+
+    # Update replica count
+    current_replicas = get_current_replica_count(component)
+    POD_REPLICA_COUNT.labels(component=component).set(current_replicas)
+</code></pre>
+<hr />
+<h2 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h2>
+<h3 id="common-scaling-issues"><a class="header" href="#common-scaling-issues">Common Scaling Issues</a></h3>
+<p><strong>Issue 1: HPA Not Scaling</strong></p>
+<p><strong>Symptoms</strong>:</p>
+<ul>
+<li>CPU/memory usage above target, but no scaling</li>
+<li><code>kubectl describe hpa</code> shows "unknown" metrics</li>
+</ul>
+<p><strong>Diagnosis</strong>:</p>
+<pre><code class="language-bash"># Check HPA status
+kubectl describe hpa orchestrator-hpa -n octollm
+
+# Check metrics-server
+kubectl get deployment metrics-server -n kube-system
+kubectl top nodes
+kubectl top pods -n octollm
+
+# Check custom metrics
+kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1"
+</code></pre>
+<p><strong>Resolution</strong>:</p>
+<pre><code class="language-bash"># Install/restart metrics-server
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+# For custom metrics, check Prometheus Adapter
+kubectl logs -n monitoring deployment/prometheus-adapter
+</code></pre>
+<p><strong>Issue 2: Pods Stuck in Pending (Insufficient Resources)</strong></p>
+<p><strong>Symptoms</strong>:</p>
+<ul>
+<li>New pods not starting</li>
+<li>Events show "Insufficient cpu" or "Insufficient memory"</li>
+</ul>
+<p><strong>Diagnosis</strong>:</p>
+<pre><code class="language-bash"># Check pending pods
+kubectl get pods -n octollm | grep Pending
+
+# Check events
+kubectl get events -n octollm --sort-by='.lastTimestamp'
+
+# Check node resources
+kubectl describe nodes | grep -A 5 "Allocated resources"
+</code></pre>
+<p><strong>Resolution</strong>:</p>
+<pre><code class="language-bash"># Option 1: Trigger cluster autoscaler (add nodes)
+# Cluster autoscaler should automatically add nodes
+
+# Option 2: Reduce resource requests
+# Edit deployment to request less CPU/memory
+
+# Option 3: Manually add node
+# AWS
+eksctl scale nodegroup --cluster=octollm --name=workers --nodes=5
+
+# GCP
+gcloud container clusters resize octollm --num-nodes=5
+</code></pre>
+<p><strong>Issue 3: Rapid Scaling Oscillation</strong></p>
+<p><strong>Symptoms</strong>:</p>
+<ul>
+<li>HPA scales up, then immediately scales down</li>
+<li>Flapping between replica counts</li>
+</ul>
+<p><strong>Diagnosis</strong>:</p>
+<pre><code class="language-bash"># Check HPA behavior config
+kubectl get hpa orchestrator-hpa -o yaml | grep -A 20 behavior
+
+# Check metric stability
+kubectl top pods -n octollm --watch
+</code></pre>
+<p><strong>Resolution</strong>:</p>
+<pre><code class="language-yaml"># Increase stabilization window
+spec:
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 600  # Increase to 10 minutes
+    scaleUp:
+      stabilizationWindowSeconds: 60   # Keep responsive
+</code></pre>
+<p><strong>Issue 4: Database Read Replica Lag</strong></p>
+<p><strong>Symptoms</strong>:</p>
+<ul>
+<li>Stale data returned from queries</li>
+<li>Replication lag metrics high</li>
+</ul>
+<p><strong>Diagnosis</strong>:</p>
+<pre><code class="language-sql">-- Check replication lag (PostgreSQL)
+SELECT
+  client_addr,
+  state,
+  pg_wal_lsn_diff(pg_current_wal_lsn(), sent_lsn) AS pending_bytes,
+  pg_wal_lsn_diff(pg_current_wal_lsn(), replay_lsn) AS replay_lag_bytes
+FROM pg_stat_replication;
+</code></pre>
+<p><strong>Resolution</strong>:</p>
+<pre><code class="language-bash"># Increase replica resources (more disk IOPS)
+# Scale up replica instance size
+
+# Reduce write load on primary
+# Batch writes, use connection pooling
+
+# Tune PostgreSQL replication settings
+wal_level = replica
+max_wal_senders = 10
+wal_keep_size = 1GB  # Increase if network latency high
+</code></pre>
+<p><strong>Issue 5: Cost Overrun from Over-Scaling</strong></p>
+<p><strong>Symptoms</strong>:</p>
+<ul>
+<li>Unexpectedly high cloud bill</li>
+<li>Many pods running but low utilization</li>
+</ul>
+<p><strong>Diagnosis</strong>:</p>
+<pre><code class="language-bash"># Check current replica counts
+kubectl get hpa -n octollm
+
+# Check pod utilization
+kubectl top pods -n octollm
+
+# Check HPA metrics
+kubectl describe hpa -n octollm
+</code></pre>
+<p><strong>Resolution</strong>:</p>
+<pre><code class="language-bash"># Reduce maxReplicas in HPA
+kubectl patch hpa orchestrator-hpa -n octollm -p '{"spec":{"maxReplicas":5}}'
+
+# Increase target utilization (scale more conservatively)
+kubectl patch hpa orchestrator-hpa -n octollm -p '{"spec":{"metrics":[{"type":"Resource","resource":{"name":"cpu","target":{"type":"Utilization","averageUtilization":80}}}]}}'
+
+# Review and optimize resource requests with VPA recommendations
+</code></pre>
+<hr />
+<h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
+<p>This comprehensive scaling guide provides production-ready configurations for:</p>
+<ol>
+<li><strong>Horizontal Pod Autoscaling</strong>: CPU, memory, and custom metrics-based scaling for all components</li>
+<li><strong>Vertical Pod Autoscaling</strong>: Resource right-sizing recommendations and automatic updates</li>
+<li><strong>Cluster Autoscaling</strong>: Automatic node provisioning across cloud providers</li>
+<li><strong>Database Scaling</strong>: Read replicas, sharding, and clustering strategies</li>
+<li><strong>Caching</strong>: Multi-tier caching with Redis and in-memory strategies</li>
+<li><strong>Load Testing</strong>: K6 scripts for stress, soak, and performance testing</li>
+<li><strong>Cost Optimization</strong>: Spot instances, reserved capacity, and LLM cost reduction</li>
+<li><strong>Monitoring</strong>: Grafana dashboards and Prometheus metrics for scaling observability</li>
+<li><strong>Troubleshooting</strong>: Solutions for common scaling issues</li>
+</ol>
+<h3 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h3>
+<ol>
+<li><strong>Implement HPAs</strong>: Apply HPA configurations for all components</li>
+<li><strong>Enable Cluster Autoscaler</strong>: Configure for your cloud provider</li>
+<li><strong>Set Up Monitoring</strong>: Deploy Grafana dashboards for scaling metrics</li>
+<li><strong>Run Load Tests</strong>: Establish performance baselines with k6</li>
+<li><strong>Optimize Costs</strong>: Implement spot instances and caching strategies</li>
+<li><strong>Document Baselines</strong>: Record current performance and cost metrics</li>
+<li><strong>Iterate</strong>: Continuously tune based on real-world usage patterns</li>
+</ol>
+<h3 id="see-also"><a class="header" href="#see-also">See Also</a></h3>
+<ul>
+<li><a href="./kubernetes-deployment.html">Kubernetes Deployment Guide</a> - Production deployment</li>
+<li><a href="./performance-tuning.html">Performance Tuning Guide</a> - Application-level optimization</li>
+<li><a href="./monitoring-alerting.html">Monitoring and Alerting Guide</a> - Observability setup</li>
+<li><a href="./troubleshooting-playbooks.html">Troubleshooting Playbooks</a> - Incident response</li>
+</ul>
+<hr />
+<p><strong>Document Maintainers</strong>: OctoLLM Operations Team
+<strong>Last Review</strong>: 2025-11-10
+<strong>Next Review</strong>: 2025-12-10</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../operations/performance-tuning.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../operations/disaster-recovery.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../operations/performance-tuning.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../operations/disaster-recovery.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

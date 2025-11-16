@@ -1,0 +1,918 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Performance Optimization - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/engineering/performance-optimization.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="performance-optimization-best-practices"><a class="header" href="#performance-optimization-best-practices">Performance Optimization Best Practices</a></h1>
+<p><strong>Last Updated</strong>: 2025-11-10
+<strong>Status</strong>: Production Standard
+<strong>Applies To</strong>: All OctoLLM components</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This document defines performance optimization best practices for developing OctoLLM components. These guidelines help ensure the system meets production performance targets while maintaining code quality and maintainability.</p>
+<h2 id="performance-targets"><a class="header" href="#performance-targets">Performance Targets</a></h2>
+<h3 id="latency-targets"><a class="header" href="#latency-targets">Latency Targets</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Component</th><th>P50</th><th>P95</th><th>P99</th></tr></thead><tbody>
+<tr><td>Reflex Layer</td><td>&lt;5ms</td><td>&lt;10ms</td><td>&lt;20ms</td></tr>
+<tr><td>Orchestrator (simple)</td><td>&lt;100ms</td><td>&lt;500ms</td><td>&lt;1s</td></tr>
+<tr><td>Orchestrator (complex)</td><td>&lt;500ms</td><td>&lt;2s</td><td>&lt;5s</td></tr>
+<tr><td>Arms (average)</td><td>&lt;1s</td><td>&lt;3s</td><td>&lt;10s</td></tr>
+<tr><td>End-to-end (simple)</td><td>&lt;1s</td><td>&lt;3s</td><td>&lt;10s</td></tr>
+<tr><td>End-to-end (complex)</td><td>&lt;5s</td><td>&lt;15s</td><td>&lt;30s</td></tr>
+</tbody></table>
+</div>
+<h3 id="throughput-targets"><a class="header" href="#throughput-targets">Throughput Targets</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Target</th><th>Limit</th></tr></thead><tbody>
+<tr><td>Reflex Layer</td><td>&gt;10,000 req/s</td><td>CPU-bound</td></tr>
+<tr><td>Orchestrator</td><td>&gt;100 tasks/min</td><td>Database-bound</td></tr>
+<tr><td>Arms (combined)</td><td>&gt;500 tasks/min</td><td>LLM API-bound</td></tr>
+</tbody></table>
+</div>
+<h3 id="resource-targets"><a class="header" href="#resource-targets">Resource Targets</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Resource</th><th>Development</th><th>Production</th></tr></thead><tbody>
+<tr><td>Memory (Orchestrator)</td><td>&lt;2GB</td><td>&lt;4GB</td></tr>
+<tr><td>Memory (Arm)</td><td>&lt;1GB</td><td>&lt;2GB</td></tr>
+<tr><td>Memory (Reflex)</td><td>&lt;100MB</td><td>&lt;200MB</td></tr>
+<tr><td>CPU (Orchestrator)</td><td>&lt;2 cores</td><td>&lt;4 cores</td></tr>
+<tr><td>CPU (Arm)</td><td>&lt;1 core</td><td>&lt;2 cores</td></tr>
+<tr><td>CPU (Reflex)</td><td>&lt;0.5 cores</td><td>&lt;1 core</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ul>
+<li><a href="#python-performance">Python Performance</a></li>
+<li><a href="#rust-performance">Rust Performance</a></li>
+<li><a href="#database-optimization">Database Optimization</a></li>
+<li><a href="#caching-strategies">Caching Strategies</a></li>
+<li><a href="#async-programming">Async Programming</a></li>
+<li><a href="#network-optimization">Network Optimization</a></li>
+<li><a href="#memory-management">Memory Management</a></li>
+<li><a href="#profiling-tools">Profiling Tools</a></li>
+</ul>
+<hr />
+<h2 id="python-performance"><a class="header" href="#python-performance">Python Performance</a></h2>
+<h3 id="async-operations"><a class="header" href="#async-operations">Async Operations</a></h3>
+<p><strong>Good - Concurrent Execution</strong>:</p>
+<pre><code class="language-python">import asyncio
+
+# Execute multiple operations concurrently
+async def fetch_task_context(task_id: str):
+    # Run all queries in parallel
+    task, capabilities, memory = await asyncio.gather(
+        db.get_task(task_id),
+        db.get_arm_capabilities(),
+        memory_client.get_context(task_id)
+    )
+    return task, capabilities, memory
+
+# Process multiple tasks concurrently
+async def process_batch(tasks: List[TaskContract]):
+    results = await asyncio.gather(
+        *[process_task(task) for task in tasks],
+        return_exceptions=True
+    )
+    return results
+</code></pre>
+<p><strong>Bad - Sequential Execution</strong>:</p>
+<pre><code class="language-python"># Sequential - wastes time waiting
+async def fetch_task_context(task_id: str):
+    task = await db.get_task(task_id)
+    capabilities = await db.get_arm_capabilities()
+    memory = await memory_client.get_context(task_id)
+    return task, capabilities, memory
+</code></pre>
+<h3 id="list-comprehensions-vs-loops"><a class="header" href="#list-comprehensions-vs-loops">List Comprehensions vs Loops</a></h3>
+<p><strong>Good - List Comprehensions</strong>:</p>
+<pre><code class="language-python"># Fast - single pass, optimized
+high_priority = [t for t in tasks if t.priority &gt;= 8]
+
+# Even better - generator for large datasets
+high_priority = (t for t in tasks if t.priority &gt;= 8)
+</code></pre>
+<p><strong>Bad - Loops with Append</strong>:</p>
+<pre><code class="language-python"># Slower - multiple reallocations
+high_priority = []
+for t in tasks:
+    if t.priority &gt;= 8:
+        high_priority.append(t)
+</code></pre>
+<h3 id="string-operations"><a class="header" href="#string-operations">String Operations</a></h3>
+<p><strong>Good - Join for Concatenation</strong>:</p>
+<pre><code class="language-python"># Fast - single allocation
+result = " ".join(words)
+
+# For large datasets, use io.StringIO
+from io import StringIO
+buffer = StringIO()
+for item in large_list:
+    buffer.write(str(item))
+result = buffer.getvalue()
+</code></pre>
+<p><strong>Bad - String Concatenation in Loop</strong>:</p>
+<pre><code class="language-python"># Slow - creates new string each iteration
+result = ""
+for word in words:
+    result += " " + word
+</code></pre>
+<h3 id="set-operations"><a class="header" href="#set-operations">Set Operations</a></h3>
+<p><strong>Good - Set Lookups</strong>:</p>
+<pre><code class="language-python"># O(1) lookup
+allowed_arms = {"planner", "coder", "judge"}
+if arm_name in allowed_arms:
+    process(arm_name)
+
+# Set operations for filtering
+active_arms = set(active) &amp; set(available)
+</code></pre>
+<p><strong>Bad - List Lookups</strong>:</p>
+<pre><code class="language-python"># O(n) lookup
+allowed_arms = ["planner", "coder", "judge"]
+if arm_name in allowed_arms:  # Slow for large lists
+    process(arm_name)
+</code></pre>
+<h3 id="dictionary-operations"><a class="header" href="#dictionary-operations">Dictionary Operations</a></h3>
+<p><strong>Good - Get with Default</strong>:</p>
+<pre><code class="language-python"># Efficient - single lookup
+value = cache.get(key, default_value)
+
+# For complex defaults, use setdefault
+value = cache.setdefault(key, expensive_compute())
+
+# Or defaultdict for many defaults
+from collections import defaultdict
+counts = defaultdict(int)
+counts[key] += 1
+</code></pre>
+<p><strong>Bad - Check Then Access</strong>:</p>
+<pre><code class="language-python"># Inefficient - double lookup
+if key in cache:
+    value = cache[key]
+else:
+    value = default_value
+</code></pre>
+<h3 id="function-call-overhead"><a class="header" href="#function-call-overhead">Function Call Overhead</a></h3>
+<p><strong>Good - Inline Simple Operations</strong>:</p>
+<pre><code class="language-python"># For performance-critical paths, inline simple operations
+scores = [task.priority * 0.1 + len(task.description) * 0.001
+          for task in tasks]
+</code></pre>
+<p><strong>Bad - Excessive Function Calls</strong>:</p>
+<pre><code class="language-python"># Function call overhead for simple operations
+def calculate_score(task):
+    return task.priority * 0.1 + len(task.description) * 0.001
+
+scores = [calculate_score(task) for task in tasks]
+</code></pre>
+<hr />
+<h2 id="rust-performance"><a class="header" href="#rust-performance">Rust Performance</a></h2>
+<h3 id="zero-cost-abstractions"><a class="header" href="#zero-cost-abstractions">Zero-Cost Abstractions</a></h3>
+<p><strong>Good - Iterator Chains</strong>:</p>
+<pre><code class="language-rust">// Optimized to single pass by compiler
+let result: Vec&lt;_&gt; = tasks
+    .iter()
+    .filter(|t| t.priority &gt;= 8)
+    .map(|t| t.id.clone())
+    .collect();
+
+// Avoid unnecessary allocations
+let count = tasks
+    .iter()
+    .filter(|t| t.priority &gt;= 8)
+    .count();  // Don't collect if you just need count</code></pre>
+<p><strong>Avoid - Unnecessary Clones</strong>:</p>
+<pre><code class="language-rust">// Bad - unnecessary clone
+fn process_task(task: Task) -&gt; String {
+    // task is moved, requires clone at call site
+}
+
+// Good - borrow instead
+fn process_task(task: &amp;Task) -&gt; String {
+    // task is borrowed, no clone needed
+}</code></pre>
+<h3 id="string-handling"><a class="header" href="#string-handling">String Handling</a></h3>
+<p><strong>Good - String Building</strong>:</p>
+<pre><code class="language-rust">// Efficient - pre-allocated capacity
+let mut result = String::with_capacity(1000);
+for item in items {
+    result.push_str(&amp;item);
+}
+
+// For known size
+let result = format!("{}-{}-{}", part1, part2, part3);</code></pre>
+<p><strong>Avoid - Repeated Allocations</strong>:</p>
+<pre><code class="language-rust">// Inefficient
+let mut result = String::new();
+for item in items {
+    result = result + &amp;item;  // Allocates new string each time
+}</code></pre>
+<h3 id="memory-allocation"><a class="header" href="#memory-allocation">Memory Allocation</a></h3>
+<p><strong>Good - Reuse Allocations</strong>:</p>
+<pre><code class="language-rust">// Reuse vector allocation
+let mut buffer = Vec::with_capacity(1000);
+for batch in batches {
+    buffer.clear();  // Keeps capacity
+    process_batch(&amp;mut buffer);
+}
+
+// Use Box for large stack objects
+let large_data = Box::new(LargeStruct::default());</code></pre>
+<h3 id="async-performance"><a class="header" href="#async-performance">Async Performance</a></h3>
+<p><strong>Good - Concurrent Futures</strong>:</p>
+<pre><code class="language-rust">use tokio::join;
+
+// Run concurrently
+let (task, caps, mem) = join!(
+    db.get_task(task_id),
+    db.get_capabilities(),
+    memory.get_context(task_id)
+);
+
+// Process multiple items
+use futures::future::join_all;
+let results = join_all(
+    tasks.iter().map(|t| process_task(t))
+).await;</code></pre>
+<hr />
+<h2 id="database-optimization"><a class="header" href="#database-optimization">Database Optimization</a></h2>
+<h3 id="query-optimization"><a class="header" href="#query-optimization">Query Optimization</a></h3>
+<p><strong>Good - Single Query with Join</strong>:</p>
+<pre><code class="language-python"># One query with join
+tasks = await db.fetch("""
+    SELECT t.*, u.name as user_name, a.name as arm_name
+    FROM tasks t
+    JOIN users u ON t.user_id = u.id
+    LEFT JOIN arms a ON t.assigned_arm_id = a.id
+    WHERE t.status = $1
+""", "pending")
+</code></pre>
+<p><strong>Bad - N+1 Queries</strong>:</p>
+<pre><code class="language-python"># N+1 problem - slow
+tasks = await db.fetch("SELECT * FROM tasks WHERE status = $1", "pending")
+for task in tasks:
+    user = await db.fetch("SELECT name FROM users WHERE id = $1", task.user_id)
+    arm = await db.fetch("SELECT name FROM arms WHERE id = $1", task.assigned_arm_id)
+</code></pre>
+<h3 id="indexing-strategy"><a class="header" href="#indexing-strategy">Indexing Strategy</a></h3>
+<pre><code class="language-sql">-- Strategic indexes
+CREATE INDEX CONCURRENTLY idx_tasks_status_priority
+ON tasks(status, priority DESC);
+
+CREATE INDEX CONCURRENTLY idx_tasks_user_created
+ON tasks(user_id, created_at DESC);
+
+-- Partial index for active tasks
+CREATE INDEX CONCURRENTLY idx_tasks_active
+ON tasks(created_at DESC)
+WHERE status IN ('pending', 'running');
+
+-- GIN index for full-text search
+CREATE INDEX CONCURRENTLY idx_entities_name_gin
+ON entities USING GIN(to_tsvector('english', name));
+
+-- BRIN index for time-series data
+CREATE INDEX CONCURRENTLY idx_task_history_created_brin
+ON task_history USING BRIN(created_at);
+</code></pre>
+<h3 id="connection-pooling"><a class="header" href="#connection-pooling">Connection Pooling</a></h3>
+<pre><code class="language-python">from sqlalchemy.ext.asyncio import create_async_engine
+
+# Properly sized connection pool
+engine = create_async_engine(
+    DATABASE_URL,
+    pool_size=20,          # Base pool size
+    max_overflow=10,       # Additional connections under load
+    pool_timeout=30,       # Wait time for connection
+    pool_recycle=3600,     # Recycle connections hourly
+    pool_pre_ping=True,    # Verify connection before use
+    echo_pool=True         # Debug pool usage
+)
+</code></pre>
+<h3 id="batch-operations"><a class="header" href="#batch-operations">Batch Operations</a></h3>
+<pre><code class="language-python"># Good - batch insert
+async def create_tasks_batch(tasks: List[TaskContract]):
+    values = [
+        (t.task_id, t.description, t.priority, t.user_id)
+        for t in tasks
+    ]
+    await db.executemany(
+        "INSERT INTO tasks (id, description, priority, user_id) VALUES ($1, $2, $3, $4)",
+        values
+    )
+
+# Good - batch update with temporary table
+async def update_tasks_batch(updates: List[Tuple[str, str]]):
+    # Create temp table
+    await db.execute("""
+        CREATE TEMP TABLE task_updates (
+            task_id TEXT,
+            status TEXT
+        ) ON COMMIT DROP
+    """)
+
+    # Bulk insert updates
+    await db.executemany(
+        "INSERT INTO task_updates VALUES ($1, $2)",
+        updates
+    )
+
+    # Single update from temp table
+    await db.execute("""
+        UPDATE tasks t
+        SET status = u.status
+        FROM task_updates u
+        WHERE t.id = u.task_id
+    """)
+</code></pre>
+<hr />
+<h2 id="caching-strategies"><a class="header" href="#caching-strategies">Caching Strategies</a></h2>
+<h3 id="multi-level-cache"><a class="header" href="#multi-level-cache">Multi-Level Cache</a></h3>
+<pre><code class="language-python">from cachetools import TTLCache
+import redis.asyncio as redis
+
+class MultiLevelCache:
+    """L1 (in-memory) + L2 (Redis) cache."""
+
+    def __init__(self, redis_client: redis.Redis):
+        self.l1 = TTLCache(maxsize=1000, ttl=60)  # 1 minute
+        self.l2 = redis_client
+
+    async def get(self, key: str) -&gt; Optional[str]:
+        # Try L1 (fast)
+        if key in self.l1:
+            return self.l1[key]
+
+        # Try L2 (slower but shared)
+        value = await self.l2.get(key)
+        if value:
+            # Promote to L1
+            self.l1[key] = value
+            return value
+
+        return None
+
+    async def set(self, key: str, value: str, ttl: int = 3600):
+        # Write to both levels
+        self.l1[key] = value
+        await self.l2.setex(key, ttl, value)
+</code></pre>
+<h3 id="cache-warming"><a class="header" href="#cache-warming">Cache Warming</a></h3>
+<pre><code class="language-python">async def warm_cache_on_startup():
+    """Pre-load frequently accessed data."""
+    # Load arm capabilities
+    capabilities = await db.fetch_all_arm_capabilities()
+    for cap in capabilities:
+        await cache.set(
+            f"arm:capabilities:{cap.arm_id}",
+            json.dumps(cap.to_dict()),
+            ttl=3600
+        )
+
+    # Load active users
+    users = await db.fetch_active_users()
+    for user in users:
+        await cache.set(
+            f"user:{user.id}",
+            json.dumps(user.to_dict()),
+            ttl=1800
+        )
+</code></pre>
+<h3 id="cache-invalidation"><a class="header" href="#cache-invalidation">Cache Invalidation</a></h3>
+<pre><code class="language-python">async def update_task_status(task_id: str, status: str):
+    """Update with cache invalidation."""
+    # Update database
+    await db.execute(
+        "UPDATE tasks SET status = $1 WHERE id = $2",
+        status, task_id
+    )
+
+    # Invalidate related caches
+    await cache.delete(f"task:{task_id}")
+    await cache.delete(f"task:status:{task_id}")
+
+    # Update cache with new value
+    task = await db.get_task(task_id)
+    await cache.set(
+        f"task:{task_id}",
+        json.dumps(task.dict()),
+        ttl=300
+    )
+</code></pre>
+<hr />
+<h2 id="async-programming"><a class="header" href="#async-programming">Async Programming</a></h2>
+<h3 id="semaphore-for-concurrency-control"><a class="header" href="#semaphore-for-concurrency-control">Semaphore for Concurrency Control</a></h3>
+<pre><code class="language-python">import asyncio
+
+# Limit concurrent database connections
+db_semaphore = asyncio.Semaphore(10)
+
+async def query_with_limit(query: str):
+    async with db_semaphore:
+        return await db.fetch(query)
+
+# Limit concurrent LLM API calls
+llm_semaphore = asyncio.Semaphore(5)
+
+async def call_llm_with_limit(prompt: str):
+    async with llm_semaphore:
+        return await llm_client.generate(prompt)
+</code></pre>
+<h3 id="task-groups-for-better-error-handling"><a class="header" href="#task-groups-for-better-error-handling">Task Groups for Better Error Handling</a></h3>
+<pre><code class="language-python">import asyncio
+
+async def process_tasks_with_groups(tasks: List[TaskContract]):
+    """Process tasks with proper error handling."""
+    async with asyncio.TaskGroup() as group:
+        results = [
+            group.create_task(process_task(task))
+            for task in tasks
+        ]
+
+    # If any task fails, all are cancelled
+    return [r.result() for r in results]
+</code></pre>
+<h3 id="avoid-blocking-operations"><a class="header" href="#avoid-blocking-operations">Avoid Blocking Operations</a></h3>
+<pre><code class="language-python">import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
+# Bad - blocks event loop
+def sync_heavy_computation():
+    return sum(range(10_000_000))
+
+# Good - run in thread pool
+executor = ThreadPoolExecutor(max_workers=4)
+
+async def async_heavy_computation():
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(
+        executor,
+        sync_heavy_computation
+    )
+    return result
+</code></pre>
+<hr />
+<h2 id="network-optimization"><a class="header" href="#network-optimization">Network Optimization</a></h2>
+<h3 id="connection-pooling-1"><a class="header" href="#connection-pooling-1">Connection Pooling</a></h3>
+<pre><code class="language-python">import httpx
+
+# Reuse HTTP connections
+http_client = httpx.AsyncClient(
+    limits=httpx.Limits(
+        max_keepalive_connections=20,
+        max_connections=100,
+        keepalive_expiry=30
+    ),
+    timeout=httpx.Timeout(30.0),
+    http2=True  # Enable HTTP/2
+)
+
+async def call_arm(arm_url: str, data: dict):
+    """Call arm with connection reuse."""
+    response = await http_client.post(
+        f"{arm_url}/execute",
+        json=data
+    )
+    return response.json()
+</code></pre>
+<h3 id="request-batching"><a class="header" href="#request-batching">Request Batching</a></h3>
+<pre><code class="language-python">from typing import List, Dict
+import asyncio
+
+class RequestBatcher:
+    """Batch multiple requests into one."""
+
+    def __init__(self, batch_size: int = 10, batch_timeout: float = 0.1):
+        self.batch_size = batch_size
+        self.batch_timeout = batch_timeout
+        self.queue: List[Tuple[str, asyncio.Future]] = []
+        self.lock = asyncio.Lock()
+
+    async def add_request(self, prompt: str) -&gt; str:
+        """Add request to batch."""
+        future = asyncio.Future()
+
+        async with self.lock:
+            self.queue.append((prompt, future))
+
+            if len(self.queue) &gt;= self.batch_size:
+                await self._process_batch()
+
+        # Wait for batch to process
+        try:
+            return await asyncio.wait_for(
+                future,
+                timeout=self.batch_timeout * 2
+            )
+        except asyncio.TimeoutError:
+            # Process partial batch
+            await self._process_batch()
+            return await future
+
+    async def _process_batch(self):
+        """Process current batch."""
+        async with self.lock:
+            if not self.queue:
+                return
+
+            batch = self.queue[:]
+            self.queue.clear()
+
+        # Combine prompts
+        prompts = [p for p, _ in batch]
+        combined = "\n---\n".join(prompts)
+
+        # Single API call
+        response = await llm_client.generate(combined)
+
+        # Split response
+        responses = response.split("\n---\n")
+
+        # Resolve futures
+        for (_, future), resp in zip(batch, responses):
+            future.set_result(resp)
+</code></pre>
+<h3 id="response-compression"><a class="header" href="#response-compression">Response Compression</a></h3>
+<pre><code class="language-python">from fastapi import FastAPI
+from fastapi.middleware.gzip import GZipMiddleware
+
+app = FastAPI()
+
+# Enable gzip compression
+app.add_middleware(
+    GZipMiddleware,
+    minimum_size=1000  # Only compress responses &gt; 1KB
+)
+</code></pre>
+<hr />
+<h2 id="memory-management"><a class="header" href="#memory-management">Memory Management</a></h2>
+<h3 id="object-pooling"><a class="header" href="#object-pooling">Object Pooling</a></h3>
+<pre><code class="language-python">from queue import Queue
+from typing import Generic, TypeVar, Callable
+
+T = TypeVar('T')
+
+class ObjectPool(Generic[T]):
+    """Reuse expensive objects."""
+
+    def __init__(
+        self,
+        factory: Callable[[], T],
+        size: int = 10
+    ):
+        self.factory = factory
+        self.pool: Queue[T] = Queue(maxsize=size)
+
+        # Pre-populate pool
+        for _ in range(size):
+            self.pool.put(factory())
+
+    def acquire(self) -&gt; T:
+        """Get object from pool."""
+        try:
+            return self.pool.get_nowait()
+        except:
+            return self.factory()
+
+    def release(self, obj: T):
+        """Return object to pool."""
+        try:
+            self.pool.put_nowait(obj)
+        except:
+            pass  # Pool full, let object be garbage collected
+
+# Usage
+import httpx
+
+client_pool = ObjectPool(
+    factory=lambda: httpx.AsyncClient(),
+    size=10
+)
+
+async def make_request(url: str):
+    client = client_pool.acquire()
+    try:
+        response = await client.get(url)
+        return response.json()
+    finally:
+        client_pool.release(client)
+</code></pre>
+<h3 id="generators-for-large-datasets"><a class="header" href="#generators-for-large-datasets">Generators for Large Datasets</a></h3>
+<pre><code class="language-python"># Good - generator for memory efficiency
+def process_large_dataset(file_path: str):
+    """Process file line by line."""
+    with open(file_path) as f:
+        for line in f:
+            yield process_line(line)
+
+# Use generator
+for result in process_large_dataset("large_file.txt"):
+    handle_result(result)
+
+# Bad - loads everything into memory
+def process_large_dataset_bad(file_path: str):
+    with open(file_path) as f:
+        lines = f.readlines()  # Loads entire file
+        return [process_line(line) for line in lines]
+</code></pre>
+<hr />
+<h2 id="profiling-tools"><a class="header" href="#profiling-tools">Profiling Tools</a></h2>
+<h3 id="cpu-profiling"><a class="header" href="#cpu-profiling">CPU Profiling</a></h3>
+<pre><code class="language-python">import cProfile
+import pstats
+
+# Profile function
+profiler = cProfile.Profile()
+profiler.enable()
+
+result = expensive_function()
+
+profiler.disable()
+
+# Print stats
+stats = pstats.Stats(profiler)
+stats.sort_stats('cumulative')
+stats.print_stats(20)  # Top 20 functions
+</code></pre>
+<h3 id="memory-profiling"><a class="header" href="#memory-profiling">Memory Profiling</a></h3>
+<pre><code class="language-python">from memory_profiler import profile
+
+@profile
+def memory_intensive_function():
+    """Profile memory usage."""
+    large_list = [i for i in range(10_000_000)]
+    return sum(large_list)
+
+# Run with: python -m memory_profiler script.py
+</code></pre>
+<h3 id="request-profiling-middleware"><a class="header" href="#request-profiling-middleware">Request Profiling Middleware</a></h3>
+<pre><code class="language-python">import time
+from fastapi import Request
+
+@app.middleware("http")
+async def profile_requests(request: Request, call_next):
+    """Profile request handling."""
+    start = time.time()
+
+    response = await call_next(request)
+
+    duration = time.time() - start
+
+    if duration &gt; 1.0:  # Log slow requests
+        logger.warning(
+            "slow_request",
+            path=request.url.path,
+            method=request.method,
+            duration=duration
+        )
+
+    response.headers["X-Process-Time"] = str(duration)
+    return response
+</code></pre>
+<hr />
+<h2 id="best-practices-summary"><a class="header" href="#best-practices-summary">Best Practices Summary</a></h2>
+<ol>
+<li><strong>Measure first</strong>: Profile before optimizing</li>
+<li><strong>Async by default</strong>: Use async/await for I/O operations</li>
+<li><strong>Batch operations</strong>: Combine multiple database/API calls</li>
+<li><strong>Cache aggressively</strong>: Use multi-level caching</li>
+<li><strong>Pool connections</strong>: Reuse database and HTTP connections</li>
+<li><strong>Optimize queries</strong>: Use indexes and avoid N+1 queries</li>
+<li><strong>Stream large data</strong>: Use generators for large datasets</li>
+<li><strong>Limit concurrency</strong>: Use semaphores to control resource usage</li>
+<li><strong>Monitor performance</strong>: Track metrics in production</li>
+<li><strong>Set budgets</strong>: Define and enforce performance budgets</li>
+</ol>
+<hr />
+<p><strong>Last Review</strong>: 2025-11-10
+<strong>Next Review</strong>: 2026-02-10 (Quarterly)
+<strong>Owner</strong>: Engineering Team</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../engineering/logging-observability.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../sprints/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../engineering/logging-observability.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../sprints/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

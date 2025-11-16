@@ -1,0 +1,1294 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Custom Arms - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/development/custom-arms.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="creating-custom-arms-developer-guide"><a class="header" href="#creating-custom-arms-developer-guide">Creating Custom Arms: Developer Guide</a></h1>
+<p><strong>Estimated Time</strong>: 1-2 hours
+<strong>Difficulty</strong>: Intermediate
+<strong>Prerequisites</strong>: Basic Python or Rust knowledge, OctoLLM running locally</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This comprehensive guide walks you through creating a custom arm for OctoLLM, from concept to deployment. You'll learn the arm architecture, implementation patterns, testing strategies, and deployment procedures.</p>
+<p>By the end, you'll have built a fully functional custom arm that integrates seamlessly with the OctoLLM ecosystem.</p>
+<hr />
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#understanding-arm-architecture">Understanding Arm Architecture</a></li>
+<li><a href="#design-your-arm">Design Your Arm</a></li>
+<li><a href="#python-arm-implementation">Python Arm Implementation</a></li>
+<li><a href="#rust-arm-implementation-optional">Rust Arm Implementation (Optional)</a></li>
+<li><a href="#memory-integration">Memory Integration</a></li>
+<li><a href="#testing-your-arm">Testing Your Arm</a></li>
+<li><a href="#deployment">Deployment</a></li>
+<li><a href="#complete-example-research-arm">Complete Example: Research Arm</a></li>
+</ol>
+<hr />
+<h2 id="understanding-arm-architecture"><a class="header" href="#understanding-arm-architecture">Understanding Arm Architecture</a></h2>
+<h3 id="core-principles"><a class="header" href="#core-principles">Core Principles</a></h3>
+<p>Every arm in OctoLLM follows these principles:</p>
+<ol>
+<li><strong>Single Responsibility</strong>: One domain, one expertise</li>
+<li><strong>Self-Contained</strong>: Minimal external dependencies</li>
+<li><strong>Stateless</strong>: Use memory systems for persistence</li>
+<li><strong>Observable</strong>: Comprehensive logging and metrics</li>
+<li><strong>Resilient</strong>: Graceful degradation and error handling</li>
+</ol>
+<h3 id="arm-lifecycle"><a class="header" href="#arm-lifecycle">Arm Lifecycle</a></h3>
+<pre><code class="language-mermaid">stateDiagram-v2
+    [*] --&gt; Registration
+    Registration --&gt; Idle
+    Idle --&gt; Receiving: Task arrives
+    Receiving --&gt; Processing: Validate input
+    Processing --&gt; Executing: Start work
+    Executing --&gt; Validating: Complete work
+    Validating --&gt; Responding: Package result
+    Responding --&gt; Idle: Send response
+    Idle --&gt; [*]: Shutdown
+
+    Processing --&gt; Error: Invalid input
+    Executing --&gt; Error: Execution failure
+    Error --&gt; Responding: Return error
+</code></pre>
+<h3 id="standard-arm-interface"><a class="header" href="#standard-arm-interface">Standard Arm Interface</a></h3>
+<p>All arms implement:</p>
+<pre><code class="language-python"># Common interface across all arms
+class BaseArm:
+    def execute(self, request: ArmRequest) -&gt; ArmResponse:
+        """Main execution method called by orchestrator."""
+        pass
+
+    def health_check(self) -&gt; HealthStatus:
+        """Return current health status."""
+        pass
+
+    def capabilities(self) -&gt; CapabilityManifest:
+        """Describe what this arm can do."""
+        pass
+</code></pre>
+<h3 id="communication-flow"><a class="header" href="#communication-flow">Communication Flow</a></h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Orchestrator
+    participant Arm
+    participant Memory
+    participant ExternalTool
+
+    Orchestrator-&gt;&gt;Arm: POST /execute
+    Arm-&gt;&gt;Arm: Validate request
+    Arm-&gt;&gt;Memory: Query context
+    Memory-&gt;&gt;Arm: Return context
+    Arm-&gt;&gt;ExternalTool: Perform action
+    ExternalTool-&gt;&gt;Arm: Return result
+    Arm-&gt;&gt;Memory: Store result
+    Arm-&gt;&gt;Arm: Add provenance
+    Arm-&gt;&gt;Orchestrator: Return response
+</code></pre>
+<hr />
+<h2 id="design-your-arm"><a class="header" href="#design-your-arm">Design Your Arm</a></h2>
+<h3 id="step-1-define-the-domain"><a class="header" href="#step-1-define-the-domain">Step 1: Define the Domain</a></h3>
+<p>Ask yourself:</p>
+<ol>
+<li>
+<p><strong>What problem does this arm solve?</strong></p>
+<ul>
+<li>Example: "Research scientific papers and summarize findings"</li>
+</ul>
+</li>
+<li>
+<p><strong>What inputs does it need?</strong></p>
+<ul>
+<li>Example: "Query string, number of papers, date range"</li>
+</ul>
+</li>
+<li>
+<p><strong>What outputs does it produce?</strong></p>
+<ul>
+<li>Example: "Summary, citations, confidence score"</li>
+</ul>
+</li>
+<li>
+<p><strong>What capabilities/tools does it need?</strong></p>
+<ul>
+<li>Example: "Access to arXiv API, PDF parsing, summarization LLM"</li>
+</ul>
+</li>
+</ol>
+<h3 id="step-2-choose-your-technology"><a class="header" href="#step-2-choose-your-technology">Step 2: Choose Your Technology</a></h3>
+<p><strong>Python</strong> - Choose if:</p>
+<ul>
+<li>Heavy LLM integration</li>
+<li>Need rapid prototyping</li>
+<li>Complex data processing</li>
+<li>Extensive library ecosystem needed</li>
+</ul>
+<p><strong>Rust</strong> - Choose if:</p>
+<ul>
+<li>Performance critical (&lt;10ms latency)</li>
+<li>Heavy computation (parsing, analysis)</li>
+<li>Memory safety paramount</li>
+<li>External API calls with strict timeouts</li>
+</ul>
+<h3 id="step-3-design-the-api-contract"><a class="header" href="#step-3-design-the-api-contract">Step 3: Design the API Contract</a></h3>
+<pre><code class="language-python">from pydantic import BaseModel, Field
+from typing import List, Optional
+
+class ResearchArmRequest(BaseModel):
+    """Input schema for research arm."""
+    query: str = Field(..., description="Research query")
+    max_papers: int = Field(5, ge=1, le=20, description="Number of papers")
+    start_date: Optional[str] = Field(None, description="YYYY-MM-DD")
+    end_date: Optional[str] = Field(None, description="YYYY-MM-DD")
+    include_summaries: bool = Field(True, description="Generate summaries")
+
+class Paper(BaseModel):
+    """Single paper result."""
+    title: str
+    authors: List[str]
+    abstract: str
+    url: str
+    published_date: str
+    summary: Optional[str] = None
+    relevance_score: float = Field(..., ge=0.0, le=1.0)
+
+class ResearchArmResponse(BaseModel):
+    """Output schema for research arm."""
+    papers: List[Paper]
+    total_found: int
+    query_used: str
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    provenance: ProvenanceMetadata
+</code></pre>
+<hr />
+<h2 id="python-arm-implementation"><a class="header" href="#python-arm-implementation">Python Arm Implementation</a></h2>
+<h3 id="step-1-project-structure"><a class="header" href="#step-1-project-structure">Step 1: Project Structure</a></h3>
+<pre><code class="language-bash"># Create arm directory
+mkdir -p arms/research
+cd arms/research
+
+# Create structure
+mkdir -p src/research tests
+
+# Create files
+touch src/research/__init__.py
+touch src/research/main.py
+touch src/research/core.py
+touch src/research/models.py
+touch tests/test_research.py
+touch Dockerfile
+touch pyproject.toml
+</code></pre>
+<p><strong>Directory structure</strong>:</p>
+<pre><code>arms/research/
+├── src/
+│   └── research/
+│       ├── __init__.py
+│       ├── main.py         # FastAPI app
+│       ├── core.py         # Core logic
+│       ├── models.py       # Pydantic models
+│       └── memory.py       # Memory integration
+├── tests/
+│   ├── __init__.py
+│   └── test_research.py
+├── Dockerfile
+├── pyproject.toml
+└── README.md
+</code></pre>
+<h3 id="step-2-define-models"><a class="header" href="#step-2-define-models">Step 2: Define Models</a></h3>
+<p><strong>File</strong>: <code>src/research/models.py</code></p>
+<pre><code class="language-python">"""Pydantic models for Research Arm."""
+
+from datetime import datetime
+from typing import List, Optional
+from pydantic import BaseModel, Field, HttpUrl
+
+class ProvenanceMetadata(BaseModel):
+    """Provenance tracking for outputs."""
+    arm_id: str = "research"
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    sources: List[str] = Field(default_factory=list)
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    method: str = Field(..., description="Method used (API, scraping, etc)")
+
+class ResearchRequest(BaseModel):
+    """Input schema."""
+    query: str = Field(..., min_length=3, max_length=500)
+    max_papers: int = Field(5, ge=1, le=20)
+    start_date: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    end_date: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    include_summaries: bool = True
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "query": "machine learning transformers",
+                "max_papers": 5,
+                "start_date": "2023-01-01",
+                "include_summaries": True
+            }
+        }
+
+class Paper(BaseModel):
+    """Single paper result."""
+    title: str
+    authors: List[str]
+    abstract: str
+    url: HttpUrl
+    published_date: str
+    summary: Optional[str] = None
+    relevance_score: float = Field(..., ge=0.0, le=1.0)
+    citation: str  # Formatted citation
+
+class ResearchResponse(BaseModel):
+    """Output schema."""
+    papers: List[Paper]
+    total_found: int
+    query_used: str
+    search_time_ms: int
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    provenance: ProvenanceMetadata
+
+class HealthStatus(BaseModel):
+    """Health check response."""
+    status: str = "healthy"
+    arm_id: str = "research"
+    version: str = "1.0.0"
+    api_accessible: bool = True
+
+class CapabilityManifest(BaseModel):
+    """Arm capabilities."""
+    arm_id: str = "research"
+    name: str = "Research Arm"
+    description: str = "Scientific paper search and summarization"
+    version: str = "1.0.0"
+    capabilities: List[str] = ["paper_search", "summarization", "citation_formatting"]
+    input_schema: dict
+    output_schema: dict
+    cost_tier: int = Field(3, ge=1, le=5, description="1=cheap, 5=expensive")
+    average_latency_ms: int = 2000
+</code></pre>
+<h3 id="step-3-implement-core-logic"><a class="header" href="#step-3-implement-core-logic">Step 3: Implement Core Logic</a></h3>
+<p><strong>File</strong>: <code>src/research/core.py</code></p>
+<pre><code class="language-python">"""Core research functionality."""
+
+import asyncio
+import httpx
+from typing import List, Optional
+from datetime import datetime
+from .models import Paper, ResearchRequest, ProvenanceMetadata
+import openai
+import structlog
+
+logger = structlog.get_logger()
+
+class ResearchEngine:
+    """Main research engine using arXiv API."""
+
+    def __init__(self, openai_api_key: str):
+        self.api_base = "http://export.arxiv.org/api/query"
+        self.openai_client = openai.AsyncOpenAI(api_key=openai_api_key)
+        self.http_client = httpx.AsyncClient(timeout=30.0)
+
+    async def search_papers(self, request: ResearchRequest) -&gt; List[Paper]:
+        """Search arXiv for papers matching query."""
+
+        logger.info("research.search_papers.start", query=request.query)
+
+        # Build arXiv query
+        query_params = {
+            "search_query": f"all:{request.query}",
+            "start": 0,
+            "max_results": request.max_papers * 2,  # Get extras for filtering
+            "sortBy": "relevance",
+            "sortOrder": "descending"
+        }
+
+        try:
+            response = await self.http_client.get(self.api_base, params=query_params)
+            response.raise_for_status()
+
+            # Parse arXiv XML response (simplified)
+            papers_raw = self._parse_arxiv_xml(response.text)
+
+            # Score relevance
+            papers = []
+            for paper_data in papers_raw[:request.max_papers]:
+                relevance = await self._calculate_relevance(
+                    request.query,
+                    paper_data["title"],
+                    paper_data["abstract"]
+                )
+
+                paper = Paper(
+                    title=paper_data["title"],
+                    authors=paper_data["authors"],
+                    abstract=paper_data["abstract"],
+                    url=paper_data["url"],
+                    published_date=paper_data["published"],
+                    relevance_score=relevance,
+                    citation=self._format_citation(paper_data),
+                    summary=None  # Will be filled if requested
+                )
+
+                if request.include_summaries:
+                    paper.summary = await self._generate_summary(paper)
+
+                papers.append(paper)
+
+            logger.info("research.search_papers.complete", count=len(papers))
+            return papers
+
+        except Exception as e:
+            logger.error("research.search_papers.failed", error=str(e))
+            raise
+
+    def _parse_arxiv_xml(self, xml_text: str) -&gt; List[dict]:
+        """Parse arXiv API XML response."""
+        import xml.etree.ElementTree as ET
+
+        root = ET.fromstring(xml_text)
+        namespace = {"atom": "http://www.w3.org/2005/Atom"}
+
+        papers = []
+        for entry in root.findall("atom:entry", namespace):
+            paper = {
+                "title": entry.find("atom:title", namespace).text.strip(),
+                "abstract": entry.find("atom:summary", namespace).text.strip(),
+                "url": entry.find("atom:id", namespace).text,
+                "published": entry.find("atom:published", namespace).text[:10],
+                "authors": [
+                    author.find("atom:name", namespace).text
+                    for author in entry.findall("atom:author", namespace)
+                ]
+            }
+            papers.append(paper)
+
+        return papers
+
+    async def _calculate_relevance(
+        self,
+        query: str,
+        title: str,
+        abstract: str
+    ) -&gt; float:
+        """Calculate relevance score using simple keyword matching."""
+
+        # Simple implementation - can be enhanced with embeddings
+        query_terms = set(query.lower().split())
+        text = (title + " " + abstract).lower()
+
+        matches = sum(1 for term in query_terms if term in text)
+        score = min(1.0, matches / len(query_terms))
+
+        return score
+
+    async def _generate_summary(self, paper: Paper) -&gt; str:
+        """Generate summary using LLM."""
+
+        prompt = f"""Summarize this research paper in 2-3 sentences:
+
+Title: {paper.title}
+
+Abstract: {paper.abstract}
+
+Summary:"""
+
+        try:
+            response = await self.openai_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a research assistant."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=150,
+                temperature=0.3
+            )
+
+            return response.choices[0].message.content.strip()
+
+        except Exception as e:
+            logger.warning("research.summary.failed", error=str(e))
+            return "Summary generation failed."
+
+    def _format_citation(self, paper_data: dict) -&gt; str:
+        """Format paper citation in APA style."""
+
+        authors = paper_data["authors"]
+        if len(authors) &gt; 3:
+            author_str = f"{authors[0]} et al."
+        else:
+            author_str = ", ".join(authors)
+
+        year = paper_data["published"][:4]
+        title = paper_data["title"]
+
+        return f"{author_str} ({year}). {title}. arXiv."
+
+    async def close(self):
+        """Cleanup resources."""
+        await self.http_client.aclose()
+</code></pre>
+<h3 id="step-4-create-fastapi-application"><a class="header" href="#step-4-create-fastapi-application">Step 4: Create FastAPI Application</a></h3>
+<p><strong>File</strong>: <code>src/research/main.py</code></p>
+<pre><code class="language-python">"""FastAPI application for Research Arm."""
+
+import os
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
+import structlog
+from .models import (
+    ResearchRequest,
+    ResearchResponse,
+    HealthStatus,
+    CapabilityManifest,
+    ProvenanceMetadata
+)
+from .core import ResearchEngine
+from datetime import datetime
+
+# Configure structured logging
+structlog.configure(
+    processors=[
+        structlog.stdlib.filter_by_level,
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.PositionalArgumentsFormatter(),
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.JSONRenderer()
+    ],
+    logger_factory=structlog.stdlib.LoggerFactory(),
+)
+
+logger = structlog.get_logger()
+
+# Global state
+research_engine = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup and shutdown events."""
+    global research_engine
+
+    # Startup
+    openai_key = os.getenv("OPENAI_API_KEY")
+    if not openai_key:
+        raise ValueError("OPENAI_API_KEY environment variable required")
+
+    research_engine = ResearchEngine(openai_key)
+    logger.info("research_arm.startup.complete")
+
+    yield
+
+    # Shutdown
+    await research_engine.close()
+    logger.info("research_arm.shutdown.complete")
+
+# Create app
+app = FastAPI(
+    title="Research Arm",
+    description="Scientific paper search and summarization",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+@app.post("/execute", response_model=ResearchResponse)
+async def execute_research(request: ResearchRequest) -&gt; ResearchResponse:
+    """Main execution endpoint called by orchestrator."""
+
+    start_time = datetime.utcnow()
+    logger.info("research.execute.start", query=request.query)
+
+    try:
+        # Search papers
+        papers = await research_engine.search_papers(request)
+
+        # Calculate overall confidence
+        if papers:
+            avg_relevance = sum(p.relevance_score for p in papers) / len(papers)
+            confidence = avg_relevance
+        else:
+            confidence = 0.0
+
+        # Build response
+        elapsed_ms = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+
+        response = ResearchResponse(
+            papers=papers,
+            total_found=len(papers),
+            query_used=request.query,
+            search_time_ms=elapsed_ms,
+            confidence=confidence,
+            provenance=ProvenanceMetadata(
+                arm_id="research",
+                timestamp=datetime.utcnow(),
+                sources=["arXiv API", "OpenAI GPT-3.5"],
+                confidence=confidence,
+                method="api_search"
+            )
+        )
+
+        logger.info("research.execute.complete", count=len(papers), confidence=confidence)
+        return response
+
+    except Exception as e:
+        logger.error("research.execute.failed", error=str(e), query=request.query)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/health", response_model=HealthStatus)
+async def health_check() -&gt; HealthStatus:
+    """Health check endpoint."""
+
+    # Test arXiv API accessibility
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            response = await client.get("http://export.arxiv.org/api/query?search_query=test&amp;max_results=1")
+            api_accessible = response.status_code == 200
+    except:
+        api_accessible = False
+
+    return HealthStatus(
+        status="healthy" if api_accessible else "degraded",
+        arm_id="research",
+        version="1.0.0",
+        api_accessible=api_accessible
+    )
+
+@app.get("/capabilities", response_model=CapabilityManifest)
+async def get_capabilities() -&gt; CapabilityManifest:
+    """Return arm capabilities."""
+
+    return CapabilityManifest(
+        arm_id="research",
+        name="Research Arm",
+        description="Search and summarize scientific papers from arXiv",
+        version="1.0.0",
+        capabilities=["paper_search", "summarization", "citation_formatting"],
+        input_schema=ResearchRequest.model_json_schema(),
+        output_schema=ResearchResponse.model_json_schema(),
+        cost_tier=3,
+        average_latency_ms=2000
+    )
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8080)
+</code></pre>
+<h3 id="step-5-add-dependencies"><a class="header" href="#step-5-add-dependencies">Step 5: Add Dependencies</a></h3>
+<p><strong>File</strong>: <code>pyproject.toml</code></p>
+<pre><code class="language-toml">[tool.poetry]
+name = "research-arm"
+version = "1.0.0"
+description = "Research Arm for OctoLLM"
+authors = ["Your Name &lt;you@example.com&gt;"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.104.0"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+pydantic = "^2.4.0"
+httpx = "^0.25.0"
+openai = "^1.3.0"
+structlog = "^23.2.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.0"
+pytest-cov = "^4.1.0"
+black = "^23.10.0"
+ruff = "^0.1.3"
+mypy = "^1.6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+</code></pre>
+<h3 id="step-6-create-dockerfile"><a class="header" href="#step-6-create-dockerfile">Step 6: Create Dockerfile</a></h3>
+<p><strong>File</strong>: <code>Dockerfile</code></p>
+<pre><code class="language-dockerfile">FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update &amp;&amp; apt-get install -y \
+    gcc \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+# Install poetry
+RUN pip install poetry==1.6.1
+
+# Copy dependency files
+COPY pyproject.toml poetry.lock* ./
+
+# Install dependencies
+RUN poetry config virtualenvs.create false \
+    &amp;&amp; poetry install --no-interaction --no-ansi --no-root
+
+# Copy application code
+COPY src/ ./src/
+
+# Install application
+RUN poetry install --no-interaction --no-ansi
+
+# Set environment
+ENV PYTHONUNBUFFERED=1
+ENV LOG_LEVEL=INFO
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD python -c "import httpx; httpx.get('http://localhost:8080/health')"
+
+# Expose port
+EXPOSE 8080
+
+# Run application
+CMD ["python", "-m", "uvicorn", "research.main:app", "--host", "0.0.0.0", "--port", "8080"]
+</code></pre>
+<hr />
+<h2 id="memory-integration"><a class="header" href="#memory-integration">Memory Integration</a></h2>
+<h3 id="add-local-memory-qdrant"><a class="header" href="#add-local-memory-qdrant">Add Local Memory (Qdrant)</a></h3>
+<p><strong>File</strong>: <code>src/research/memory.py</code></p>
+<pre><code class="language-python">"""Memory integration for Research Arm."""
+
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams, PointStruct
+from sentence_transformers import SentenceTransformer
+import uuid
+from typing import List, Optional
+from .models import Paper
+
+class ResearchMemory:
+    """Local episodic memory for Research Arm using Qdrant."""
+
+    def __init__(self, qdrant_url: str, collection_name: str = "research_papers"):
+        self.client = QdrantClient(url=qdrant_url)
+        self.collection = collection_name
+        self.encoder = SentenceTransformer('all-MiniLM-L6-v2')
+        self._init_collection()
+
+    def _init_collection(self):
+        """Initialize Qdrant collection."""
+        collections = [c.name for c in self.client.get_collections().collections]
+
+        if self.collection not in collections:
+            self.client.create_collection(
+                collection_name=self.collection,
+                vectors_config=VectorParams(
+                    size=384,  # all-MiniLM-L6-v2 dimension
+                    distance=Distance.COSINE
+                )
+            )
+
+    def store_paper(self, paper: Paper, query: str) -&gt; str:
+        """Store paper in memory with embedding."""
+
+        # Create embedding from title + abstract
+        text = f"{paper.title}\n\n{paper.abstract}"
+        embedding = self.encoder.encode(text).tolist()
+
+        point_id = str(uuid.uuid4())
+
+        self.client.upsert(
+            collection_name=self.collection,
+            points=[
+                PointStruct(
+                    id=point_id,
+                    vector=embedding,
+                    payload={
+                        "title": paper.title,
+                        "authors": paper.authors,
+                        "abstract": paper.abstract,
+                        "url": str(paper.url),
+                        "published_date": paper.published_date,
+                        "summary": paper.summary,
+                        "relevance_score": paper.relevance_score,
+                        "citation": paper.citation,
+                        "query": query,
+                        "stored_at": datetime.utcnow().isoformat()
+                    }
+                )
+            ]
+        )
+
+        return point_id
+
+    def search_similar(self, query: str, limit: int = 5) -&gt; List[Paper]:
+        """Search for similar papers in memory."""
+
+        query_vector = self.encoder.encode(query).tolist()
+
+        results = self.client.search(
+            collection_name=self.collection,
+            query_vector=query_vector,
+            limit=limit
+        )
+
+        papers = []
+        for result in results:
+            paper = Paper(
+                title=result.payload["title"],
+                authors=result.payload["authors"],
+                abstract=result.payload["abstract"],
+                url=result.payload["url"],
+                published_date=result.payload["published_date"],
+                summary=result.payload.get("summary"),
+                relevance_score=result.score,
+                citation=result.payload["citation"]
+            )
+            papers.append(paper)
+
+        return papers
+</code></pre>
+<p><strong>Integrate memory in main.py</strong>:</p>
+<pre><code class="language-python"># In main.py, add to lifespan:
+from .memory import ResearchMemory
+
+research_memory = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global research_engine, research_memory
+
+    # Existing setup...
+    research_engine = ResearchEngine(openai_key)
+
+    # Add memory
+    qdrant_url = os.getenv("QDRANT_URL", "http://qdrant:6333")
+    research_memory = ResearchMemory(qdrant_url)
+
+    logger.info("research_arm.startup.complete")
+    yield
+    # ...
+
+# In execute_research, before returning:
+@app.post("/execute", response_model=ResearchResponse)
+async def execute_research(request: ResearchRequest) -&gt; ResearchResponse:
+    # ... existing code ...
+
+    # Store papers in memory
+    for paper in papers:
+        try:
+            research_memory.store_paper(paper, request.query)
+        except Exception as e:
+            logger.warning("research.memory.store_failed", error=str(e))
+
+    return response
+</code></pre>
+<hr />
+<h2 id="testing-your-arm"><a class="header" href="#testing-your-arm">Testing Your Arm</a></h2>
+<h3 id="unit-tests"><a class="header" href="#unit-tests">Unit Tests</a></h3>
+<p><strong>File</strong>: <code>tests/test_research.py</code></p>
+<pre><code class="language-python">"""Unit tests for Research Arm."""
+
+import pytest
+from httpx import AsyncClient
+from research.main import app
+
+@pytest.mark.asyncio
+async def test_health_check():
+    """Test health check endpoint."""
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        response = await client.get("/health")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] in ["healthy", "degraded"]
+        assert data["arm_id"] == "research"
+
+@pytest.mark.asyncio
+async def test_capabilities():
+    """Test capabilities endpoint."""
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        response = await client.get("/capabilities")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["arm_id"] == "research"
+        assert "paper_search" in data["capabilities"]
+
+@pytest.mark.asyncio
+async def test_execute_research():
+    """Test main execute endpoint."""
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        payload = {
+            "query": "machine learning",
+            "max_papers": 3,
+            "include_summaries": False
+        }
+        response = await client.post("/execute", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert "papers" in data
+        assert data["query_used"] == "machine learning"
+        assert "provenance" in data
+
+@pytest.mark.asyncio
+async def test_invalid_request():
+    """Test validation of invalid request."""
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        payload = {
+            "query": "",  # Too short
+            "max_papers": 100  # Too many
+        }
+        response = await client.post("/execute", json=payload)
+        assert response.status_code == 422  # Validation error
+</code></pre>
+<h3 id="run-tests"><a class="header" href="#run-tests">Run Tests</a></h3>
+<pre><code class="language-bash">cd arms/research
+
+# Install dependencies
+poetry install
+
+# Run tests
+poetry run pytest
+
+# With coverage
+poetry run pytest --cov=research --cov-report=html
+
+# View coverage report
+open htmlcov/index.html
+</code></pre>
+<hr />
+<h2 id="deployment"><a class="header" href="#deployment">Deployment</a></h2>
+<h3 id="step-1-build-docker-image"><a class="header" href="#step-1-build-docker-image">Step 1: Build Docker Image</a></h3>
+<pre><code class="language-bash">cd arms/research
+
+# Build image
+docker build -t octollm/research-arm:latest .
+
+# Test locally
+docker run -p 8080:8080 \
+  -e OPENAI_API_KEY=your-key \
+  -e QDRANT_URL=http://host.docker.internal:6333 \
+  octollm/research-arm:latest
+
+# Test endpoints
+curl http://localhost:8080/health
+curl http://localhost:8080/capabilities
+</code></pre>
+<h3 id="step-2-add-to-docker-compose"><a class="header" href="#step-2-add-to-docker-compose">Step 2: Add to Docker Compose</a></h3>
+<p><strong>In <code>docker-compose.yml</code></strong>:</p>
+<pre><code class="language-yaml">services:
+  # ... existing services ...
+
+  research-arm:
+    build: ./arms/research
+    image: octollm/research-arm:latest
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      QDRANT_URL: http://qdrant:6333
+      LOG_LEVEL: INFO
+    depends_on:
+      - qdrant
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - octollm-network
+</code></pre>
+<h3 id="step-3-register-with-orchestrator"><a class="header" href="#step-3-register-with-orchestrator">Step 3: Register with Orchestrator</a></h3>
+<p><strong>Update <code>config/arm-registry.json</code></strong>:</p>
+<pre><code class="language-json">{
+  "research": {
+    "arm_id": "research",
+    "endpoint": "http://research-arm:8080/execute",
+    "capabilities": ["paper_search", "summarization", "citation_formatting"],
+    "cost_tier": 3,
+    "average_latency_ms": 2000,
+    "description": "Scientific paper search and summarization"
+  }
+}
+</code></pre>
+<h3 id="step-4-deploy-to-kubernetes"><a class="header" href="#step-4-deploy-to-kubernetes">Step 4: Deploy to Kubernetes</a></h3>
+<p><strong>Create <code>k8s/research-arm.yaml</code></strong>:</p>
+<pre><code class="language-yaml">apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: research-arm
+  namespace: octollm
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: research-arm
+  template:
+    metadata:
+      labels:
+        app: research-arm
+        component: arm
+    spec:
+      containers:
+        - name: research
+          image: octollm/research-arm:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: llm-api-keys
+                  key: openai-key
+            - name: QDRANT_URL
+              value: "http://qdrant:6333"
+            - name: LOG_LEVEL
+              value: "INFO"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: research-arm
+  namespace: octollm
+spec:
+  selector:
+    app: research-arm
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+</code></pre>
+<p><strong>Deploy</strong>:</p>
+<pre><code class="language-bash">kubectl apply -f k8s/research-arm.yaml
+kubectl get pods -n octollm | grep research
+</code></pre>
+<hr />
+<h2 id="complete-example-research-arm"><a class="header" href="#complete-example-research-arm">Complete Example: Research Arm</a></h2>
+<p>See the files created above for a complete, production-ready Research Arm implementation that:</p>
+<ul>
+<li>✅ Searches arXiv API for scientific papers</li>
+<li>✅ Generates summaries using OpenAI</li>
+<li>✅ Stores results in Qdrant vector database</li>
+<li>✅ Formats citations in APA style</li>
+<li>✅ Provides comprehensive API with validation</li>
+<li>✅ Includes health checks and capabilities</li>
+<li>✅ Fully tested with pytest</li>
+<li>✅ Dockerized and Kubernetes-ready</li>
+<li>✅ Integrated with OctoLLM orchestrator</li>
+</ul>
+<h3 id="using-your-custom-arm"><a class="header" href="#using-your-custom-arm">Using Your Custom Arm</a></h3>
+<pre><code class="language-bash"># Submit task via orchestrator
+curl -X POST http://localhost:8001/api/v1/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "goal": "Research recent papers on transformer architectures in machine learning",
+    "constraints": ["Papers from 2023-2024 only", "Include summaries"],
+    "priority": "medium"
+  }'
+
+# The orchestrator will automatically route to your research arm!
+</code></pre>
+<hr />
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<h3 id="1-error-handling"><a class="header" href="#1-error-handling">1. Error Handling</a></h3>
+<pre><code class="language-python">try:
+    result = await perform_action()
+except SpecificError as e:
+    logger.error("arm.action.failed", error=str(e), details=...)
+    # Return graceful degradation
+    return fallback_result()
+except Exception as e:
+    logger.exception("arm.unexpected_error")
+    raise HTTPException(status_code=500, detail="Internal error")
+</code></pre>
+<h3 id="2-logging"><a class="header" href="#2-logging">2. Logging</a></h3>
+<pre><code class="language-python">import structlog
+
+logger = structlog.get_logger()
+
+# Use structured logging
+logger.info("arm.action.start", query=query, params=params)
+logger.info("arm.action.complete", result_count=count, duration_ms=elapsed)
+logger.error("arm.action.failed", error=str(e), traceback=...)
+</code></pre>
+<h3 id="3-metrics"><a class="header" href="#3-metrics">3. Metrics</a></h3>
+<pre><code class="language-python">from prometheus_client import Counter, Histogram
+
+REQUEST_COUNT = Counter('arm_requests_total', 'Total requests', ['arm_id', 'status'])
+REQUEST_DURATION = Histogram('arm_request_duration_seconds', 'Request duration', ['arm_id'])
+
+@app.post("/execute")
+async def execute(request):
+    with REQUEST_DURATION.labels(arm_id="research").time():
+        try:
+            result = await process(request)
+            REQUEST_COUNT.labels(arm_id="research", status="success").inc()
+            return result
+        except:
+            REQUEST_COUNT.labels(arm_id="research", status="failure").inc()
+            raise
+</code></pre>
+<h3 id="4-validation"><a class="header" href="#4-validation">4. Validation</a></h3>
+<pre><code class="language-python">from pydantic import BaseModel, Field, validator
+
+class Request(BaseModel):
+    query: str = Field(..., min_length=1, max_length=500)
+
+    @validator('query')
+    def query_must_not_be_malicious(cls, v):
+        if any(bad in v.lower() for bad in ['&lt;script&gt;', 'drop table']):
+            raise ValueError('Malicious query detected')
+        return v
+</code></pre>
+<hr />
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<ol>
+<li><strong><a href="./integration-patterns.html">Integration Patterns</a></strong> - Learn advanced integration patterns</li>
+<li><strong><a href="./testing-guide.html">Testing Guide</a></strong> - Comprehensive testing strategies</li>
+<li><strong><a href="./debugging.html">Debugging</a></strong> - Debug your custom arm</li>
+<li><strong><a href="./memory-systems.html">Memory Systems</a></strong> - Deep dive into memory integration</li>
+</ol>
+<hr />
+<p><strong>Document Version</strong>: 1.0
+<strong>Last Updated</strong>: 2025-11-10
+<strong>Maintained By</strong>: OctoLLM Documentation Team</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../development/debugging.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../development/integration-patterns.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../development/debugging.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../development/integration-patterns.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

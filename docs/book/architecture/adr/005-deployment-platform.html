@@ -1,0 +1,1721 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>ADR-005: Deployment Platform - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/architecture/adr/005-deployment-platform.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="adr-005-deployment-platform"><a class="header" href="#adr-005-deployment-platform">ADR-005: Deployment Platform</a></h1>
+<p><strong>Status</strong>: Accepted
+<strong>Date</strong>: 2025-11-10
+<strong>Decision Makers</strong>: Architecture Team, DevOps Team
+<strong>Consulted</strong>: Engineering Team, Operations Team</p>
+<h2 id="context"><a class="header" href="#context">Context</a></h2>
+<p>OctoLLM requires a deployment platform that supports:</p>
+<ul>
+<li><strong>Multi-component orchestration</strong>: Orchestrator, multiple Arms, Reflex Layer, Memory systems</li>
+<li><strong>Scalability</strong>: Horizontal scaling for Arms, vertical scaling for databases</li>
+<li><strong>Service discovery</strong>: Components need to find each other dynamically</li>
+<li><strong>Health monitoring</strong>: Automatic restarts, health checks, readiness probes</li>
+<li><strong>Resource management</strong>: CPU/memory limits, quotas, efficient allocation</li>
+<li><strong>Rolling updates</strong>: Zero-downtime deployments</li>
+<li><strong>Configuration management</strong>: Environment-specific configs, secrets</li>
+<li><strong>Development parity</strong>: Local development should mirror production</li>
+<li><strong>Cloud agnostic</strong>: No vendor lock-in, portable across providers</li>
+</ul>
+<p>Deployment requirements:</p>
+<ul>
+<li><strong>Production</strong>: High availability, auto-scaling, monitoring, observability</li>
+<li><strong>Staging</strong>: Production-like environment for testing</li>
+<li><strong>Development</strong>: Fast iteration, easy debugging, minimal resource usage</li>
+<li><strong>CI/CD</strong>: Automated builds, tests, deployments</li>
+</ul>
+<p>Environment characteristics:</p>
+<ul>
+<li><strong>Local Dev</strong>: Docker Compose, single machine, easy setup</li>
+<li><strong>Staging</strong>: Kubernetes cluster, production-like, testing</li>
+<li><strong>Production</strong>: Kubernetes cluster, multi-region (future), HA databases</li>
+</ul>
+<h2 id="decision"><a class="header" href="#decision">Decision</a></h2>
+<p>We will use <strong>Kubernetes for production</strong> and <strong>Docker Compose for development</strong> with a cloud-agnostic architecture:</p>
+<h3 id="1-production-deployment-kubernetes"><a class="header" href="#1-production-deployment-kubernetes">1. Production Deployment (Kubernetes)</a></h3>
+<p><strong>Platform</strong>: Kubernetes 1.28+
+<strong>Distribution</strong>: Any CNCF-certified (EKS, GKE, AKS, or self-hosted)
+<strong>Approach</strong>: Cloud-agnostic, no vendor-specific services</p>
+<p><strong>Why Kubernetes</strong>:</p>
+<ul>
+<li>Industry-standard container orchestration</li>
+<li>Rich ecosystem (Helm, Kustomize, operators)</li>
+<li>Excellent service discovery and load balancing</li>
+<li>Horizontal Pod Autoscaler (HPA) for auto-scaling</li>
+<li>Rolling updates with zero downtime</li>
+<li>Self-healing (automatic restarts)</li>
+<li>Resource management and quotas</li>
+<li>Multi-cloud portability</li>
+</ul>
+<p><strong>Architecture</strong>:</p>
+<pre><code class="language-yaml"># Namespace organization
+octollm-system/      # System components (monitoring, ingress)
+octollm-production/  # Production workloads
+octollm-staging/     # Staging workloads
+
+# Components
+- Deployment: orchestrator (3 replicas)
+- Deployment: coder-arm (5 replicas, HPA)
+- Deployment: judge-arm (3 replicas, HPA)
+- Deployment: executor-arm (5 replicas, HPA)
+- Deployment: planner-arm (3 replicas, HPA)
+- Deployment: retriever-arm (3 replicas, HPA)
+- DaemonSet: reflex-layer (1 per node)
+- StatefulSet: postgresql (3 replicas, HA)
+- StatefulSet: qdrant (3 replicas)
+- StatefulSet: redis (3 replicas, sentinel)
+</code></pre>
+<p><strong>Example Deployment</strong>:</p>
+<pre><code class="language-yaml">apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestrator
+  namespace: octollm-production
+  labels:
+    app: orchestrator
+    version: v1.0.0
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: orchestrator
+  template:
+    metadata:
+      labels:
+        app: orchestrator
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+    spec:
+      serviceAccountName: orchestrator
+      containers:
+      - name: orchestrator
+        image: octollm/orchestrator:v1.0.0
+        ports:
+        - containerPort: 8000
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: redis-credentials
+              key: url
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "2000m"
+            memory: "2Gi"
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orchestrator
+  namespace: octollm-production
+spec:
+  type: ClusterIP
+  selector:
+    app: orchestrator
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: orchestrator-hpa
+  namespace: octollm-production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: orchestrator
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 2
+        periodSeconds: 30
+      selectPolicy: Max
+</code></pre>
+<p><strong>Arm Deployment Example</strong>:</p>
+<pre><code class="language-yaml">apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coder-arm
+  namespace: octollm-production
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: coder-arm
+  template:
+    metadata:
+      labels:
+        app: coder-arm
+    spec:
+      containers:
+      - name: coder-arm
+        image: octollm/coder-arm:v1.0.0
+        ports:
+        - containerPort: 8102
+        env:
+        - name: ARM_TYPE
+          value: "coder"
+        - name: LLM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: llm-credentials
+              key: api-key
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "1Gi"
+          limits:
+            cpu: "4000m"
+            memory: "4Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8102
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8102
+          initialDelaySeconds: 10
+          periodSeconds: 5
+</code></pre>
+<p><strong>Reflex Layer (DaemonSet)</strong>:</p>
+<pre><code class="language-yaml">apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: reflex-layer
+  namespace: octollm-production
+spec:
+  selector:
+    matchLabels:
+      app: reflex-layer
+  template:
+    metadata:
+      labels:
+        app: reflex-layer
+    spec:
+      hostNetwork: true  # For low-latency
+      containers:
+      - name: reflex-layer
+        image: octollm/reflex-layer:v1.0.0
+        ports:
+        - containerPort: 8080
+          hostPort: 8080
+        resources:
+          requests:
+            cpu: "2000m"
+            memory: "512Mi"
+          limits:
+            cpu: "4000m"
+            memory: "1Gi"
+        securityContext:
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+</code></pre>
+<p><strong>StatefulSet for PostgreSQL</strong>:</p>
+<pre><code class="language-yaml">apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql
+  namespace: octollm-production
+spec:
+  serviceName: postgresql
+  replicas: 3
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+      - name: postgresql
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_DB
+          value: octollm
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-credentials
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-credentials
+              key: password
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            cpu: "2000m"
+            memory: "4Gi"
+          limits:
+            cpu: "4000m"
+            memory: "8Gi"
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: 10
+          periodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: fast-ssd
+      resources:
+        requests:
+          storage: 100Gi
+</code></pre>
+<h3 id="2-development-deployment-docker-compose"><a class="header" href="#2-development-deployment-docker-compose">2. Development Deployment (Docker Compose)</a></h3>
+<p><strong>Platform</strong>: Docker Compose 2.x
+<strong>Environment</strong>: Local development machines
+<strong>Purpose</strong>: Fast iteration, easy debugging</p>
+<p><strong>docker-compose.yml</strong>:</p>
+<pre><code class="language-yaml">version: '3.9'
+
+services:
+  # Databases
+  postgresql:
+    image: postgres:15-alpine
+    container_name: octollm-postgres
+    environment:
+      POSTGRES_DB: octollm
+      POSTGRES_USER: octollm
+      POSTGRES_PASSWORD: development
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U octollm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: octollm-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:v1.7.0
+    container_name: octollm-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Reflex Layer
+  reflex-layer:
+    build:
+      context: ./reflex_layer
+      dockerfile: Dockerfile.dev
+    container_name: octollm-reflex
+    ports:
+      - "8080:8080"
+    environment:
+      - RUST_LOG=debug
+      - RATE_LIMIT_ENABLED=true
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Orchestrator
+  orchestrator:
+    build:
+      context: ./orchestrator
+      dockerfile: Dockerfile.dev
+    container_name: octollm-orchestrator
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+      - DATABASE_URL=postgresql://octollm:development@postgresql:5432/octollm
+      - REDIS_URL=redis://redis:6379
+      - QDRANT_URL=http://qdrant:6333
+    volumes:
+      - ./orchestrator:/app
+      - /app/.venv  # Don't override venv
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      reflex-layer:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Arms
+  coder-arm:
+    build:
+      context: ./arms/coder
+      dockerfile: Dockerfile.dev
+    container_name: octollm-coder-arm
+    ports:
+      - "8102:8102"
+    environment:
+      - ARM_TYPE=coder
+      - LOG_LEVEL=DEBUG
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./arms/coder:/app
+      - /app/.venv
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8102 --reload
+
+  judge-arm:
+    build:
+      context: ./arms/judge
+      dockerfile: Dockerfile.dev
+    container_name: octollm-judge-arm
+    ports:
+      - "8103:8103"
+    environment:
+      - ARM_TYPE=judge
+      - LOG_LEVEL=DEBUG
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./arms/judge:/app
+      - /app/.venv
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8103 --reload
+
+  executor-arm:
+    build:
+      context: ./arms/executor
+      dockerfile: Dockerfile.dev
+    container_name: octollm-executor-arm
+    ports:
+      - "8104:8104"
+    environment:
+      - ARM_TYPE=executor
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./arms/executor:/app
+      - /app/.venv
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8104 --reload
+
+  planner-arm:
+    build:
+      context: ./arms/planner
+      dockerfile: Dockerfile.dev
+    container_name: octollm-planner-arm
+    ports:
+      - "8105:8105"
+    environment:
+      - ARM_TYPE=planner
+      - LOG_LEVEL=DEBUG
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./arms/planner:/app
+      - /app/.venv
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8105 --reload
+
+  retriever-arm:
+    build:
+      context: ./arms/retriever
+      dockerfile: Dockerfile.dev
+    container_name: octollm-retriever-arm
+    ports:
+      - "8106:8106"
+    environment:
+      - ARM_TYPE=retriever
+      - LOG_LEVEL=DEBUG
+      - QDRANT_URL=http://qdrant:6333
+    volumes:
+      - ./arms/retriever:/app
+      - /app/.venv
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8106 --reload
+
+  # Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: octollm-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: octollm-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  redis_data:
+  qdrant_data:
+  prometheus_data:
+  grafana_data:
+</code></pre>
+<p><strong>Development Scripts</strong>:</p>
+<p><strong>scripts/dev.sh</strong>:</p>
+<pre><code class="language-bash">#!/bin/bash
+set -e
+
+# Start development environment
+echo "Starting OctoLLM development environment..."
+
+# Check for .env file
+if [ ! -f .env ]; then
+    echo "Creating .env from template..."
+    cp .env.example .env
+    echo "⚠️  Please edit .env and add your API keys!"
+    exit 1
+fi
+
+# Start services
+docker compose up -d postgresql redis qdrant
+
+# Wait for databases
+echo "Waiting for databases to be ready..."
+sleep 5
+
+# Run migrations
+echo "Running database migrations..."
+docker compose run --rm orchestrator alembic upgrade head
+
+# Start all services
+echo "Starting all services..."
+docker compose up -d
+
+# Show logs
+echo "Services started! Tailing logs (Ctrl+C to stop)..."
+docker compose logs -f
+</code></pre>
+<p><strong>scripts/test.sh</strong>:</p>
+<pre><code class="language-bash">#!/bin/bash
+set -e
+
+# Run tests in development environment
+echo "Running OctoLLM tests..."
+
+# Start dependencies
+docker compose up -d postgresql redis qdrant
+
+# Wait for databases
+sleep 5
+
+# Run Python tests
+echo "Running orchestrator tests..."
+docker compose run --rm orchestrator pytest -v
+
+echo "Running arm tests..."
+docker compose run --rm coder-arm pytest -v
+docker compose run --rm judge-arm pytest -v
+
+# Run Rust tests
+echo "Running reflex layer tests..."
+cd reflex_layer &amp;&amp; cargo test &amp;&amp; cd ..
+
+echo "All tests passed! ✅"
+</code></pre>
+<h3 id="3-configuration-management"><a class="header" href="#3-configuration-management">3. Configuration Management</a></h3>
+<p><strong>Kubernetes ConfigMaps</strong>:</p>
+<pre><code class="language-yaml">apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orchestrator-config
+  namespace: octollm-production
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+  ARM_REGISTRY_URL: "http://orchestrator:8000/registry"
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_REQUESTS: "1000"
+  RATE_LIMIT_WINDOW: "60"
+</code></pre>
+<p><strong>Kubernetes Secrets</strong>:</p>
+<pre><code class="language-yaml">apiVersion: v1
+kind: Secret
+metadata:
+  name: database-credentials
+  namespace: octollm-production
+type: Opaque
+stringData:
+  url: postgresql://octollm:PASSWORD@postgresql:5432/octollm
+  username: octollm
+  password: SECURE_PASSWORD_HERE
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: llm-credentials
+  namespace: octollm-production
+type: Opaque
+stringData:
+  api-key: sk-YOUR-API-KEY-HERE
+</code></pre>
+<p><strong>Environment-Specific Configs (Kustomize)</strong>:</p>
+<p><strong>base/kustomization.yaml</strong>:</p>
+<pre><code class="language-yaml">apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployment.yaml
+  - service.yaml
+  - hpa.yaml
+  - configmap.yaml
+
+commonLabels:
+  app: octollm
+  managed-by: kustomize
+</code></pre>
+<p><strong>overlays/production/kustomization.yaml</strong>:</p>
+<pre><code class="language-yaml">apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../../base
+
+namespace: octollm-production
+
+replicas:
+  - name: orchestrator
+    count: 3
+  - name: coder-arm
+    count: 5
+
+images:
+  - name: octollm/orchestrator
+    newTag: v1.0.0
+  - name: octollm/coder-arm
+    newTag: v1.0.0
+
+patches:
+  - path: production-resources.yaml
+</code></pre>
+<p><strong>overlays/staging/kustomization.yaml</strong>:</p>
+<pre><code class="language-yaml">apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../../base
+
+namespace: octollm-staging
+
+replicas:
+  - name: orchestrator
+    count: 1
+  - name: coder-arm
+    count: 2
+
+images:
+  - name: octollm/orchestrator
+    newTag: latest
+  - name: octollm/coder-arm
+    newTag: latest
+</code></pre>
+<h3 id="4-helm-charts-alternative-to-kustomize"><a class="header" href="#4-helm-charts-alternative-to-kustomize">4. Helm Charts (Alternative to Kustomize)</a></h3>
+<p><strong>Chart.yaml</strong>:</p>
+<pre><code class="language-yaml">apiVersion: v2
+name: octollm
+description: OctoLLM Multi-Agent System
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - llm
+  - multi-agent
+  - orchestration
+maintainers:
+  - name: OctoLLM Team
+    email: team@octollm.io
+</code></pre>
+<p><strong>values.yaml</strong>:</p>
+<pre><code class="language-yaml">global:
+  environment: production
+  logLevel: INFO
+  imageRegistry: docker.io
+  imagePullSecrets: []
+
+orchestrator:
+  replicaCount: 3
+  image:
+    repository: octollm/orchestrator
+    tag: v1.0.0
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+  service:
+    type: ClusterIP
+    port: 8000
+
+arms:
+  coder:
+    replicaCount: 5
+    image:
+      repository: octollm/coder-arm
+      tag: v1.0.0
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 1Gi
+      limits:
+        cpu: 4000m
+        memory: 4Gi
+    autoscaling:
+      enabled: true
+      minReplicas: 5
+      maxReplicas: 20
+      targetCPUUtilizationPercentage: 70
+
+  judge:
+    replicaCount: 3
+    image:
+      repository: octollm/judge-arm
+      tag: v1.0.0
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+
+postgresql:
+  enabled: true
+  auth:
+    database: octollm
+    username: octollm
+  primary:
+    persistence:
+      enabled: true
+      size: 100Gi
+      storageClass: fast-ssd
+  resources:
+    requests:
+      cpu: 2000m
+      memory: 4Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+
+redis:
+  enabled: true
+  architecture: replication
+  master:
+    persistence:
+      enabled: true
+      size: 10Gi
+  replica:
+    replicaCount: 2
+
+qdrant:
+  enabled: true
+  replicaCount: 3
+  persistence:
+    enabled: true
+    size: 50Gi
+</code></pre>
+<p><strong>values-staging.yaml</strong>:</p>
+<pre><code class="language-yaml">global:
+  environment: staging
+  logLevel: DEBUG
+
+orchestrator:
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+
+arms:
+  coder:
+    replicaCount: 2
+    autoscaling:
+      enabled: false
+</code></pre>
+<p><strong>Installation Commands</strong>:</p>
+<pre><code class="language-bash"># Install production
+helm install octollm ./charts/octollm \
+  --namespace octollm-production \
+  --create-namespace \
+  --values ./charts/octollm/values.yaml
+
+# Install staging
+helm install octollm-staging ./charts/octollm \
+  --namespace octollm-staging \
+  --create-namespace \
+  --values ./charts/octollm/values-staging.yaml
+
+# Upgrade
+helm upgrade octollm ./charts/octollm \
+  --namespace octollm-production \
+  --values ./charts/octollm/values.yaml
+
+# Rollback
+helm rollback octollm 1 --namespace octollm-production
+</code></pre>
+<h3 id="5-cicd-pipeline"><a class="header" href="#5-cicd-pipeline">5. CI/CD Pipeline</a></h3>
+<p><strong>GitHub Actions - Build and Test</strong>:</p>
+<p><strong>.github/workflows/ci.yml</strong>:</p>
+<pre><code class="language-yaml">name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test-python:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          cd orchestrator &amp;&amp; poetry install
+
+      - name: Run tests
+        run: |
+          cd orchestrator &amp;&amp; poetry run pytest -v --cov=.
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+
+  test-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+
+      - name: Run tests
+        run: |
+          cd reflex_layer
+          cargo fmt -- --check
+          cargo clippy -- -D warnings
+          cargo test
+
+  build-images:
+    runs-on: ubuntu-latest
+    needs: [test-python, test-rust]
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push orchestrator
+        uses: docker/build-push-action@v5
+        with:
+          context: ./orchestrator
+          push: true
+          tags: |
+            octollm/orchestrator:latest
+            octollm/orchestrator:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push reflex-layer
+        uses: docker/build-push-action@v5
+        with:
+          context: ./reflex_layer
+          push: true
+          tags: |
+            octollm/reflex-layer:latest
+            octollm/reflex-layer:${{ github.sha }}
+</code></pre>
+<p><strong>GitHub Actions - Deploy</strong>:</p>
+<p><strong>.github/workflows/deploy.yml</strong>:</p>
+<pre><code class="language-yaml">name: Deploy
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG_STAGING }}
+
+      - name: Deploy to staging
+        run: |
+          kubectl apply -k overlays/staging
+          kubectl rollout status deployment/orchestrator -n octollm-staging
+
+      - name: Run smoke tests
+        run: |
+          ./scripts/smoke-tests.sh staging
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG_PRODUCTION }}
+
+      - name: Deploy to production
+        run: |
+          kubectl apply -k overlays/production
+          kubectl rollout status deployment/orchestrator -n octollm-production
+
+      - name: Run smoke tests
+        run: |
+          ./scripts/smoke-tests.sh production
+
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Deployed ${{ github.ref }} to production'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+</code></pre>
+<h3 id="6-ingress-and-load-balancing"><a class="header" href="#6-ingress-and-load-balancing">6. Ingress and Load Balancing</a></h3>
+<p><strong>Nginx Ingress Controller</strong>:</p>
+<pre><code class="language-yaml">apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: octollm-ingress
+  namespace: octollm-production
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - api.octollm.io
+    secretName: octollm-tls
+  rules:
+  - host: api.octollm.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: reflex-layer
+            port:
+              number: 8080
+      - path: /api/orchestrator
+        pathType: Prefix
+        backend:
+          service:
+            name: orchestrator
+            port:
+              number: 8000
+</code></pre>
+<h3 id="7-monitoring-and-observability"><a class="header" href="#7-monitoring-and-observability">7. Monitoring and Observability</a></h3>
+<p><strong>Prometheus ServiceMonitor</strong>:</p>
+<pre><code class="language-yaml">apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: octollm-metrics
+  namespace: octollm-production
+spec:
+  selector:
+    matchLabels:
+      app: octollm
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+</code></pre>
+<p><strong>Grafana Dashboard ConfigMap</strong>:</p>
+<pre><code class="language-yaml">apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: octollm-system
+data:
+  octollm-overview.json: |
+    {
+      "dashboard": {
+        "title": "OctoLLM Overview",
+        "panels": [
+          {
+            "title": "Request Rate",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total[5m])"
+              }
+            ]
+          },
+          {
+            "title": "Error Rate",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{status=~\"5..\"}[5m])"
+              }
+            ]
+          }
+        ]
+      }
+    }
+</code></pre>
+<h3 id="8-disaster-recovery"><a class="header" href="#8-disaster-recovery">8. Disaster Recovery</a></h3>
+<p><strong>Backup Strategy</strong>:</p>
+<pre><code class="language-yaml"># Velero backup schedule
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: octollm-daily-backup
+  namespace: velero
+spec:
+  schedule: "0 2 * * *"  # 2 AM daily
+  template:
+    includedNamespaces:
+    - octollm-production
+    storageLocation: default
+    volumeSnapshotLocations:
+    - default
+    ttl: 720h  # 30 days
+</code></pre>
+<p><strong>Restore Procedure</strong>:</p>
+<pre><code class="language-bash"># Restore from backup
+velero restore create octollm-restore \
+  --from-backup octollm-daily-backup-20251110 \
+  --namespace-mappings octollm-production:octollm-production-restored
+
+# Verify restore
+kubectl get all -n octollm-production-restored
+
+# Promote to production
+kubectl label namespace octollm-production-restored environment=production
+</code></pre>
+<h2 id="consequences"><a class="header" href="#consequences">Consequences</a></h2>
+<h3 id="positive"><a class="header" href="#positive">Positive</a></h3>
+<ol>
+<li>
+<p><strong>Kubernetes Production Benefits</strong>:</p>
+<ul>
+<li>Auto-scaling handles variable load</li>
+<li>Self-healing reduces downtime</li>
+<li>Rolling updates enable zero-downtime deployments</li>
+<li>Resource quotas prevent runaway costs</li>
+<li>Industry-standard platform</li>
+</ul>
+</li>
+<li>
+<p><strong>Docker Compose Development Benefits</strong>:</p>
+<ul>
+<li>Fast startup (&lt;2 minutes)</li>
+<li>Easy debugging with volume mounts</li>
+<li>Minimal resource usage</li>
+<li>Production parity with same images</li>
+<li>Simple onboarding for new developers</li>
+</ul>
+</li>
+<li>
+<p><strong>Cloud Agnostic</strong>:</p>
+<ul>
+<li>No vendor lock-in</li>
+<li>Can deploy to any K8s cluster</li>
+<li>Easy migration between clouds</li>
+<li>Cost optimization through competition</li>
+<li>Multi-cloud strategy possible</li>
+</ul>
+</li>
+<li>
+<p><strong>Operational Efficiency</strong>:</p>
+<ul>
+<li>Automated deployments via CI/CD</li>
+<li>Consistent environments (dev/staging/prod)</li>
+<li>Infrastructure as code</li>
+<li>Easy rollbacks</li>
+<li>Comprehensive monitoring</li>
+</ul>
+</li>
+<li>
+<p><strong>Scalability</strong>:</p>
+<ul>
+<li>Horizontal scaling for stateless services</li>
+<li>Vertical scaling for databases</li>
+<li>HPA automatically adjusts replicas</li>
+<li>Can handle 10x traffic spikes</li>
+<li>Resource-efficient</li>
+</ul>
+</li>
+</ol>
+<h3 id="negative"><a class="header" href="#negative">Negative</a></h3>
+<ol>
+<li>
+<p><strong>Kubernetes Complexity</strong>:</p>
+<ul>
+<li>Steep learning curve</li>
+<li>Many concepts to understand</li>
+<li>Complex YAML configurations</li>
+<li>Debugging can be challenging</li>
+<li>Requires specialized expertise</li>
+</ul>
+</li>
+<li>
+<p><strong>Operational Overhead</strong>:</p>
+<ul>
+<li>Need to manage K8s cluster</li>
+<li>Monitoring infrastructure required</li>
+<li>More moving parts</li>
+<li>Complex troubleshooting</li>
+<li>Higher ops burden</li>
+</ul>
+</li>
+<li>
+<p><strong>Resource Requirements</strong>:</p>
+<ul>
+<li>K8s control plane overhead</li>
+<li>Need multiple worker nodes</li>
+<li>Development setup is heavyweight</li>
+<li>More expensive infrastructure</li>
+<li>Minimum cluster size costs</li>
+</ul>
+</li>
+<li>
+<p><strong>Development-Production Gap</strong>:</p>
+<ul>
+<li>Docker Compose != Kubernetes</li>
+<li>Some issues only appear in K8s</li>
+<li>Different networking models</li>
+<li>Debugging differs between environments</li>
+<li>Need staging environment</li>
+</ul>
+</li>
+</ol>
+<h3 id="mitigation-strategies"><a class="header" href="#mitigation-strategies">Mitigation Strategies</a></h3>
+<ol>
+<li>
+<p><strong>Complexity</strong>:</p>
+<ul>
+<li>Comprehensive documentation</li>
+<li>Helm charts for easier deployment</li>
+<li>Training for team members</li>
+<li>Start with simple deployments</li>
+<li>Gradually adopt advanced features</li>
+</ul>
+</li>
+<li>
+<p><strong>Operational Overhead</strong>:</p>
+<ul>
+<li>Managed Kubernetes (EKS/GKE/AKS)</li>
+<li>Automated monitoring setup</li>
+<li>Runbooks for common issues</li>
+<li>On-call rotation</li>
+<li>Regular operational reviews</li>
+</ul>
+</li>
+<li>
+<p><strong>Resource Requirements</strong>:</p>
+<ul>
+<li>Right-size cluster for workload</li>
+<li>Use spot instances where possible</li>
+<li>Optimize resource requests/limits</li>
+<li>Auto-scaling to minimize waste</li>
+<li>Cost monitoring and alerts</li>
+</ul>
+</li>
+<li>
+<p><strong>Dev-Prod Gap</strong>:</p>
+<ul>
+<li>Maintain staging environment</li>
+<li>Test in K8s before production</li>
+<li>Document K8s-specific behaviors</li>
+<li>Use same images everywhere</li>
+<li>Comprehensive integration tests</li>
+</ul>
+</li>
+</ol>
+<h2 id="alternatives-considered"><a class="header" href="#alternatives-considered">Alternatives Considered</a></h2>
+<h3 id="1-docker-swarm"><a class="header" href="#1-docker-swarm">1. Docker Swarm</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Simpler than Kubernetes</li>
+<li>Built into Docker</li>
+<li>Easier to learn</li>
+<li>Less resource overhead</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>Less ecosystem support</li>
+<li>Fewer features than K8s</li>
+<li>Not as widely adopted</li>
+<li>Limited scaling capabilities</li>
+<li>Weaker community</li>
+</ul>
+<p><strong>Why Rejected</strong>: Kubernetes has better ecosystem, more features, and industry adoption.</p>
+<h3 id="2-hashicorp-nomad"><a class="header" href="#2-hashicorp-nomad">2. HashiCorp Nomad</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Simpler than Kubernetes</li>
+<li>Multi-workload (containers, VMs, binaries)</li>
+<li>Good for hybrid deployments</li>
+<li>Easier operations</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>Smaller ecosystem</li>
+<li>Less tooling available</li>
+<li>Fewer managed options</li>
+<li>Weaker community</li>
+<li>Less familiar to team</li>
+</ul>
+<p><strong>Why Rejected</strong>: Kubernetes has better ecosystem and more deployment options.</p>
+<h3 id="3-serverless-lambdacloud-functions"><a class="header" href="#3-serverless-lambdacloud-functions">3. Serverless (Lambda/Cloud Functions)</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>No infrastructure management</li>
+<li>Pay per use</li>
+<li>Auto-scaling built-in</li>
+<li>Simple deployment</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>Cold start latency</li>
+<li>Vendor lock-in</li>
+<li>Limited runtime duration</li>
+<li>Harder to debug</li>
+<li>Cost unpredictable at scale</li>
+</ul>
+<p><strong>Why Rejected</strong>: Need consistent latency and want cloud-agnostic approach.</p>
+<h3 id="4-single-vm-deployment"><a class="header" href="#4-single-vm-deployment">4. Single VM Deployment</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Simplest setup</li>
+<li>Easy to understand</li>
+<li>Low cost</li>
+<li>Easy debugging</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>No auto-scaling</li>
+<li>Single point of failure</li>
+<li>Manual updates</li>
+<li>Limited capacity</li>
+<li>No high availability</li>
+</ul>
+<p><strong>Why Rejected</strong>: Doesn't meet production requirements for scaling and availability.</p>
+<h3 id="5-cloud-specific-services-ecscloud-run"><a class="header" href="#5-cloud-specific-services-ecscloud-run">5. Cloud-Specific Services (ECS/Cloud Run)</a></h3>
+<p><strong>Pros</strong>:</p>
+<ul>
+<li>Simpler than K8s</li>
+<li>Managed by provider</li>
+<li>Good integration with cloud</li>
+<li>Lower learning curve</li>
+</ul>
+<p><strong>Cons</strong>:</p>
+<ul>
+<li>Vendor lock-in</li>
+<li>Migration difficult</li>
+<li>Cloud-specific knowledge</li>
+<li>Limited portability</li>
+</ul>
+<p><strong>Why Rejected</strong>: Want cloud-agnostic solution to avoid vendor lock-in.</p>
+<h2 id="implementation-guidelines"><a class="header" href="#implementation-guidelines">Implementation Guidelines</a></h2>
+<h3 id="development-workflow"><a class="header" href="#development-workflow">Development Workflow</a></h3>
+<pre><code class="language-bash"># Clone repository
+git clone https://github.com/your-org/octollm.git
+cd octollm
+
+# Set up environment
+cp .env.example .env
+# Edit .env with your API keys
+
+# Start development environment
+./scripts/dev.sh
+
+# Run tests
+./scripts/test.sh
+
+# View logs
+docker compose logs -f orchestrator
+
+# Restart specific service
+docker compose restart coder-arm
+
+# Stop environment
+docker compose down
+</code></pre>
+<h3 id="production-deployment"><a class="header" href="#production-deployment">Production Deployment</a></h3>
+<pre><code class="language-bash"># Build and push images
+docker build -t octollm/orchestrator:v1.0.0 ./orchestrator
+docker push octollm/orchestrator:v1.0.0
+
+# Deploy to staging
+kubectl apply -k overlays/staging
+kubectl rollout status deployment/orchestrator -n octollm-staging
+
+# Run smoke tests
+./scripts/smoke-tests.sh staging
+
+# Deploy to production
+kubectl apply -k overlays/production
+kubectl rollout status deployment/orchestrator -n octollm-production
+
+# Monitor rollout
+kubectl get pods -n octollm-production -w
+kubectl logs -f deployment/orchestrator -n octollm-production
+
+# Rollback if needed
+kubectl rollout undo deployment/orchestrator -n octollm-production
+</code></pre>
+<h3 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h3>
+<pre><code class="language-bash"># Check pod status
+kubectl get pods -n octollm-production
+
+# View pod logs
+kubectl logs -f &lt;pod-name&gt; -n octollm-production
+
+# Describe pod (events, resources)
+kubectl describe pod &lt;pod-name&gt; -n octollm-production
+
+# Execute command in pod
+kubectl exec -it &lt;pod-name&gt; -n octollm-production -- /bin/sh
+
+# Check resource usage
+kubectl top pods -n octollm-production
+
+# View events
+kubectl get events -n octollm-production --sort-by='.lastTimestamp'
+</code></pre>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><a href="https://kubernetes.io/docs/">Kubernetes Documentation</a></li>
+<li><a href="https://docs.docker.com/compose/">Docker Compose Documentation</a></li>
+<li><a href="https://helm.sh/docs/">Helm Documentation</a></li>
+<li><a href="https://kustomize.io/">Kustomize Documentation</a></li>
+<li><a href="https://12factor.net/">The Twelve-Factor App</a></li>
+<li><a href="https://www.redhat.com/en/resources/oreilly-kubernetes-patterns-cloud-native-apps">Kubernetes Patterns</a></li>
+</ul>
+<hr />
+<p><strong>Last Review</strong>: 2025-11-10
+<strong>Next Review</strong>: 2026-05-10 (6 months)
+<strong>Related ADRs</strong>: ADR-001, ADR-002, ADR-003, ADR-004</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../architecture/adr/004-security-model.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../architecture/adr/006-cloud-provider-selection.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../architecture/adr/004-security-model.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../architecture/adr/006-cloud-provider-selection.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

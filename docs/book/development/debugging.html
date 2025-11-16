@@ -1,0 +1,1085 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Debugging Guide - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/development/debugging.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="debugging-guide-for-octollm"><a class="header" href="#debugging-guide-for-octollm">Debugging Guide for OctoLLM</a></h1>
+<p><strong>Document</strong>: Implementation Guide
+<strong>Version</strong>: 1.0
+<strong>Last Updated</strong>: 2025-11-10
+<strong>Estimated Time</strong>: 30-45 minutes</p>
+<p><a href="../README.html">← Back to Documentation</a> | <a href="./README.html">Implementation Guides</a></p>
+<hr />
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#overview">Overview</a>
+<ul>
+<li><a href="#debugging-philosophy">Debugging Philosophy</a></li>
+<li><a href="#common-issues">Common Issues</a></li>
+</ul>
+</li>
+<li><a href="#tools-and-setup">Tools and Setup</a>
+<ul>
+<li><a href="#logging-configuration">Logging Configuration</a></li>
+<li><a href="#debugger-setup">Debugger Setup</a></li>
+<li><a href="#observability-stack">Observability Stack</a></li>
+</ul>
+</li>
+<li><a href="#debugging-techniques">Debugging Techniques</a>
+<ul>
+<li><a href="#interactive-debugging">Interactive Debugging</a></li>
+<li><a href="#log-analysis">Log Analysis</a></li>
+<li><a href="#distributed-tracing">Distributed Tracing</a></li>
+</ul>
+</li>
+<li><a href="#component-specific-debugging">Component-Specific Debugging</a>
+<ul>
+<li><a href="#orchestrator-debugging">Orchestrator</a></li>
+<li><a href="#arms-debugging">Arms</a></li>
+<li><a href="#reflex-layer-debugging">Reflex Layer</a></li>
+<li><a href="#memory-systems-debugging">Memory Systems</a></li>
+</ul>
+</li>
+<li><a href="#common-problems">Common Problems</a>
+<ul>
+<li><a href="#task-failures">Task Failures</a></li>
+<li><a href="#performance-issues">Performance Issues</a></li>
+<li><a href="#connection-problems">Connection Problems</a></li>
+<li><a href="#memory-leaks">Memory Leaks</a></li>
+</ul>
+</li>
+<li><a href="#production-debugging">Production Debugging</a>
+<ul>
+<li><a href="#live-debugging">Live Debugging</a></li>
+<li><a href="#post-mortem-analysis">Post-Mortem Analysis</a></li>
+</ul>
+</li>
+<li><a href="#best-practices">Best Practices</a></li>
+</ol>
+<hr />
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Effective debugging is essential for maintaining a healthy OctoLLM system. This guide provides techniques, tools, and strategies for identifying and fixing issues across all components.</p>
+<h3 id="debugging-philosophy"><a class="header" href="#debugging-philosophy">Debugging Philosophy</a></h3>
+<p>OctoLLM follows these debugging principles:</p>
+<ol>
+<li><strong>Observability First</strong>: System is instrumented for deep visibility</li>
+<li><strong>Structured Logging</strong>: All logs are structured and searchable</li>
+<li><strong>Distributed Tracing</strong>: Track requests across components</li>
+<li><strong>Fail Fast</strong>: Errors surface quickly with clear messages</li>
+<li><strong>Reproducible</strong>: Issues can be reproduced in development</li>
+</ol>
+<pre><code class="language-mermaid">flowchart TD
+    ISSUE[Issue Detected] --&gt; LOGS{Check Logs}
+    LOGS --&gt;|Clear Error| FIX[Apply Fix]
+    LOGS --&gt;|Unclear| TRACE{Check Traces}
+
+    TRACE --&gt;|Request Path| METRICS{Check Metrics}
+    METRICS --&gt;|Resource Issue| PROFILE[Profile Code]
+    METRICS --&gt;|Logic Issue| DEBUG[Interactive Debug]
+
+    PROFILE --&gt; FIX
+    DEBUG --&gt; FIX
+
+    FIX --&gt; TEST[Test Fix]
+    TEST --&gt;|Success| DEPLOY[Deploy]
+    TEST --&gt;|Failure| ISSUE
+</code></pre>
+<h3 id="common-issues"><a class="header" href="#common-issues">Common Issues</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Issue Type</th><th>Frequency</th><th>Severity</th><th>Avg Time to Fix</th></tr></thead><tbody>
+<tr><td>Configuration errors</td><td>High</td><td>Medium</td><td>10 min</td></tr>
+<tr><td>Network timeouts</td><td>Medium</td><td>High</td><td>30 min</td></tr>
+<tr><td>Memory leaks</td><td>Low</td><td>Critical</td><td>2 hours</td></tr>
+<tr><td>Logic bugs</td><td>Medium</td><td>Medium</td><td>1 hour</td></tr>
+<tr><td>Performance degradation</td><td>Low</td><td>High</td><td>1-2 hours</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="tools-and-setup"><a class="header" href="#tools-and-setup">Tools and Setup</a></h2>
+<h3 id="logging-configuration"><a class="header" href="#logging-configuration">Logging Configuration</a></h3>
+<p>OctoLLM uses structured logging with <code>structlog</code> for consistent, searchable logs.</p>
+<p><strong>File</strong>: <code>orchestrator/logging_config.py</code></p>
+<pre><code class="language-python">"""Logging configuration for OctoLLM."""
+
+import structlog
+import logging
+import sys
+from typing import Any
+
+
+def configure_logging(log_level: str = "INFO", log_format: str = "json"):
+    """
+    Configure structured logging.
+
+    Args:
+        log_level: Logging level (DEBUG, INFO, WARNING, ERROR)
+        log_format: Output format (json or console)
+    """
+    # Determine processors based on format
+    processors = [
+        structlog.stdlib.filter_by_level,
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.UnicodeDecoder(),
+    ]
+
+    if log_format == "json":
+        processors.append(structlog.processors.JSONRenderer())
+    else:
+        processors.append(structlog.dev.ConsoleRenderer(colors=True))
+
+    structlog.configure(
+        processors=processors,
+        context_class=dict,
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
+    )
+
+    # Configure stdlib logging
+    logging.basicConfig(
+        format="%(message)s",
+        stream=sys.stdout,
+        level=getattr(logging, log_level.upper())
+    )
+
+
+# Example usage
+logger = structlog.get_logger()
+
+# Structured logging with context
+logger.info(
+    "task.started",
+    task_id="task-123",
+    user_id="user-456",
+    goal="Write code"
+)
+
+# With extra context
+logger.error(
+    "database.query.failed",
+    query="SELECT * FROM entities",
+    error="Connection timeout",
+    retry_count=3
+)
+</code></pre>
+<p><strong>Enable DEBUG logging for development</strong>:</p>
+<pre><code class="language-python"># In .env or environment
+LOG_LEVEL=DEBUG
+LOG_FORMAT=console  # Pretty console output
+</code></pre>
+<p><strong>Example log output (console format)</strong>:</p>
+<pre><code>2025-11-10T10:30:00.123456Z [info     ] task.started                  task_id=task-123 user_id=user-456 goal=Write code
+2025-11-10T10:30:01.234567Z [error    ] database.query.failed         query=SELECT * FROM entities error=Connection timeout retry_count=3
+</code></pre>
+<p><strong>Example log output (JSON format)</strong>:</p>
+<pre><code class="language-json">{"event": "task.started", "level": "info", "timestamp": "2025-11-10T10:30:00.123456Z", "task_id": "task-123", "user_id": "user-456", "goal": "Write code"}
+{"event": "database.query.failed", "level": "error", "timestamp": "2025-11-10T10:30:01.234567Z", "query": "SELECT * FROM entities", "error": "Connection timeout", "retry_count": 3}
+</code></pre>
+<h3 id="debugger-setup"><a class="header" href="#debugger-setup">Debugger Setup</a></h3>
+<h4 id="vs-code-configuration"><a class="header" href="#vs-code-configuration">VS Code Configuration</a></h4>
+<p><strong>File</strong>: <code>.vscode/launch.json</code></p>
+<pre><code class="language-json">{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Orchestrator",
+      "type": "python",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "orchestrator.main:app",
+        "--reload",
+        "--host", "0.0.0.0",
+        "--port", "8000"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "LOG_LEVEL": "DEBUG"
+      },
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "Debug Tests",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "${file}",
+        "-v",
+        "-s"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "Debug Specific Test",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "${file}::${selectedText}",
+        "-v",
+        "-s"
+      ],
+      "console": "integratedTerminal"
+    }
+  ]
+}
+</code></pre>
+<h4 id="pycharm-configuration"><a class="header" href="#pycharm-configuration">PyCharm Configuration</a></h4>
+<ol>
+<li><strong>Run/Debug Configurations</strong> → <strong>+</strong> → <strong>Python</strong></li>
+<li><strong>Script path</strong>: Select <code>uvicorn</code> module</li>
+<li><strong>Parameters</strong>: <code>orchestrator.main:app --reload</code></li>
+<li><strong>Environment variables</strong>: <code>LOG_LEVEL=DEBUG</code></li>
+<li><strong>Python interpreter</strong>: Select Poetry virtualenv</li>
+</ol>
+<h4 id="pdb-python-debugger"><a class="header" href="#pdb-python-debugger">pdb (Python Debugger)</a></h4>
+<p><strong>Quick debugging with breakpoints</strong>:</p>
+<pre><code class="language-python"># Insert breakpoint in code
+import pdb; pdb.set_trace()
+
+# Or use built-in breakpoint() (Python 3.7+)
+breakpoint()
+</code></pre>
+<p><strong>Common pdb commands</strong>:</p>
+<pre><code>n (next)      - Execute next line
+s (step)      - Step into function
+c (continue)  - Continue execution
+p var         - Print variable value
+pp var        - Pretty print variable
+l (list)      - Show code context
+w (where)     - Show stack trace
+q (quit)      - Exit debugger
+</code></pre>
+<h3 id="observability-stack"><a class="header" href="#observability-stack">Observability Stack</a></h3>
+<p>OctoLLM uses Prometheus + Grafana for metrics and observability.</p>
+<p><strong>Enable metrics in orchestrator</strong>:</p>
+<pre><code class="language-python"># orchestrator/metrics.py
+from prometheus_client import Counter, Histogram, Gauge
+import structlog
+
+logger = structlog.get_logger()
+
+# Define metrics
+TASK_COUNTER = Counter(
+    'octollm_tasks_total',
+    'Total number of tasks',
+    ['status', 'priority']
+)
+
+TASK_DURATION = Histogram(
+    'octollm_task_duration_seconds',
+    'Task execution duration',
+    ['arm_type']
+)
+
+ARM_FAILURES = Counter(
+    'octollm_arm_failures_total',
+    'Total arm failures',
+    ['arm_id', 'error_type']
+)
+
+ACTIVE_TASKS = Gauge(
+    'octollm_active_tasks',
+    'Number of active tasks'
+)
+
+
+# Usage
+TASK_COUNTER.labels(status='completed', priority='high').inc()
+TASK_DURATION.labels(arm_type='coder').observe(12.5)
+ARM_FAILURES.labels(arm_id='coder-001', error_type='timeout').inc()
+ACTIVE_TASKS.set(5)
+</code></pre>
+<p><strong>Expose metrics endpoint</strong>:</p>
+<pre><code class="language-python"># orchestrator/api/metrics.py
+from fastapi import APIRouter
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from starlette.responses import Response
+
+router = APIRouter()
+
+@router.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint."""
+    return Response(
+        content=generate_latest(),
+        media_type=CONTENT_TYPE_LATEST
+    )
+</code></pre>
+<p><strong>Query metrics in Prometheus</strong>:</p>
+<pre><code class="language-promql"># Total tasks completed
+sum(octollm_tasks_total{status="completed"})
+
+# Average task duration by arm
+rate(octollm_task_duration_seconds_sum[5m]) / rate(octollm_task_duration_seconds_count[5m])
+
+# Failure rate
+sum(rate(octollm_arm_failures_total[5m])) by (arm_id)
+</code></pre>
+<hr />
+<h2 id="debugging-techniques"><a class="header" href="#debugging-techniques">Debugging Techniques</a></h2>
+<h3 id="interactive-debugging"><a class="header" href="#interactive-debugging">Interactive Debugging</a></h3>
+<p><strong>Set breakpoint and inspect state</strong>:</p>
+<pre><code class="language-python">async def execute_task(task: TaskContract):
+    """Execute task with debugging."""
+
+    # Set breakpoint
+    breakpoint()
+
+    # At breakpoint, inspect:
+    # - Variables: p task.goal
+    # - Function calls: s to step into
+    # - Stack: w to see call stack
+
+    result = await orchestrator.process(task)
+    return result
+</code></pre>
+<p><strong>Conditional breakpoints</strong>:</p>
+<pre><code class="language-python">async def execute_task(task: TaskContract):
+    """Execute with conditional breakpoint."""
+
+    # Only break for high-priority tasks
+    if task.priority == "high":
+        breakpoint()
+
+    result = await orchestrator.process(task)
+    return result
+</code></pre>
+<p><strong>Post-mortem debugging</strong>:</p>
+<pre><code class="language-python">import sys
+import traceback
+
+try:
+    result = await execute_task(task)
+except Exception:
+    # Drop into debugger on exception
+    type, value, tb = sys.exc_info()
+    traceback.print_exc()
+    import pdb
+    pdb.post_mortem(tb)
+</code></pre>
+<h3 id="log-analysis"><a class="header" href="#log-analysis">Log Analysis</a></h3>
+<p><strong>Grep logs for specific request</strong>:</p>
+<pre><code class="language-bash"># Find all logs for specific task
+cat logs/orchestrator.log | grep "task-123"
+
+# Find errors in last hour
+tail -n 10000 logs/orchestrator.log | grep "level.*error"
+
+# Count errors by type
+cat logs/orchestrator.log | grep "error" | jq -r '.error_type' | sort | uniq -c
+</code></pre>
+<p><strong>Analyze with <code>jq</code></strong> (JSON logs):</p>
+<pre><code class="language-bash"># Extract task failures
+cat logs/orchestrator.log | jq 'select(.event == "task.failed")'
+
+# Group errors by type
+cat logs/orchestrator.log | jq -r 'select(.level == "error") | .error_type' | sort | uniq -c
+
+# Find slow tasks (&gt; 10 seconds)
+cat logs/orchestrator.log | jq 'select(.event == "task.complete" and .duration &gt; 10)'
+</code></pre>
+<p><strong>Log aggregation with ELK Stack</strong>:</p>
+<ol>
+<li><strong>Elasticsearch</strong>: Store logs</li>
+<li><strong>Logstash</strong>: Process and ship logs</li>
+<li><strong>Kibana</strong>: Visualize and search</li>
+</ol>
+<p><strong>Example Kibana query</strong>:</p>
+<pre><code>event:"task.failed" AND priority:"high" AND @timestamp:[now-1h TO now]
+</code></pre>
+<h3 id="distributed-tracing"><a class="header" href="#distributed-tracing">Distributed Tracing</a></h3>
+<p>OctoLLM uses request IDs to trace requests across components.</p>
+<p><strong>Add request ID to logs</strong>:</p>
+<pre><code class="language-python">import uuid
+from contextvars import ContextVar
+
+# Context variable for request ID
+request_id_var: ContextVar[str] = ContextVar('request_id', default='')
+
+async def process_request(request):
+    """Process request with tracing."""
+
+    # Generate request ID
+    request_id = f"req-{uuid.uuid4()}"
+    request_id_var.set(request_id)
+
+    logger.info(
+        "request.start",
+        request_id=request_id,
+        endpoint=request.url.path
+    )
+
+    # All subsequent logs include request_id
+    try:
+        result = await handle_request(request)
+
+        logger.info(
+            "request.complete",
+            request_id=request_id,
+            status="success"
+        )
+
+        return result
+
+    except Exception as e:
+        logger.error(
+            "request.failed",
+            request_id=request_id,
+            error=str(e)
+        )
+        raise
+</code></pre>
+<p><strong>Trace request across services</strong>:</p>
+<pre><code class="language-python"># Orchestrator → Arm communication
+async def call_arm(arm_endpoint: str, payload: dict):
+    """Call arm with request ID propagation."""
+
+    request_id = request_id_var.get()
+
+    logger.info(
+        "arm.call.start",
+        request_id=request_id,
+        arm_endpoint=arm_endpoint
+    )
+
+    # Include request ID in headers
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            arm_endpoint,
+            json=payload,
+            headers={"X-Request-ID": request_id}
+        )
+
+        logger.info(
+            "arm.call.complete",
+            request_id=request_id,
+            status=response.status_code
+        )
+
+        return response.json()
+</code></pre>
+<p><strong>Search logs across services</strong>:</p>
+<pre><code class="language-bash"># Find all logs for specific request across all services
+grep "req-abc123" logs/*.log
+
+# Or with centralized logging
+curl "http://elasticsearch:9200/_search" -d '
+{
+  "query": {
+    "match": {
+      "request_id": "req-abc123"
+    }
+  }
+}'
+</code></pre>
+<hr />
+<h2 id="component-specific-debugging"><a class="header" href="#component-specific-debugging">Component-Specific Debugging</a></h2>
+<h3 id="orchestrator-debugging"><a class="header" href="#orchestrator-debugging">Orchestrator Debugging</a></h3>
+<p><strong>Common issues</strong>:</p>
+<ol>
+<li><strong>Task routing failures</strong></li>
+</ol>
+<pre><code class="language-python"># Enable detailed routing logs
+logger.debug(
+    "arm_router.scoring",
+    candidates=candidates,
+    scores=[
+        {"arm_id": s.arm_id, "score": s.total_score}
+        for s in scores
+    ]
+)
+</code></pre>
+<ol start="2">
+<li><strong>LLM API errors</strong></li>
+</ol>
+<pre><code class="language-python">try:
+    response = await openai_client.chat.completions.create(...)
+except openai.RateLimitError as e:
+    logger.error(
+        "openai.rate_limit",
+        error=str(e),
+        retry_after=e.response.headers.get("Retry-After")
+    )
+    # Implement exponential backoff
+except openai.APIError as e:
+    logger.error(
+        "openai.api_error",
+        status_code=e.status_code,
+        error=str(e)
+    )
+</code></pre>
+<ol start="3">
+<li><strong>Memory integration issues</strong></li>
+</ol>
+<pre><code class="language-python"># Test database connectivity
+async def test_db_connection():
+    """Test PostgreSQL connection."""
+    try:
+        async with db_pool.acquire() as conn:
+            result = await conn.fetchval("SELECT 1")
+            logger.info("database.connection.ok", result=result)
+    except Exception as e:
+        logger.error("database.connection.failed", error=str(e))
+</code></pre>
+<h3 id="arms-debugging"><a class="header" href="#arms-debugging">Arms Debugging</a></h3>
+<p><strong>Enable arm-level debugging</strong>:</p>
+<pre><code class="language-python"># coder_arm/main.py
+from orchestrator.logging_config import configure_logging
+
+configure_logging(log_level="DEBUG")
+logger = structlog.get_logger()
+
+@app.post("/execute")
+async def execute(request: CoderRequest):
+    """Execute code generation with debugging."""
+
+    logger.debug(
+        "coder.execute.start",
+        goal=request.goal,
+        context_size=len(request.context)
+    )
+
+    # Log intermediate steps
+    logger.debug("coder.retrieval.start")
+    context = await retrieve_context(request.goal)
+    logger.debug("coder.retrieval.complete", context_items=len(context))
+
+    logger.debug("coder.generation.start")
+    code = await generate_code(request.goal, context)
+    logger.debug("coder.generation.complete", code_length=len(code))
+
+    return {"code": code}
+</code></pre>
+<p><strong>Test arm in isolation</strong>:</p>
+<pre><code class="language-bash"># Start arm standalone
+cd coder_arm
+uvicorn main:app --reload --port 8080
+
+# Test with curl
+curl -X POST http://localhost:8080/execute \
+  -H "Content-Type: application/json" \
+  -d '{
+    "goal": "Write a sorting function",
+    "context": {}
+  }'
+</code></pre>
+<h3 id="reflex-layer-debugging"><a class="header" href="#reflex-layer-debugging">Reflex Layer Debugging</a></h3>
+<p><strong>Debug caching behavior</strong>:</p>
+<pre><code class="language-python"># reflex/cache.py
+async def check_cache(request_hash: str) -&gt; Optional[dict]:
+    """Check cache with debug logging."""
+
+    logger.debug("cache.lookup.start", hash=request_hash)
+
+    cached = await redis_client.get(request_hash)
+
+    if cached:
+        logger.info("cache.hit", hash=request_hash)
+        return json.loads(cached)
+    else:
+        logger.info("cache.miss", hash=request_hash)
+        return None
+</code></pre>
+<p><strong>Debug PII detection</strong>:</p>
+<pre><code class="language-python"># reflex/pii_detector.py
+def detect_pii(text: str) -&gt; List[str]:
+    """Detect PII with debug output."""
+
+    patterns_found = []
+
+    for pattern_name, regex in PII_PATTERNS.items():
+        matches = regex.findall(text)
+        if matches:
+            logger.warning(
+                "pii.detected",
+                pattern=pattern_name,
+                count=len(matches),
+                examples=matches[:3]  # Log first 3 examples
+            )
+            patterns_found.append(pattern_name)
+
+    return patterns_found
+</code></pre>
+<hr />
+<h2 id="common-problems"><a class="header" href="#common-problems">Common Problems</a></h2>
+<h3 id="task-failures"><a class="header" href="#task-failures">Task Failures</a></h3>
+<p><strong>Problem</strong>: Tasks fail with "No suitable arm found"</p>
+<p><strong>Debug steps</strong>:</p>
+<ol>
+<li>Check arm registry:</li>
+</ol>
+<pre><code class="language-python"># Print registered arms
+logger.info("arm_registry", arms=list(arm_registry.keys()))
+</code></pre>
+<ol start="2">
+<li>Check arm health:</li>
+</ol>
+<pre><code class="language-python"># Test arm connectivity
+for arm_id, arm_info in arm_registry.items():
+    try:
+        response = await httpx.get(f"{arm_info['endpoint']}/health")
+        logger.info("arm.health", arm_id=arm_id, status=response.status_code)
+    except Exception as e:
+        logger.error("arm.health.failed", arm_id=arm_id, error=str(e))
+</code></pre>
+<ol start="3">
+<li>Check capability matching:</li>
+</ol>
+<pre><code class="language-python">logger.debug(
+    "routing.debug",
+    required_capabilities=required_capabilities,
+    available_arms={
+        arm_id: info.get("capabilities")
+        for arm_id, info in arm_registry.items()
+    }
+)
+</code></pre>
+<p><strong>Solution</strong>: Ensure arms are registered with correct capabilities.</p>
+<hr />
+<h3 id="performance-issues"><a class="header" href="#performance-issues">Performance Issues</a></h3>
+<p><strong>Problem</strong>: High latency for task execution</p>
+<p><strong>Debug steps</strong>:</p>
+<ol>
+<li><strong>Profile with cProfile</strong>:</li>
+</ol>
+<pre><code class="language-python">import cProfile
+import pstats
+
+profiler = cProfile.Profile()
+profiler.enable()
+
+# Code to profile
+result = await execute_task(task)
+
+profiler.disable()
+stats = pstats.Stats(profiler)
+stats.sort_stats('cumulative')
+stats.print_stats(20)  # Top 20 slowest functions
+</code></pre>
+<ol start="2">
+<li><strong>Add timing logs</strong>:</li>
+</ol>
+<pre><code class="language-python">import time
+
+start = time.time()
+
+# Slow operation
+result = await slow_function()
+
+duration = time.time() - start
+logger.warning(
+    "slow_operation",
+    function="slow_function",
+    duration_seconds=duration
+)
+</code></pre>
+<ol start="3">
+<li><strong>Check database query performance</strong>:</li>
+</ol>
+<pre><code class="language-python"># PostgreSQL: Enable query logging
+async with conn.transaction():
+    start = time.time()
+    result = await conn.fetch("SELECT * FROM entities WHERE ...")
+    duration = time.time() - start
+
+    logger.info(
+        "database.query",
+        query="SELECT ...",
+        rows_returned=len(result),
+        duration_ms=duration * 1000
+    )
+</code></pre>
+<p><strong>Solution</strong>: Optimize slow queries, add indexes, use caching.</p>
+<hr />
+<h3 id="connection-problems"><a class="header" href="#connection-problems">Connection Problems</a></h3>
+<p><strong>Problem</strong>: "Connection refused" or "Timeout" errors</p>
+<p><strong>Debug steps</strong>:</p>
+<ol>
+<li><strong>Test connectivity</strong>:</li>
+</ol>
+<pre><code class="language-bash"># Test PostgreSQL
+psql -h localhost -U postgres -d octollm
+
+# Test Redis
+redis-cli ping
+
+# Test Qdrant
+curl http://localhost:6333/collections
+</code></pre>
+<ol start="2">
+<li><strong>Check network configuration</strong>:</li>
+</ol>
+<pre><code class="language-python"># Test arm endpoint reachability
+try:
+    response = await httpx.get(
+        f"{arm_endpoint}/health",
+        timeout=5.0
+    )
+    logger.info("connectivity.ok", endpoint=arm_endpoint)
+except httpx.TimeoutException:
+    logger.error("connectivity.timeout", endpoint=arm_endpoint)
+except httpx.ConnectError as e:
+    logger.error("connectivity.refused", endpoint=arm_endpoint, error=str(e))
+</code></pre>
+<ol start="3">
+<li><strong>Verify Docker networking</strong> (if using containers):</li>
+</ol>
+<pre><code class="language-bash"># Check container network
+docker network inspect octollm_network
+
+# Test connectivity between containers
+docker exec orchestrator ping coder-arm
+</code></pre>
+<p><strong>Solution</strong>: Fix network configuration, update endpoints, check firewall rules.</p>
+<hr />
+<h2 id="production-debugging"><a class="header" href="#production-debugging">Production Debugging</a></h2>
+<h3 id="live-debugging"><a class="header" href="#live-debugging">Live Debugging</a></h3>
+<p><strong>Never use <code>pdb</code> in production!</strong> Instead:</p>
+<ol>
+<li><strong>Increase log verbosity temporarily</strong>:</li>
+</ol>
+<pre><code class="language-bash"># Update environment variable
+export LOG_LEVEL=DEBUG
+
+# Restart service
+kubectl rollout restart deployment/orchestrator
+</code></pre>
+<ol start="2">
+<li><strong>Add diagnostic endpoints</strong>:</li>
+</ol>
+<pre><code class="language-python"># orchestrator/api/debug.py
+from fastapi import APIRouter
+
+router = APIRouter()
+
+@router.get("/debug/arm-registry")
+async def get_arm_registry():
+    """Return current arm registry (development only)."""
+    return arm_registry
+
+@router.get("/debug/active-tasks")
+async def get_active_tasks():
+    """Return active tasks."""
+    return state_manager.get_active_tasks()
+</code></pre>
+<ol start="3">
+<li><strong>Use remote profiling</strong>:</li>
+</ol>
+<pre><code class="language-python"># Enable remote profiling with py-spy
+# $ py-spy top --pid &lt;process_id&gt;
+# $ py-spy record -o profile.svg --pid &lt;process_id&gt;
+</code></pre>
+<h3 id="post-mortem-analysis"><a class="header" href="#post-mortem-analysis">Post-Mortem Analysis</a></h3>
+<p><strong>Analyze logs after incident</strong>:</p>
+<ol>
+<li><strong>Extract time window</strong>:</li>
+</ol>
+<pre><code class="language-bash"># Get logs from incident window
+cat logs/orchestrator.log | \
+  jq 'select(.timestamp &gt;= "2025-11-10T10:00:00" and .timestamp &lt;= "2025-11-10T11:00:00")'
+</code></pre>
+<ol start="2">
+<li><strong>Identify root cause</strong>:</li>
+</ol>
+<pre><code class="language-bash"># Find first error
+cat logs/orchestrator.log | jq 'select(.level == "error")' | head -1
+
+# Count error types
+cat logs/orchestrator.log | jq -r 'select(.level == "error") | .error_type' | sort | uniq -c
+</code></pre>
+<ol start="3">
+<li><strong>Create incident report</strong>:</li>
+</ol>
+<pre><code class="language-markdown">## Incident Report: Task Failures on 2025-11-10
+
+**Timeline**:
+- 10:00 - First failures observed
+- 10:15 - Database connection pool exhausted
+- 10:30 - Service restarted, normal operation resumed
+
+**Root Cause**: Database connection pool size (10) insufficient for load spike (50 concurrent tasks)
+
+**Solution**: Increased pool size to 50, added auto-scaling based on active tasks
+
+**Prevention**: Add alerts for connection pool saturation
+</code></pre>
+<hr />
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<ol>
+<li><strong>Log generously</strong>: Better too much information than too little</li>
+<li><strong>Use structured logging</strong>: Makes searching/filtering easier</li>
+<li><strong>Include context</strong>: Request IDs, user IDs, task IDs</li>
+<li><strong>Set log levels appropriately</strong>: DEBUG for development, INFO for production</li>
+<li><strong>Monitor metrics</strong>: Track key performance indicators</li>
+<li><strong>Test error paths</strong>: Write tests that trigger error conditions</li>
+<li><strong>Document debugging procedures</strong>: Update this guide with new techniques</li>
+<li><strong>Use feature flags</strong>: Toggle debugging features without redeployment</li>
+</ol>
+<hr />
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>This guide covered debugging techniques for OctoLLM:</p>
+<div class="table-wrapper"><table><thead><tr><th>Technique</th><th>Use Case</th><th>Complexity</th></tr></thead><tbody>
+<tr><td>Interactive debugging</td><td>Development</td><td>Low</td></tr>
+<tr><td>Log analysis</td><td>Production</td><td>Medium</td></tr>
+<tr><td>Distributed tracing</td><td>Multi-component issues</td><td>High</td></tr>
+<tr><td>Performance profiling</td><td>Optimization</td><td>Medium</td></tr>
+<tr><td>Metrics monitoring</td><td>Proactive detection</td><td>Medium</td></tr>
+</tbody></table>
+</div>
+<h3 id="key-takeaways"><a class="header" href="#key-takeaways">Key Takeaways</a></h3>
+<ol>
+<li><strong>Structured logging</strong> makes debugging easier</li>
+<li><strong>Request IDs</strong> enable distributed tracing</li>
+<li><strong>Metrics</strong> provide early warning signs</li>
+<li><strong>Never debug in production</strong> with interactive tools</li>
+<li><strong>Document solutions</strong> to prevent recurring issues</li>
+</ol>
+<h3 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h3>
+<ul>
+<li><a href="./testing-guide.html">Testing Guide</a> - Prevent bugs with testing</li>
+<li><a href="./integration-patterns.html">Integration Patterns</a> - Debug integrations</li>
+<li><a href="../operations/monitoring.html">Monitoring</a> - Set up observability</li>
+<li><a href="../operations/troubleshooting.html">Troubleshooting</a> - Common issues and fixes</li>
+</ul>
+<hr />
+<p><strong>Document Maintainers</strong>: OctoLLM Core Team
+<strong>Last Updated</strong>: 2025-11-10
+<strong>Next Review</strong>: 2025-12-10</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../development/testing.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../development/custom-arms.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../development/testing.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../development/custom-arms.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

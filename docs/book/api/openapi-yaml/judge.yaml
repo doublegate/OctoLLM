@@ -1,0 +1,303 @@
+openapi: 3.0.3
+info:
+  title: OctoLLM Judge Arm API
+  description: |
+    Output validation and quality assurance specialist with multi-layer validation
+    including schema checks, fact-checking, criteria evaluation, hallucination detection,
+    and quality assessment.
+
+    **Technology**: Python 3.11+ / FastAPI
+    **Port**: 8006
+    **Cost Tier**: 2 (Medium - uses GPT-3.5-turbo)
+    **Average Latency**: 0.5-2 seconds
+  version: 0.3.0
+
+servers:
+  - url: http://localhost:8006
+    description: Local development
+  - url: http://judge:8006
+    description: Docker Compose / Kubernetes internal
+
+tags:
+  - name: validation
+  - name: health
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      tags:
+        - health
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  version:
+                    type: string
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      operationId: getMetrics
+      tags:
+        - health
+      responses:
+        '200':
+          description: Metrics
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /capabilities:
+    get:
+      summary: Get capabilities
+      operationId: getCapabilities
+      tags:
+        - health
+      responses:
+        '200':
+          description: Capabilities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capabilities:
+                    type: array
+                    items:
+                      type: string
+                example:
+                  capabilities:
+                    - schema_validation
+                    - fact_checking
+                    - criteria_evaluation
+                    - hallucination_detection
+                    - quality_assessment
+
+  /validate:
+    post:
+      summary: Validate output
+      description: |
+        Performs multi-layer validation:
+        1. Schema validation - structure compliance
+        2. Fact-checking - verify claims against sources
+        3. Criteria evaluation - check acceptance criteria
+        4. Hallucination detection - identify unsupported claims
+        5. Quality assessment - overall quality scoring
+      operationId: validateOutput
+      tags:
+        - validation
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationRequest'
+            example:
+              output:
+                code: "def sort_list(lst): return sorted(lst)"
+                tests: "assert sort_list([3,1,2]) == [1,2,3]"
+              validation_types:
+                - schema
+                - criteria
+                - quality
+              acceptance_criteria:
+                - "Code implements sorting functionality"
+                - "Tests are included"
+                - "Function has proper naming"
+              expected_schema:
+                type: object
+                required:
+                  - code
+                  - tests
+                properties:
+                  code:
+                    type: string
+                  tests:
+                    type: string
+      responses:
+        '200':
+          description: Validation complete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+              examples:
+                valid:
+                  summary: Valid output
+                  value:
+                    valid: true
+                    confidence: 0.92
+                    issues:
+                      - severity: info
+                        type: style_suggestion
+                        message: "Consider adding docstring to function"
+                        location: "function:sort_list"
+                        suggestion: "Add docstring explaining parameters"
+                    passed_criteria:
+                      - "Code implements sorting functionality"
+                      - "Tests are included"
+                      - "Function has proper naming"
+                    failed_criteria: []
+                    quality_score: 0.85
+                    metadata:
+                      validation_types_run:
+                        - schema
+                        - criteria
+                        - quality
+                      total_issues: 1
+                      error_count: 0
+                      warning_count: 0
+                invalid:
+                  summary: Invalid output
+                  value:
+                    valid: false
+                    confidence: 0.45
+                    issues:
+                      - severity: error
+                        type: schema_violation
+                        message: "Missing required field 'tests'"
+                        location: root
+                        suggestion: "Add 'tests' field to output"
+                      - severity: error
+                        type: criteria_not_met
+                        message: "Acceptance criterion not met: Tests are included"
+                        suggestion: "Review output and ensure tests are included"
+                    passed_criteria:
+                      - "Code implements sorting functionality"
+                    failed_criteria:
+                      - "Tests are included"
+                      - "Function has proper naming"
+                    quality_score: 0.60
+                    metadata:
+                      validation_types_run:
+                        - schema
+                        - criteria
+                        - quality
+                      total_issues: 2
+                      error_count: 2
+                      warning_count: 0
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    ValidationRequest:
+      type: object
+      required:
+        - output
+        - validation_types
+      properties:
+        output:
+          description: Output to validate (any type)
+        validation_types:
+          type: array
+          items:
+            type: string
+            enum:
+              - schema
+              - facts
+              - criteria
+              - quality
+              - hallucination
+          description: Types of validation to perform
+        acceptance_criteria:
+          type: array
+          items:
+            type: string
+          description: Criteria that must be met
+        expected_schema:
+          type: object
+          description: JSON Schema for structure validation
+        trusted_sources:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: URLs of trusted sources for fact-checking
+        context:
+          type: object
+          additionalProperties: true
+          description: Context for hallucination detection
+
+    ValidationResult:
+      type: object
+      required:
+        - valid
+        - confidence
+        - issues
+        - quality_score
+      properties:
+        valid:
+          type: boolean
+          description: Whether output is valid (no errors)
+        confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Confidence in validation result
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+        passed_criteria:
+          type: array
+          items:
+            type: string
+          description: Acceptance criteria that passed
+        failed_criteria:
+          type: array
+          items:
+            type: string
+          description: Acceptance criteria that failed
+        quality_score:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Overall quality score
+        metadata:
+          type: object
+          additionalProperties: true
+
+    ValidationIssue:
+      type: object
+      required:
+        - severity
+        - type
+        - message
+      properties:
+        severity:
+          type: string
+          enum:
+            - error
+            - warning
+            - info
+          description: Issue severity level
+        type:
+          type: string
+          description: Issue type
+          example: schema_violation
+        message:
+          type: string
+          description: Human-readable issue description
+        location:
+          type: string
+          description: Where the issue was found
+        suggestion:
+          type: string
+          description: How to fix the issue

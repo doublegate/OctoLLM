@@ -1,0 +1,814 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Phase 1 Resources - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/appendix/planning/phase-1-resources.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="phase-1-resource-planning--requirements"><a class="header" href="#phase-1-resource-planning--requirements">Phase 1: Resource Planning &amp; Requirements</a></h1>
+<p><strong>Version</strong>: 1.0
+<strong>Date</strong>: 2025-11-12
+<strong>Phase</strong>: Phase 1 - Proof of Concept
+<strong>Duration</strong>: 8.5 weeks
+<strong>Total Hours</strong>: 340 hours</p>
+<hr />
+<h2 id="team-composition"><a class="header" href="#team-composition">Team Composition</a></h2>
+<h3 id="required-roles--fte-allocation"><a class="header" href="#required-roles--fte-allocation">Required Roles &amp; FTE Allocation</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Role</th><th>FTE</th><th>Total Hours</th><th>Sprints</th><th>Key Responsibilities</th></tr></thead><tbody>
+<tr><td><strong>Rust Engineer</strong></td><td>1.0</td><td>160h</td><td>1.1, 1.4</td><td>Reflex Layer, Executor Arm, performance optimization, security hardening</td></tr>
+<tr><td><strong>Python Engineer (Senior)</strong></td><td>1.0</td><td>140h</td><td>1.2, 1.3</td><td>Orchestrator MVP, LLM integration, Planner Arm, architecture design</td></tr>
+<tr><td><strong>Python Engineer (Mid)</strong></td><td>0.5</td><td>40h</td><td>1.2</td><td>Orchestrator API, database integration, testing</td></tr>
+<tr><td><strong>DevOps Engineer</strong></td><td>0.5</td><td>40h</td><td>1.5</td><td>Docker Compose, CI/CD, integration testing, deployment automation</td></tr>
+<tr><td><strong>QA Engineer</strong></td><td>1.0</td><td>80h</td><td>1.1-1.5</td><td>Unit testing, E2E testing, load testing, test automation</td></tr>
+<tr><td><strong>Security Engineer</strong></td><td>0.5</td><td>40h</td><td>1.4</td><td>Container security, penetration testing, seccomp profiles, security audit</td></tr>
+<tr><td><strong>TOTAL</strong></td><td><strong>4.5 FTE</strong></td><td><strong>500h</strong></td><td>-</td><td>-</td></tr>
+</tbody></table>
+</div>
+<p><strong>Note</strong>: 500h total includes 160h buffer for:</p>
+<ul>
+<li>Code reviews (10% overhead)</li>
+<li>Team meetings (5% overhead)</li>
+<li>Documentation (5% overhead)</li>
+<li>Unexpected blockers (10% overhead)</li>
+</ul>
+<h3 id="team-structure"><a class="header" href="#team-structure">Team Structure</a></h3>
+<p><strong>Reporting Structure</strong>:</p>
+<pre><code>Phase 1 Tech Lead (Rust Engineer)
+├── Rust Engineer (Reflex + Executor)
+├── Python Engineer Senior (Orchestrator + Planner)
+│   └── Python Engineer Mid (Orchestrator support)
+├── DevOps Engineer (Integration)
+└── QA Engineer (Testing)
+    └── Security Engineer (Sprint 1.4 only)
+</code></pre>
+<p><strong>Communication</strong>:</p>
+<ul>
+<li>Daily standups: 15min async (Slack)</li>
+<li>Weekly sprint reviews: 1h (Fridays)</li>
+<li>Bi-weekly architecture reviews: 1h</li>
+<li>Ad-hoc pair programming: as needed</li>
+</ul>
+<hr />
+<h2 id="skill-requirements"><a class="header" href="#skill-requirements">Skill Requirements</a></h2>
+<h3 id="must-have-technical-skills"><a class="header" href="#must-have-technical-skills">Must-Have Technical Skills</a></h3>
+<h4 id="backend-development"><a class="header" href="#backend-development">Backend Development</a></h4>
+<ul>
+<li><strong>Python 3.11+</strong>: async/await, type hints, Pydantic, FastAPI</li>
+<li><strong>Rust 1.82.0</strong>: ownership model, lifetimes, async/tokio, error handling</li>
+<li><strong>REST API Design</strong>: HTTP methods, status codes, versioning, pagination</li>
+<li><strong>Database Design</strong>: PostgreSQL schema, indexes, queries, connection pooling</li>
+<li><strong>Caching</strong>: Redis data structures, TTL, eviction policies</li>
+</ul>
+<h4 id="infrastructure--devops"><a class="header" href="#infrastructure--devops">Infrastructure &amp; DevOps</a></h4>
+<ul>
+<li><strong>Docker</strong>: Dockerfile, docker-compose, networking, volumes, health checks</li>
+<li><strong>Git</strong>: Branching strategies, PRs, conflict resolution, commit hygiene</li>
+<li><strong>CI/CD</strong>: GitHub Actions, automated testing, linting, security scans</li>
+<li><strong>Observability</strong>: Prometheus metrics, structured logging, distributed tracing</li>
+</ul>
+<h4 id="testing"><a class="header" href="#testing">Testing</a></h4>
+<ul>
+<li><strong>Python Testing</strong>: pytest, pytest-cov, pytest-asyncio, mocking</li>
+<li><strong>Rust Testing</strong>: cargo test, cargo tarpaulin, integration tests</li>
+<li><strong>Load Testing</strong>: k6, Locust, JMeter</li>
+<li><strong>Security Testing</strong>: OWASP Top 10, container security, penetration testing</li>
+</ul>
+<h3 id="nice-to-have-skills"><a class="header" href="#nice-to-have-skills">Nice-to-Have Skills</a></h3>
+<ul>
+<li><strong>LLM Frameworks</strong>: LangChain, LlamaIndex, guidance</li>
+<li><strong>Prompt Engineering</strong>: OpenAI/Anthropic best practices, token optimization</li>
+<li><strong>Kubernetes</strong>: For Phase 2 prep (not required for Phase 1)</li>
+<li><strong>Vector Databases</strong>: Qdrant, Weaviate (Phase 2)</li>
+<li><strong>ML/Data Engineering</strong>: Embeddings, semantic search (Phase 2)</li>
+</ul>
+<h3 id="skill-matrix-by-role"><a class="header" href="#skill-matrix-by-role">Skill Matrix by Role</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Skill</th><th>Rust Eng</th><th>Python Sr</th><th>Python Mid</th><th>DevOps</th><th>QA</th><th>Security</th></tr></thead><tbody>
+<tr><td><strong>Rust</strong></td><td>Expert</td><td>-</td><td>-</td><td>-</td><td>Basic</td><td>Basic</td></tr>
+<tr><td><strong>Python</strong></td><td>Basic</td><td>Expert</td><td>Advanced</td><td>Basic</td><td>Advanced</td><td>Basic</td></tr>
+<tr><td><strong>FastAPI</strong></td><td>-</td><td>Expert</td><td>Advanced</td><td>-</td><td>Basic</td><td>-</td></tr>
+<tr><td><strong>Actix-web</strong></td><td>Expert</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td><strong>Docker</strong></td><td>Advanced</td><td>Advanced</td><td>Basic</td><td>Expert</td><td>Advanced</td><td>Expert</td></tr>
+<tr><td><strong>PostgreSQL</strong></td><td>Basic</td><td>Expert</td><td>Advanced</td><td>Basic</td><td>Advanced</td><td>-</td></tr>
+<tr><td><strong>Redis</strong></td><td>Advanced</td><td>Advanced</td><td>-</td><td>Basic</td><td>Basic</td><td>-</td></tr>
+<tr><td><strong>LLM APIs</strong></td><td>-</td><td>Expert</td><td>Basic</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td><strong>Security</strong></td><td>Advanced</td><td>Basic</td><td>-</td><td>-</td><td>Advanced</td><td>Expert</td></tr>
+<tr><td><strong>Testing</strong></td><td>Expert</td><td>Expert</td><td>Advanced</td><td>Advanced</td><td>Expert</td><td>Expert</td></tr>
+</tbody></table>
+</div>
+<p><strong>Legend</strong>: Expert (can teach others), Advanced (can work independently), Basic (can contribute with guidance)</p>
+<hr />
+<h2 id="onboarding-plan"><a class="header" href="#onboarding-plan">Onboarding Plan</a></h2>
+<h3 id="pre-start-week--1"><a class="header" href="#pre-start-week--1">Pre-Start (Week -1)</a></h3>
+<p><strong>IT Setup</strong> (DevOps responsibility):</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Provision GitHub access (add to OctoLLM-dev team)</li>
+<li><input disabled="" type="checkbox"/>
+Create LLM API accounts:
+<ul>
+<li><input disabled="" type="checkbox"/>
+OpenAI organization, generate API key (budget: $500/month)</li>
+<li><input disabled="" type="checkbox"/>
+Anthropic workspace, generate API key (budget: $300/month)</li>
+</ul>
+</li>
+<li><input disabled="" type="checkbox"/>
+Set up Slack channels:
+<ul>
+<li><input disabled="" type="checkbox"/>
+#octollm-dev (general development)</li>
+<li><input disabled="" type="checkbox"/>
+#octollm-alerts (CI/CD, monitoring)</li>
+<li><input disabled="" type="checkbox"/>
+#octollm-standup (daily updates)</li>
+</ul>
+</li>
+<li><input disabled="" type="checkbox"/>
+Grant GCP access (if using cloud for testing)</li>
+<li><input disabled="" type="checkbox"/>
+Send welcome email with onboarding checklist</li>
+</ul>
+<p><strong>Individual Setup</strong> (Each engineer):</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Install development tools:
+<ul>
+<li><input disabled="" type="checkbox"/>
+Docker Desktop / Podman (latest stable)</li>
+<li><input disabled="" type="checkbox"/>
+Python 3.11+ (via pyenv: <code>pyenv install 3.11.6</code>)</li>
+<li><input disabled="" type="checkbox"/>
+Rust 1.82.0 (via rustup: <code>rustup install 1.82.0</code>)</li>
+<li><input disabled="" type="checkbox"/>
+IDE: VS Code + extensions (Rust Analyzer, Python, Docker)</li>
+</ul>
+</li>
+<li><input disabled="" type="checkbox"/>
+Clone repository: <code>git clone https://github.com/your-org/OctoLLM.git</code></li>
+<li><input disabled="" type="checkbox"/>
+Install pre-commit hooks: <code>pre-commit install</code></li>
+<li><input disabled="" type="checkbox"/>
+Verify environment: <code>make test-env</code> (runs health checks)</li>
+<li><input disabled="" type="checkbox"/>
+Review documentation:
+<ul>
+<li><input disabled="" type="checkbox"/>
+<code>CLAUDE.md</code> (15 minutes)</li>
+<li><input disabled="" type="checkbox"/>
+<code>docs/README.md</code> (30 minutes)</li>
+<li><input disabled="" type="checkbox"/>
+<code>ref-docs/OctoLLM-Project-Overview.md</code> (1 hour)</li>
+<li><input disabled="" type="checkbox"/>
+<code>ref-docs/OctoLLM-Architecture-Implementation.md</code> (2 hours)</li>
+</ul>
+</li>
+</ul>
+<h3 id="week-1-kickoff--ramp-up"><a class="header" href="#week-1-kickoff--ramp-up">Week 1: Kickoff &amp; Ramp-Up</a></h3>
+<p><strong>Day 1: Team Kickoff</strong> (3 hours total):</p>
+<ul>
+<li><strong>09:00-10:30</strong>: Architecture deep dive (Tech Lead presentation)
+<ul>
+<li>System overview (5 layers, 4 components)</li>
+<li>Biological inspiration (octopus neurobiology)</li>
+<li>Phase 1 goals and success criteria</li>
+<li>Sprint breakdown (1.1-1.5)</li>
+</ul>
+</li>
+<li><strong>10:45-11:30</strong>: Codebase tour (live demo)
+<ul>
+<li>Repository structure walk-through</li>
+<li>Documentation organization</li>
+<li>CI/CD pipeline explanation</li>
+<li>Development workflow (feature branches, PRs, code review)</li>
+</ul>
+</li>
+<li><strong>11:30-12:00</strong>: Q&amp;A and team introductions</li>
+</ul>
+<p><strong>Day 2-3: Environment Setup &amp; First Tasks</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Set up local development environment (Python venv, Rust toolchain)</li>
+<li><input disabled="" type="checkbox"/>
+Run existing tests: <code>make test</code> (should pass from Phase 0)</li>
+<li><input disabled="" type="checkbox"/>
+Complete first task:
+<ul>
+<li><strong>Rust Engineer</strong>: Set up Reflex Layer project structure (Sprint 1.1.1)</li>
+<li><strong>Python Senior</strong>: Set up Orchestrator project structure (Sprint 1.2.1)</li>
+<li><strong>Python Mid</strong>: Set up database schema review (Sprint 1.2.3)</li>
+<li><strong>DevOps</strong>: Review CI/CD pipelines, plan Docker Compose structure</li>
+<li><strong>QA</strong>: Set up test frameworks, review testing strategy</li>
+</ul>
+</li>
+<li><input disabled="" type="checkbox"/>
+Submit first PR (even if WIP) to validate workflow</li>
+</ul>
+<p><strong>Day 4-5: Sprint 1.1 Kickoff</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Sprint planning meeting (1 hour): detailed task breakdown</li>
+<li><input disabled="" type="checkbox"/>
+Assign sprint tasks (Rust Engineer + QA focus on Sprint 1.1)</li>
+<li><input disabled="" type="checkbox"/>
+Begin implementation work</li>
+<li><input disabled="" type="checkbox"/>
+First daily standup (establish rhythm)</li>
+</ul>
+<h3 id="ongoing-onboarding-weeks-2-4"><a class="header" href="#ongoing-onboarding-weeks-2-4">Ongoing Onboarding (Weeks 2-4)</a></h3>
+<p><strong>Weekly 1-on-1s</strong> (Tech Lead with each engineer):</p>
+<ul>
+<li>Check-in on progress, blockers, questions</li>
+<li>Review code quality and best practices</li>
+<li>Career development discussion (15 min)</li>
+</ul>
+<p><strong>Bi-Weekly Architecture Reviews</strong> (Entire team):</p>
+<ul>
+<li>Review design decisions made during sprint</li>
+<li>Document Architecture Decision Records (ADRs)</li>
+<li>Discuss trade-offs and alternatives considered</li>
+</ul>
+<p><strong>Mentorship &amp; Pair Programming</strong>:</p>
+<ul>
+<li>Rust Engineer pairs with Security Engineer (Sprint 1.4)</li>
+<li>Python Senior mentors Python Mid (Sprint 1.2)</li>
+<li>QA Engineer shadows developers for test coverage</li>
+</ul>
+<hr />
+<h2 id="infrastructure-requirements"><a class="header" href="#infrastructure-requirements">Infrastructure Requirements</a></h2>
+<h3 id="local-development-environment"><a class="header" href="#local-development-environment">Local Development Environment</a></h3>
+<h4 id="hardware-requirements-per-engineer"><a class="header" href="#hardware-requirements-per-engineer">Hardware Requirements (Per Engineer)</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Minimum</th><th>Recommended</th><th>Rationale</th></tr></thead><tbody>
+<tr><td><strong>CPU</strong></td><td>4 cores</td><td>8 cores</td><td>Parallel builds (Rust), Docker containers</td></tr>
+<tr><td><strong>RAM</strong></td><td>16GB</td><td>32GB</td><td>Docker Compose (6 services), IDE, browser</td></tr>
+<tr><td><strong>Disk</strong></td><td>50GB free</td><td>100GB free</td><td>Docker images, databases, build artifacts</td></tr>
+<tr><td><strong>Network</strong></td><td>10 Mbps</td><td>100 Mbps</td><td>Docker pulls, LLM API calls, GitHub</td></tr>
+</tbody></table>
+</div>
+<h4 id="software-requirements"><a class="header" href="#software-requirements">Software Requirements</a></h4>
+<p><strong>Operating System</strong>:</p>
+<ul>
+<li>macOS 12+ (Monterey or later)</li>
+<li>Ubuntu 22.04 LTS or later</li>
+<li>Windows 11 with WSL2 (Ubuntu 22.04)</li>
+</ul>
+<p><strong>Development Tools</strong>:</p>
+<pre><code class="language-bash"># Python
+pyenv 2.3+
+python 3.11.6
+pip 23.0+
+poetry 1.6+ (optional, or pip-tools)
+
+# Rust
+rustup 1.26+
+rustc 1.82.0
+cargo 1.82.0
+
+# Docker
+docker 24.0+
+docker-compose 2.20+
+
+# Database Clients
+psql (PostgreSQL 15+ client)
+redis-cli (Redis 7+ client)
+
+# IDE (choose one)
+VS Code 1.85+ with extensions:
+  - Rust Analyzer
+  - Python (Microsoft)
+  - Docker
+  - GitLens
+  - Prettier
+PyCharm Professional 2023.3+ (Python focus)
+RustRover 2023.3+ (Rust focus)
+
+# Version Control
+git 2.40+
+gh (GitHub CLI) 2.40+ (optional)
+
+# Optional (nice to have)
+k9s (Kubernetes TUI, for Phase 2 prep)
+httpie / curl (API testing)
+jq (JSON processing)
+</code></pre>
+<h3 id="shared-services--accounts"><a class="header" href="#shared-services--accounts">Shared Services &amp; Accounts</a></h3>
+<h4 id="llm-api-accounts"><a class="header" href="#llm-api-accounts">LLM API Accounts</a></h4>
+<p><strong>OpenAI</strong> (Primary):</p>
+<ul>
+<li>Organization: "OctoLLM Development"</li>
+<li>Billing: Pay-as-you-go</li>
+<li>Budget Alert: $500/month hard limit</li>
+<li>API Keys: 1 per environment (dev, staging)</li>
+<li>Models:
+<ul>
+<li>GPT-4-Turbo (orchestrator fallback)</li>
+<li>GPT-3.5-Turbo-1106 (planner, cheaper)</li>
+</ul>
+</li>
+<li>Estimated Cost: ~$75 for Phase 1</li>
+</ul>
+<p><strong>Anthropic</strong> (Fallback):</p>
+<ul>
+<li>Workspace: "OctoLLM Development"</li>
+<li>Billing: Pay-as-you-go</li>
+<li>Budget Alert: $300/month hard limit</li>
+<li>API Keys: 1 per environment</li>
+<li>Models:
+<ul>
+<li>Claude 3 Opus (high-quality fallback)</li>
+<li>Claude 3 Sonnet (medium-quality, faster)</li>
+</ul>
+</li>
+<li>Estimated Cost: ~$25 for Phase 1</li>
+</ul>
+<h4 id="cicd-github-actions"><a class="header" href="#cicd-github-actions">CI/CD (GitHub Actions)</a></h4>
+<p><strong>Current Usage</strong> (from Phase 0):</p>
+<ul>
+<li>Lint workflow (Python: ruff, black / Rust: clippy, fmt)</li>
+<li>Test workflow (pytest, cargo test)</li>
+<li>Security scan workflow (bandit, safety, trivy, gitleaks)</li>
+<li>Build workflow (Docker image builds)</li>
+</ul>
+<p><strong>Phase 1 Additions</strong>:</p>
+<ul>
+<li>Integration test workflow (docker-compose up, pytest e2e)</li>
+<li>Performance benchmark workflow (k6 load tests)</li>
+<li>Documentation deploy workflow (mkdocs to GitHub Pages)</li>
+</ul>
+<p><strong>Free Tier Limits</strong>:</p>
+<ul>
+<li>2,000 minutes/month (Linux runners)</li>
+<li>500MB artifact storage</li>
+<li>Estimated Phase 1 usage: ~1,000 minutes/month (within limits)</li>
+</ul>
+<h4 id="monitoring--observability-optional"><a class="header" href="#monitoring--observability-optional">Monitoring &amp; Observability (Optional)</a></h4>
+<p><strong>Local Development</strong> (Docker Compose):</p>
+<ul>
+<li>Prometheus (metrics scraping)</li>
+<li>Grafana (dashboard visualization)</li>
+<li>Loki (log aggregation)</li>
+<li>Jaeger (distributed tracing)</li>
+</ul>
+<p><strong>Note</strong>: Monitoring stack runs locally in Docker Compose. No cloud costs.</p>
+<h3 id="cloud-resources-optional-for-phase-1"><a class="header" href="#cloud-resources-optional-for-phase-1">Cloud Resources (Optional for Phase 1)</a></h3>
+<p><strong>Primary Strategy</strong>: Local Docker Compose deployment (no cloud required)</p>
+<p><strong>Optional GCP Resources</strong> (if team prefers cloud testing):</p>
+<div class="table-wrapper"><table><thead><tr><th>Service</th><th>Specification</th><th>Monthly Cost</th><th>Use Case</th></tr></thead><tbody>
+<tr><td>GKE Cluster</td><td>1 node (n1-standard-4, 4 vCPU, 15GB RAM)</td><td>~$150</td><td>Kubernetes testing (Phase 2 prep)</td></tr>
+<tr><td>Cloud SQL</td><td>PostgreSQL, db-f1-micro (0.6GB RAM)</td><td>~$15</td><td>Shared database for testing</td></tr>
+<tr><td>Memorystore</td><td>Redis, 1GB</td><td>~$30</td><td>Shared cache for testing</td></tr>
+<tr><td>Cloud Storage</td><td>10GB (Docker images, backups)</td><td>~$0.50</td><td>Artifact storage</td></tr>
+<tr><td><strong>Total</strong></td><td>-</td><td><strong>~$195/month</strong></td><td><strong>Optional</strong></td></tr>
+</tbody></table>
+</div>
+<p><strong>Recommendation</strong>: Defer cloud resources to Phase 2. Use local Docker Compose for Phase 1 to minimize costs.</p>
+<hr />
+<h2 id="budget-breakdown"><a class="header" href="#budget-breakdown">Budget Breakdown</a></h2>
+<h3 id="labor-costs"><a class="header" href="#labor-costs">Labor Costs</a></h3>
+<p><strong>Blended Hourly Rates</strong> (Industry averages for San Francisco Bay Area):</p>
+<div class="table-wrapper"><table><thead><tr><th>Role</th><th>Hourly Rate</th><th>Rationale</th></tr></thead><tbody>
+<tr><td>Rust Engineer (Senior)</td><td>$180/h</td><td>Specialized skill, high demand</td></tr>
+<tr><td>Python Engineer (Senior)</td><td>$150/h</td><td>Common skill, senior level</td></tr>
+<tr><td>Python Engineer (Mid)</td><td>$120/h</td><td>Common skill, mid level</td></tr>
+<tr><td>DevOps Engineer</td><td>$150/h</td><td>Infrastructure expertise</td></tr>
+<tr><td>QA Engineer</td><td>$120/h</td><td>Testing automation skills</td></tr>
+<tr><td>Security Engineer (Senior)</td><td>$180/h</td><td>Specialized security expertise</td></tr>
+</tbody></table>
+</div>
+<p><strong>Total Labor Cost Calculation</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Role</th><th>Hours</th><th>Rate</th><th>Subtotal</th></tr></thead><tbody>
+<tr><td>Rust Engineer</td><td>160h</td><td>$180/h</td><td>$28,800</td></tr>
+<tr><td>Python Engineer (Senior)</td><td>140h</td><td>$150/h</td><td>$21,000</td></tr>
+<tr><td>Python Engineer (Mid)</td><td>40h</td><td>$120/h</td><td>$4,800</td></tr>
+<tr><td>DevOps Engineer</td><td>40h</td><td>$150/h</td><td>$6,000</td></tr>
+<tr><td>QA Engineer</td><td>80h</td><td>$120/h</td><td>$9,600</td></tr>
+<tr><td>Security Engineer</td><td>40h</td><td>$180/h</td><td>$7,200</td></tr>
+<tr><td><strong>TOTAL</strong></td><td><strong>500h</strong></td><td>-</td><td><strong>$77,400</strong></td></tr>
+</tbody></table>
+</div>
+<p><strong>Blended Rate</strong>: $154.80/hour</p>
+<h3 id="infrastructure-costs"><a class="header" href="#infrastructure-costs">Infrastructure Costs</a></h3>
+<p><strong>LLM APIs</strong> (Development &amp; Testing):</p>
+<ul>
+<li>OpenAI: ~$75 (1.75M tokens, mostly GPT-3.5)</li>
+<li>Anthropic: ~$25 (150 fallback tests)</li>
+<li><strong>Total LLM</strong>: ~$100</li>
+</ul>
+<p><strong>CI/CD</strong>:</p>
+<ul>
+<li>GitHub Actions: $0 (within free tier)</li>
+</ul>
+<p><strong>Cloud Resources</strong> (Optional):</p>
+<ul>
+<li>GCP: $0 (using local Docker Compose)</li>
+<li>Alternative if using cloud: ~$195/month × 2 months = ~$390</li>
+</ul>
+<p><strong>Development Tools</strong>:</p>
+<ul>
+<li>IDEs: $0 (VS Code free, or existing PyCharm/RustRover licenses)</li>
+<li>Docker Desktop: $0 (free for developers)</li>
+</ul>
+<p><strong>Total Infrastructure</strong>: ~$100 (LLM APIs only)</p>
+<h3 id="grand-total-phase-1-budget"><a class="header" href="#grand-total-phase-1-budget">Grand Total Phase 1 Budget</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Category</th><th>Amount</th></tr></thead><tbody>
+<tr><td>Labor</td><td>$77,400</td></tr>
+<tr><td>LLM APIs</td><td>$100</td></tr>
+<tr><td>Infrastructure (Local)</td><td>$0</td></tr>
+<tr><td><strong>TOTAL</strong></td><td><strong>$77,500</strong></td></tr>
+</tbody></table>
+</div>
+<p><strong>Alternative (if using GCP)</strong>: $77,790</p>
+<p><strong>Cost per Deliverable</strong>:</p>
+<ul>
+<li>Reflex Layer: $14,400 (Sprint 1.1: 80h × $180/h)</li>
+<li>Orchestrator MVP: $15,600 (Sprint 1.2: 80h blended)</li>
+<li>Planner Arm: $10,800 (Sprint 1.3: 60h blended)</li>
+<li>Executor Arm: $16,200 (Sprint 1.4: 80h blended, includes security)</li>
+<li>Integration &amp; E2E: $6,000 (Sprint 1.5: 40h blended)</li>
+<li><strong>Total</strong>: $63,000 (direct sprint hours)</li>
+<li><strong>Overhead</strong>: $14,400 (code reviews, meetings, buffer)</li>
+<li><strong>LLM APIs</strong>: $100</li>
+</ul>
+<hr />
+<h2 id="timeline--availability"><a class="header" href="#timeline--availability">Timeline &amp; Availability</a></h2>
+<h3 id="sprint-schedule"><a class="header" href="#sprint-schedule">Sprint Schedule</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Sprint</th><th>Duration</th><th>Start Date</th><th>End Date</th><th>Key Deliverable</th></tr></thead><tbody>
+<tr><td><strong>1.1</strong></td><td>2 weeks (80h)</td><td>Week 1 Monday</td><td>Week 2 Friday</td><td>Reflex Layer</td></tr>
+<tr><td><strong>1.2</strong></td><td>2 weeks (80h)</td><td>Week 2 Monday</td><td>Week 4 Friday</td><td>Orchestrator MVP</td></tr>
+<tr><td><strong>1.3</strong></td><td>1.5 weeks (60h)</td><td>Week 4 Monday</td><td>Week 5 Wed</td><td>Planner Arm</td></tr>
+<tr><td><strong>1.4</strong></td><td>2 weeks (80h)</td><td>Week 5 Thu</td><td>Week 7 Wed</td><td>Executor Arm</td></tr>
+<tr><td><strong>1.5</strong></td><td>1 week (40h)</td><td>Week 7 Thu</td><td>Week 8 Wed</td><td>Integration &amp; E2E</td></tr>
+<tr><td><strong>Buffer</strong></td><td>0.5 weeks</td><td>Week 8 Thu</td><td>Week 8.5 Fri</td><td>Final polish, demo</td></tr>
+</tbody></table>
+</div>
+<p><strong>Note</strong>: Sprints 1.1 and 1.2 overlap (weeks 2-3) with different engineers working in parallel.</p>
+<h3 id="team-availability-assumptions"><a class="header" href="#team-availability-assumptions">Team Availability Assumptions</a></h3>
+<ul>
+<li><strong>Full-time</strong>: Rust Engineer, Python Senior, QA Engineer</li>
+<li><strong>Part-time (50%)</strong>: DevOps Engineer (20h/week), Python Mid (20h/week), Security Engineer (20h/week in Sprint 1.4 only)</li>
+<li><strong>Holidays/PTO</strong>: 10% buffer built into 500h estimate (50h buffer)</li>
+<li><strong>Meetings</strong>: 5% overhead (25h total across 8.5 weeks)</li>
+</ul>
+<h3 id="critical-path-analysis"><a class="header" href="#critical-path-analysis">Critical Path Analysis</a></h3>
+<p><strong>Longest Dependency Chain</strong>:</p>
+<ol>
+<li>Sprint 1.1 (Reflex Layer): Week 1-2 (no dependencies)</li>
+<li>Sprint 1.2 (Orchestrator): Week 2-4 (can use reflex or direct pass-through)</li>
+<li>Sprint 1.3 (Planner): Week 4-5.5 (can develop in parallel, orchestrator can fallback to direct LLM)</li>
+<li>Sprint 1.4 (Executor): Week 5.5-7.5 (depends on orchestrator for routing)</li>
+<li>Sprint 1.5 (Integration): Week 7.5-8.5 (depends on all 4 components)</li>
+</ol>
+<p><strong>Parallel Work Opportunities</strong>:</p>
+<ul>
+<li><strong>Weeks 2-3</strong>: Reflex Layer finalization + Orchestrator initial development</li>
+<li><strong>Weeks 4-5</strong>: Planner development + Orchestrator finalization (can run in parallel)</li>
+</ul>
+<p><strong>Critical Path Total</strong>: 6.5 weeks (1.1 + partial 1.2 + 1.3 + 1.4 + 1.5)</p>
+<hr />
+<h2 id="scaling-plan-phase-1--phase-2"><a class="header" href="#scaling-plan-phase-1--phase-2">Scaling Plan (Phase 1 → Phase 2)</a></h2>
+<h3 id="team-growth"><a class="header" href="#team-growth">Team Growth</a></h3>
+<p><strong>Phase 1</strong>: 4.5 FTE
+<strong>Phase 2</strong>: 5-6 FTE (add 1-2 engineers)</p>
+<p><strong>New Roles for Phase 2</strong>:</p>
+<ul>
+<li><strong>ML/Data Engineer</strong> (1.0 FTE): Embeddings, semantic search, Qdrant integration</li>
+<li><strong>Python Engineer (Additional)</strong> (0.5-1.0 FTE): Build Retriever, Coder, Judge, Guardian arms</li>
+</ul>
+<p><strong>Retention Strategy</strong>:</p>
+<ul>
+<li>Promote top performer from Phase 1 to Tech Lead for Phase 2</li>
+<li>Offer learning opportunities (Kubernetes, ML, embeddings)</li>
+<li>Maintain team continuity (avoid turnover between phases)</li>
+</ul>
+<h3 id="infrastructure-scaling"><a class="header" href="#infrastructure-scaling">Infrastructure Scaling</a></h3>
+<p><strong>Phase 1</strong>: Local Docker Compose
+<strong>Phase 2</strong>: Kubernetes (GKE) + Cloud SQL + Memorystore + Qdrant</p>
+<p><strong>Transition Plan</strong> (1 week, Week 9):</p>
+<ul>
+<li>Migrate Docker Compose services to Kubernetes manifests</li>
+<li>Provision GCP resources (GKE cluster, Cloud SQL, Memorystore)</li>
+<li>Set up Helm charts or Kustomize</li>
+<li>Deploy Phase 1 components to Kubernetes (smoke test)</li>
+<li>Begin Phase 2 Sprint 2.1 (Week 10)</li>
+</ul>
+<hr />
+<h2 id="appendices"><a class="header" href="#appendices">Appendices</a></h2>
+<h3 id="appendix-a-onboarding-checklist"><a class="header" href="#appendix-a-onboarding-checklist">Appendix A: Onboarding Checklist</a></h3>
+<p><strong>IT Setup</strong> (DevOps):</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+GitHub access granted (OctoLLM-dev team)</li>
+<li><input disabled="" type="checkbox"/>
+OpenAI API key generated ($500/month limit)</li>
+<li><input disabled="" type="checkbox"/>
+Anthropic API key generated ($300/month limit)</li>
+<li><input disabled="" type="checkbox"/>
+Slack channels created (#octollm-dev, #octollm-alerts, #octollm-standup)</li>
+<li><input disabled="" type="checkbox"/>
+GCP access granted (optional, if using cloud)</li>
+<li><input disabled="" type="checkbox"/>
+Welcome email sent with onboarding docs</li>
+</ul>
+<p><strong>Individual Setup</strong> (Each Engineer):</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Docker Desktop installed and running</li>
+<li><input disabled="" type="checkbox"/>
+Python 3.11.6 installed (pyenv)</li>
+<li><input disabled="" type="checkbox"/>
+Rust 1.82.0 installed (rustup)</li>
+<li><input disabled="" type="checkbox"/>
+IDE set up (VS Code + extensions or PyCharm/RustRover)</li>
+<li><input disabled="" type="checkbox"/>
+Repository cloned and pre-commit hooks installed</li>
+<li><input disabled="" type="checkbox"/>
+Environment verified (<code>make test-env</code> passes)</li>
+<li><input disabled="" type="checkbox"/>
+Documentation reviewed (4 hours)</li>
+<li><input disabled="" type="checkbox"/>
+Attended team kickoff meeting</li>
+<li><input disabled="" type="checkbox"/>
+Completed first task and submitted PR</li>
+</ul>
+<h3 id="appendix-b-communication-protocols"><a class="header" href="#appendix-b-communication-protocols">Appendix B: Communication Protocols</a></h3>
+<p><strong>Daily Standups</strong> (Async, Slack #octollm-standup):</p>
+<ul>
+<li>Post by 10 AM local time</li>
+<li>Format: Yesterday / Today / Blockers</li>
+<li>Example: "Yesterday: Implemented PII detection module. Today: Adding unit tests. Blockers: Need regex test dataset."</li>
+</ul>
+<p><strong>Weekly Sprint Reviews</strong> (Fridays, 1 hour, Zoom):</p>
+<ul>
+<li>Demo completed work (live code demo)</li>
+<li>Review sprint metrics (velocity, test coverage, blockers)</li>
+<li>Plan next sprint tasks</li>
+</ul>
+<p><strong>Code Reviews</strong> (GitHub PRs):</p>
+<ul>
+<li>All code requires 1 approval before merge</li>
+<li>Reviewers assigned automatically (CODEOWNERS file)</li>
+<li>Response time SLA: 24 hours</li>
+<li>Use PR templates (checklist for tests, docs, changelog)</li>
+</ul>
+<p><strong>Incident Response</strong>:</p>
+<ul>
+<li>Critical bugs: Slack @channel alert, immediate response</li>
+<li>Non-critical bugs: GitHub issue, triage in weekly review</li>
+<li>Escalation path: Engineer → Tech Lead → Stakeholders</li>
+</ul>
+<h3 id="appendix-c-tooling--licenses"><a class="header" href="#appendix-c-tooling--licenses">Appendix C: Tooling &amp; Licenses</a></h3>
+<p><strong>Free/Open Source</strong>:</p>
+<ul>
+<li>Docker Desktop (free for developers)</li>
+<li>VS Code (free)</li>
+<li>Git (free)</li>
+<li>Python (free)</li>
+<li>Rust (free)</li>
+<li>PostgreSQL (free)</li>
+<li>Redis (free)</li>
+</ul>
+<p><strong>Paid (Optional)</strong>:</p>
+<ul>
+<li>PyCharm Professional: $249/year per developer (optional, can use VS Code)</li>
+<li>RustRover: $249/year per developer (optional, can use VS Code)</li>
+<li>GitHub Team: Included in organization plan</li>
+</ul>
+<p><strong>LLM APIs</strong>:</p>
+<ul>
+<li>OpenAI: Pay-as-you-go ($500/month budget)</li>
+<li>Anthropic: Pay-as-you-go ($300/month budget)</li>
+</ul>
+<hr />
+<p><strong>Document Version</strong>: 1.0
+<strong>Last Updated</strong>: 2025-11-12
+<strong>Next Review</strong>: Phase 1 Kickoff (Week 1)
+<strong>Owner</strong>: Phase 1 Tech Lead
+<strong>Approvers</strong>: CTO, Engineering Manager</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../appendix/planning.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../appendix/planning/phase-1-risks.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../appendix/planning.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../appendix/planning/phase-1-risks.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

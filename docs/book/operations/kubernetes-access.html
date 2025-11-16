@@ -1,0 +1,621 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Kubernetes Access - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/operations/kubernetes-access.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="kubernetes-access-guide"><a class="header" href="#kubernetes-access-guide">Kubernetes Access Guide</a></h1>
+<p><strong>Audience</strong>: Developers, DevOps Engineers
+<strong>Prerequisites</strong>: gcloud SDK, kubectl installed
+<strong>Related</strong>: <a href="deployment-guide.html">Deployment Guide</a>, <a href="../adr/006-cloud-provider-selection.html">ADR-006</a></p>
+<hr />
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#initial-setup">Initial Setup</a></li>
+<li><a href="#cluster-access">Cluster Access</a></li>
+<li><a href="#rbac-configuration">RBAC Configuration</a></li>
+<li><a href="#kubectl-basics">kubectl Basics</a></li>
+<li><a href="#port-forwarding">Port Forwarding</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ol>
+<hr />
+<h2 id="initial-setup"><a class="header" href="#initial-setup">Initial Setup</a></h2>
+<h3 id="install-required-tools"><a class="header" href="#install-required-tools">Install Required Tools</a></h3>
+<p><strong>kubectl</strong> (Kubernetes CLI):</p>
+<pre><code class="language-bash"># Via gcloud
+gcloud components install kubectl
+
+# Via package manager
+brew install kubectl  # macOS
+sudo apt-get install kubectl  # Ubuntu
+
+# Verify
+kubectl version --client
+</code></pre>
+<p><strong>gcloud SDK</strong>:</p>
+<pre><code class="language-bash"># macOS
+brew install google-cloud-sdk
+
+# Linux
+curl https://sdk.cloud.google.com | bash
+exec -l $SHELL
+
+# Verify
+gcloud version
+</code></pre>
+<p><strong>kubectx/kubens</strong> (optional, recommended):</p>
+<pre><code class="language-bash">brew install kubectx  # macOS
+# Or: https://github.com/ahmetb/kubectx
+
+# Usage
+kubectx  # List contexts
+kubens  # List namespaces
+</code></pre>
+<hr />
+<h2 id="cluster-access"><a class="header" href="#cluster-access">Cluster Access</a></h2>
+<h3 id="authenticate-with-gcp"><a class="header" href="#authenticate-with-gcp">Authenticate with GCP</a></h3>
+<pre><code class="language-bash"># Login
+gcloud auth login
+
+# Set default project
+gcloud config set project octollm-dev
+
+# Verify
+gcloud config list
+</code></pre>
+<h3 id="configure-kubectl"><a class="header" href="#configure-kubectl">Configure kubectl</a></h3>
+<p><strong>Development Cluster</strong>:</p>
+<pre><code class="language-bash">gcloud container clusters get-credentials octollm-dev-cluster \
+  --region us-central1 \
+  --project octollm-dev
+
+# Verify
+kubectl cluster-info
+kubectl get nodes
+</code></pre>
+<p><strong>Staging Cluster</strong>:</p>
+<pre><code class="language-bash">gcloud container clusters get-credentials octollm-staging-cluster \
+  --region us-central1 \
+  --project octollm-staging
+</code></pre>
+<p><strong>Production Cluster</strong>:</p>
+<pre><code class="language-bash">gcloud container clusters get-credentials octollm-prod-cluster \
+  --region us-central1 \
+  --project octollm-prod
+</code></pre>
+<h3 id="switch-between-clusters"><a class="header" href="#switch-between-clusters">Switch Between Clusters</a></h3>
+<pre><code class="language-bash"># List contexts
+kubectl config get-contexts
+
+# Switch context
+kubectl config use-context gke_octollm-dev_us-central1_octollm-dev-cluster
+
+# Or with kubectx
+kubectx  # List
+kubectx gke_octollm-dev_us-central1_octollm-dev-cluster  # Switch
+</code></pre>
+<h3 id="verify-access"><a class="header" href="#verify-access">Verify Access</a></h3>
+<pre><code class="language-bash"># Check nodes
+kubectl get nodes
+
+# Check namespaces
+kubectl get namespaces
+
+# Check pods in octollm-dev namespace
+kubectl get pods -n octollm-dev
+
+# Check all resources
+kubectl get all -n octollm-dev
+</code></pre>
+<hr />
+<h2 id="rbac-configuration"><a class="header" href="#rbac-configuration">RBAC Configuration</a></h2>
+<h3 id="service-accounts"><a class="header" href="#service-accounts">Service Accounts</a></h3>
+<p><strong>Create Developer Service Account</strong> (for team members):</p>
+<pre><code class="language-bash"># Create service account
+kubectl create serviceaccount developer -n octollm-dev
+
+# Create Role (namespace-scoped permissions)
+cat &lt;&lt;EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: developer
+  namespace: octollm-dev
+rules:
+- apiGroups: ["", "apps", "batch"]
+  resources: ["pods", "pods/log", "pods/exec", "deployments", "services", "configmaps", "jobs"]
+  verbs: ["get", "list", "watch", "create", "update", "patch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]  # Read-only secrets
+EOF
+
+# Create RoleBinding (bind role to service account)
+kubectl create rolebinding developer-binding \
+  --role=developer \
+  --serviceaccount=octollm-dev:developer \
+  --namespace=octollm-dev
+</code></pre>
+<p><strong>Create Read-Only Service Account</strong> (for viewers):</p>
+<pre><code class="language-bash">kubectl create serviceaccount viewer -n octollm-dev
+
+cat &lt;&lt;EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: viewer
+  namespace: octollm-dev
+rules:
+- apiGroups: ["", "apps", "batch"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+EOF
+
+kubectl create rolebinding viewer-binding \
+  --role=viewer \
+  --serviceaccount=octollm-dev:viewer \
+  --namespace=octollm-dev
+</code></pre>
+<h3 id="iam-integration-workload-identity"><a class="header" href="#iam-integration-workload-identity">IAM Integration (Workload Identity)</a></h3>
+<p><strong>Bind Kubernetes SA to GCP SA</strong>:</p>
+<pre><code class="language-bash"># Create GCP service account
+gcloud iam service-accounts create octollm-orchestrator \
+  --project=octollm-dev
+
+# Grant permissions
+gcloud projects add-iam-policy-binding octollm-dev \
+  --member="serviceAccount:octollm-orchestrator@octollm-dev.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+
+# Bind to Kubernetes SA
+gcloud iam service-accounts add-iam-policy-binding \
+  octollm-orchestrator@octollm-dev.iam.gserviceaccount.com \
+  --role roles/iam.workloadIdentityUser \
+  --member "serviceAccount:octollm-dev.svc.id.goog[octollm-dev/orchestrator]"
+
+# Annotate Kubernetes SA
+kubectl annotate serviceaccount orchestrator \
+  --namespace octollm-dev \
+  iam.gke.io/gcp-service-account=octollm-orchestrator@octollm-dev.iam.gserviceaccount.com
+</code></pre>
+<hr />
+<h2 id="kubectl-basics"><a class="header" href="#kubectl-basics">kubectl Basics</a></h2>
+<h3 id="common-commands"><a class="header" href="#common-commands">Common Commands</a></h3>
+<p><strong>Pods</strong>:</p>
+<pre><code class="language-bash"># List pods
+kubectl get pods -n octollm-dev
+
+# Describe pod
+kubectl describe pod &lt;pod-name&gt; -n octollm-dev
+
+# View logs
+kubectl logs &lt;pod-name&gt; -n octollm-dev
+kubectl logs &lt;pod-name&gt; -n octollm-dev --follow  # Stream logs
+kubectl logs &lt;pod-name&gt; -c &lt;container-name&gt; -n octollm-dev  # Multi-container pod
+
+# Execute command in pod
+kubectl exec -it &lt;pod-name&gt; -n octollm-dev -- /bin/bash
+kubectl exec &lt;pod-name&gt; -n octollm-dev -- env  # View environment variables
+</code></pre>
+<p><strong>Deployments</strong>:</p>
+<pre><code class="language-bash"># List deployments
+kubectl get deployments -n octollm-dev
+
+# Scale deployment
+kubectl scale deployment orchestrator --replicas=3 -n octollm-dev
+
+# Rollout status
+kubectl rollout status deployment/orchestrator -n octollm-dev
+
+# Rollout history
+kubectl rollout history deployment/orchestrator -n octollm-dev
+
+# Rollback
+kubectl rollout undo deployment/orchestrator -n octollm-dev
+</code></pre>
+<p><strong>Services</strong>:</p>
+<pre><code class="language-bash"># List services
+kubectl get services -n octollm-dev
+
+# Describe service
+kubectl describe service orchestrator -n octollm-dev
+
+# Get endpoints
+kubectl get endpoints orchestrator -n octollm-dev
+</code></pre>
+<p><strong>ConfigMaps &amp; Secrets</strong>:</p>
+<pre><code class="language-bash"># List ConfigMaps
+kubectl get configmaps -n octollm-dev
+
+# View ConfigMap
+kubectl describe configmap app-config -n octollm-dev
+
+# List Secrets
+kubectl get secrets -n octollm-dev
+
+# Decode secret
+kubectl get secret postgres-credentials -n octollm-dev -o jsonpath='{.data.password}' | base64 --decode
+</code></pre>
+<p><strong>Events</strong>:</p>
+<pre><code class="language-bash"># View events (last 1 hour)
+kubectl get events -n octollm-dev --sort-by='.lastTimestamp'
+
+# Watch events in real-time
+kubectl get events -n octollm-dev --watch
+</code></pre>
+<hr />
+<h2 id="port-forwarding"><a class="header" href="#port-forwarding">Port Forwarding</a></h2>
+<h3 id="access-services-locally"><a class="header" href="#access-services-locally">Access Services Locally</a></h3>
+<p><strong>PostgreSQL</strong>:</p>
+<pre><code class="language-bash"># Forward PostgreSQL port (Cloud SQL Proxy)
+kubectl port-forward svc/postgres 5432:5432 -n octollm-dev
+
+# Connect
+psql -h localhost -U octollm -d octollm
+</code></pre>
+<p><strong>Redis</strong>:</p>
+<pre><code class="language-bash"># Forward Redis port
+kubectl port-forward svc/redis 6379:6379 -n octollm-dev
+
+# Connect
+redis-cli -h localhost -p 6379 -a &lt;auth-string&gt;
+</code></pre>
+<p><strong>Orchestrator API</strong>:</p>
+<pre><code class="language-bash"># Forward Orchestrator port
+kubectl port-forward svc/orchestrator 8000:8000 -n octollm-dev
+
+# Test
+curl http://localhost:8000/health
+</code></pre>
+<p><strong>Grafana Dashboard</strong>:</p>
+<pre><code class="language-bash"># Forward Grafana port
+kubectl port-forward svc/grafana 3000:3000 -n monitoring
+
+# Open browser
+open http://localhost:3000
+</code></pre>
+<p><strong>Multiple Ports</strong> (background):</p>
+<pre><code class="language-bash"># Port-forward multiple services in background
+kubectl port-forward svc/orchestrator 8000:8000 -n octollm-dev &amp;
+kubectl port-forward svc/postgres 5432:5432 -n octollm-dev &amp;
+kubectl port-forward svc/redis 6379:6379 -n octollm-dev &amp;
+
+# List background jobs
+jobs
+
+# Kill port-forward
+kill %1  # Kill job 1
+pkill -f "port-forward"  # Kill all
+</code></pre>
+<hr />
+<h2 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h2>
+<h3 id="common-issues"><a class="header" href="#common-issues">Common Issues</a></h3>
+<p><strong>Issue 1: kubectl Cannot Connect</strong></p>
+<pre><code>Unable to connect to the server: dial tcp: lookup &lt;cluster&gt;: no such host
+</code></pre>
+<p><strong>Solution</strong>: Reconfigure kubectl:</p>
+<pre><code class="language-bash">gcloud container clusters get-credentials octollm-dev-cluster \
+  --region us-central1 \
+  --project octollm-dev
+</code></pre>
+<hr />
+<p><strong>Issue 2: Permission Denied</strong></p>
+<pre><code>Error from server (Forbidden): pods is forbidden: User "user@example.com" cannot list resource "pods"
+</code></pre>
+<p><strong>Solution</strong>: Check RBAC permissions:</p>
+<pre><code class="language-bash"># Check current user
+kubectl auth whoami
+
+# Check permissions
+kubectl auth can-i list pods --namespace octollm-dev
+kubectl auth can-i create deployments --namespace octollm-dev
+
+# Request permissions from DevOps team
+</code></pre>
+<hr />
+<p><strong>Issue 3: Pod CrashLoopBackOff</strong></p>
+<pre><code class="language-bash"># View pod events
+kubectl describe pod &lt;pod-name&gt; -n octollm-dev
+
+# View logs
+kubectl logs &lt;pod-name&gt; -n octollm-dev --previous  # Previous container logs
+
+# Common causes:
+# - Missing environment variables
+# - Incorrect image
+# - Resource limits too low
+# - Health check failures
+</code></pre>
+<hr />
+<p><strong>Issue 4: Service Not Accessible</strong></p>
+<pre><code class="language-bash"># Check service
+kubectl get svc orchestrator -n octollm-dev
+
+# Check endpoints (should list pod IPs)
+kubectl get endpoints orchestrator -n octollm-dev
+
+# If no endpoints, check pod selector
+kubectl get pods -l app=orchestrator -n octollm-dev
+
+# Check pod logs
+kubectl logs -l app=orchestrator -n octollm-dev
+</code></pre>
+<hr />
+<p><strong>Issue 5: Slow kubectl Commands</strong></p>
+<pre><code class="language-bash"># Clear kubectl cache
+rm -rf ~/.kube/cache
+
+# Or: Use --v=9 to debug
+kubectl get pods --v=9
+</code></pre>
+<hr />
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<ol>
+<li><strong>Always specify namespace</strong> (<code>-n &lt;namespace&gt;</code>) to avoid mistakes</li>
+<li><strong>Use labels</strong> for bulk operations: <code>kubectl get pods -l app=orchestrator</code></li>
+<li><strong>Dry-run before apply</strong>: <code>kubectl apply -f deployment.yaml --dry-run=client</code></li>
+<li><strong>Use contexts</strong> to switch between clusters safely</li>
+<li><strong>Avoid <code>kubectl delete --all</code></strong> without namespace specification</li>
+<li><strong>Use <code>kubectl diff</code></strong> to preview changes: <code>kubectl diff -f deployment.yaml</code></li>
+<li><strong>Set resource limits</strong> to prevent resource exhaustion</li>
+<li><strong>Use liveness and readiness probes</strong> for reliability</li>
+</ol>
+<hr />
+<h2 id="useful-aliases"><a class="header" href="#useful-aliases">Useful Aliases</a></h2>
+<p>Add to <code>~/.bashrc</code> or <code>~/.zshrc</code>:</p>
+<pre><code class="language-bash"># kubectl aliases
+alias k='kubectl'
+alias kgp='kubectl get pods'
+alias kgs='kubectl get svc'
+alias kgd='kubectl get deployments'
+alias kdp='kubectl describe pod'
+alias kl='kubectl logs'
+alias kex='kubectl exec -it'
+alias kpf='kubectl port-forward'
+
+# Namespace-specific
+alias kdev='kubectl -n octollm-dev'
+alias kprod='kubectl -n octollm-prod'
+</code></pre>
+<hr />
+<h2 id="additional-resources"><a class="header" href="#additional-resources">Additional Resources</a></h2>
+<ul>
+<li><a href="https://kubernetes.io/docs/reference/kubectl/cheatsheet/">kubectl Cheat Sheet</a></li>
+<li><a href="https://cloud.google.com/kubernetes-engine/docs">GKE Documentation</a></li>
+<li><a href="https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity">Workload Identity</a></li>
+<li><a href="https://kubernetes.io/docs/reference/access-authn-authz/rbac/">RBAC Documentation</a></li>
+</ul>
+<hr />
+<p><strong>Maintained By</strong>: DevOps Team
+<strong>Last Updated</strong>: 2025-11-12
+<strong>Version</strong>: 1.0.0 (Sprint 0.7)</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../operations/disaster-recovery.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../security/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../operations/disaster-recovery.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../security/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

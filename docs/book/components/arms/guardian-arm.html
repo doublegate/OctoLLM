@@ -1,0 +1,1053 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Safety Guardian Arm - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/components/arms/guardian-arm.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="safety-guardian-arm-content--policy-enforcement"><a class="header" href="#safety-guardian-arm-content--policy-enforcement">Safety Guardian Arm: Content &amp; Policy Enforcement</a></h1>
+<p><strong>Components</strong> &gt; <strong>Arms</strong> &gt; Safety Guardian Arm</p>
+<p><strong>Version</strong>: 1.0
+<strong>Technology</strong>: Python 3.11+ / FastAPI
+<strong>Cost Tier</strong>: 1 (Low)
+<strong>Average Latency</strong>: &lt;100ms
+<strong>Status</strong>: Phase 1 Complete</p>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#architecture">Architecture</a></li>
+<li><a href="#core-functionality">Core Functionality</a>
+<ul>
+<li><a href="#safety-check-types">Safety Check Types</a></li>
+<li><a href="#risk-levels">Risk Levels</a></li>
+<li><a href="#multi-stage-pipeline">Multi-Stage Pipeline</a></li>
+</ul>
+</li>
+<li><a href="#detection-modules">Detection Modules</a>
+<ul>
+<li><a href="#pii-detection">PII Detection</a></li>
+<li><a href="#secrets-detection">Secrets Detection</a></li>
+<li><a href="#content-filtering">Content Filtering</a></li>
+<li><a href="#policy-compliance">Policy Compliance</a></li>
+</ul>
+</li>
+<li><a href="#implementation">Implementation</a>
+<ul>
+<li><a href="#safetyguardian-class">SafetyGuardian Class</a></li>
+<li><a href="#piidetector">PIIDetector</a></li>
+<li><a href="#secretsdetector">SecretsDetector</a></li>
+</ul>
+</li>
+<li><a href="#api-specification">API Specification</a>
+<ul>
+<li><a href="#safety-check">Safety Check</a></li>
+<li><a href="#response-formats">Response Formats</a></li>
+</ul>
+</li>
+<li><a href="#data-models">Data Models</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#performance-characteristics">Performance Characteristics</a></li>
+<li><a href="#testing">Testing</a></li>
+<li><a href="#deployment">Deployment</a></li>
+<li><a href="#see-also">See Also</a></li>
+</ul>
+<hr />
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The Safety Guardian Arm performs fast content filtering, PII (Personally Identifiable Information) detection, secrets detection, and policy enforcement throughout the system. It acts as a pre-filter before expensive operations and a post-filter before outputs are returned to users.</p>
+<h3 id="key-features"><a class="header" href="#key-features">Key Features</a></h3>
+<ul>
+<li><strong>Fast Execution</strong>: &lt;100ms latency using regex-based detection</li>
+<li><strong>PII Detection</strong>: Detect and redact SSN, credit cards, emails, phones, IPs</li>
+<li><strong>Secrets Detection</strong>: Find API keys, tokens, passwords in text</li>
+<li><strong>Content Filtering</strong>: Block malicious or inappropriate content</li>
+<li><strong>Policy Enforcement</strong>: Ensure organizational policy compliance</li>
+<li><strong>Automatic Redaction</strong>: Replace sensitive data with placeholders</li>
+<li><strong>Risk Assessment</strong>: Classify findings by severity</li>
+</ul>
+<h3 id="design-principles"><a class="header" href="#design-principles">Design Principles</a></h3>
+<ol>
+<li><strong>Speed First</strong>: No LLM calls, pure regex/pattern matching</li>
+<li><strong>Fail-Safe</strong>: Block on high/critical risk by default</li>
+<li><strong>Comprehensive</strong>: Multiple detection layers</li>
+<li><strong>Privacy by Default</strong>: Automatic PII redaction</li>
+<li><strong>Configurable</strong>: Adjustable risk thresholds</li>
+</ol>
+<hr />
+<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
+<pre><code class="language-mermaid">graph TB
+    subgraph "Safety Guardian"
+        API[API Endpoint]
+        COORD[Check Coordinator]
+    end
+
+    subgraph "Detection Modules"
+        PII[PII Detector]
+        SEC[Secrets Detector]
+        CONT[Content Filter]
+        POL[Policy Checker]
+    end
+
+    subgraph "Pattern Libraries"
+        REGEX[Regex Patterns]
+        RULES[Policy Rules]
+        BLOCK[Blocklists]
+    end
+
+    ORCH[Orchestrator] --&gt;|Safety Check| API
+    API --&gt; COORD
+
+    COORD --&gt; PII
+    COORD --&gt; SEC
+    COORD --&gt; CONT
+    COORD --&gt; POL
+
+    PII --&gt; REGEX
+    SEC --&gt; REGEX
+    CONT --&gt; BLOCK
+    POL --&gt; RULES
+
+    PII --&gt;|Issues| COORD
+    SEC --&gt;|Issues| COORD
+    CONT --&gt;|Issues| COORD
+    POL --&gt;|Issues| COORD
+
+    COORD --&gt;|Safety Result| API
+    API --&gt;|Safe/Blocked| ORCH
+
+    style COORD fill:#ff9,stroke:#333
+    style REGEX fill:#9ff,stroke:#333
+    style API fill:#9f9,stroke:#333
+</code></pre>
+<h3 id="safety-pipeline-flow"><a class="header" href="#safety-pipeline-flow">Safety Pipeline Flow</a></h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant O as Orchestrator
+    participant S as Safety Guardian
+    participant P as PII Detector
+    participant SE as Secrets Detector
+    participant C as Content Filter
+    participant PO as Policy Checker
+
+    O-&gt;&gt;S: Check safety (text)
+
+    par Stage 1: PII
+        S-&gt;&gt;P: Detect PII
+        P--&gt;&gt;S: PII issues + sanitized text
+    end
+
+    par Stage 2: Secrets
+        S-&gt;&gt;SE: Detect secrets
+        SE--&gt;&gt;S: Secret issues + sanitized text
+    end
+
+    par Stage 3: Content
+        S-&gt;&gt;C: Check content
+        C--&gt;&gt;S: Content issues
+    end
+
+    par Stage 4: Policy
+        S-&gt;&gt;PO: Check policy
+        PO--&gt;&gt;S: Policy issues
+    end
+
+    S-&gt;&gt;S: Aggregate risk levels
+    S-&gt;&gt;S: Determine if should block
+
+    alt Safe (low risk)
+        S--&gt;&gt;O: SafetyResult (safe=true, sanitized text)
+    else High/Critical Risk
+        S--&gt;&gt;O: SafetyResult (safe=false, blocked=true)
+    end
+</code></pre>
+<hr />
+<h2 id="core-functionality"><a class="header" href="#core-functionality">Core Functionality</a></h2>
+<h3 id="safety-check-types"><a class="header" href="#safety-check-types">Safety Check Types</a></h3>
+<pre><code class="language-python">from enum import Enum
+
+class SafetyCheckType(str, Enum):
+    PII = "pii"                  # Personally Identifiable Information
+    CONTENT = "content"          # Malicious/inappropriate content
+    POLICY = "policy"            # Organization policy compliance
+    SECRETS = "secrets"          # API keys, tokens, passwords
+    ALL = "all"                  # Run all checks
+</code></pre>
+<h3 id="risk-levels"><a class="header" href="#risk-levels">Risk Levels</a></h3>
+<pre><code class="language-python">class RiskLevel(str, Enum):
+    NONE = "none"                # No issues detected
+    LOW = "low"                  # Minor issues (e.g., IP addresses)
+    MEDIUM = "medium"            # Moderate issues (e.g., emails, phones)
+    HIGH = "high"                # Serious issues (e.g., SSN, credit cards)
+    CRITICAL = "critical"        # Severe issues (e.g., API keys, passwords)
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>Risk Level</th><th>Examples</th><th>Default Action</th></tr></thead><tbody>
+<tr><td><strong>NONE</strong></td><td>Clean content</td><td>Pass</td></tr>
+<tr><td><strong>LOW</strong></td><td>IP addresses, generic usernames</td><td>Pass with warning</td></tr>
+<tr><td><strong>MEDIUM</strong></td><td>Emails, phone numbers</td><td>Pass with redaction</td></tr>
+<tr><td><strong>HIGH</strong></td><td>SSN, credit card numbers</td><td><strong>Block</strong></td></tr>
+<tr><td><strong>CRITICAL</strong></td><td>API keys, passwords, tokens</td><td><strong>Block</strong></td></tr>
+</tbody></table>
+</div>
+<h3 id="multi-stage-pipeline"><a class="header" href="#multi-stage-pipeline">Multi-Stage Pipeline</a></h3>
+<p>The Safety Guardian runs checks in sequence, with each stage receiving sanitized output from the previous stage:</p>
+<ol>
+<li><strong>PII Detection</strong>: Find and redact personal information</li>
+<li><strong>Secrets Detection</strong>: Find and redact API keys and credentials</li>
+<li><strong>Content Filtering</strong>: Check for malicious or inappropriate content</li>
+<li><strong>Policy Compliance</strong>: Verify organizational policy adherence</li>
+</ol>
+<hr />
+<h2 id="detection-modules"><a class="header" href="#detection-modules">Detection Modules</a></h2>
+<h3 id="pii-detection"><a class="header" href="#pii-detection">PII Detection</a></h3>
+<p>Detects and redacts various types of personally identifiable information:</p>
+<pre><code class="language-python">class PIIDetector:
+    """Detect and redact personally identifiable information."""
+
+    def __init__(self):
+        self.patterns = self._compile_patterns()
+
+    def _compile_patterns(self) -&gt; List[Dict]:
+        return [
+            {
+                "name": "ssn",
+                "pattern": re.compile(r'\b\d{3}-\d{2}-\d{4}\b'),
+                "replacement": "[SSN-REDACTED]",
+                "risk_level": RiskLevel.HIGH
+            },
+            {
+                "name": "credit_card",
+                "pattern": re.compile(r'\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b'),
+                "replacement": "[CC-REDACTED]",
+                "risk_level": RiskLevel.HIGH
+            },
+            {
+                "name": "email",
+                "pattern": re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'),
+                "replacement": "[EMAIL-REDACTED]",
+                "risk_level": RiskLevel.MEDIUM
+            },
+            {
+                "name": "phone",
+                "pattern": re.compile(r'\b\+?1?\s*\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}\b'),
+                "replacement": "[PHONE-REDACTED]",
+                "risk_level": RiskLevel.MEDIUM
+            },
+            {
+                "name": "ip_address",
+                "pattern": re.compile(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'),
+                "replacement": "[IP-REDACTED]",
+                "risk_level": RiskLevel.LOW
+            },
+        ]
+
+    def detect(self, text: str) -&gt; PIIResult:
+        """Detect PII in text."""
+
+        issues = []
+        sanitized = text
+        max_risk = RiskLevel.NONE
+
+        for pattern_info in self.patterns:
+            for match in pattern_info["pattern"].finditer(text):
+                issues.append(SafetyIssue(
+                    type="pii",
+                    risk_level=pattern_info["risk_level"],
+                    message=f"PII detected: {pattern_info['name']}",
+                    matched_pattern=pattern_info["name"],
+                    position=match.start(),
+                    redaction=pattern_info["replacement"]
+                ))
+
+                sanitized = pattern_info["pattern"].sub(
+                    pattern_info["replacement"],
+                    sanitized
+                )
+
+                max_risk = self._max_risk(max_risk, pattern_info["risk_level"])
+
+        return PIIResult(
+            issues=issues,
+            sanitized_text=sanitized,
+            risk_level=max_risk
+        )
+</code></pre>
+<h3 id="secrets-detection"><a class="header" href="#secrets-detection">Secrets Detection</a></h3>
+<p>Detects API keys, tokens, and passwords:</p>
+<pre><code class="language-python">class SecretsDetector:
+    """Detect and redact secrets (API keys, tokens, passwords)."""
+
+    def __init__(self):
+        self.patterns = self._compile_patterns()
+
+    def _compile_patterns(self) -&gt; List[Dict]:
+        return [
+            {
+                "name": "openai_api_key",
+                "pattern": re.compile(r'\bsk-[A-Za-z0-9]{48}\b'),
+                "replacement": "[OPENAI-KEY-REDACTED]",
+                "risk_level": RiskLevel.CRITICAL
+            },
+            {
+                "name": "github_token",
+                "pattern": re.compile(r'\bghp_[A-Za-z0-9]{36}\b'),
+                "replacement": "[GITHUB-TOKEN-REDACTED]",
+                "risk_level": RiskLevel.CRITICAL
+            },
+            {
+                "name": "aws_access_key",
+                "pattern": re.compile(r'\bAKIA[0-9A-Z]{16}\b'),
+                "replacement": "[AWS-KEY-REDACTED]",
+                "risk_level": RiskLevel.CRITICAL
+            },
+            {
+                "name": "generic_api_key",
+                "pattern": re.compile(r'\b(?:api[_-]?key|apikey)[\s:=]+["\']?([A-Za-z0-9]{20,})["\']?', re.IGNORECASE),
+                "replacement": "[API-KEY-REDACTED]",
+                "risk_level": RiskLevel.CRITICAL
+            },
+            {
+                "name": "password_value",
+                "pattern": re.compile(r'\b(?:password|passwd|pwd)[\s:=]+["\']?([^\s"\']{8,})["\']?', re.IGNORECASE),
+                "replacement": "[PASSWORD-REDACTED]",
+                "risk_level": RiskLevel.CRITICAL
+            },
+        ]
+
+    def detect(self, text: str) -&gt; SecretsResult:
+        """Detect secrets in text."""
+
+        issues = []
+        sanitized = text
+        max_risk = RiskLevel.NONE
+
+        for pattern_info in self.patterns:
+            for match in pattern_info["pattern"].finditer(text):
+                issues.append(SafetyIssue(
+                    type="secret",
+                    risk_level=pattern_info["risk_level"],
+                    message=f"Secret detected: {pattern_info['name']}",
+                    matched_pattern=pattern_info["name"],
+                    position=match.start(),
+                    redaction=pattern_info["replacement"]
+                ))
+
+                sanitized = pattern_info["pattern"].sub(
+                    pattern_info["replacement"],
+                    sanitized
+                )
+
+                max_risk = RiskLevel.CRITICAL  # Any secret is critical
+
+        return SecretsResult(
+            issues=issues,
+            sanitized_text=sanitized,
+            risk_level=max_risk
+        )
+</code></pre>
+<h3 id="content-filtering"><a class="header" href="#content-filtering">Content Filtering</a></h3>
+<p>Checks for malicious or inappropriate content:</p>
+<pre><code class="language-python">class ContentFilter:
+    """Filter malicious or inappropriate content."""
+
+    def __init__(self):
+        self.malicious_patterns = self._load_malicious_patterns()
+        self.inappropriate_keywords = self._load_inappropriate_keywords()
+
+    def check(self, text: str) -&gt; ContentResult:
+        """Check content for issues."""
+
+        issues = []
+        max_risk = RiskLevel.NONE
+
+        # Check for malicious patterns (SQL injection, XSS, etc.)
+        for pattern_info in self.malicious_patterns:
+            if pattern_info["pattern"].search(text):
+                issues.append(SafetyIssue(
+                    type="malicious_content",
+                    risk_level=RiskLevel.HIGH,
+                    message=f"Potential {pattern_info['name']} detected",
+                    matched_pattern=pattern_info["name"],
+                    position=0
+                ))
+                max_risk = RiskLevel.HIGH
+
+        # Check for inappropriate keywords
+        text_lower = text.lower()
+        for keyword in self.inappropriate_keywords:
+            if keyword in text_lower:
+                issues.append(SafetyIssue(
+                    type="inappropriate_content",
+                    risk_level=RiskLevel.MEDIUM,
+                    message=f"Inappropriate content detected",
+                    matched_pattern="keyword",
+                    position=text_lower.index(keyword)
+                ))
+                max_risk = self._max_risk(max_risk, RiskLevel.MEDIUM)
+
+        return ContentResult(
+            issues=issues,
+            risk_level=max_risk
+        )
+
+    def _load_malicious_patterns(self) -&gt; List[Dict]:
+        return [
+            {
+                "name": "sql_injection",
+                "pattern": re.compile(r"(?:union|select|insert|update|delete|drop|create|alter)\s+(?:select|from|where|table)", re.IGNORECASE)
+            },
+            {
+                "name": "xss",
+                "pattern": re.compile(r"&lt;script[^&gt;]*&gt;.*?&lt;/script&gt;", re.IGNORECASE | re.DOTALL)
+            },
+            {
+                "name": "path_traversal",
+                "pattern": re.compile(r"\.\.[\\/]")
+            },
+        ]
+</code></pre>
+<h3 id="policy-compliance"><a class="header" href="#policy-compliance">Policy Compliance</a></h3>
+<p>Enforces organizational policies:</p>
+<pre><code class="language-python">class PolicyChecker:
+    """Check compliance with organizational policies."""
+
+    def __init__(self, policy_config_path: str = "/etc/guardian/policy.yaml"):
+        self.policies = self._load_policies(policy_config_path)
+
+    def check(self, text: str, context: Dict[str, Any]) -&gt; PolicyResult:
+        """Check text against policies."""
+
+        issues = []
+        max_risk = RiskLevel.NONE
+
+        for policy in self.policies:
+            if not self._check_policy(text, policy, context):
+                issues.append(SafetyIssue(
+                    type="policy_violation",
+                    risk_level=policy["risk_level"],
+                    message=f"Policy violation: {policy['name']}",
+                    matched_pattern=policy["name"],
+                    position=0
+                ))
+                max_risk = self._max_risk(max_risk, policy["risk_level"])
+
+        return PolicyResult(
+            issues=issues,
+            risk_level=max_risk
+        )
+</code></pre>
+<hr />
+<h2 id="implementation"><a class="header" href="#implementation">Implementation</a></h2>
+<h3 id="safetyguardian-class"><a class="header" href="#safetyguardian-class">SafetyGuardian Class</a></h3>
+<pre><code class="language-python">from typing import List, Dict, Any, Optional
+from pydantic import BaseModel, Field
+import re
+
+class SafetyRequest(BaseModel):
+    text: str
+    check_types: List[SafetyCheckType]
+    context: Dict[str, Any] = Field(default_factory=dict)
+    redact_pii: bool = True
+    block_on_high_risk: bool = True
+
+class SafetyIssue(BaseModel):
+    type: str
+    risk_level: RiskLevel
+    message: str
+    matched_pattern: str
+    position: int
+    redaction: Optional[str] = None
+
+class SafetyResult(BaseModel):
+    safe: bool
+    risk_level: RiskLevel
+    issues: List[SafetyIssue] = Field(default_factory=list)
+    sanitized_text: str
+    blocked: bool = False
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+class SafetyGuardian:
+    """Content filtering and policy enforcement specialist."""
+
+    def __init__(self):
+        self.pii_detector = PIIDetector()
+        self.content_filter = ContentFilter()
+        self.policy_checker = PolicyChecker()
+        self.secrets_detector = SecretsDetector()
+
+    async def check(self, req: SafetyRequest) -&gt; SafetyResult:
+        """Run safety checks on text."""
+
+        issues = []
+        sanitized_text = req.text
+        max_risk = RiskLevel.NONE
+
+        # Check 1: PII Detection
+        if SafetyCheckType.PII in req.check_types or SafetyCheckType.ALL in req.check_types:
+            pii_result = self.pii_detector.detect(req.text)
+            issues.extend(pii_result.issues)
+            if req.redact_pii:
+                sanitized_text = pii_result.sanitized_text
+            max_risk = self._max_risk(max_risk, pii_result.risk_level)
+
+        # Check 2: Secrets Detection
+        if SafetyCheckType.SECRETS in req.check_types or SafetyCheckType.ALL in req.check_types:
+            secrets_result = self.secrets_detector.detect(sanitized_text)
+            issues.extend(secrets_result.issues)
+            sanitized_text = secrets_result.sanitized_text
+            max_risk = self._max_risk(max_risk, secrets_result.risk_level)
+
+        # Check 3: Content Filtering
+        if SafetyCheckType.CONTENT in req.check_types or SafetyCheckType.ALL in req.check_types:
+            content_result = self.content_filter.check(sanitized_text)
+            issues.extend(content_result.issues)
+            max_risk = self._max_risk(max_risk, content_result.risk_level)
+
+        # Check 4: Policy Compliance
+        if SafetyCheckType.POLICY in req.check_types or SafetyCheckType.ALL in req.check_types:
+            policy_result = self.policy_checker.check(sanitized_text, req.context)
+            issues.extend(policy_result.issues)
+            max_risk = self._max_risk(max_risk, policy_result.risk_level)
+
+        # Determine if should block
+        blocked = req.block_on_high_risk and max_risk in [RiskLevel.HIGH, RiskLevel.CRITICAL]
+        safe = max_risk not in [RiskLevel.HIGH, RiskLevel.CRITICAL]
+
+        return SafetyResult(
+            safe=safe,
+            risk_level=max_risk,
+            issues=issues,
+            sanitized_text=sanitized_text,
+            blocked=blocked,
+            metadata={
+                "checks_run": [ct.value for ct in req.check_types],
+                "issues_found": len(issues),
+                "pii_detections": sum(1 for i in issues if i.type == "pii"),
+                "secrets_detections": sum(1 for i in issues if i.type == "secret")
+            }
+        )
+
+    def _max_risk(self, current: RiskLevel, new: RiskLevel) -&gt; RiskLevel:
+        """Return the higher risk level."""
+        risk_order = [RiskLevel.NONE, RiskLevel.LOW, RiskLevel.MEDIUM, RiskLevel.HIGH, RiskLevel.CRITICAL]
+        current_idx = risk_order.index(current)
+        new_idx = risk_order.index(new)
+        return risk_order[max(current_idx, new_idx)]
+</code></pre>
+<h3 id="piidetector"><a class="header" href="#piidetector">PIIDetector</a></h3>
+<p>See <a href="#pii-detection">PII Detection</a> section for full implementation.</p>
+<h3 id="secretsdetector"><a class="header" href="#secretsdetector">SecretsDetector</a></h3>
+<p>See <a href="#secrets-detection">Secrets Detection</a> section for full implementation.</p>
+<hr />
+<h2 id="api-specification"><a class="header" href="#api-specification">API Specification</a></h2>
+<h3 id="safety-check"><a class="header" href="#safety-check">Safety Check</a></h3>
+<p><strong>Endpoint</strong>: <code>POST /check</code></p>
+<p><strong>Request Body</strong>:</p>
+<pre><code class="language-json">{
+  "text": "Please contact John at john.doe@example.com or call 555-123-4567. My API key is sk-abc123xyz...",
+  "check_types": ["pii", "secrets"],
+  "redact_pii": true,
+  "block_on_high_risk": true
+}
+</code></pre>
+<p><strong>Field Descriptions</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>text</code></td><td>string</td><td>Yes</td><td>Text to check for safety issues</td></tr>
+<tr><td><code>check_types</code></td><td>array[string]</td><td>Yes</td><td>Types of checks to perform</td></tr>
+<tr><td><code>context</code></td><td>object</td><td>No</td><td>Additional context for policy checks</td></tr>
+<tr><td><code>redact_pii</code></td><td>boolean</td><td>No</td><td>Automatically redact PII (default: true)</td></tr>
+<tr><td><code>block_on_high_risk</code></td><td>boolean</td><td>No</td><td>Block on high/critical risk (default: true)</td></tr>
+</tbody></table>
+</div>
+<h3 id="response-formats"><a class="header" href="#response-formats">Response Formats</a></h3>
+<p><strong>Safe Content</strong> (200 OK):</p>
+<pre><code class="language-json">{
+  "safe": true,
+  "risk_level": "medium",
+  "issues": [
+    {
+      "type": "pii",
+      "risk_level": "medium",
+      "message": "PII detected: email",
+      "matched_pattern": "email",
+      "position": 24,
+      "redaction": "[EMAIL-REDACTED]"
+    },
+    {
+      "type": "pii",
+      "risk_level": "medium",
+      "message": "PII detected: phone",
+      "matched_pattern": "phone",
+      "position": 58,
+      "redaction": "[PHONE-REDACTED]"
+    }
+  ],
+  "sanitized_text": "Please contact John at [EMAIL-REDACTED] or call [PHONE-REDACTED]. My API key is [OPENAI-KEY-REDACTED]",
+  "blocked": false,
+  "metadata": {
+    "checks_run": ["pii", "secrets"],
+    "issues_found": 3,
+    "pii_detections": 2,
+    "secrets_detections": 1
+  }
+}
+</code></pre>
+<p><strong>Blocked Content</strong> (200 OK with blocked=true):</p>
+<pre><code class="language-json">{
+  "safe": false,
+  "risk_level": "critical",
+  "issues": [
+    {
+      "type": "secret",
+      "risk_level": "critical",
+      "message": "Secret detected: openai_api_key",
+      "matched_pattern": "openai_api_key",
+      "position": 85,
+      "redaction": "[OPENAI-KEY-REDACTED]"
+    }
+  ],
+  "sanitized_text": "[CONTENT BLOCKED DUE TO CRITICAL RISK]",
+  "blocked": true,
+  "metadata": {
+    "checks_run": ["all"],
+    "issues_found": 1,
+    "pii_detections": 0,
+    "secrets_detections": 1
+  }
+}
+</code></pre>
+<hr />
+<h2 id="data-models"><a class="header" href="#data-models">Data Models</a></h2>
+<h3 id="result-models"><a class="header" href="#result-models">Result Models</a></h3>
+<pre><code class="language-python">class PIIResult(BaseModel):
+    issues: List[SafetyIssue]
+    sanitized_text: str
+    risk_level: RiskLevel
+
+class SecretsResult(BaseModel):
+    issues: List[SafetyIssue]
+    sanitized_text: str
+    risk_level: RiskLevel
+
+class ContentResult(BaseModel):
+    issues: List[SafetyIssue]
+    risk_level: RiskLevel
+
+class PolicyResult(BaseModel):
+    issues: List[SafetyIssue]
+    risk_level: RiskLevel
+</code></pre>
+<hr />
+<h2 id="configuration"><a class="header" href="#configuration">Configuration</a></h2>
+<h3 id="environment-variables"><a class="header" href="#environment-variables">Environment Variables</a></h3>
+<pre><code class="language-bash"># Safety Guardian Configuration
+GUARDIAN_PORT=8007
+GUARDIAN_ENABLE_PII=true
+GUARDIAN_ENABLE_SECRETS=true
+GUARDIAN_ENABLE_CONTENT=true
+GUARDIAN_ENABLE_POLICY=true
+
+# Risk Thresholds
+GUARDIAN_BLOCK_HIGH_RISK=true
+GUARDIAN_BLOCK_CRITICAL_RISK=true
+GUARDIAN_AUTO_REDACT=true
+
+# Policy Configuration
+POLICY_CONFIG_PATH=/etc/guardian/policy.yaml
+
+# Logging
+LOG_LEVEL=info
+LOG_DETECTIONS=true
+LOG_SANITIZED_OUTPUT=false  # Don't log sanitized content
+</code></pre>
+<h3 id="policy-configuration"><a class="header" href="#policy-configuration">Policy Configuration</a></h3>
+<p><strong>policy.yaml</strong>:</p>
+<pre><code class="language-yaml">policies:
+  - name: no_customer_data
+    description: "Prevent customer data in logs"
+    risk_level: high
+    patterns:
+      - customer_id
+      - user_id
+      - account_number
+
+  - name: no_internal_urls
+    description: "Block internal URLs"
+    risk_level: medium
+    patterns:
+      - "internal.company.com"
+      - "*.internal"
+
+  - name: compliance_gdpr
+    description: "GDPR compliance requirements"
+    risk_level: high
+    rules:
+      - no_unredacted_pii
+      - explicit_consent_required
+</code></pre>
+<hr />
+<h2 id="performance-characteristics"><a class="header" href="#performance-characteristics">Performance Characteristics</a></h2>
+<h3 id="latency"><a class="header" href="#latency">Latency</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Check Type</th><th>P50</th><th>P95</th><th>P99</th></tr></thead><tbody>
+<tr><td>PII Detection</td><td>5ms</td><td>20ms</td><td>50ms</td></tr>
+<tr><td>Secrets Detection</td><td>5ms</td><td>20ms</td><td>50ms</td></tr>
+<tr><td>Content Filtering</td><td>3ms</td><td>10ms</td><td>30ms</td></tr>
+<tr><td>Policy Checking</td><td>2ms</td><td>5ms</td><td>10ms</td></tr>
+<tr><td><strong>Total (all checks)</strong></td><td><strong>15ms</strong></td><td><strong>55ms</strong></td><td><strong>140ms</strong></td></tr>
+</tbody></table>
+</div>
+<h3 id="throughput"><a class="header" href="#throughput">Throughput</a></h3>
+<ul>
+<li><strong>Requests/Second</strong>: &gt;10,000 per instance</li>
+<li><strong>Concurrent Checks</strong>: Unlimited (stateless)</li>
+<li><strong>CPU Usage</strong>: Minimal (regex-based)</li>
+<li><strong>Memory</strong>: &lt;50 MB per instance</li>
+</ul>
+<h3 id="accuracy"><a class="header" href="#accuracy">Accuracy</a></h3>
+<ul>
+<li><strong>PII Detection</strong>: &gt;98% (regex-based)</li>
+<li><strong>Secrets Detection</strong>: &gt;95% (pattern-based)</li>
+<li><strong>False Positives</strong>: &lt;2% (tunable patterns)</li>
+<li><strong>False Negatives</strong>: &lt;5% (depends on pattern coverage)</li>
+</ul>
+<hr />
+<h2 id="testing"><a class="header" href="#testing">Testing</a></h2>
+<h3 id="unit-tests"><a class="header" href="#unit-tests">Unit Tests</a></h3>
+<pre><code class="language-python">import pytest
+from guardian_arm import SafetyGuardian, SafetyRequest, SafetyCheckType, RiskLevel
+
+@pytest.fixture
+def guardian():
+    return SafetyGuardian()
+
+@pytest.mark.asyncio
+async def test_pii_detection(guardian):
+    request = SafetyRequest(
+        text="Contact me at john@example.com or 555-123-4567",
+        check_types=[SafetyCheckType.PII],
+        redact_pii=True
+    )
+
+    result = await guardian.check(request)
+
+    assert result.safe  # MEDIUM risk is safe
+    assert result.risk_level == RiskLevel.MEDIUM
+    assert len(result.issues) == 2
+    assert "[EMAIL-REDACTED]" in result.sanitized_text
+    assert "[PHONE-REDACTED]" in result.sanitized_text
+
+@pytest.mark.asyncio
+async def test_secrets_detection(guardian):
+    request = SafetyRequest(
+        text="My OpenAI key is sk-abc123xyz" + "0" * 39,
+        check_types=[SafetyCheckType.SECRETS],
+        block_on_high_risk=True
+    )
+
+    result = await guardian.check(request)
+
+    assert not result.safe
+    assert result.blocked
+    assert result.risk_level == RiskLevel.CRITICAL
+    assert len(result.issues) == 1
+    assert result.issues[0].type == "secret"
+</code></pre>
+<hr />
+<h2 id="deployment"><a class="header" href="#deployment">Deployment</a></h2>
+<h3 id="dockerfile"><a class="header" href="#dockerfile">Dockerfile</a></h3>
+<pre><code class="language-dockerfile">FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY guardian_arm/ ./guardian_arm/
+COPY policy.yaml /etc/guardian/policy.yaml
+
+RUN useradd -m -u 1000 guardian &amp;&amp; chown -R guardian:guardian /app
+USER guardian
+
+ENV PYTHONUNBUFFERED=1
+EXPOSE 8007
+
+CMD ["uvicorn", "guardian_arm.main:app", "--host", "0.0.0.0", "--port", "8007"]
+</code></pre>
+<h3 id="kubernetes-deployment"><a class="header" href="#kubernetes-deployment">Kubernetes Deployment</a></h3>
+<pre><code class="language-yaml">apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guardian-arm
+  namespace: octollm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: guardian-arm
+  template:
+    metadata:
+      labels:
+        app: guardian-arm
+    spec:
+      containers:
+      - name: guardian
+        image: octollm/guardian-arm:1.0
+        ports:
+        - containerPort: 8007
+        env:
+        - name: GUARDIAN_PORT
+          value: "8007"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8007
+          initialDelaySeconds: 10
+          periodSeconds: 10
+</code></pre>
+<hr />
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="../reflex-layer.html">Reflex Layer</a> - Pre-processing with safety checks</li>
+<li><a href="./judge-arm.html">Judge Arm</a> - Post-validation quality assurance</li>
+<li><a href="../../security/overview.html">Security Overview</a> - System-wide security architecture</li>
+<li><a href="../../security/pii-protection.html">PII Protection</a> - Detailed PII handling</li>
+<li><a href="../../api/rest-api.html">API Reference</a> - Complete API documentation</li>
+</ul>
+<hr />
+<p><strong>Document Status</strong>: Phase 1 Complete
+<strong>Last Updated</strong>: 2025-11-10
+<strong>Maintainer</strong>: OctoLLM Core Team
+<strong>Next Review</strong>: 2025-12-10</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../components/arms/judge-arm.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../components/persistence.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../components/arms/judge-arm.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../components/persistence.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

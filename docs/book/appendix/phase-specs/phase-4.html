@@ -1,0 +1,2100 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Phase 4 Specifications - OctoLLM Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OctoLLM Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/doublegate/OctoLLM/edit/main/docs/src/appendix/phase-specs/phase-4.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="phase-4-additional-documentation---complete-specifications"><a class="header" href="#phase-4-additional-documentation---complete-specifications">Phase 4: Additional Documentation - Complete Specifications</a></h1>
+<p><strong>Phase Status</strong>: Complete
+<strong>Date Completed</strong>: 2025-11-10
+<strong>Total Documents</strong>: 13 (5 engineering practices + 3 guides + 5 ADRs)</p>
+<p>This document consolidates all Phase 4 documentation including engineering practices, development guides, and architectural decision records.</p>
+<hr />
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li>
+<p><a href="#engineering-practices">Engineering Practices</a></p>
+<ul>
+<li><a href="#coding-standards">Coding Standards</a></li>
+<li><a href="#error-handling">Error Handling</a></li>
+<li><a href="#logging-and-observability">Logging and Observability</a></li>
+<li><a href="#performance-optimization">Performance Optimization</a></li>
+<li><a href="#code-review">Code Review</a></li>
+</ul>
+</li>
+<li>
+<p><a href="#development-guides">Development Guides</a></p>
+<ul>
+<li><a href="#development-workflow">Development Workflow</a></li>
+<li><a href="#migration-guide">Migration Guide</a></li>
+<li><a href="#contributing-guidelines">Contributing Guidelines</a></li>
+</ul>
+</li>
+<li>
+<p><a href="#architecture-decision-records">Architecture Decision Records</a></p>
+<ul>
+<li><a href="#adr-001-technology-stack">ADR-001: Technology Stack</a></li>
+<li><a href="#adr-002-communication-patterns">ADR-002: Communication Patterns</a></li>
+<li><a href="#adr-003-memory-architecture">ADR-003: Memory Architecture</a></li>
+<li><a href="#adr-004-security-model">ADR-004: Security Model</a></li>
+<li><a href="#adr-005-deployment-platform">ADR-005: Deployment Platform</a></li>
+</ul>
+</li>
+</ol>
+<hr />
+<h2 id="engineering-practices"><a class="header" href="#engineering-practices">Engineering Practices</a></h2>
+<h3 id="coding-standards"><a class="header" href="#coding-standards">Coding Standards</a></h3>
+<p><strong>Location</strong>: <code>/docs/engineering/coding-standards.md</code></p>
+<p><strong>Purpose</strong>: Define consistent coding standards for Python and Rust codebases.</p>
+<h4 id="python-standards"><a class="header" href="#python-standards">Python Standards</a></h4>
+<p><strong>Style Guide</strong>: PEP 8 compliance with modifications</p>
+<ul>
+<li><strong>Line Length</strong>: 100 characters (Black default)</li>
+<li><strong>Indentation</strong>: 4 spaces</li>
+<li><strong>Imports</strong>: Organized by stdlib, third-party, local (isort)</li>
+<li><strong>Quotes</strong>: Double quotes for strings</li>
+<li><strong>Type Hints</strong>: Required for all function signatures</li>
+</ul>
+<p><strong>Tools Configuration</strong>:</p>
+<pre><code class="language-toml">[tool.black]
+line-length = 100
+target-version = ['py311']
+
+[tool.ruff]
+select = ["E", "F", "I", "B", "C4", "UP", "ARG", "SIM"]
+ignore = ["E501"]  # Line too long (handled by Black)
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+</code></pre>
+<p><strong>Code Example - Type Hints</strong>:</p>
+<pre><code class="language-python">from typing import List, Dict, Optional, Any
+from datetime import datetime
+
+async def execute_task(
+    task_id: str,
+    parameters: Dict[str, Any],
+    timeout: int = 300
+) -&gt; TaskResult:
+    """Execute a task with given parameters.
+
+    Args:
+        task_id: Unique identifier for the task
+        parameters: Task-specific parameters
+        timeout: Maximum execution time in seconds
+
+    Returns:
+        TaskResult containing output and metadata
+
+    Raises:
+        TaskNotFoundError: If task_id doesn't exist
+        TaskTimeoutError: If execution exceeds timeout
+        TaskExecutionError: If task fails to execute
+    """
+    try:
+        task = await db.get_task(task_id)
+        if not task:
+            raise TaskNotFoundError(f"Task {task_id} not found")
+
+        result = await orchestrator.execute(task, parameters, timeout)
+        return result
+    except asyncio.TimeoutError:
+        raise TaskTimeoutError(f"Task {task_id} timed out after {timeout}s")
+    except Exception as e:
+        logger.error("Task execution failed", task_id=task_id, error=str(e))
+        raise TaskExecutionError(f"Failed to execute task: {e}") from e
+</code></pre>
+<p><strong>Function Documentation</strong>:</p>
+<pre><code class="language-python">def create_capability_token(
+    user_id: str,
+    task_id: str,
+    capabilities: Dict[str, List[str]],
+    expiry_minutes: int = 30
+) -&gt; str:
+    """Create a capability token for task execution.
+
+    This function generates a JWT token with specific capability scopes
+    that authorize the bearer to perform certain operations. The token
+    expires after the specified duration.
+
+    Args:
+        user_id: Identifier of the user requesting the token
+        task_id: Identifier of the task being authorized
+        capabilities: Dictionary mapping capability types to allowed resources
+            Example: {"task:read": ["task-123"], "arm:invoke": ["coder"]}
+        expiry_minutes: Token validity period in minutes (default: 30)
+
+    Returns:
+        Encoded JWT token string
+
+    Example:
+        &gt;&gt;&gt; token = create_capability_token(
+        ...     "user-123",
+        ...     "task-456",
+        ...     {"task:read": ["task-456"], "arm:invoke": ["coder"]},
+        ...     expiry_minutes=60
+        ... )
+        &gt;&gt;&gt; print(token[:20])
+        eyJhbGciOiJIUzI1NiI...
+    """
+    payload = {
+        "sub": user_id,
+        "iss": "octollm-orchestrator",
+        "exp": datetime.utcnow() + timedelta(minutes=expiry_minutes),
+        "capabilities": capabilities,
+        "context": {
+            "task_id": task_id,
+            "user_id": user_id
+        }
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+</code></pre>
+<h4 id="rust-standards"><a class="header" href="#rust-standards">Rust Standards</a></h4>
+<p><strong>Style Guide</strong>: Rust standard style (rustfmt)</p>
+<ul>
+<li><strong>Formatting</strong>: <code>cargo fmt</code> with default settings</li>
+<li><strong>Linting</strong>: <code>cargo clippy</code> with all warnings as errors</li>
+<li><strong>Naming</strong>: snake_case for functions/variables, CamelCase for types</li>
+<li><strong>Documentation</strong>: Required for public APIs</li>
+<li><strong>Error Handling</strong>: Use <code>Result&lt;T, E&gt;</code> consistently</li>
+</ul>
+<p><strong>Cargo Configuration</strong>:</p>
+<pre><code class="language-toml">[profile.dev]
+opt-level = 0
+debug = true
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[profile.test]
+opt-level = 1
+</code></pre>
+<p><strong>Code Example - Error Handling</strong>:</p>
+<pre><code class="language-rust">use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum ReflexError {
+    #[error("Rate limit exceeded: {limit} requests per {window}s")]
+    RateLimitExceeded { limit: u32, window: u32 },
+
+    #[error("PII detected: {pattern}")]
+    PiiDetected { pattern: String },
+
+    #[error("Invalid request: {0}")]
+    InvalidRequest(String),
+
+    #[error("Internal error: {0}")]
+    Internal(#[from] anyhow::Error),
+}
+
+pub type ReflexResult&lt;T&gt; = Result&lt;T, ReflexError&gt;;
+
+pub async fn process_request(req: Request) -&gt; ReflexResult&lt;Response&gt; {
+    // Validate request
+    validate_request(&amp;req)?;
+
+    // Check rate limit
+    rate_limiter.check(&amp;req.client_id)
+        .map_err(|e| ReflexError::RateLimitExceeded {
+            limit: e.limit,
+            window: e.window,
+        })?;
+
+    // Detect PII
+    if let Some(pii) = pii_detector.detect(&amp;req.body) {
+        return Err(ReflexError::PiiDetected {
+            pattern: pii.pattern_name,
+        });
+    }
+
+    // Process request
+    let response = handle_request(req).await?;
+    Ok(response)
+}</code></pre>
+<p><strong>Documentation Example</strong>:</p>
+<pre><code class="language-rust">/// PII detector for identifying personally identifiable information.
+///
+/// This detector uses regex patterns to identify common PII types including:
+/// - Email addresses
+/// - Social Security Numbers (SSN)
+/// - Credit card numbers
+/// - Phone numbers
+///
+/// # Examples
+///
+/// ```
+/// use reflex::pii::PiiDetector;
+///
+/// let detector = PiiDetector::new();
+/// let text = "Contact me at john@example.com";
+/// let matches = detector.detect(text);
+/// assert_eq!(matches.len(), 1);
+/// assert_eq!(matches[0].pattern_name, "email");
+/// ```
+pub struct PiiDetector {
+    patterns: Vec&lt;(String, Regex)&gt;,
+}
+
+impl PiiDetector {
+    /// Creates a new PII detector with default patterns.
+    pub fn new() -&gt; Self {
+        Self {
+            patterns: vec![
+                ("email".to_string(), EMAIL.clone()),
+                ("ssn".to_string(), SSN.clone()),
+                ("credit_card".to_string(), CREDIT_CARD.clone()),
+                ("phone".to_string(), PHONE.clone()),
+            ]
+        }
+    }
+
+    /// Detects PII in the given text.
+    ///
+    /// # Arguments
+    ///
+    /// * `text` - The text to scan for PII
+    ///
+    /// # Returns
+    ///
+    /// A vector of PII matches found in the text
+    pub fn detect(&amp;self, text: &amp;str) -&gt; Vec&lt;PiiMatch&gt; {
+        let mut matches = Vec::new();
+        for (name, pattern) in &amp;self.patterns {
+            for capture in pattern.captures_iter(text) {
+                matches.push(PiiMatch {
+                    pattern_name: name.clone(),
+                    matched_text: capture[0].to_string(),
+                    start: capture.get(0).unwrap().start(),
+                    end: capture.get(0).unwrap().end(),
+                });
+            }
+        }
+        matches
+    }
+}</code></pre>
+<h3 id="error-handling"><a class="header" href="#error-handling">Error Handling</a></h3>
+<p><strong>Location</strong>: <code>/docs/engineering/error-handling.md</code></p>
+<p><strong>Purpose</strong>: Define consistent error handling patterns across all components.</p>
+<h4 id="exception-hierarchy"><a class="header" href="#exception-hierarchy">Exception Hierarchy</a></h4>
+<p><strong>Python Custom Exceptions</strong>:</p>
+<pre><code class="language-python">class OctoLLMError(Exception):
+    """Base exception for all OctoLLM errors."""
+
+    def __init__(
+        self,
+        message: str,
+        error_code: str = "UNKNOWN_ERROR",
+        details: Optional[Dict[str, Any]] = None,
+        retry_after: Optional[int] = None
+    ):
+        super().__init__(message)
+        self.message = message
+        self.error_code = error_code
+        self.details = details or {}
+        self.retry_after = retry_after
+
+    def to_dict(self) -&gt; Dict[str, Any]:
+        """Convert error to dictionary for API responses."""
+        result = {
+            "error": self.error_code,
+            "message": self.message,
+            "details": self.details
+        }
+        if self.retry_after:
+            result["retry_after"] = self.retry_after
+        return result
+
+class TaskError(OctoLLMError):
+    """Base exception for task-related errors."""
+    pass
+
+class TaskNotFoundError(TaskError):
+    """Task was not found in the database."""
+
+    def __init__(self, task_id: str):
+        super().__init__(
+            message=f"Task {task_id} not found",
+            error_code="TASK_NOT_FOUND",
+            details={"task_id": task_id}
+        )
+
+class TaskTimeoutError(TaskError):
+    """Task execution exceeded timeout."""
+
+    def __init__(self, task_id: str, timeout: int):
+        super().__init__(
+            message=f"Task {task_id} timed out after {timeout}s",
+            error_code="TASK_TIMEOUT",
+            details={"task_id": task_id, "timeout": timeout},
+            retry_after=60
+        )
+
+class TaskExecutionError(TaskError):
+    """Task failed during execution."""
+
+    def __init__(self, task_id: str, reason: str):
+        super().__init__(
+            message=f"Task {task_id} failed: {reason}",
+            error_code="TASK_EXECUTION_FAILED",
+            details={"task_id": task_id, "reason": reason}
+        )
+
+class RateLimitError(OctoLLMError):
+    """Rate limit exceeded."""
+
+    def __init__(self, limit: int, window: int, retry_after: int):
+        super().__init__(
+            message=f"Rate limit exceeded: {limit} requests per {window}s",
+            error_code="RATE_LIMIT_EXCEEDED",
+            details={"limit": limit, "window": window},
+            retry_after=retry_after
+        )
+
+class AuthorizationError(OctoLLMError):
+    """Authorization failed."""
+
+    def __init__(self, message: str):
+        super().__init__(
+            message=message,
+            error_code="AUTHORIZATION_FAILED"
+        )
+
+class ValidationError(OctoLLMError):
+    """Input validation failed."""
+
+    def __init__(self, field: str, reason: str):
+        super().__init__(
+            message=f"Validation failed for {field}: {reason}",
+            error_code="VALIDATION_ERROR",
+            details={"field": field, "reason": reason}
+        )
+</code></pre>
+<h4 id="error-response-format"><a class="header" href="#error-response-format">Error Response Format</a></h4>
+<p><strong>HTTP Error Responses</strong>:</p>
+<pre><code class="language-python">from fastapi import HTTPException, Request
+from fastapi.responses import JSONResponse
+
+@app.exception_handler(OctoLLMError)
+async def octollm_error_handler(request: Request, exc: OctoLLMError):
+    """Handle OctoLLM custom exceptions."""
+    status_map = {
+        "TASK_NOT_FOUND": 404,
+        "TASK_TIMEOUT": 408,
+        "TASK_EXECUTION_FAILED": 500,
+        "RATE_LIMIT_EXCEEDED": 429,
+        "AUTHORIZATION_FAILED": 403,
+        "VALIDATION_ERROR": 400,
+        "UNKNOWN_ERROR": 500,
+    }
+
+    status_code = status_map.get(exc.error_code, 500)
+
+    response_data = exc.to_dict()
+    response_data["request_id"] = request.state.request_id
+
+    headers = {}
+    if exc.retry_after:
+        headers["Retry-After"] = str(exc.retry_after)
+
+    return JSONResponse(
+        status_code=status_code,
+        content=response_data,
+        headers=headers
+    )
+</code></pre>
+<h4 id="retry-logic"><a class="header" href="#retry-logic">Retry Logic</a></h4>
+<p><strong>Exponential Backoff</strong>:</p>
+<pre><code class="language-python">import asyncio
+from typing import TypeVar, Callable, Optional
+from functools import wraps
+
+T = TypeVar('T')
+
+async def retry_with_backoff(
+    func: Callable[..., Awaitable[T]],
+    *args,
+    max_retries: int = 3,
+    base_delay: float = 1.0,
+    max_delay: float = 60.0,
+    exponential_base: float = 2.0,
+    jitter: bool = True,
+    retryable_exceptions: tuple = (Exception,),
+    **kwargs
+) -&gt; T:
+    """Retry function with exponential backoff.
+
+    Args:
+        func: Async function to retry
+        max_retries: Maximum number of retry attempts
+        base_delay: Initial delay in seconds
+        max_delay: Maximum delay in seconds
+        exponential_base: Base for exponential backoff
+        jitter: Add random jitter to delay
+        retryable_exceptions: Tuple of exceptions to retry on
+
+    Returns:
+        Result of successful function call
+
+    Raises:
+        Last exception if all retries fail
+    """
+    last_exception = None
+
+    for attempt in range(max_retries + 1):
+        try:
+            return await func(*args, **kwargs)
+        except retryable_exceptions as e:
+            last_exception = e
+
+            if attempt &gt;= max_retries:
+                logger.error(
+                    "Max retries exceeded",
+                    function=func.__name__,
+                    attempts=attempt + 1,
+                    error=str(e)
+                )
+                raise
+
+            # Calculate delay with exponential backoff
+            delay = min(base_delay * (exponential_base ** attempt), max_delay)
+
+            # Add jitter
+            if jitter:
+                import random
+                delay *= (0.5 + random.random())
+
+            logger.warning(
+                "Retrying after error",
+                function=func.__name__,
+                attempt=attempt + 1,
+                delay=delay,
+                error=str(e)
+            )
+
+            await asyncio.sleep(delay)
+
+    raise last_exception
+
+# Usage example
+async def call_external_api(url: str) -&gt; Dict[str, Any]:
+    """Call external API with retry logic."""
+    async with httpx.AsyncClient() as client:
+        response = await retry_with_backoff(
+            client.get,
+            url,
+            max_retries=3,
+            base_delay=1.0,
+            retryable_exceptions=(httpx.HTTPError, asyncio.TimeoutError)
+        )
+        return response.json()
+</code></pre>
+<h4 id="circuit-breaker"><a class="header" href="#circuit-breaker">Circuit Breaker</a></h4>
+<p><strong>Circuit Breaker Implementation</strong>:</p>
+<pre><code class="language-python">from enum import Enum
+from datetime import datetime, timedelta
+from typing import Callable, Any
+
+class CircuitState(Enum):
+    CLOSED = "closed"      # Normal operation
+    OPEN = "open"          # Failing, reject requests
+    HALF_OPEN = "half_open"  # Testing if recovered
+
+class CircuitBreaker:
+    """Circuit breaker for external service calls."""
+
+    def __init__(
+        self,
+        failure_threshold: int = 5,
+        success_threshold: int = 2,
+        timeout: int = 60,
+        expected_exception: type = Exception
+    ):
+        self.failure_threshold = failure_threshold
+        self.success_threshold = success_threshold
+        self.timeout = timeout
+        self.expected_exception = expected_exception
+
+        self.failure_count = 0
+        self.success_count = 0
+        self.last_failure_time: Optional[datetime] = None
+        self.state = CircuitState.CLOSED
+
+    def _should_attempt_reset(self) -&gt; bool:
+        """Check if enough time has passed to attempt reset."""
+        if not self.last_failure_time:
+            return False
+        return datetime.utcnow() - self.last_failure_time &gt; timedelta(seconds=self.timeout)
+
+    def _on_success(self) -&gt; None:
+        """Handle successful call."""
+        self.failure_count = 0
+
+        if self.state == CircuitState.HALF_OPEN:
+            self.success_count += 1
+            if self.success_count &gt;= self.success_threshold:
+                self.state = CircuitState.CLOSED
+                self.success_count = 0
+                logger.info("Circuit breaker closed after successful recovery")
+
+    def _on_failure(self) -&gt; None:
+        """Handle failed call."""
+        self.failure_count += 1
+        self.last_failure_time = datetime.utcnow()
+        self.success_count = 0
+
+        if self.failure_count &gt;= self.failure_threshold:
+            self.state = CircuitState.OPEN
+            logger.error(
+                "Circuit breaker opened",
+                failures=self.failure_count,
+                threshold=self.failure_threshold
+            )
+
+    async def call(self, func: Callable, *args, **kwargs) -&gt; Any:
+        """Execute function with circuit breaker protection."""
+        if self.state == CircuitState.OPEN:
+            if self._should_attempt_reset():
+                self.state = CircuitState.HALF_OPEN
+                logger.info("Circuit breaker entering half-open state")
+            else:
+                raise SystemError(
+                    f"Circuit breaker is open. "
+                    f"Retry after {self.timeout}s"
+                )
+
+        try:
+            result = await func(*args, **kwargs)
+            self._on_success()
+            return result
+        except self.expected_exception as e:
+            self._on_failure()
+            raise
+
+# Usage example
+llm_circuit_breaker = CircuitBreaker(
+    failure_threshold=5,
+    success_threshold=2,
+    timeout=60,
+    expected_exception=httpx.HTTPError
+)
+
+async def call_llm_api(prompt: str) -&gt; str:
+    """Call LLM API with circuit breaker."""
+    return await llm_circuit_breaker.call(
+        _call_llm_api_internal,
+        prompt
+    )
+</code></pre>
+<h3 id="logging-and-observability"><a class="header" href="#logging-and-observability">Logging and Observability</a></h3>
+<p><strong>Location</strong>: <code>/docs/engineering/logging-observability.md</code></p>
+<p><strong>Purpose</strong>: Define logging standards and observability practices.</p>
+<h4 id="structured-logging"><a class="header" href="#structured-logging">Structured Logging</a></h4>
+<p><strong>Python Configuration (structlog)</strong>:</p>
+<pre><code class="language-python">import structlog
+from pythonjsonlogger import jsonlogger
+
+def configure_logging(
+    level: str = "INFO",
+    json_logs: bool = True,
+    service_name: str = "octollm"
+) -&gt; None:
+    """Configure structured logging for the application."""
+
+    shared_processors = [
+        structlog.contextvars.merge_contextvars,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.add_logger_name,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.UnicodeDecoder(),
+    ]
+
+    if json_logs:
+        # Production: JSON format
+        structlog.configure(
+            processors=shared_processors + [
+                structlog.processors.JSONRenderer()
+            ],
+            wrapper_class=structlog.stdlib.BoundLogger,
+            context_class=dict,
+            logger_factory=structlog.stdlib.LoggerFactory(),
+            cache_logger_on_first_use=True,
+        )
+    else:
+        # Development: Console format
+        structlog.configure(
+            processors=shared_processors + [
+                structlog.dev.ConsoleRenderer()
+            ],
+            wrapper_class=structlog.stdlib.BoundLogger,
+            context_class=dict,
+            logger_factory=structlog.stdlib.LoggerFactory(),
+            cache_logger_on_first_use=True,
+        )
+
+    # Set level
+    logging.basicConfig(
+        format="%(message)s",
+        level=getattr(logging, level.upper())
+    )
+
+# Usage
+logger = structlog.get_logger()
+
+logger.info("Task started", task_id="task-123", user_id="user-456")
+logger.error("Task failed", task_id="task-123", error="Timeout", duration_ms=30000)
+</code></pre>
+<p><strong>Rust Configuration (tracing)</strong>:</p>
+<pre><code class="language-rust">use tracing::{info, error, warn};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+pub fn configure_logging(level: &amp;str, json_logs: bool) {
+    let level = match level {
+        "debug" =&gt; tracing::Level::DEBUG,
+        "info" =&gt; tracing::Level::INFO,
+        "warn" =&gt; tracing::Level::WARN,
+        "error" =&gt; tracing::Level::ERROR,
+        _ =&gt; tracing::Level::INFO,
+    };
+
+    if json_logs {
+        // Production: JSON format
+        tracing_subscriber::registry()
+            .with(tracing_subscriber::EnvFilter::from_default_env()
+                .add_directive(level.into()))
+            .with(tracing_subscriber::fmt::layer()
+                .json()
+                .with_current_span(false))
+            .init();
+    } else {
+        // Development: Console format
+        tracing_subscriber::registry()
+            .with(tracing_subscriber::EnvFilter::from_default_env()
+                .add_directive(level.into()))
+            .with(tracing_subscriber::fmt::layer())
+            .init();
+    }
+}
+
+// Usage
+#[tracing::instrument(skip(req))]
+async fn process_request(req: Request) -&gt; Result&lt;Response&gt; {
+    info!(client_id = %req.client_id, "Processing request");
+
+    match handle_request(req).await {
+        Ok(resp) =&gt; {
+            info!(status = "success", "Request completed");
+            Ok(resp)
+        }
+        Err(e) =&gt; {
+            error!(error = %e, "Request failed");
+            Err(e)
+        }
+    }
+}</code></pre>
+<h4 id="metrics-prometheus"><a class="header" href="#metrics-prometheus">Metrics (Prometheus)</a></h4>
+<p><strong>Python Metrics</strong>:</p>
+<pre><code class="language-python">from prometheus_client import Counter, Histogram, Gauge, Summary
+
+# Request metrics
+http_requests_total = Counter(
+    'http_requests_total',
+    'Total HTTP requests',
+    ['method', 'endpoint', 'status']
+)
+
+http_request_duration_seconds = Histogram(
+    'http_request_duration_seconds',
+    'HTTP request duration',
+    ['method', 'endpoint'],
+    buckets=[0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0, 10.0]
+)
+
+# Task metrics
+task_duration_seconds = Histogram(
+    'task_duration_seconds',
+    'Task execution duration',
+    ['task_type', 'status'],
+    buckets=[0.1, 0.5, 1.0, 5.0, 10.0, 30.0, 60.0, 300.0]
+)
+
+tasks_in_progress = Gauge(
+    'tasks_in_progress',
+    'Number of tasks currently executing',
+    ['task_type']
+)
+
+# LLM metrics
+llm_requests_total = Counter(
+    'llm_requests_total',
+    'Total LLM API requests',
+    ['provider', 'model', 'status']
+)
+
+llm_tokens_total = Counter(
+    'llm_tokens_total',
+    'Total LLM tokens used',
+    ['provider', 'model', 'type']
+)
+
+# Usage
+@app.post("/tasks")
+async def create_task(task: TaskRequest):
+    with tasks_in_progress.labels(task_type=task.type).track_inprogress():
+        start_time = time.time()
+        try:
+            result = await execute_task(task)
+            task_duration_seconds.labels(
+                task_type=task.type,
+                status="success"
+            ).observe(time.time() - start_time)
+            return result
+        except Exception as e:
+            task_duration_seconds.labels(
+                task_type=task.type,
+                status="error"
+            ).observe(time.time() - start_time)
+            raise
+</code></pre>
+<p><strong>Metrics Endpoint</strong>:</p>
+<pre><code class="language-python">from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+
+@app.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint."""
+    return Response(
+        content=generate_latest(),
+        media_type=CONTENT_TYPE_LATEST
+    )
+</code></pre>
+<h4 id="distributed-tracing"><a class="header" href="#distributed-tracing">Distributed Tracing</a></h4>
+<p><strong>OpenTelemetry Configuration</strong>:</p>
+<pre><code class="language-python">from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+
+def configure_tracing(service_name: str, otlp_endpoint: str):
+    """Configure OpenTelemetry tracing."""
+
+    # Set up tracer provider
+    provider = TracerProvider(
+        resource=Resource.create({
+            "service.name": service_name,
+            "service.version": "1.0.0",
+        })
+    )
+
+    # Export to OTLP (Jaeger/Tempo)
+    otlp_exporter = OTLPSpanExporter(endpoint=otlp_endpoint)
+    provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+
+    trace.set_tracer_provider(provider)
+
+    # Auto-instrument FastAPI
+    FastAPIInstrumentor.instrument_app(app)
+
+    # Auto-instrument HTTP clients
+    HTTPXClientInstrumentor().instrument()
+
+# Manual span creation
+tracer = trace.get_tracer(__name__)
+
+async def execute_task(task_id: str):
+    with tracer.start_as_current_span("execute_task") as span:
+        span.set_attribute("task.id", task_id)
+        span.set_attribute("task.type", "code_generation")
+
+        try:
+            result = await _execute_task_internal(task_id)
+            span.set_attribute("task.status", "success")
+            return result
+        except Exception as e:
+            span.set_attribute("task.status", "error")
+            span.record_exception(e)
+            raise
+</code></pre>
+<h3 id="performance-optimization"><a class="header" href="#performance-optimization">Performance Optimization</a></h3>
+<p><strong>Location</strong>: <code>/docs/engineering/performance-optimization.md</code></p>
+<p><strong>Purpose</strong>: Define performance optimization best practices.</p>
+<h4 id="async-operations"><a class="header" href="#async-operations">Async Operations</a></h4>
+<p><strong>Good - Concurrent Execution</strong>:</p>
+<pre><code class="language-python">async def fetch_task_context(task_id: str) -&gt; TaskContext:
+    """Fetch all task context concurrently."""
+    task, capabilities, memory = await asyncio.gather(
+        db.get_task(task_id),
+        db.get_arm_capabilities(),
+        memory_client.get_context(task_id)
+    )
+    return TaskContext(task=task, capabilities=capabilities, memory=memory)
+</code></pre>
+<p><strong>Bad - Sequential Execution</strong>:</p>
+<pre><code class="language-python">async def fetch_task_context_bad(task_id: str) -&gt; TaskContext:
+    """Fetch task context sequentially (slow)."""
+    task = await db.get_task(task_id)  # Wait
+    capabilities = await db.get_arm_capabilities()  # Wait
+    memory = await memory_client.get_context(task_id)  # Wait
+    return TaskContext(task=task, capabilities=capabilities, memory=memory)
+</code></pre>
+<h4 id="connection-pooling"><a class="header" href="#connection-pooling">Connection Pooling</a></h4>
+<p><strong>Database Connection Pool</strong>:</p>
+<pre><code class="language-python">import asyncpg
+
+# Create connection pool
+pool = await asyncpg.create_pool(
+    dsn=DATABASE_URL,
+    min_size=10,
+    max_size=50,
+    max_inactive_connection_lifetime=300,
+    command_timeout=60
+)
+
+# Use pool
+async def get_task(task_id: str) -&gt; Task:
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT * FROM tasks WHERE id = $1",
+            task_id
+        )
+        return Task(**row)
+</code></pre>
+<p><strong>HTTP Connection Pool</strong>:</p>
+<pre><code class="language-python">import httpx
+
+# Create client with connection pool
+client = httpx.AsyncClient(
+    limits=httpx.Limits(
+        max_keepalive_connections=20,
+        max_connections=100,
+        keepalive_expiry=30
+    ),
+    timeout=httpx.Timeout(
+        connect=5.0,
+        read=30.0,
+        write=10.0,
+        pool=5.0
+    )
+)
+
+# Use client
+async def call_arm(url: str, data: dict) -&gt; dict:
+    response = await client.post(url, json=data)
+    return response.json()
+</code></pre>
+<h4 id="multi-level-caching"><a class="header" href="#multi-level-caching">Multi-Level Caching</a></h4>
+<p><strong>L1 (In-Memory) + L2 (Redis)</strong>:</p>
+<pre><code class="language-python">from cachetools import TTLCache
+import redis.asyncio as redis
+
+class MultiLevelCache:
+    """Two-level cache with in-memory L1 and Redis L2."""
+
+    def __init__(self, redis_client: redis.Redis):
+        self.l1 = TTLCache(maxsize=1000, ttl=60)
+        self.l2 = redis_client
+
+    async def get(self, key: str) -&gt; Optional[str]:
+        """Get value from cache (L1 then L2)."""
+        # Try L1
+        if key in self.l1:
+            logger.debug("L1 cache hit", key=key)
+            return self.l1[key]
+
+        # Try L2
+        value = await self.l2.get(key)
+        if value:
+            logger.debug("L2 cache hit", key=key)
+            self.l1[key] = value  # Promote to L1
+            return value
+
+        logger.debug("Cache miss", key=key)
+        return None
+
+    async def set(
+        self,
+        key: str,
+        value: str,
+        ttl: int = 3600
+    ) -&gt; None:
+        """Set value in both cache levels."""
+        self.l1[key] = value
+        await self.l2.set(key, value, ex=ttl)
+
+    async def delete(self, key: str) -&gt; None:
+        """Delete from both cache levels."""
+        if key in self.l1:
+            del self.l1[key]
+        await self.l2.delete(key)
+</code></pre>
+<h4 id="database-query-optimization"><a class="header" href="#database-query-optimization">Database Query Optimization</a></h4>
+<p><strong>Use Indexes</strong>:</p>
+<pre><code class="language-sql">-- Create indexes for common queries
+CREATE INDEX CONCURRENTLY idx_tasks_status_priority
+ON tasks(status, priority DESC);
+
+CREATE INDEX CONCURRENTLY idx_tasks_user_created
+ON tasks(user_id, created_at DESC);
+
+CREATE INDEX CONCURRENTLY idx_entities_type_name
+ON entities(entity_type, name);
+
+-- GIN index for JSONB
+CREATE INDEX CONCURRENTLY idx_entities_properties
+ON entities USING GIN(properties);
+</code></pre>
+<p><strong>Optimize Queries</strong>:</p>
+<pre><code class="language-python"># Good - Fetch only needed columns
+async def get_task_summary(task_id: str) -&gt; TaskSummary:
+    row = await conn.fetchrow("""
+        SELECT id, status, created_at, updated_at
+        FROM tasks
+        WHERE id = $1
+    """, task_id)
+    return TaskSummary(**row)
+
+# Bad - Fetch all columns
+async def get_task_summary_bad(task_id: str) -&gt; TaskSummary:
+    row = await conn.fetchrow("""
+        SELECT *  -- Fetches unnecessary data
+        FROM tasks
+        WHERE id = $1
+    """, task_id)
+    return TaskSummary(**row)
+
+# Good - Batch queries
+async def get_tasks_batch(task_ids: List[str]) -&gt; List[Task]:
+    rows = await conn.fetch("""
+        SELECT * FROM tasks
+        WHERE id = ANY($1::uuid[])
+    """, task_ids)
+    return [Task(**row) for row in rows]
+
+# Bad - N+1 queries
+async def get_tasks_batch_bad(task_ids: List[str]) -&gt; List[Task]:
+    tasks = []
+    for task_id in task_ids:  # N queries!
+        row = await conn.fetchrow("""
+            SELECT * FROM tasks WHERE id = $1
+        """, task_id)
+        tasks.append(Task(**row))
+    return tasks
+</code></pre>
+<h3 id="code-review"><a class="header" href="#code-review">Code Review</a></h3>
+<p><strong>Location</strong>: <code>/docs/engineering/code-review.md</code></p>
+<p><strong>Purpose</strong>: Define code review process and checklists.</p>
+<h4 id="pull-request-template"><a class="header" href="#pull-request-template">Pull Request Template</a></h4>
+<pre><code class="language-markdown">## Description
+
+Brief description of the changes and their purpose.
+
+Fixes #(issue)
+
+## Type of Change
+
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Documentation update
+- [ ] Performance improvement
+- [ ] Refactoring
+
+## Testing
+
+- [ ] Unit tests added/updated
+- [ ] Integration tests added/updated
+- [ ] Manual testing performed
+- [ ] All tests passing
+
+## Checklist
+
+- [ ] Code follows style guidelines
+- [ ] Self-reviewed the code
+- [ ] Commented complex logic
+- [ ] Documentation updated
+- [ ] No new warnings
+- [ ] Added tests for changes
+- [ ] All tests pass
+- [ ] No breaking changes (or documented)
+</code></pre>
+<h4 id="author-checklist"><a class="header" href="#author-checklist">Author Checklist</a></h4>
+<p><strong>Before Submitting PR</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Code compiles without errors</li>
+<li><input disabled="" type="checkbox"/>
+All tests pass locally</li>
+<li><input disabled="" type="checkbox"/>
+Code formatted (Black/rustfmt)</li>
+<li><input disabled="" type="checkbox"/>
+Linting passes (ruff/clippy)</li>
+<li><input disabled="" type="checkbox"/>
+Type checking passes (mypy)</li>
+<li><input disabled="" type="checkbox"/>
+Added tests for new functionality</li>
+<li><input disabled="" type="checkbox"/>
+Updated documentation</li>
+<li><input disabled="" type="checkbox"/>
+Self-reviewed the diff</li>
+<li><input disabled="" type="checkbox"/>
+Checked for secrets/credentials</li>
+<li><input disabled="" type="checkbox"/>
+Rebased on latest main</li>
+<li><input disabled="" type="checkbox"/>
+Squashed related commits</li>
+</ul>
+<h4 id="reviewer-checklist"><a class="header" href="#reviewer-checklist">Reviewer Checklist</a></h4>
+<p><strong>Code Quality</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Code is clear and understandable</li>
+<li><input disabled="" type="checkbox"/>
+Follows coding standards</li>
+<li><input disabled="" type="checkbox"/>
+No code smells or anti-patterns</li>
+<li><input disabled="" type="checkbox"/>
+Appropriate abstractions</li>
+<li><input disabled="" type="checkbox"/>
+DRY principle followed</li>
+<li><input disabled="" type="checkbox"/>
+SOLID principles followed</li>
+<li><input disabled="" type="checkbox"/>
+No unnecessary complexity</li>
+</ul>
+<p><strong>Testing</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Tests are comprehensive</li>
+<li><input disabled="" type="checkbox"/>
+Tests are maintainable</li>
+<li><input disabled="" type="checkbox"/>
+Edge cases covered</li>
+<li><input disabled="" type="checkbox"/>
+Error cases tested</li>
+<li><input disabled="" type="checkbox"/>
+Mocks used appropriately</li>
+<li><input disabled="" type="checkbox"/>
+Tests are deterministic</li>
+<li><input disabled="" type="checkbox"/>
+Tests are fast</li>
+</ul>
+<p><strong>Security</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+No hardcoded secrets</li>
+<li><input disabled="" type="checkbox"/>
+Input validation present</li>
+<li><input disabled="" type="checkbox"/>
+Output sanitization present</li>
+<li><input disabled="" type="checkbox"/>
+Authentication/authorization correct</li>
+<li><input disabled="" type="checkbox"/>
+No SQL injection risks</li>
+<li><input disabled="" type="checkbox"/>
+No XSS risks</li>
+<li><input disabled="" type="checkbox"/>
+Capability tokens used correctly</li>
+</ul>
+<p><strong>Performance</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+No obvious performance issues</li>
+<li><input disabled="" type="checkbox"/>
+Database queries optimized</li>
+<li><input disabled="" type="checkbox"/>
+Caching used appropriately</li>
+<li><input disabled="" type="checkbox"/>
+No N+1 queries</li>
+<li><input disabled="" type="checkbox"/>
+Async operations where beneficial</li>
+<li><input disabled="" type="checkbox"/>
+Connection pooling used</li>
+<li><input disabled="" type="checkbox"/>
+Resource limits considered</li>
+</ul>
+<p><strong>Documentation</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Code is self-documenting</li>
+<li><input disabled="" type="checkbox"/>
+Complex logic commented</li>
+<li><input disabled="" type="checkbox"/>
+API documentation updated</li>
+<li><input disabled="" type="checkbox"/>
+README updated if needed</li>
+<li><input disabled="" type="checkbox"/>
+Migration guide updated if needed</li>
+<li><input disabled="" type="checkbox"/>
+ADR created for significant decisions</li>
+</ul>
+<p><strong>Deployment</strong>:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Backwards compatible</li>
+<li><input disabled="" type="checkbox"/>
+Database migrations included</li>
+<li><input disabled="" type="checkbox"/>
+Configuration changes documented</li>
+<li><input disabled="" type="checkbox"/>
+Rollback procedure documented</li>
+<li><input disabled="" type="checkbox"/>
+Monitoring/alerting updated</li>
+</ul>
+<hr />
+<h2 id="development-guides"><a class="header" href="#development-guides">Development Guides</a></h2>
+<h3 id="development-workflow"><a class="header" href="#development-workflow">Development Workflow</a></h3>
+<p><strong>Location</strong>: <code>/docs/guides/development-workflow.md</code></p>
+<p><strong>Purpose</strong>: Complete guide to development workflow from setup to deployment.</p>
+<h4 id="setup"><a class="header" href="#setup">Setup</a></h4>
+<p><strong>1. Fork and Clone</strong>:</p>
+<pre><code class="language-bash"># Fork repository on GitHub
+# Clone your fork
+git clone https://github.com/YOUR_USERNAME/octollm.git
+cd octollm
+
+# Add upstream remote
+git remote add upstream https://github.com/octollm/octollm.git
+</code></pre>
+<p><strong>2. Environment Setup</strong>:</p>
+<pre><code class="language-bash"># Copy environment template
+cp .env.example .env
+
+# Edit .env with your API keys
+vim .env
+</code></pre>
+<p><strong>3. Start Development Environment</strong>:</p>
+<pre><code class="language-bash"># Start all services
+./scripts/dev.sh
+
+# Or manually with docker compose
+docker compose up -d
+</code></pre>
+<h4 id="development-cycle"><a class="header" href="#development-cycle">Development Cycle</a></h4>
+<p><strong>1. Create Feature Branch</strong>:</p>
+<pre><code class="language-bash"># Sync with upstream
+git fetch upstream
+git checkout main
+git merge upstream/main
+
+# Create feature branch
+git checkout -b feature/123-task-parallel-execution
+</code></pre>
+<p><strong>2. Make Changes</strong>:</p>
+<pre><code class="language-bash"># Edit files
+vim orchestrator/orchestrator.py
+
+# Run tests
+docker compose exec orchestrator pytest -v
+
+# Format code
+docker compose exec orchestrator black .
+docker compose exec orchestrator isort .
+
+# Lint code
+docker compose exec orchestrator ruff check .
+</code></pre>
+<p><strong>3. Commit Changes</strong>:</p>
+<pre><code class="language-bash"># Stage changes
+git add orchestrator/orchestrator.py
+
+# Commit with conventional commit message
+git commit -m "feat: add parallel task execution
+
+Implement parallel execution of independent tasks using asyncio.gather().
+This reduces overall task completion time by 40% in benchmark tests.
+
+Closes #123"
+</code></pre>
+<p><strong>4. Push and Create PR</strong>:</p>
+<pre><code class="language-bash"># Push to your fork
+git push origin feature/123-task-parallel-execution
+
+# Create PR on GitHub
+# Fill out PR template
+</code></pre>
+<h4 id="branch-naming"><a class="header" href="#branch-naming">Branch Naming</a></h4>
+<p><strong>Pattern</strong>: <code>&lt;type&gt;/&lt;issue&gt;-&lt;description&gt;</code></p>
+<p><strong>Types</strong>:</p>
+<ul>
+<li><code>feature/</code> - New feature</li>
+<li><code>fix/</code> - Bug fix</li>
+<li><code>docs/</code> - Documentation</li>
+<li><code>perf/</code> - Performance improvement</li>
+<li><code>refactor/</code> - Code refactoring</li>
+<li><code>test/</code> - Test additions/fixes</li>
+<li><code>chore/</code> - Maintenance tasks</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<pre><code>feature/123-parallel-task-execution
+fix/456-pii-detection-regex
+docs/789-api-reference-update
+perf/012-cache-optimization
+refactor/345-simplify-error-handling
+test/678-integration-tests
+chore/901-update-dependencies
+</code></pre>
+<h4 id="commit-messages"><a class="header" href="#commit-messages">Commit Messages</a></h4>
+<p><strong>Format</strong>:</p>
+<pre><code>&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;
+
+&lt;body&gt;
+
+&lt;footer&gt;
+</code></pre>
+<p><strong>Types</strong>:</p>
+<ul>
+<li><code>feat</code>: New feature</li>
+<li><code>fix</code>: Bug fix</li>
+<li><code>docs</code>: Documentation</li>
+<li><code>style</code>: Formatting</li>
+<li><code>refactor</code>: Code restructuring</li>
+<li><code>perf</code>: Performance</li>
+<li><code>test</code>: Tests</li>
+<li><code>chore</code>: Maintenance</li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<pre><code>feat(orchestrator): add parallel task execution
+
+Implement parallel execution of independent tasks using asyncio.gather().
+This reduces overall task completion time by 40% in benchmark tests.
+
+Closes #123
+
+---
+
+fix(reflex): correct PII regex for phone numbers
+
+Previous regex was not matching international formats.
+Updated to support +1 (555) 123-4567 format.
+
+Fixes #456
+
+---
+
+docs(api): update task execution endpoint
+
+Add examples for parallel execution parameter.
+Update response schema documentation.
+</code></pre>
+<h3 id="migration-guide"><a class="header" href="#migration-guide">Migration Guide</a></h3>
+<p><strong>Location</strong>: <code>/docs/guides/migration-guide.md</code></p>
+<p><strong>Purpose</strong>: Guide for migrating between OctoLLM versions.</p>
+<h4 id="version-compatibility"><a class="header" href="#version-compatibility">Version Compatibility</a></h4>
+<p><strong>Supported Upgrade Paths</strong>:</p>
+<ul>
+<li>v1.0.x → v1.1.x (minor)</li>
+<li>v1.1.x → v2.0.x (major, breaking changes)</li>
+</ul>
+<p><strong>Database Migration</strong>:</p>
+<p><strong>1. Backup Database</strong>:</p>
+<pre><code class="language-bash"># PostgreSQL backup
+pg_dump -h localhost -U octollm -d octollm &gt; backup-$(date +%Y%m%d).sql
+
+# Or using script
+./scripts/backup-database.sh
+</code></pre>
+<p><strong>2. Run Migration</strong>:</p>
+<pre><code class="language-bash"># Check current version
+docker compose exec orchestrator alembic current
+
+# Show pending migrations
+docker compose exec orchestrator alembic history
+
+# Run migration
+docker compose exec orchestrator alembic upgrade head
+
+# Or specific version
+docker compose exec orchestrator alembic upgrade abc123
+</code></pre>
+<p><strong>3. Verify Migration</strong>:</p>
+<pre><code class="language-bash"># Check new version
+docker compose exec orchestrator alembic current
+
+# Run smoke tests
+./scripts/smoke-tests.sh
+</code></pre>
+<p><strong>Example Migration Script</strong>:</p>
+<pre><code class="language-python">"""Add task_priority index
+
+Revision ID: abc123
+Revises: def456
+Create Date: 2025-11-10 10:00:00
+
+"""
+from alembic import op
+
+def upgrade():
+    """Upgrade database schema."""
+    # Create index concurrently (doesn't block reads/writes)
+    op.execute("""
+        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_tasks_status_priority
+        ON tasks(status, priority DESC)
+    """)
+
+    # Add new column with default
+    op.add_column('tasks',
+        sa.Column('retry_count', sa.Integer(), nullable=False, server_default='0')
+    )
+
+def downgrade():
+    """Rollback database schema."""
+    op.execute("""
+        DROP INDEX IF EXISTS idx_tasks_status_priority
+    """)
+
+    op.drop_column('tasks', 'retry_count')
+</code></pre>
+<h4 id="configuration-migration"><a class="header" href="#configuration-migration">Configuration Migration</a></h4>
+<p><strong>v1.0 → v1.1</strong>:</p>
+<pre><code class="language-yaml"># Old config (v1.0)
+database:
+  url: postgresql://localhost/octollm
+
+# New config (v1.1)
+database:
+  url: postgresql://localhost/octollm
+  pool_size: 20  # New setting
+  max_overflow: 10  # New setting
+</code></pre>
+<p><strong>Migration Script</strong>:</p>
+<pre><code class="language-bash">#!/bin/bash
+# migrate-config-v1.0-v1.1.sh
+
+# Backup old config
+cp config.yaml config.yaml.backup
+
+# Add new settings
+cat &gt;&gt; config.yaml &lt;&lt;EOF
+  pool_size: 20
+  max_overflow: 10
+EOF
+</code></pre>
+<h4 id="rollback-procedure"><a class="header" href="#rollback-procedure">Rollback Procedure</a></h4>
+<p><strong>1. Stop Services</strong>:</p>
+<pre><code class="language-bash">docker compose down
+</code></pre>
+<p><strong>2. Restore Database</strong>:</p>
+<pre><code class="language-bash"># Restore from backup
+psql -h localhost -U octollm -d octollm &lt; backup-20251110.sql
+
+# Or using script
+./scripts/restore-database.sh backup-20251110.sql
+</code></pre>
+<p><strong>3. Downgrade Migration</strong>:</p>
+<pre><code class="language-bash"># Rollback to specific version
+docker compose exec orchestrator alembic downgrade def456
+
+# Or rollback one version
+docker compose exec orchestrator alembic downgrade -1
+</code></pre>
+<p><strong>4. Deploy Previous Version</strong>:</p>
+<pre><code class="language-bash"># Checkout previous version
+git checkout v1.0.5
+
+# Deploy
+docker compose up -d
+</code></pre>
+<h3 id="contributing-guidelines"><a class="header" href="#contributing-guidelines">Contributing Guidelines</a></h3>
+<p><strong>Location</strong>: <code>/docs/guides/contributing.md</code></p>
+<p><strong>Purpose</strong>: Guide for external contributors.</p>
+<h4 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h4>
+<p><strong>1. Find an Issue</strong>:</p>
+<ul>
+<li>Browse <a href="https://github.com/octollm/octollm/issues">open issues</a></li>
+<li>Look for <code>good-first-issue</code> or <code>help-wanted</code> labels</li>
+<li>Comment on the issue to claim it</li>
+</ul>
+<p><strong>2. Fork and Clone</strong>:</p>
+<pre><code class="language-bash"># Fork repository on GitHub
+git clone https://github.com/YOUR_USERNAME/octollm.git
+cd octollm
+git remote add upstream https://github.com/octollm/octollm.git
+</code></pre>
+<p><strong>3. Set Up Environment</strong>:</p>
+<pre><code class="language-bash"># Copy environment file
+cp .env.example .env
+
+# Start services
+./scripts/dev.sh
+</code></pre>
+<h4 id="making-changes"><a class="header" href="#making-changes">Making Changes</a></h4>
+<p><strong>1. Create Branch</strong>:</p>
+<pre><code class="language-bash">git checkout -b feature/123-your-feature
+</code></pre>
+<p><strong>2. Write Code</strong>:</p>
+<ul>
+<li>Follow <a href="/docs/engineering/coding-standards.html">coding standards</a></li>
+<li>Add tests for new functionality</li>
+<li>Update documentation</li>
+</ul>
+<p><strong>3. Test Changes</strong>:</p>
+<pre><code class="language-bash"># Run tests
+./scripts/test.sh
+
+# Format code
+docker compose exec orchestrator black .
+docker compose exec orchestrator isort .
+
+# Lint code
+docker compose exec orchestrator ruff check .
+</code></pre>
+<p><strong>4. Commit</strong>:</p>
+<pre><code class="language-bash">git add .
+git commit -m "feat: add your feature
+
+Detailed description of changes.
+
+Closes #123"
+</code></pre>
+<p><strong>5. Push and Create PR</strong>:</p>
+<pre><code class="language-bash">git push origin feature/123-your-feature
+</code></pre>
+<p>Then create a pull request on GitHub.</p>
+<h4 id="code-of-conduct"><a class="header" href="#code-of-conduct">Code of Conduct</a></h4>
+<p><strong>Our Standards</strong>:</p>
+<ul>
+<li>Be respectful and inclusive</li>
+<li>Welcome newcomers</li>
+<li>Accept constructive criticism</li>
+<li>Focus on what's best for the community</li>
+<li>Show empathy</li>
+</ul>
+<p><strong>Unacceptable Behavior</strong>:</p>
+<ul>
+<li>Harassment or discrimination</li>
+<li>Trolling or insulting comments</li>
+<li>Personal or political attacks</li>
+<li>Publishing others' private information</li>
+<li>Other conduct inappropriate in a professional setting</li>
+</ul>
+<hr />
+<h2 id="architecture-decision-records"><a class="header" href="#architecture-decision-records">Architecture Decision Records</a></h2>
+<h3 id="adr-001-technology-stack"><a class="header" href="#adr-001-technology-stack">ADR-001: Technology Stack</a></h3>
+<p><strong>Location</strong>: <code>/docs/adr/001-technology-stack.md</code></p>
+<p><strong>Status</strong>: Accepted
+<strong>Date</strong>: 2025-11-10</p>
+<h4 id="decision"><a class="header" href="#decision">Decision</a></h4>
+<p>Use Python 3.11+ for services, Rust 1.75+ for performance-critical components, PostgreSQL 15+ for data, Redis 7+ for caching, Qdrant 1.7+ for vector search.</p>
+<h4 id="key-technologies"><a class="header" href="#key-technologies">Key Technologies</a></h4>
+<p><strong>Python</strong>:</p>
+<ul>
+<li>Framework: FastAPI</li>
+<li>Runtime: asyncio + uvicorn</li>
+<li>Use: Orchestrator, Arms, API services</li>
+</ul>
+<p><strong>Rust</strong>:</p>
+<ul>
+<li>Framework: Axum</li>
+<li>Runtime: tokio</li>
+<li>Use: Reflex Layer, Tool Executor</li>
+</ul>
+<p><strong>Databases</strong>:</p>
+<ul>
+<li>PostgreSQL: Global knowledge graph, task history</li>
+<li>Qdrant: Episodic memory (vectors)</li>
+<li>Redis: L2 cache, pub/sub</li>
+</ul>
+<h4 id="rationale"><a class="header" href="#rationale">Rationale</a></h4>
+<ul>
+<li>Python: Excellent LLM ecosystem, async support, developer productivity</li>
+<li>Rust: &lt;10ms P95 latency, memory safety, zero-cost abstractions</li>
+<li>PostgreSQL: ACID guarantees, JSONB flexibility, mature</li>
+<li>Qdrant: Optimized vector search, built in Rust</li>
+<li>Redis: Sub-millisecond cache, pub/sub built-in</li>
+</ul>
+<h4 id="alternatives-considered"><a class="header" href="#alternatives-considered">Alternatives Considered</a></h4>
+<ul>
+<li>Go (not as fast as Rust)</li>
+<li>Node.js (weaker LLM support)</li>
+<li>Java/Spring Boot (slower development)</li>
+<li>MongoDB (weaker ACID)</li>
+<li>Elasticsearch (not optimized for vectors)</li>
+</ul>
+<h3 id="adr-002-communication-patterns"><a class="header" href="#adr-002-communication-patterns">ADR-002: Communication Patterns</a></h3>
+<p><strong>Location</strong>: <code>/docs/adr/002-communication-patterns.md</code></p>
+<p><strong>Status</strong>: Accepted
+<strong>Date</strong>: 2025-11-10</p>
+<h4 id="decision-1"><a class="header" href="#decision-1">Decision</a></h4>
+<p>Use HTTP/REST for synchronous operations, Redis pub/sub for events, direct HTTP for arm-to-arm, WebSocket for real-time updates.</p>
+<h4 id="communication-patterns"><a class="header" href="#communication-patterns">Communication Patterns</a></h4>
+<p><strong>HTTP/REST</strong>:</p>
+<ul>
+<li>Use: Reflex → Orchestrator, Orchestrator → Arms</li>
+<li>Format: JSON</li>
+<li>Auth: JWT capability tokens</li>
+</ul>
+<p><strong>Redis Pub/Sub</strong>:</p>
+<ul>
+<li>Use: Event notifications</li>
+<li>Channels: Topic-based routing</li>
+</ul>
+<p><strong>Direct HTTP</strong>:</p>
+<ul>
+<li>Use: Arm-to-arm collaboration</li>
+<li>Discovery: Kubernetes DNS</li>
+</ul>
+<p><strong>WebSocket</strong>:</p>
+<ul>
+<li>Use: Real-time task updates</li>
+<li>Format: JSON messages</li>
+</ul>
+<h4 id="rationale-1"><a class="header" href="#rationale-1">Rationale</a></h4>
+<ul>
+<li>HTTP/REST: Universal, well-understood, excellent debugging</li>
+<li>Redis pub/sub: Fast, decoupled, built into Redis</li>
+<li>Direct HTTP: Simple, low latency, no broker overhead</li>
+<li>WebSocket: Bi-directional, lower overhead than polling</li>
+</ul>
+<h4 id="alternatives-considered-1"><a class="header" href="#alternatives-considered-1">Alternatives Considered</a></h4>
+<ul>
+<li>gRPC (more complex)</li>
+<li>Message Broker (operational overhead)</li>
+<li>Service Mesh (too complex initially)</li>
+<li>GraphQL (unnecessary complexity)</li>
+</ul>
+<h3 id="adr-003-memory-architecture"><a class="header" href="#adr-003-memory-architecture">ADR-003: Memory Architecture</a></h3>
+<p><strong>Location</strong>: <code>/docs/adr/003-memory-architecture.md</code></p>
+<p><strong>Status</strong>: Accepted
+<strong>Date</strong>: 2025-11-10</p>
+<h4 id="decision-2"><a class="header" href="#decision-2">Decision</a></h4>
+<p>Three-tier memory with PostgreSQL (global), Qdrant (episodic), Redis (cache), plus routing layer and data diodes.</p>
+<h4 id="architecture"><a class="header" href="#architecture">Architecture</a></h4>
+<p><strong>Global Memory (PostgreSQL)</strong>:</p>
+<ul>
+<li>Purpose: Shared knowledge graph</li>
+<li>Schema: Entities, relationships, task history</li>
+<li>Queries: SQL with JSONB</li>
+</ul>
+<p><strong>Episodic Memory (Qdrant)</strong>:</p>
+<ul>
+<li>Purpose: Task-specific examples</li>
+<li>Collections: coder_memory, planner_memory, judge_memory</li>
+<li>Queries: Vector similarity search</li>
+</ul>
+<p><strong>Cache Layer</strong>:</p>
+<ul>
+<li>L1: In-memory TTL cache (1000 items, 60s)</li>
+<li>L2: Redis (unlimited, LRU eviction)</li>
+</ul>
+<p><strong>Memory Router</strong>:</p>
+<ul>
+<li>Routes queries to appropriate system</li>
+<li>Based on query type and requirements</li>
+</ul>
+<p><strong>Data Diodes</strong>:</p>
+<ul>
+<li>Enforce security boundaries</li>
+<li>Filter based on capabilities</li>
+<li>PII detection before storage</li>
+</ul>
+<h4 id="rationale-2"><a class="header" href="#rationale-2">Rationale</a></h4>
+<ul>
+<li>Right tool for each use case</li>
+<li>Optimized performance per layer</li>
+<li>Security isolation via diodes</li>
+<li>Independent scaling</li>
+</ul>
+<h4 id="alternatives-considered-2"><a class="header" href="#alternatives-considered-2">Alternatives Considered</a></h4>
+<ul>
+<li>Single PostgreSQL with pgvector (insufficient vector performance)</li>
+<li>Neo4j for graph (higher complexity)</li>
+<li>Elasticsearch (not optimized for vectors)</li>
+<li>Single-tier Redis cache (network latency)</li>
+</ul>
+<h3 id="adr-004-security-model"><a class="header" href="#adr-004-security-model">ADR-004: Security Model</a></h3>
+<p><strong>Location</strong>: <code>/docs/adr/004-security-model.md</code></p>
+<p><strong>Status</strong>: Accepted
+<strong>Date</strong>: 2025-11-10</p>
+<h4 id="decision-3"><a class="header" href="#decision-3">Decision</a></h4>
+<p>Capability-based security with JWT tokens, PII detection in Reflex Layer, defense in depth.</p>
+<h4 id="security-layers"><a class="header" href="#security-layers">Security Layers</a></h4>
+<p><strong>1. Capability Tokens (JWT)</strong>:</p>
+<ul>
+<li>Fine-grained authorization</li>
+<li>Token structure with scopes</li>
+<li>Issued by Orchestrator</li>
+<li>Validated by each component</li>
+</ul>
+<p><strong>2. PII Detection (Reflex)</strong>:</p>
+<ul>
+<li>Regex patterns in Rust</li>
+<li>Detects: email, SSN, credit cards, phone</li>
+<li>Sanitizes before processing</li>
+</ul>
+<p><strong>3. Input Validation</strong>:</p>
+<ul>
+<li>Schema validation (Pydantic)</li>
+<li>Business logic validation</li>
+<li>Security validation (injection detection)</li>
+</ul>
+<p><strong>4. Rate Limiting</strong>:</p>
+<ul>
+<li>Token bucket algorithm</li>
+<li>Prevents resource exhaustion</li>
+</ul>
+<p><strong>5. Audit Logging</strong>:</p>
+<ul>
+<li>PostgreSQL with immutable logs</li>
+<li>All operations tracked</li>
+</ul>
+<p><strong>6. Defense in Depth</strong>:</p>
+<ul>
+<li>Network layer (K8s policies, TLS)</li>
+<li>Input layer (PII, validation)</li>
+<li>Access layer (capability tokens)</li>
+<li>Data layer (encryption, diodes)</li>
+<li>Output layer (sanitization)</li>
+<li>Monitoring layer (metrics, alerts)</li>
+<li>Audit layer (comprehensive logging)</li>
+</ul>
+<h4 id="rationale-3"><a class="header" href="#rationale-3">Rationale</a></h4>
+<ul>
+<li>Fine-grained control via capabilities</li>
+<li>Automatic PII protection</li>
+<li>Multiple security layers</li>
+<li>Low overhead (Rust PII, local JWT)</li>
+<li>Comprehensive audit trail</li>
+</ul>
+<h4 id="alternatives-considered-3"><a class="header" href="#alternatives-considered-3">Alternatives Considered</a></h4>
+<ul>
+<li>OAuth 2.0/OIDC (more complex)</li>
+<li>mTLS everywhere (operational burden)</li>
+<li>ML-based PII (higher latency)</li>
+<li>RBAC only (coarser-grained)</li>
+</ul>
+<h3 id="adr-005-deployment-platform"><a class="header" href="#adr-005-deployment-platform">ADR-005: Deployment Platform</a></h3>
+<p><strong>Location</strong>: <code>/docs/adr/005-deployment-platform.md</code></p>
+<p><strong>Status</strong>: Accepted
+<strong>Date</strong>: 2025-11-10</p>
+<h4 id="decision-4"><a class="header" href="#decision-4">Decision</a></h4>
+<p>Kubernetes for production, Docker Compose for development, cloud-agnostic design.</p>
+<h4 id="production-kubernetes"><a class="header" href="#production-kubernetes">Production (Kubernetes)</a></h4>
+<p><strong>Platform</strong>: Kubernetes 1.28+
+<strong>Distribution</strong>: Any CNCF-certified (EKS, GKE, AKS, self-hosted)</p>
+<p><strong>Components</strong>:</p>
+<ul>
+<li>Deployments: Orchestrator, Arms (with HPA)</li>
+<li>DaemonSet: Reflex Layer</li>
+<li>StatefulSets: PostgreSQL, Qdrant, Redis</li>
+<li>Services: ClusterIP for internal, LoadBalancer for external</li>
+<li>Ingress: Nginx with TLS</li>
+</ul>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>Auto-scaling with HPA</li>
+<li>Rolling updates</li>
+<li>Self-healing</li>
+<li>Resource quotas</li>
+<li>Service discovery</li>
+<li>Health checks</li>
+</ul>
+<h4 id="development-docker-compose"><a class="header" href="#development-docker-compose">Development (Docker Compose)</a></h4>
+<p><strong>Purpose</strong>: Fast iteration, easy debugging
+<strong>Setup</strong>: Single command (<code>./scripts/dev.sh</code>)</p>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>Volume mounts for hot reload</li>
+<li>Health checks</li>
+<li>Service dependencies</li>
+<li>Local networking</li>
+</ul>
+<h4 id="configuration-management"><a class="header" href="#configuration-management">Configuration Management</a></h4>
+<p><strong>Kubernetes</strong>:</p>
+<ul>
+<li>ConfigMaps for config</li>
+<li>Secrets for credentials</li>
+<li>Kustomize for environment-specific config</li>
+<li>Helm charts (alternative)</li>
+</ul>
+<p><strong>CI/CD</strong>:</p>
+<ul>
+<li>GitHub Actions for build/test</li>
+<li>Automated deployments to staging/production</li>
+<li>Smoke tests after deployment</li>
+</ul>
+<h4 id="rationale-4"><a class="header" href="#rationale-4">Rationale</a></h4>
+<ul>
+<li>Kubernetes: Industry standard, auto-scaling, self-healing</li>
+<li>Docker Compose: Fast startup, production parity, simple</li>
+<li>Cloud-agnostic: No vendor lock-in, portable</li>
+<li>CI/CD: Automated, consistent, safe deployments</li>
+</ul>
+<h4 id="alternatives-considered-4"><a class="header" href="#alternatives-considered-4">Alternatives Considered</a></h4>
+<ul>
+<li>Docker Swarm (less ecosystem)</li>
+<li>Nomad (smaller ecosystem)</li>
+<li>Serverless (cold start latency)</li>
+<li>Single VM (no HA)</li>
+<li>Cloud-specific (vendor lock-in)</li>
+</ul>
+<hr />
+<h2 id="phase-4-summary"><a class="header" href="#phase-4-summary">Phase 4 Summary</a></h2>
+<p><strong>Documents Created</strong>: 13
+<strong>Total Lines</strong>: ~18,400+</p>
+<h3 id="engineering-practices-5-documents"><a class="header" href="#engineering-practices-5-documents">Engineering Practices (5 documents)</a></h3>
+<ol>
+<li>
+<p><strong>Coding Standards</strong> (~1,200 lines)</p>
+<ul>
+<li>Python and Rust style guides</li>
+<li>Tool configurations</li>
+<li>Type hints and documentation</li>
+</ul>
+</li>
+<li>
+<p><strong>Error Handling</strong> (~1,500 lines)</p>
+<ul>
+<li>Custom exception hierarchy</li>
+<li>Retry logic with exponential backoff</li>
+<li>Circuit breaker implementation</li>
+</ul>
+</li>
+<li>
+<p><strong>Logging and Observability</strong> (~1,300 lines)</p>
+<ul>
+<li>Structured logging (structlog, tracing)</li>
+<li>Prometheus metrics</li>
+<li>OpenTelemetry distributed tracing</li>
+</ul>
+</li>
+<li>
+<p><strong>Performance Optimization</strong> (~1,200 lines)</p>
+<ul>
+<li>Async operation patterns</li>
+<li>Connection pooling</li>
+<li>Multi-level caching</li>
+<li>Database query optimization</li>
+</ul>
+</li>
+<li>
+<p><strong>Code Review</strong> (~800 lines)</p>
+<ul>
+<li>PR template</li>
+<li>Author and reviewer checklists</li>
+<li>Quality, security, performance checks</li>
+</ul>
+</li>
+</ol>
+<h3 id="development-guides-3-documents"><a class="header" href="#development-guides-3-documents">Development Guides (3 documents)</a></h3>
+<ol start="6">
+<li>
+<p><strong>Development Workflow</strong> (~1,000 lines)</p>
+<ul>
+<li>Setup and environment</li>
+<li>Development cycle</li>
+<li>Branch naming and commit messages</li>
+<li>PR process</li>
+</ul>
+</li>
+<li>
+<p><strong>Migration Guide</strong> (~1,100 lines)</p>
+<ul>
+<li>Version compatibility</li>
+<li>Database migrations</li>
+<li>Configuration updates</li>
+<li>Rollback procedures</li>
+</ul>
+</li>
+<li>
+<p><strong>Contributing Guidelines</strong> (~1,000 lines)</p>
+<ul>
+<li>Getting started</li>
+<li>Making changes</li>
+<li>Code of Conduct</li>
+<li>PR process for contributors</li>
+</ul>
+</li>
+</ol>
+<h3 id="architecture-decision-records-5-documents"><a class="header" href="#architecture-decision-records-5-documents">Architecture Decision Records (5 documents)</a></h3>
+<ol start="9">
+<li>
+<p><strong>ADR README</strong> (~300 lines)</p>
+<ul>
+<li>ADR format and index</li>
+<li>When to create ADRs</li>
+<li>ADR statuses</li>
+</ul>
+</li>
+<li>
+<p><strong>ADR-001: Technology Stack</strong> (~2,500 lines)</p>
+<ul>
+<li>Python, Rust, PostgreSQL, Redis, Qdrant</li>
+<li>Rationale and alternatives</li>
+<li>Deployment tools</li>
+</ul>
+</li>
+<li>
+<p><strong>ADR-002: Communication Patterns</strong> (~2,000 lines)</p>
+<ul>
+<li>HTTP/REST, Redis pub/sub, WebSocket</li>
+<li>Rationale and alternatives</li>
+<li>Implementation guidelines</li>
+</ul>
+</li>
+<li>
+<p><strong>ADR-003: Memory Architecture</strong> (~2,200 lines)</p>
+<ul>
+<li>Three-tier memory (PostgreSQL, Qdrant, Redis)</li>
+<li>Memory router and data diodes</li>
+<li>Rationale and alternatives</li>
+</ul>
+</li>
+<li>
+<p><strong>ADR-004: Security Model</strong> (~2,300 lines)</p>
+<ul>
+<li>Capability-based JWT tokens</li>
+<li>PII detection, rate limiting</li>
+<li>Defense in depth</li>
+<li>Rationale and alternatives</li>
+</ul>
+</li>
+<li>
+<p><strong>ADR-005: Deployment Platform</strong> (~2,500 lines)</p>
+<ul>
+<li>Kubernetes for production</li>
+<li>Docker Compose for development</li>
+<li>CI/CD pipeline</li>
+<li>Rationale and alternatives</li>
+</ul>
+</li>
+</ol>
+<hr />
+<p><strong>Phase 4 Complete</strong>: 2025-11-10
+<strong>Next Phase</strong>: Update DOCUMENTATION-SUMMARY.md to reflect Phase 4 completion</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../appendix/phase-specs/phase-3.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../appendix/handoffs.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../appendix/phase-specs/phase-3.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../appendix/handoffs.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
