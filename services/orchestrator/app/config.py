@@ -71,6 +71,22 @@ class Settings(BaseSettings):
         default=60, ge=10, le=600, description="Circuit breaker reset timeout"
     )
 
+    # Planner Arm Configuration
+    planner_arm_url: str = Field(
+        default="http://planner-arm:8001",
+        description="Planner Arm service URL",
+    )
+    planner_arm_timeout: float = Field(
+        default=10.0, ge=1.0, le=60.0, description="Request timeout"
+    )
+    planner_arm_max_retries: int = Field(default=3, ge=1, le=10, description="Max retry attempts")
+    planner_arm_circuit_breaker_threshold: int = Field(
+        default=5, ge=1, le=20, description="Circuit breaker failure threshold"
+    )
+    planner_arm_circuit_breaker_reset_timeout: int = Field(
+        default=60, ge=10, le=600, description="Circuit breaker reset timeout"
+    )
+
     # Task Configuration
     task_default_timeout: int = Field(
         default=300, ge=1, le=3600, description="Default task timeout"
