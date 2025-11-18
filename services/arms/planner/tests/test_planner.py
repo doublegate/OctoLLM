@@ -3,6 +3,8 @@ Tests for core planning logic.
 """
 
 import json
+from typing import Any
+from unittest.mock import AsyncMock
 
 import pytest
 from openai import APIError, RateLimitError
@@ -48,10 +50,12 @@ async def test_generate_plan_success(
     mock_response.model = "gpt-3.5-turbo"
     mock_response.usage.total_tokens = 500
 
+    # Use AsyncMock for the create method itself
+    mock_create = AsyncMock(return_value=mock_response)
     mocker.patch.object(
         planner.client.chat.completions,
         "create",
-        return_value=mock_response,
+        new=mock_create,
     )
 
     # Generate plan
@@ -79,10 +83,11 @@ async def test_generate_plan_complex(
     mock_response.model = "gpt-3.5-turbo"
     mock_response.usage.total_tokens = 800
 
+    mock_create = AsyncMock(return_value=mock_response)
     mocker.patch.object(
         planner.client.chat.completions,
         "create",
-        return_value=mock_response,
+        new=mock_create,
     )
 
     plan = await planner.generate_plan(
@@ -107,17 +112,18 @@ async def test_generate_plan_too_few_steps(planner: PlannerArm, mocker: MockerFi
         "plan": [
             {
                 "step": 1,
-                "action": "Do task",
+                "action": "Complete the main task successfully",
                 "required_arm": "coder",
-                "acceptance_criteria": ["Done"],
+                "acceptance_criteria": ["Task completed successfully"],
                 "depends_on": [],
                 "estimated_cost_tier": 2,
                 "estimated_duration_seconds": 30,
             }
         ],
-        "rationale": "Too short",
+        "rationale": "Plan is too short for requirements",
         "confidence": 0.5,
         "complexity_score": 0.2,
+        "total_estimated_duration": 30,
     }
 
     mock_response = mocker.Mock()
@@ -126,10 +132,11 @@ async def test_generate_plan_too_few_steps(planner: PlannerArm, mocker: MockerFi
     mock_response.model = "gpt-3.5-turbo"
     mock_response.usage = None
 
+    mock_create = AsyncMock(return_value=mock_response)
     mocker.patch.object(
         planner.client.chat.completions,
         "create",
-        return_value=mock_response,
+        new=mock_create,
     )
 
     with pytest.raises(PlanningError, match="minimum is 3"):
@@ -143,18 +150,19 @@ async def test_generate_plan_too_many_steps(planner: PlannerArm, mocker: MockerF
         "plan": [
             {
                 "step": i,
-                "action": f"Step {i}",
+                "action": f"Complete step {i} of the overall task",
                 "required_arm": "coder",
-                "acceptance_criteria": ["Done"],
+                "acceptance_criteria": ["Step completed successfully"],
                 "depends_on": [i - 1] if i > 1 else [],
                 "estimated_cost_tier": 2,
                 "estimated_duration_seconds": 30,
             }
             for i in range(1, 11)  # 10 steps
         ],
-        "rationale": "Too long",
+        "rationale": "Plan exceeds maximum allowed steps",
         "confidence": 0.5,
         "complexity_score": 0.8,
+        "total_estimated_duration": 300,
     }
 
     mock_response = mocker.Mock()
@@ -163,10 +171,11 @@ async def test_generate_plan_too_many_steps(planner: PlannerArm, mocker: MockerF
     mock_response.model = "gpt-3.5-turbo"
     mock_response.usage = None
 
+    mock_create = AsyncMock(return_value=mock_response)
     mocker.patch.object(
         planner.client.chat.completions,
         "create",
-        return_value=mock_response,
+        new=mock_create,
     )
 
     with pytest.raises(PlanningError, match="maximum is 7"):
@@ -187,14 +196,15 @@ async def test_generate_plan_invalid_json(planner: PlannerArm, mocker: MockerFix
     mock_response.model = "gpt-3.5-turbo"
     mock_response.usage = None
 
+    mock_create = AsyncMock(return_value=mock_response)
     mocker.patch.object(
         planner.client.chat.completions,
         "create",
-        return_value=mock_response,
+        new=mock_create,
     )
 
     with pytest.raises(PlanningError, match="Failed to parse LLM response as JSON"):
-        await planner.generate_plan("Test goal", [], {})
+        await planner.generate_plan("Test goal with proper length", [], {})
 
 
 @pytest.mark.asyncio
@@ -204,9 +214,9 @@ async def test_generate_plan_missing_fields(planner: PlannerArm, mocker: MockerF
         "plan": [
             {
                 "step": 1,
-                "action": "Do something",
+                "action": "Do something important here",
                 "required_arm": "coder",
-                "acceptance_criteria": ["Done"],
+                "acceptance_criteria": ["Task is done"],
                 "depends_on": [],
                 "estimated_cost_tier": 2,
                 "estimated_duration_seconds": 30,
@@ -221,14 +231,15 @@ async def test_generate_plan_missing_fields(planner: PlannerArm, mocker: MockerF
     mock_response.model = "gpt-3.5-turbo"
     mock_response.usage = None
 
+    mock_create = AsyncMock(return_value=mock_response)
     mocker.patch.object(
         planner.client.chat.completions,
         "create",
-        return_value=mock_response,
+        new=mock_create,
     )
 
     with pytest.raises(PlanningError):
-        await planner.generate_plan("Test goal", [], {})
+        await planner.generate_plan("Test goal with proper length", [], {})
 
 
 @pytest.mark.asyncio
@@ -236,48 +247,49 @@ async def test_generate_plan_llm_rate_limit(planner: PlannerArm, mocker: MockerF
     """Test LLM rate limit error with retry."""
     call_count = 0
 
-    async def mock_create(*args: any, **kwargs: any) -> any:
+    async def mock_create(*args: Any, **kwargs: Any) -> Any:
         nonlocal call_count
         call_count += 1
         if call_count < 3:
             raise RateLimitError("Rate limit exceeded", response=mocker.Mock(), body=None)
         # Success on 3rd attempt
-        mock_resp = mocker.Mock()
+        mock_resp = AsyncMock()
         mock_resp.choices = [mocker.Mock()]
         mock_resp.choices[0].message.content = json.dumps(
             {
                 "plan": [
                     {
                         "step": 1,
-                        "action": "Do A",
+                        "action": "Complete first part of the task",
                         "required_arm": "coder",
-                        "acceptance_criteria": ["Done"],
+                        "acceptance_criteria": ["First part completed"],
                         "depends_on": [],
                         "estimated_cost_tier": 2,
                         "estimated_duration_seconds": 30,
                     },
                     {
                         "step": 2,
-                        "action": "Do B",
+                        "action": "Validate the results from step 1",
                         "required_arm": "judge",
-                        "acceptance_criteria": ["Validated"],
+                        "acceptance_criteria": ["Results validated successfully"],
                         "depends_on": [1],
                         "estimated_cost_tier": 2,
                         "estimated_duration_seconds": 20,
                     },
                     {
                         "step": 3,
-                        "action": "Do C",
+                        "action": "Execute final deployment process",
                         "required_arm": "executor",
-                        "acceptance_criteria": ["Executed"],
+                        "acceptance_criteria": ["Deployment executed successfully"],
                         "depends_on": [2],
                         "estimated_cost_tier": 1,
                         "estimated_duration_seconds": 15,
                     },
                 ],
-                "rationale": "Retry succeeded",
+                "rationale": "Retry succeeded after rate limiting",
                 "confidence": 0.8,
                 "complexity_score": 0.4,
+                "total_estimated_duration": 65,
             }
         )
         mock_resp.model = "gpt-3.5-turbo"
@@ -290,7 +302,7 @@ async def test_generate_plan_llm_rate_limit(planner: PlannerArm, mocker: MockerF
         side_effect=mock_create,
     )
 
-    plan = await planner.generate_plan("Test goal", [], {})
+    plan = await planner.generate_plan("Test goal with proper length", [], {})
     assert len(plan.plan) == 3
     assert call_count == 3  # Retried twice
 
@@ -305,7 +317,7 @@ async def test_generate_plan_llm_api_error(planner: PlannerArm, mocker: MockerFi
     )
 
     with pytest.raises(LLMError):
-        await planner.generate_plan("Test goal", [], {})
+        await planner.generate_plan("Test goal with proper length", [], {})
 
 
 # ==============================================================================
@@ -411,17 +423,17 @@ def test_parse_llm_response_adds_default_complexity(planner: PlannerArm) -> None
         "plan": [
             {
                 "step": 1,
-                "action": "Do something",
+                "action": "Do something important",
                 "required_arm": "coder",
-                "acceptance_criteria": ["Done"],
+                "acceptance_criteria": ["Task completed successfully"],
                 "depends_on": [],
                 "estimated_cost_tier": 2,
                 "estimated_duration_seconds": 30,
             }
         ],
-        "rationale": "Test",
+        "rationale": "Test rationale for the plan",
         "confidence": 0.8,
-        # Missing complexity_score
+        # Missing complexity_score and total_estimated_duration
     }
 
     content = json.dumps(response)

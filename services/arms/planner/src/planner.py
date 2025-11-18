@@ -5,7 +5,7 @@ Implements task decomposition using OpenAI's GPT-3.5-turbo with structured outpu
 """
 
 import json
-from typing import Any
+from typing import Any, cast
 
 import structlog
 from openai import AsyncOpenAI, OpenAIError
@@ -140,8 +140,11 @@ class PlannerArm:
         except json.JSONDecodeError as e:
             logger.error("planner_arm.generate_plan.json_parse_error", error=str(e))
             raise PlanningError(f"Failed to parse LLM response as JSON: {e}") from e
-        except InvalidDependencyError:
+        except (InvalidDependencyError, LLMError):
             raise
+        except OpenAIError as e:
+            logger.error("planner_arm.generate_plan.llm_error", error=str(e))
+            raise LLMError(f"LLM API failed: {e}") from e
         except Exception as e:
             logger.error("planner_arm.generate_plan.error", error=str(e))
             raise PlanningError(f"Planning failed: {e}") from e
@@ -190,7 +193,8 @@ class PlannerArm:
                 tokens_used=response.usage.total_tokens if response.usage else 0,
             )
 
-            return content
+            # MyPy doesn't know we've checked for None above
+            return cast(str, content)
 
         except OpenAIError as e:
             logger.warning("planner_arm.llm_call.retry", error=str(e))
@@ -213,7 +217,7 @@ class PlannerArm:
             json.JSONDecodeError: If response is not valid JSON
         """
         try:
-            data = json.loads(content)
+            data = cast(dict[str, Any], json.loads(content))
 
             # Validate required fields
             if "plan" not in data:
@@ -287,8 +291,10 @@ class PlannerArm:
         # - Cost tiers (higher = more complex)
 
         num_steps = len(steps)
-        total_deps = sum(len(step.get("depends_on", [])) for step in steps)
-        avg_cost = sum(step.get("estimated_cost_tier", 2) for step in steps) / num_steps
+        total_deps = sum(len(cast(list[int], step.get("depends_on", []))) for step in steps)
+        avg_cost = float(
+            sum(cast(int, step.get("estimated_cost_tier", 2)) for step in steps) / num_steps
+        )
 
         # Normalize factors (rough heuristic)
         step_factor = min(num_steps / 10.0, 1.0)  # 10+ steps = max complexity
@@ -298,4 +304,4 @@ class PlannerArm:
         # Weighted average
         complexity = (0.4 * step_factor) + (0.3 * dep_factor) + (0.3 * cost_factor)
 
-        return min(max(complexity, 0.0), 1.0)  # Clamp to [0, 1]
+        return float(min(max(complexity, 0.0), 1.0))  # Clamp to [0, 1]

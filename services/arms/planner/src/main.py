@@ -16,7 +16,7 @@ Usage:
 """
 
 import time
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
@@ -133,7 +133,9 @@ app.add_middleware(
 
 
 @app.middleware("http")
-async def logging_middleware(request: Request, call_next: any) -> Response:
+async def logging_middleware(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
     """Log all HTTP requests with timing."""
     start_time = time.time()
     request_id = request.headers.get("X-Request-ID", "unknown")
@@ -213,7 +215,7 @@ async def create_plan(request: PlanRequest) -> PlanResponse:
     start_time = time.time()
 
     try:
-        plan = await app.state.planner.generate_plan(
+        plan: PlanResponse = await app.state.planner.generate_plan(
             goal=request.goal,
             constraints=request.constraints,
             context=request.context,

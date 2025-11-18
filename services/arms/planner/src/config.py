@@ -74,13 +74,19 @@ class Settings(BaseSettings):
             raise ValueError(f"LLM model must be one of {allowed_models}")
         return v
 
-    @field_validator("min_plan_steps", "max_plan_steps")
+    @field_validator("max_plan_steps")
     @classmethod
-    def validate_plan_steps(cls, v: int, info: any) -> int:
-        """Validate plan step counts."""
-        if info.field_name == "max_plan_steps" and v < 3:
+    def validate_max_plan_steps(cls, v: int) -> int:
+        """Validate max plan step count."""
+        if v < 3:
             raise ValueError("max_plan_steps must be at least 3")
-        if info.field_name == "min_plan_steps" and v < 1:
+        return v
+
+    @field_validator("min_plan_steps")
+    @classmethod
+    def validate_min_plan_steps(cls, v: int) -> int:
+        """Validate min plan step count."""
+        if v < 1:
             raise ValueError("min_plan_steps must be at least 1")
         return v
 

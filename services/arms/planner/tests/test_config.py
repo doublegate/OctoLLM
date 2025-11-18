@@ -50,8 +50,12 @@ def test_settings_validation_invalid_model() -> None:
         Settings(openai_api_key="sk-test", llm_model="invalid-model")
 
 
-def test_settings_validation_missing_api_key() -> None:
+def test_settings_validation_missing_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test validation for missing API key."""
+    # Clear the API key from environment (set by autouse fixture)
+    monkeypatch.delenv("PLANNER_OPENAI_API_KEY", raising=False)
+    reset_settings()
+
     with pytest.raises(ValidationError):
         Settings()  # Missing required openai_api_key
 

@@ -2,6 +2,8 @@
 Tests for FastAPI endpoints.
 """
 
+from collections.abc import Generator
+
 import pytest
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
@@ -11,9 +13,12 @@ from src.models import PlanResponse
 
 
 @pytest.fixture
-def client() -> TestClient:
-    """Create test client."""
-    return TestClient(app)
+def client() -> Generator[TestClient, None, None]:
+    """Create test client with lifespan context."""
+    # The TestClient will automatically handle the lifespan context
+    # But we need to ensure the planner is initialized before tests can mock it
+    with TestClient(app) as test_client:
+        yield test_client
 
 
 # ==============================================================================
@@ -25,10 +30,12 @@ def test_plan_endpoint_success(
     client: TestClient, sample_plan_response: dict, mocker: MockerFixture
 ) -> None:
     """Test successful plan generation via API."""
-    # Mock planner
+    # Mock planner's generate_plan method
     mock_plan = PlanResponse(**sample_plan_response)
     mocker.patch.object(
-        app.state, "planner", mocker.Mock(generate_plan=mocker.AsyncMock(return_value=mock_plan))
+        app.state.planner,
+        "generate_plan",
+        new=mocker.AsyncMock(return_value=mock_plan),
     )
 
     # Make request
@@ -55,7 +62,7 @@ def test_plan_endpoint_with_constraints_and_context(
     """Test plan endpoint with constraints and context."""
     mock_plan = PlanResponse(**sample_plan_response)
     mock_generate = mocker.AsyncMock(return_value=mock_plan)
-    mocker.patch.object(app.state, "planner", mocker.Mock(generate_plan=mock_generate))
+    mocker.patch.object(app.state.planner, "generate_plan", new=mock_generate)
 
     response = client.post(
         "/plan",
@@ -108,18 +115,14 @@ def test_plan_endpoint_invalid_dependency_error(client: TestClient, mocker: Mock
     from src.planner import InvalidDependencyError
 
     mocker.patch.object(
-        app.state,
-        "planner",
-        mocker.Mock(
-            generate_plan=mocker.AsyncMock(
-                side_effect=InvalidDependencyError("Step 2 depends on step 3")
-            )
-        ),
+        app.state.planner,
+        "generate_plan",
+        new=mocker.AsyncMock(side_effect=InvalidDependencyError("Step 2 depends on step 3")),
     )
 
     response = client.post(
         "/plan",
-        json={"goal": "Test goal", "constraints": [], "context": {}},
+        json={"goal": "Test goal that is long enough", "constraints": [], "context": {}},
     )
 
     assert response.status_code == 400  # Bad request
@@ -131,14 +134,14 @@ def test_plan_endpoint_llm_error(client: TestClient, mocker: MockerFixture) -> N
     from src.planner import LLMError
 
     mocker.patch.object(
-        app.state,
-        "planner",
-        mocker.Mock(generate_plan=mocker.AsyncMock(side_effect=LLMError("API timeout"))),
+        app.state.planner,
+        "generate_plan",
+        new=mocker.AsyncMock(side_effect=LLMError("API timeout")),
     )
 
     response = client.post(
         "/plan",
-        json={"goal": "Test goal", "constraints": [], "context": {}},
+        json={"goal": "Test goal that is long enough", "constraints": [], "context": {}},
     )
 
     assert response.status_code == 503  # Service unavailable
@@ -150,14 +153,14 @@ def test_plan_endpoint_planning_error(client: TestClient, mocker: MockerFixture)
     from src.planner import PlanningError
 
     mocker.patch.object(
-        app.state,
-        "planner",
-        mocker.Mock(generate_plan=mocker.AsyncMock(side_effect=PlanningError("Plan too short"))),
+        app.state.planner,
+        "generate_plan",
+        new=mocker.AsyncMock(side_effect=PlanningError("Plan too short")),
     )
 
     response = client.post(
         "/plan",
-        json={"goal": "Test goal", "constraints": [], "context": {}},
+        json={"goal": "Test goal that is long enough", "constraints": [], "context": {}},
     )
 
     assert response.status_code == 500  # Internal server error
@@ -167,14 +170,14 @@ def test_plan_endpoint_planning_error(client: TestClient, mocker: MockerFixture)
 def test_plan_endpoint_unexpected_error(client: TestClient, mocker: MockerFixture) -> None:
     """Test handling of unexpected error."""
     mocker.patch.object(
-        app.state,
-        "planner",
-        mocker.Mock(generate_plan=mocker.AsyncMock(side_effect=RuntimeError("Unexpected"))),
+        app.state.planner,
+        "generate_plan",
+        new=mocker.AsyncMock(side_effect=RuntimeError("Unexpected")),
     )
 
     response = client.post(
         "/plan",
-        json={"goal": "Test goal", "constraints": [], "context": {}},
+        json={"goal": "Test goal that is long enough", "constraints": [], "context": {}},
     )
 
     assert response.status_code == 500  # Internal server error
@@ -202,11 +205,9 @@ def test_health_endpoint(client: TestClient) -> None:
 # ==============================================================================
 
 
-def test_ready_endpoint_ready(client: TestClient, mocker: MockerFixture) -> None:
+def test_ready_endpoint_ready(client: TestClient) -> None:
     """Test readiness endpoint when service is ready."""
-    # Mock planner exists
-    mocker.patch.object(app.state, "planner", mocker.Mock())
-
+    # Planner is initialized by the lifespan context in the client fixture
     response = client.get("/ready")
 
     assert response.status_code == 200
@@ -306,7 +307,7 @@ def test_full_request_flow(
     """Test full request flow from request to response."""
     mock_plan = PlanResponse(**sample_complex_plan)
     mocker.patch.object(
-        app.state, "planner", mocker.Mock(generate_plan=mocker.AsyncMock(return_value=mock_plan))
+        app.state.planner, "generate_plan", new=mocker.AsyncMock(return_value=mock_plan)
     )
 
     # Make request
