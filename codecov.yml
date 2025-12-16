@@ -1,0 +1,138 @@
+# Codecov Configuration for OctoLLM
+# Documentation: https://docs.codecov.com/docs/codecov-yaml
+
+# Coverage Analytics Configuration
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+
+  status:
+    # Project-level coverage (entire repository)
+    project:
+      default:
+        target: 80%
+        threshold: 5%
+        informational: false
+        if_ci_failed: error
+
+    # Patch-level coverage (new code in PRs)
+    patch:
+      default:
+        target: 85%
+        threshold: 5%
+        informational: false
+        if_ci_failed: error
+
+# Coverage flags for different components
+flags:
+  orchestrator:
+    paths:
+      - services/orchestrator/
+    carryforward: true
+
+  reflex-layer:
+    paths:
+      - services/reflex-layer/
+    carryforward: true
+
+  planner-arm:
+    paths:
+      - services/arms/planner/
+    carryforward: true
+
+  executor-arm:
+    paths:
+      - services/arms/executor/
+    carryforward: true
+
+  coder-arm:
+    paths:
+      - services/arms/coder/
+    carryforward: true
+
+  judge-arm:
+    paths:
+      - services/arms/judge/
+    carryforward: true
+
+  retriever-arm:
+    paths:
+      - services/arms/retriever/
+    carryforward: true
+
+  guardian-arm:
+    paths:
+      - services/arms/guardian/
+    carryforward: true
+
+  python-sdk:
+    paths:
+      - sdks/python/
+    carryforward: true
+
+  typescript-sdk:
+    paths:
+      - sdks/typescript/
+    carryforward: true
+
+# Ignore patterns (exclude from coverage calculations)
+ignore:
+  - "**/*.md"
+  - "**/tests/**"
+  - "**/test_*.py"
+  - "docs/**"
+  - "daily_logs/**"
+  - "to-dos/**"
+  - "**/conftest.py"
+  - "**/__pycache__/**"
+  - "**/venv/**"
+  - "**/.venv/**"
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/*.test.ts"
+  - "**/*.test.js"
+  - "**/*.spec.ts"
+  - "**/*.spec.js"
+
+# Test Analytics Configuration
+# Enabled automatically when JUnit XML files are uploaded with report_type: test_results
+# See: https://docs.codecov.com/docs/test-analytics
+# Features:
+#   - Test metrics across main and feature branches (run times, failure rates)
+#   - PR-level debugging with failed test lists and stack traces
+#   - Flaky test identification
+# Requirements:
+#   - JUnit XML output from test runners (pytest --junitxml=junit.xml)
+#   - Upload via codecov-action with report_type: test_results
+# Retention: 60 days
+
+# Bundle Analysis Configuration (for TypeScript SDK)
+# See: https://docs.codecov.com/docs/javascript-bundle-analysis
+# Features:
+#   - Bundle size tracking and regression detection
+#   - Module exploration and size attribution
+#   - Performance impact analysis
+# Requirements:
+#   - Bundler plugin (Vite/Webpack/Rollup) installed as dev dependency
+#   - Plugin configured in bundler setup
+#   - Build after code commit
+bundle_analysis:
+  warning_threshold: 5%
+
+# Comment Configuration (PR comments)
+comment:
+  layout: "header, diff, flags, components, footer"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+  # Only post bundle comments if bundle size changes
+  require_bundle_changes: "bundle_increase"
+  # Minimum bundle size change to trigger comment (1KB)
+  bundle_change_threshold: 1KB
+
+# GitHub status checks configuration
+github_checks:
+  annotations: true
