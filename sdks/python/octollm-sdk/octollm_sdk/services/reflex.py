@@ -8,7 +8,8 @@ PII detection, and prompt injection detection.
 from typing import Optional
 
 from ..client import BaseClient
-from ..models import CacheStats, HealthResponse, PreprocessRequest, PreprocessResponse
+from ..models import (CacheStats, HealthResponse, PreprocessRequest,
+                      PreprocessResponse)
 
 
 class ReflexClient(BaseClient):

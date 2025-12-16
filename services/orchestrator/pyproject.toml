@@ -113,6 +113,10 @@ addopts = [
     "--cov=app",
     "--cov-report=term-missing",
     "--cov-report=html",
+    "--cov-report=xml",
+    "--junitxml=junit.xml",
+    "-o",
+    "junit_family=legacy",
     "--cov-fail-under=85",
 ]
 markers = [
@@ -142,6 +146,7 @@ module = [
 ignore_missing_imports = true
 
 [tool.coverage.run]
+branch = true
 source = ["app"]
 omit = [
     "*/tests/*",

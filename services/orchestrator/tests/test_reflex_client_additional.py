@@ -9,11 +9,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
-from app.reflex_client import (
-    CircuitBreaker,
-    ProcessStatus,
-    ReflexClient,
-)
+from app.reflex_client import CircuitBreaker, ProcessStatus, ReflexClient
 
 
 class TestCircuitBreakerEdgeCases:

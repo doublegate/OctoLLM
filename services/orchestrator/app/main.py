@@ -28,12 +28,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 
 from app.config import get_settings
-from app.database import (
-    create_task,
-    get_database,
-    get_task,
-    get_task_count_by_status,
-)
+from app.database import create_task, get_database, get_task, get_task_count_by_status
 from app.models import (
     HealthResponse,
     ReadinessResponse,
