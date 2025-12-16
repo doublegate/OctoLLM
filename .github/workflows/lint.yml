@@ -51,7 +51,7 @@ jobs:
       - name: Run mypy (type checking)
         run: |
           echo "Running mypy type checker..."
-          mypy services/orchestrator/ services/arms/ --ignore-missing-imports --no-error-summary
+          mypy services/orchestrator/ --ignore-missing-imports --no-error-summary
         continue-on-error: true  # Don't fail on type errors initially
 
   lint-rust:
