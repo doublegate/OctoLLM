@@ -96,14 +96,30 @@ ignore:
   - "**/*.spec.ts"
   - "**/*.spec.js"
 
+# Test Analytics Configuration
+# Enabled automatically when JUnit XML files are uploaded with report_type: test_results
+# See: https://docs.codecov.com/docs/test-analytics
+# Features:
+#   - Test metrics across main and feature branches (run times, failure rates)
+#   - PR-level debugging with failed test lists and stack traces
+#   - Flaky test identification
+# Requirements:
+#   - JUnit XML output from test runners (pytest --junitxml=junit.xml)
+#   - Upload via codecov-action with report_type: test_results
+# Retention: 60 days
+
 # Bundle Analysis Configuration (for TypeScript SDK)
-# Note: Bundle analysis requires bundler plugin setup (Vite/Webpack/Rollup)
 # See: https://docs.codecov.com/docs/javascript-bundle-analysis
+# Features:
+#   - Bundle size tracking and regression detection
+#   - Module exploration and size attribution
+#   - Performance impact analysis
+# Requirements:
+#   - Bundler plugin (Vite/Webpack/Rollup) installed as dev dependency
+#   - Plugin configured in bundler setup
+#   - Build after code commit
 bundle_analysis:
   warning_threshold: 5%
-
-# Test Analytics is enabled automatically when JUnit XML files are uploaded
-# No configuration needed in codecov.yml - controlled via GitHub Actions workflow
 
 # Comment Configuration (PR comments)
 comment:

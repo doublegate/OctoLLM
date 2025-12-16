@@ -65,7 +65,8 @@ jobs:
           files: ./junit.xml
           flags: orchestrator,python-sdk
           name: python-test-results
-          plugin: noop
+          report_type: test_results
+          plugins: noop
           disable_search: true
           fail_ci_if_error: false
 
