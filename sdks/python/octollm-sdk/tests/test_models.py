@@ -5,9 +5,15 @@ Tests for Pydantic models.
 from datetime import datetime
 
 import pytest
-from octollm_sdk.models import (CodeRequest, ResourceBudget, SafetyRequest,
-                                SearchRequest, TaskRequest, TaskResponse,
-                                ValidationRequest)
+from octollm_sdk.models import (
+    CodeRequest,
+    ResourceBudget,
+    SafetyRequest,
+    SearchRequest,
+    TaskRequest,
+    TaskResponse,
+    ValidationRequest,
+)
 
 
 def test_task_request_minimal():

@@ -3,8 +3,7 @@ Tests for authentication helpers.
 """
 
 import pytest
-from octollm_sdk.auth import (get_auth_headers, validate_api_key,
-                              validate_bearer_token)
+from octollm_sdk.auth import get_auth_headers, validate_api_key, validate_bearer_token
 
 
 def test_get_auth_headers_api_key():
