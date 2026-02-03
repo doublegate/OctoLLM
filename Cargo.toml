@@ -73,7 +73,7 @@ config = "0.14"
 num_cpus = "1.16"
 
 # Security
-jsonwebtoken = "9.3"
+jsonwebtoken = "10.3"
 argon2 = "0.5"
 sha2 = "0.10"
 
