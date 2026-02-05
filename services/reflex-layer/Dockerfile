@@ -21,7 +21,7 @@ COPY services/arms/executor ./services/arms/executor
 RUN cargo build --release --package reflex-layer
 
 # Runtime stage
-FROM debian:13.1-slim
+FROM debian:13.3-slim
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
