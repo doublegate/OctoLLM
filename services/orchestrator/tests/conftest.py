@@ -10,7 +10,7 @@ from app.reflex_client import ReflexClient
 
 
 @pytest.fixture
-async def reflex_client() -> AsyncGenerator[ReflexClient, None]:
+async def reflex_client() -> AsyncGenerator[ReflexClient]:
     """Create a ReflexClient instance for testing."""
     client = ReflexClient(
         base_url="http://localhost:8080",

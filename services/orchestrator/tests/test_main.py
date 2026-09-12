@@ -10,7 +10,7 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 
 from app.main import app
 from app.models import ResourceBudget, TaskStatus
@@ -63,27 +63,36 @@ def sample_task_request():
     }
 
 
+# These fixtures build ReflexResponse objects exactly as app.reflex_client declares them.
+# They previously referenced a ProcessStatus.ALLOWED member and PIIType/InjectionType enums
+# that the module has never exported, and passed start/end/pattern/metadata fields that the
+# models do not define, so every test depending on them errored at collection.
+# `pii_type`/`injection_type` are plain strings carrying the Reflex Layer's serialised Rust
+# variant names (see services/reflex-layer/src/{pii,injection}/types.rs).
+
+
 @pytest.fixture
 def sample_reflex_response_clean():
     """Sample Reflex response for clean text."""
     return ReflexResponse(
-        status=ProcessStatus.ALLOWED,
+        request_id="req_clean_0001",
+        status=ProcessStatus.SUCCESS,
         pii_detected=False,
         injection_detected=False,
         cache_hit=False,
         processing_time_ms=5,
         pii_matches=[],
         injection_matches=[],
-        metadata={},
     )
 
 
 @pytest.fixture
 def sample_reflex_response_pii():
     """Sample Reflex response with PII detected."""
-    from app.reflex_client import PIIMatch, PIIType
+    from app.reflex_client import PIIMatch
 
     return ReflexResponse(
+        request_id="req_pii_0001",
         status=ProcessStatus.BLOCKED,
         pii_detected=True,
         injection_detected=False,
@@ -91,24 +100,24 @@ def sample_reflex_response_pii():
         processing_time_ms=5,
         pii_matches=[
             PIIMatch(
-                pii_type=PIIType.EMAIL,
+                pii_type="Email",
                 value="user@example.com",
-                start=15,
-                end=31,
+                position=15,
                 confidence=0.99,
+                context="My email is user@example.com and ...",
             )
         ],
         injection_matches=[],
-        metadata={},
     )
 
 
 @pytest.fixture
 def sample_reflex_response_injection():
     """Sample Reflex response with injection detected."""
-    from app.reflex_client import InjectionMatch, InjectionType
+    from app.reflex_client import InjectionMatch
 
     return ReflexResponse(
+        request_id="req_injection_0001",
         status=ProcessStatus.BLOCKED,
         pii_detected=False,
         injection_detected=True,
@@ -117,14 +126,13 @@ def sample_reflex_response_injection():
         pii_matches=[],
         injection_matches=[
             InjectionMatch(
-                injection_type=InjectionType.INSTRUCTION_OVERRIDE,
-                pattern="Ignore all previous instructions",
-                start=0,
-                end=31,
+                injection_type="IgnorePreviousInstructions",
+                severity="Critical",
+                matched_text="Ignore all previous instructions",
+                position=0,
                 confidence=0.95,
             )
         ],
-        metadata={},
     )
 
 
@@ -177,7 +185,7 @@ def test_health_check_returns_version(client):
 @pytest.mark.asyncio
 async def test_readiness_check_all_healthy():
     """Test readiness check when all dependencies are healthy."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         # Mock database and reflex client health checks
         with (
             patch("app.main.get_database") as mock_db,
@@ -199,7 +207,7 @@ async def test_readiness_check_all_healthy():
 @pytest.mark.asyncio
 async def test_readiness_check_database_unhealthy():
     """Test readiness check fails when database is unhealthy."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         with (
             patch("app.main.get_database") as mock_db,
             patch.object(app.state, "reflex_client", new=AsyncMock()) as mock_reflex,
@@ -213,14 +221,14 @@ async def test_readiness_check_database_unhealthy():
             assert response.status_code == 503
             data = response.json()
             # Response is wrapped in detail due to HTTPException
-            assert data["detail"]["ready"] is False
-            assert data["detail"]["checks"]["database"] is False
+            assert data["error"]["ready"] is False
+            assert data["error"]["checks"]["database"] is False
 
 
 @pytest.mark.asyncio
 async def test_readiness_check_reflex_unavailable():
     """Test readiness check fails when Reflex Layer is unavailable."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         with (
             patch("app.main.get_database") as mock_db,
             patch.object(app.state, "reflex_client", new=AsyncMock()) as mock_reflex,
@@ -233,8 +241,8 @@ async def test_readiness_check_reflex_unavailable():
 
             assert response.status_code == 503
             data = response.json()
-            assert data["detail"]["ready"] is False
-            assert data["detail"]["checks"]["reflex_layer"] is False
+            assert data["error"]["ready"] is False
+            assert data["error"]["checks"]["reflex_layer"] is False
 
 
 # ==============================================================================
@@ -263,7 +271,7 @@ def test_metrics_endpoint(client):
 @pytest.mark.asyncio
 async def test_submit_task_valid(sample_task_request, sample_reflex_response_clean):
     """Test submitting valid task returns 202 Accepted."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         with (
             patch("app.main.get_database") as mock_db,
             patch.object(app.state, "reflex_client", new=AsyncMock()) as mock_reflex,
@@ -301,18 +309,21 @@ async def test_submit_task_valid(sample_task_request, sample_reflex_response_cle
 @pytest.mark.asyncio
 async def test_submit_task_invalid_missing_goal():
     """Test submitting task without goal returns 422 Validation Error."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post("/submit", json={"context": "No goal provided"})
 
         assert response.status_code == 422
         data = response.json()
+        # 422 is raised by FastAPI's RequestValidationError handler, not the app's own
+        # HTTPException handler, so this response keeps FastAPI's {"detail": [...]}
+        # envelope rather than the {"error": ...} one the app uses elsewhere.
         assert "detail" in data
 
 
 @pytest.mark.asyncio
 async def test_submit_task_pii_detected(sample_task_request, sample_reflex_response_pii):
     """Test submitting task with PII returns 400 Bad Request."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         with patch.object(app.state, "reflex_client", new=AsyncMock()) as mock_reflex:
             mock_reflex.process = AsyncMock(return_value=sample_reflex_response_pii)
 
@@ -320,8 +331,8 @@ async def test_submit_task_pii_detected(sample_task_request, sample_reflex_respo
 
             assert response.status_code == 400
             data = response.json()
-            assert "detail" in data
-            assert data["detail"]["pii_detected"] is True
+            assert "error" in data
+            assert data["error"]["pii_detected"] is True
 
 
 @pytest.mark.asyncio
@@ -329,7 +340,7 @@ async def test_submit_task_injection_detected(
     sample_task_request, sample_reflex_response_injection
 ):
     """Test submitting task with injection returns 400 Bad Request."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         with patch.object(app.state, "reflex_client", new=AsyncMock()) as mock_reflex:
             mock_reflex.process = AsyncMock(return_value=sample_reflex_response_injection)
 
@@ -337,14 +348,14 @@ async def test_submit_task_injection_detected(
 
             assert response.status_code == 400
             data = response.json()
-            assert "detail" in data
-            assert data["detail"]["injection_detected"] is True
+            assert "error" in data
+            assert data["error"]["injection_detected"] is True
 
 
 @pytest.mark.asyncio
 async def test_submit_task_reflex_circuit_breaker_open(sample_task_request):
     """Test submitting task when Reflex circuit breaker is open returns 503."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         with patch.object(app.state, "reflex_client", new=AsyncMock()) as mock_reflex:
             mock_reflex.process = AsyncMock(side_effect=ReflexCircuitBreakerOpen())
 
@@ -352,13 +363,13 @@ async def test_submit_task_reflex_circuit_breaker_open(sample_task_request):
 
             assert response.status_code == 503
             data = response.json()
-            assert "circuit breaker" in data["detail"].lower()
+            assert "circuit breaker" in data["error"].lower()
 
 
 @pytest.mark.asyncio
 async def test_submit_task_reflex_service_unavailable(sample_task_request):
     """Test submitting task when Reflex service is unavailable returns 503."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         with patch.object(app.state, "reflex_client", new=AsyncMock()) as mock_reflex:
             mock_reflex.process = AsyncMock(side_effect=ReflexServiceUnavailable())
 
@@ -366,13 +377,17 @@ async def test_submit_task_reflex_service_unavailable(sample_task_request):
 
             assert response.status_code == 503
             data = response.json()
-            assert "unavailable" in data["detail"].lower()
+            assert "unavailable" in data["error"].lower()
 
 
 @pytest.mark.asyncio
 async def test_submit_task_database_error(sample_task_request, sample_reflex_response_clean):
     """Test submitting task with database error returns 500."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    # Starlette's ServerErrorMiddleware re-raises after the app's Exception handler has
+    # run, so ASGITransport's default raise_app_exceptions=True surfaces the original
+    # exception to the caller instead of the 500 response we want to assert on.
+    transport = ASGITransport(app=app, raise_app_exceptions=False)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         with (
             patch("app.main.get_database") as mock_db,
             patch.object(app.state, "reflex_client", new=AsyncMock()) as mock_reflex,
@@ -404,7 +419,7 @@ async def test_get_task_status_existing():
     """Test retrieving existing task returns 200 OK with task details."""
     task_id = str(uuid4())
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         with patch("app.main.get_database") as mock_db:
             # Mock database
             mock_session = AsyncMock()
@@ -438,7 +453,7 @@ async def test_get_task_status_non_existent():
     """Test retrieving non-existent task returns 404 Not Found."""
     task_id = str(uuid4())
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         with patch("app.main.get_database") as mock_db:
             mock_session = AsyncMock()
             mock_db.return_value.session.return_value.__aenter__.return_value = mock_session
@@ -448,8 +463,8 @@ async def test_get_task_status_non_existent():
 
                 assert response.status_code == 404
                 data = response.json()
-                assert "detail" in data
-                assert task_id in data["detail"]
+                assert "error" in data
+                assert task_id in data["error"]
 
 
 # ==============================================================================
@@ -513,7 +528,7 @@ def test_http_exception_handler_includes_request_id(client):
 @pytest.mark.asyncio
 async def test_general_exception_handler():
     """Test general exception handler catches uncaught exceptions."""
-    async with AsyncClient(app=app, base_url="http://test") as _ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as _ac:
         with patch("app.main.get_database") as mock_db:
             # Cause an unexpected error
             mock_db.return_value.session.side_effect = RuntimeError("Unexpected error")
@@ -527,7 +542,7 @@ async def test_general_exception_handler():
 # ==============================================================================
 
 
-def test_cors_middleware_in_debug_mode():
+def test_cors_middleware_in_debug_mode(client):
     """Test CORS middleware allows all origins in debug mode."""
     with patch("app.main.settings.debug", True):
         _response = client.options(
@@ -550,7 +565,7 @@ def test_cors_middleware_in_debug_mode():
 @pytest.mark.asyncio
 async def test_debug_stats_endpoint_in_debug_mode():
     """Test debug stats endpoint is available in debug mode."""
-    async with AsyncClient(app=app, base_url="http://test") as _ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as _ac:
         with (
             patch("app.main.settings.debug", True),
             patch("app.main.get_database") as mock_db,
@@ -577,7 +592,7 @@ async def test_full_task_submission_flow(sample_task_request, sample_reflex_resp
     """Test complete task submission flow from submission to retrieval."""
     _task_id = str(uuid4())
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         with (
             patch("app.main.get_database") as mock_db,
             patch.object(app.state, "reflex_client", new=AsyncMock()) as mock_reflex,

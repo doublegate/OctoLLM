@@ -12,7 +12,7 @@ from uuid import UUID
 import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.pool import QueuePool
+from sqlalchemy.pool import AsyncAdaptedQueuePool
 
 from app.config import get_settings
 from app.models import Base, Task, TaskContract, TaskResult, TaskStatus
@@ -43,10 +43,15 @@ class Database:
         else:
             async_url = self.database_url
 
-        # Create async engine with connection pooling
+        # Create async engine with connection pooling.
+        #
+        # AsyncAdaptedQueuePool, not QueuePool: SQLAlchemy rejects the synchronous
+        # QueuePool on an asyncio engine outright ("Pool class QueuePool cannot be used
+        # with asyncio engine"), so constructing Database() raised ArgumentError before
+        # a single query could run.
         self.engine = create_async_engine(
             async_url,
-            poolclass=QueuePool,
+            poolclass=AsyncAdaptedQueuePool,
             pool_size=settings.database_pool_size,
             max_overflow=settings.database_max_overflow,
             pool_timeout=settings.database_pool_timeout,
@@ -85,7 +90,7 @@ class Database:
         logger.info("database.closed")
 
     @asynccontextmanager
-    async def session(self) -> AsyncGenerator[AsyncSession, None]:
+    async def session(self) -> AsyncGenerator[AsyncSession]:
         """
         Get database session context manager.
 

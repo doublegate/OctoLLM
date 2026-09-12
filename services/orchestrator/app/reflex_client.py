@@ -18,7 +18,7 @@ Example usage:
 
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
-from enum import Enum
+from enum import StrEnum
 from typing import Any, cast
 
 import httpx
@@ -29,7 +29,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 logger = structlog.get_logger(__name__)
 
 
-class ProcessStatus(str, Enum):
+class ProcessStatus(StrEnum):
     """Status of text processing by Reflex Layer."""
 
     SUCCESS = "Success"
@@ -466,7 +466,7 @@ class ReflexClient:
         await self.client.aclose()
         logger.info("reflex_client.closed")
 
-    async def __aenter__(self) -> "ReflexClient":
+    async def __aenter__(self) -> ReflexClient:
         """Async context manager entry."""
         return self
 

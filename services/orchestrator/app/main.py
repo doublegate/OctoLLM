@@ -31,7 +31,9 @@ from app.config import get_settings
 from app.database import create_task, get_database, get_task, get_task_count_by_status
 from app.models import (
     HealthResponse,
+    Priority,
     ReadinessResponse,
+    ResourceBudget,
     TaskContract,
     TaskRequest,
     TaskResponse,
@@ -144,6 +146,12 @@ app = FastAPI(
     docs_url="/docs" if settings.debug else None,
     redoc_url="/redoc" if settings.debug else None,
 )
+
+# `app.state.reflex_client` is assigned by the lifespan handler, but several request
+# handlers read it unconditionally. Seed it here so the attribute always exists: any ASGI
+# runner that does not emit lifespan events (httpx's ASGITransport, among others) would
+# otherwise turn every one of those reads into an AttributeError at request time.
+app.state.reflex_client = None
 
 # ==============================================================================
 # Middleware
@@ -260,14 +268,19 @@ async def submit_task(request: TaskRequest) -> TaskSubmitResponse:
     settings = get_settings()
     db = get_database()
 
-    # Create TaskContract from request
+    # Create TaskContract from request.
+    #
+    # `budget` and `priority` are non-optional on TaskContract and carry model defaults;
+    # the omitted-field case must therefore fall back to those defaults rather than to
+    # None. Passing `or None` (as this did) made every submission that left `budget` out
+    # of the payload fail validation and return 500.
     contract = TaskContract(
         goal=request.goal,
         constraints=request.constraints or {},
         context=request.context,
         acceptance_criteria=request.acceptance_criteria or [],
-        budget=request.budget or None,
-        priority=request.priority or None,
+        budget=request.budget or ResourceBudget(),
+        priority=request.priority or Priority.MEDIUM,
         metadata=request.metadata or {},
     )
 
