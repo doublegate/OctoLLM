@@ -167,6 +167,12 @@ jobs:
       - name: make version-check
         run: make version-check
 
+      # The architecture diagram is generated, so it can go stale the moment the
+      # generator changes. This fails the build rather than letting the README
+      # show a picture of an architecture the script no longer draws.
+      - name: make diagram-check
+        run: make diagram-check
+
   # ===========================================================================
   # Test
   # ===========================================================================

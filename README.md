@@ -36,62 +36,24 @@ OctoLLM applies these principles to build a distributed AI system that is **more
 
 ## Architecture Overview
 
-```mermaid
-graph TB
-    REQ([Client request]) ==> REF
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/architecture-dark.svg">
+    <img src="docs/images/architecture-light.svg" width="100%"
+         alt="A client request enters the reflex layer, which either answers it from cache, hands routine work straight to the arms, or escalates a novel one to the orchestrator head. The head delegates by dashed tentacles to eight arms placed on a single continuous ring, and the answer leaves the ring screened by the Safety Guardian.">
+  </picture>
+</p>
 
-    REF["<b>REFLEX LAYER</b> · :8080 · Rust<br/><i>the reflex arc — no LLM in the path</i><br/>PII · prompt injection · cache · rate limit"]
+<sub>Seven of the eight arms do not exist yet, and the diagram says so rather than drawing
+an aspiration. **Solid** edges run today; **dashed** ones are designed and not yet built.
+The ring the arms sit on is one continuous ellipse, not eight connectors — an arm reaches
+its neighbour along it without the head being in the path.</sub>
 
-    REF ==> |"novel or complex<br/>— escalate"| BRAIN
-    REF -. "cached / routine —<br/>the arms react without the head" .-> RING
-
-    BRAIN["<b>ORCHESTRATOR — THE HEAD</b> · :8000<br/><i>~40M neurons · plans and delegates, never executes</i><br/>sole signer of capability tokens"]
-
-    BRAIN -. "delegates · scoped tokens" .-> MEM
-    BRAIN -.-> RETR & CODE & JUDGE
-    BRAIN -.-> PLAN & EXEC & RED & SAFE
-
-    subgraph RING["<b>THE EIGHT ARMS</b> · ~350M neurons · joined to each other, not only to the head"]
-        direction LR
-        MEM["<b>Memory / Curator</b><br/>:8007<br/>episodic + semantic"]
-        RETR["<b>Retriever</b><br/>:8002<br/>rank + fuse"]
-        CODE["<b>Coder</b><br/>:8003<br/>generate · refactor"]
-        JUDGE["<b>Judge</b><br/>:8004<br/>validate · score"]
-        SAFE["<b>Safety Guardian</b><br/>:8005<br/>egress gate"]
-        RED["<b>Red Team</b><br/>:8008<br/>external targets"]
-        EXEC["<b>Executor</b><br/>:8006<br/>sandboxed"]
-        PLAN["<b>Planner</b><br/>:8001<br/>decomposition"]
-
-        MEM === PLAN === EXEC === RED
-        MEM === RETR === CODE
-        CODE == "validation loop" === JUDGE
-        JUDGE === SAFE
-        RED === SAFE
-    end
-
-    RING ==> RESP([Response<br/>screened by Safety Guardian])
-    REF -. "cache hit — answered<br/>without cognition" .-> RESP
-
-    style RING fill:#e3f2fd,stroke:#64b5f6,stroke-width:2px,color:#0d47a1
-
-    classDef live fill:#c8e6c9,stroke:#66bb6a,stroke-width:2px,color:#1b5e20
-    classDef head fill:#ffcdd2,stroke:#e57373,stroke-width:3px,color:#b71c1c
-    classDef stub fill:#d7ccc8,stroke:#a1887f,stroke-width:2px,color:#4e342e
-    classDef todo fill:#ffffff,stroke:#90a4ae,stroke-width:1px,color:#37474f
-    classDef io fill:#fafafa,stroke:#9e9e9e,stroke-width:2px,color:#212121
-
-    class REF live
-    class BRAIN head
-    class EXEC stub
-    class MEM,PLAN,RETR,CODE,JUDGE,SAFE,RED todo
-    class REQ,RESP io
-```
-
-<sub>**Red** is the head · **green** implemented · **brown** a 21-line stub · **white** not
-started. Seven of the eight arms in the blue field do not exist yet, and the diagram says
-so rather than drawing an aspiration. Solid edges are paths that run today; dotted ones are
-the head's delegation and the two reflex bypasses. The ring between the arms is the path
-that does **not** go through the head at all.</sub>
+<sub>*Drawn by `scripts/render_architecture.py`, not by hand — `make diagram` regenerates
+both themes and CI fails if the committed SVGs are stale. It is not a Mermaid block because
+Mermaid cannot place nodes on a circle: radial layout has been an open request since 2019,
+its dagre engine routes every edge independently so a "ring" comes out as eight unrelated
+splines, and the ELK engine that would fix it is not bundled in GitHub's Markdown renderer.*</sub>
 
 ### The reflex arc: it should not take the whole head to make an arm react
 

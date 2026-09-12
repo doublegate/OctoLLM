@@ -171,6 +171,18 @@ version-sync: ## Rewrite every version site from VERSION (MODIFIES files)
 	$(PYTHON) scripts/version_sync.py
 
 # =============================================================================
+# Diagrams
+# =============================================================================
+
+.PHONY: diagram
+diagram: ## Regenerate the architecture SVGs (light + dark) -- MODIFIES files
+	$(PYTHON) scripts/render_architecture.py
+
+.PHONY: diagram-check
+diagram-check: ## Fail if the committed architecture SVGs are stale
+	$(PYTHON) scripts/render_architecture.py --check
+
+# =============================================================================
 # Secrets
 # =============================================================================
 
@@ -191,7 +203,7 @@ gate-check: ## Fail if a CI job is not wired into ci-gate
 	$(PYTHON) scripts/ci/check_gate_complete.py .github/workflows/ci.yml
 
 .PHONY: verify
-verify: version-check gate-check lint typecheck secrets-scan secrets-selftest test ## Everything CI runs, minus the Redis suite
+verify: version-check diagram-check gate-check lint typecheck secrets-scan secrets-selftest test ## Everything CI runs, minus the Redis suite
 	@printf '\n\033[32mverify: OK\033[0m  (for the Redis-backed Rust tests: make redis test-rust-redis)\n'
 
 # =============================================================================

@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1480 1060" width="1480" height="1060" role="img" aria-label="OctoLLM architecture: a reflex layer, an orchestrator head, and eight arms arranged in a ring">
+<rect width="1480" height="1060" fill="#0d1117"/>
+<defs>
+<marker id="arrow-flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#93a6b8"/></marker>
+<marker id="arrow-tentacle" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#a8465c"/></marker>
+</defs>
+<ellipse cx="700.0" cy="640.0" rx="370.0" ry="290.0" fill="#132635" stroke="#3e7ca8" stroke-width="3" stroke-opacity="0.55"/>
+<ellipse cx="700.0" cy="640.0" rx="370.0" ry="290.0" fill="none" stroke="#3e7ca8" stroke-width="11" stroke-opacity="0.95" stroke-linecap="round"/>
+<path d="M 691.0 350.0 L 709.0 350.0" stroke="#0d1117" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+<path d="M 954.5 429.4 L 968.7 440.5" stroke="#0d1117" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+<path d="M 1070.0 631.0 L 1070.0 649.0" stroke="#0d1117" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+<path d="M 968.7 839.5 L 954.5 850.6" stroke="#0d1117" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+<path d="M 709.0 930.0 L 691.0 930.0" stroke="#0d1117" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+<path d="M 445.5 850.6 L 431.3 839.5" stroke="#0d1117" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+<path d="M 330.0 649.0 L 330.0 631.0" stroke="#0d1117" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+<path d="M 431.3 440.5 L 445.5 429.4" stroke="#0d1117" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+<text x="700.0" y="626.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" font-style="normal" letter-spacing="3.5" fill="#7cc0f0">THE EIGHT ARMS</text>
+<text x="700.0" y="650.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" font-style="italic" letter-spacing="0" fill="#9aa7b4">~350M neurons</text>
+<text x="700.0" y="672.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">each acts locally, and talks to its neighbours</text>
+<text x="700.0" y="690.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">without asking the head</text>
+<path d="M 650.0 198.0 C 632.0 272.0, 534.2 302.0, 558.4 372.1" fill="none" stroke="#a8465c" stroke-width="2.2" stroke-opacity="0.45" stroke-dasharray="8 7" stroke-linecap="round"/>
+<path d="M 750.0 198.0 C 768.0 272.0, 865.8 302.0, 841.6 372.1" fill="none" stroke="#a8465c" stroke-width="2.2" stroke-opacity="0.45" stroke-dasharray="8 7" stroke-linecap="round"/>
+<path d="M 850.0 198.0 C 868.0 272.0, 1015.9 380.5, 1041.8 529.0" fill="none" stroke="#a8465c" stroke-width="2.2" stroke-opacity="0.45" stroke-dasharray="8 7" stroke-linecap="round"/>
+<path d="M 900.0 198.0 C 918.0 272.0, 1040.9 491.5, 1041.8 751.0" fill="none" stroke="#a8465c" stroke-width="2.2" stroke-opacity="0.45" stroke-dasharray="8 7" stroke-linecap="round"/>
+<path d="M 700.0 198.0 C 682.0 272.0, 559.2 570.0, 558.4 907.9" fill="none" stroke="#a8465c" stroke-width="2.2" stroke-opacity="0.45" stroke-dasharray="8 7" stroke-linecap="round"/>
+<path d="M 550.0 198.0 C 532.0 272.0, 384.1 491.5, 358.2 751.0" fill="none" stroke="#a8465c" stroke-width="2.2" stroke-opacity="0.45" stroke-dasharray="8 7" stroke-linecap="round"/>
+<path d="M 600.0 198.0 C 582.0 272.0, 409.1 380.5, 358.2 529.0" fill="none" stroke="#a8465c" stroke-width="2.2" stroke-opacity="0.45" stroke-dasharray="8 7" stroke-linecap="round"/>
+<g><rect x="465.4" y="340.1" width="186.0" height="64.0" rx="10" fill="#161d26" stroke="#5a6c7d" stroke-width="2"/>
+<text x="558.4" y="360.1" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" font-style="normal" letter-spacing="0" fill="#c3d0dc">Memory / Curator</text>
+<text x="558.4" y="378.1" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">:8007</text>
+<text x="558.4" y="395.1" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">episodic + semantic</text>
+</g>
+<g><rect x="748.6" y="340.1" width="186.0" height="64.0" rx="10" fill="#161d26" stroke="#5a6c7d" stroke-width="2"/>
+<text x="841.6" y="360.1" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" font-style="normal" letter-spacing="0" fill="#c3d0dc">Planner</text>
+<text x="841.6" y="378.1" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">:8001</text>
+<text x="841.6" y="395.1" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">decomposition</text>
+</g>
+<g><rect x="948.8" y="497.0" width="186.0" height="64.0" rx="10" fill="#33271f" stroke="#a0836f" stroke-width="2"/>
+<text x="1041.8" y="517.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" font-style="normal" letter-spacing="0" fill="#e2cdbd">Executor</text>
+<text x="1041.8" y="535.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">:8006</text>
+<text x="1041.8" y="552.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">sandboxed</text>
+</g>
+<g><rect x="948.8" y="719.0" width="186.0" height="64.0" rx="10" fill="#161d26" stroke="#5a6c7d" stroke-width="2"/>
+<text x="1041.8" y="739.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" font-style="normal" letter-spacing="0" fill="#c3d0dc">Red Team</text>
+<text x="1041.8" y="757.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">:8008</text>
+<text x="1041.8" y="774.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">external targets</text>
+</g>
+<g><rect x="748.6" y="875.9" width="186.0" height="64.0" rx="10" fill="#161d26" stroke="#5a6c7d" stroke-width="2"/>
+<text x="841.6" y="895.9" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" font-style="normal" letter-spacing="0" fill="#c3d0dc">Safety Guardian</text>
+<text x="841.6" y="913.9" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">:8005</text>
+<text x="841.6" y="930.9" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">egress gate</text>
+</g>
+<g><rect x="465.4" y="875.9" width="186.0" height="64.0" rx="10" fill="#161d26" stroke="#5a6c7d" stroke-width="2"/>
+<text x="558.4" y="895.9" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" font-style="normal" letter-spacing="0" fill="#c3d0dc">Judge</text>
+<text x="558.4" y="913.9" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">:8004</text>
+<text x="558.4" y="930.9" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">validate · score</text>
+</g>
+<g><rect x="265.2" y="719.0" width="186.0" height="64.0" rx="10" fill="#161d26" stroke="#5a6c7d" stroke-width="2"/>
+<text x="358.2" y="739.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" font-style="normal" letter-spacing="0" fill="#c3d0dc">Coder</text>
+<text x="358.2" y="757.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">:8003</text>
+<text x="358.2" y="774.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">generate · refactor</text>
+</g>
+<g><rect x="265.2" y="497.0" width="186.0" height="64.0" rx="10" fill="#161d26" stroke="#5a6c7d" stroke-width="2"/>
+<text x="358.2" y="517.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" font-style="normal" letter-spacing="0" fill="#c3d0dc">Retriever</text>
+<text x="358.2" y="535.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">:8002</text>
+<text x="358.2" y="552.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">rank + fuse</text>
+</g>
+<rect x="120.0" y="22.0" width="180.0" height="40.0" rx="20" fill="#171d25" stroke="#5f6d7b" stroke-width="2.0"/>
+<text x="210.0" y="47.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="600" font-style="normal" letter-spacing="0" fill="#e6edf3">Client request</text>
+<path d="M 210.0 64.0 L 210.0 98.0" stroke="#93a6b8" stroke-width="3" marker-end="url(#arrow-flow)"/>
+<rect x="60.0" y="100.0" width="300.0" height="104.0" rx="12" fill="#17351f" stroke="#5da368" stroke-width="2.5"/>
+<text x="210.0" y="126.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" font-style="normal" letter-spacing="1.5" fill="#bfe6c4">REFLEX LAYER</text>
+<text x="210.0" y="145.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">:8080 · Rust</text>
+<text x="210.0" y="165.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" font-style="italic" letter-spacing="0" fill="#bfe6c4">the reflex arc — no LLM in the path</text>
+<text x="210.0" y="183.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">PII · prompt injection · cache · rate limit</text>
+<path d="M 362.0 152.0 L 468.0 152.0" stroke="#93a6b8" stroke-width="3" marker-end="url(#arrow-flow)"/>
+<text x="415.0" y="136.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" font-style="normal" letter-spacing="0" fill="#e6edf3">novel or</text>
+<text x="415.0" y="148.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" font-style="normal" letter-spacing="0" fill="#e6edf3">complex</text>
+<text x="415.0" y="174.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" font-style="italic" letter-spacing="0" fill="#9aa7b4">escalate</text>
+<rect x="470.0" y="106.0" width="460.0" height="92.0" rx="14" fill="#4a1f24" stroke="#c96b70" stroke-width="3"/>
+<text x="700.0" y="132.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" font-style="normal" letter-spacing="1.5" fill="#ffc9cc">ORCHESTRATOR — THE HEAD</text>
+<text x="700.0" y="151.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">:8000 · ~40M neurons</text>
+<text x="700.0" y="171.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="400" font-style="italic" letter-spacing="0" fill="#ffc9cc">plans and delegates, never executes</text>
+<text x="700.0" y="188.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">sole signer of capability tokens</text>
+<path d="M 210.0 206.0 C 190.0 440.0, 180.0 520.0, 320.0 640.0" fill="none" stroke="#93a6b8" stroke-width="2.5" stroke-dasharray="3 7" stroke-linecap="round" stroke-opacity="0.85" marker-end="url(#arrow-flow)"/>
+<text x="60.0" y="544.0" text-anchor="start" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" font-style="normal" letter-spacing="0" fill="#e6edf3">cached / routine —</text>
+<text x="60.0" y="561.0" text-anchor="start" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">the arms react</text>
+<text x="60.0" y="578.0" text-anchor="start" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">without the head</text>
+<path d="M 1080.0 640.0 L 1204.0 640.0" stroke="#93a6b8" stroke-width="3" marker-end="url(#arrow-flow)"/>
+<rect x="1208.0" y="606.0" width="184.0" height="68.0" rx="16" fill="#171d25" stroke="#5f6d7b" stroke-width="2.0"/>
+<text x="1300.0" y="630.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" font-style="normal" letter-spacing="0" fill="#e6edf3">Response</text>
+<text x="1300.0" y="649.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">screened on the way</text>
+<text x="1300.0" y="664.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">out by the Guardian</text>
+<path d="M 362.0 122.0 C 510.0 0, 1600.0 0, 1300.0 602.0" fill="none" stroke="#93a6b8" stroke-width="2.5" stroke-dasharray="3 7" stroke-linecap="round" stroke-opacity="0.85" marker-end="url(#arrow-flow)"/>
+<text x="1180.0" y="26.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" font-style="normal" letter-spacing="0" fill="#e6edf3">cache hit — answered</text>
+<text x="1180.0" y="42.0" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">without cognition</text>
+<rect x="60.0" y="1003.0" width="22.0" height="15.0" rx="4" fill="#4a1f24" stroke="#c96b70" stroke-width="1.6"/>
+<text x="90.0" y="1015.0" text-anchor="start" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">the head</text>
+<rect x="175.2" y="1003.0" width="22.0" height="15.0" rx="4" fill="#17351f" stroke="#5da368" stroke-width="1.6"/>
+<text x="205.2" y="1015.0" text-anchor="start" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">implemented</text>
+<rect x="311.1" y="1003.0" width="22.0" height="15.0" rx="4" fill="#33271f" stroke="#a0836f" stroke-width="1.6"/>
+<text x="341.1" y="1015.0" text-anchor="start" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">a 21-line stub</text>
+<rect x="467.7" y="1003.0" width="22.0" height="15.0" rx="4" fill="#161d26" stroke="#5a6c7d" stroke-width="1.6"/>
+<text x="497.7" y="1015.0" text-anchor="start" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">not started</text>
+<text x="1420.0" y="1015.0" text-anchor="end" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="400" font-style="normal" letter-spacing="0" fill="#9aa7b4">solid = runs today   ·   dashed = designed, not yet built</text>
+</svg>
