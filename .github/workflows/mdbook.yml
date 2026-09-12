@@ -34,10 +34,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Pinned, not 'latest'. mdBook 0.5 removed the `multilingual` field from
+      # [book], which turned this workflow red on a docs config that had not changed
+      # in ten months -- and because the workflow only runs on push to main, nothing
+      # surfaced it until the next push. Bump deliberately.
       - name: Setup mdBook
         uses: peaceiris/actions-mdbook@v2
         with:
-          mdbook-version: 'latest'
+          mdbook-version: '0.5.4'
 
       - name: Setup Pages
         id: pages

@@ -3,7 +3,6 @@ title = "OctoLLM Documentation"
 authors = ["OctoLLM Contributors"]
 description = "Distributed AI Architecture for Offensive Security and Developer Tooling - Comprehensive technical documentation covering architecture, API, development, operations, and security."
 language = "en"
-multilingual = false
 src = "src"
 
 [build]
@@ -12,13 +11,12 @@ create-missing = true
 
 [output.html]
 git-repository-url = "https://github.com/doublegate/OctoLLM"
-git-repository-icon = "fa-github"
+git-repository-icon = "fab-github"
 edit-url-template = "https://github.com/doublegate/OctoLLM/edit/main/docs/{path}"
 site-url = "/OctoLLM/"
 default-theme = "rust"
 preferred-dark-theme = "navy"
 mathjax-support = false
-copy-fonts = true
 no-section-label = false
 additional-css = []
 additional-js = []
