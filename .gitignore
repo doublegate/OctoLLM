@@ -350,6 +350,9 @@ sdks/typescript/*/coverage/
 # spelled out so the SDK's build artefacts are obvious to anyone reading this file.
 sdks/typescript/*/dist/
 
+# Antigravity PR reviewer: large-diff on-disk handoff (transient, removed by the script).
+/.agy-review-work/
+
 # ================================================================
 # END OF .gitignore
 # ================================================================

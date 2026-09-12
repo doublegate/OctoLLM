@@ -123,6 +123,13 @@ repos:
     hooks:
       - id: shellcheck
         args: ['-x']  # Follow source statements
+        # scripts/agy-review*.sh and scripts/_agy_*.sh are vendored verbatim from the
+        # antigravity-pr-review template and are linted in that repository. Editing them
+        # here would diverge the copy and be overwritten on the next install. Their
+        # findings are all informational and intentional anyway: SC2016 on printf format
+        # strings that deliberately contain backticks, SC1007 on the `a= b= c=`
+        # assign-several-empties idiom, and SC2034/SC2209 inside the selftest fixtures.
+        exclude: '^scripts/(_agy_.*|agy-review.*)\.sh$'
 
   # Security: Bandit (Python security linter)
   - repo: https://github.com/PyCQA/bandit
