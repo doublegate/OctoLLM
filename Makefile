@@ -32,7 +32,7 @@ SDK_TS       := sdks/typescript/octollm-sdk
 # Collection floors. A suite that silently collects zero tests reports exactly what a
 # suite that ran them all reports; these are what separate the two. Raise one when you
 # add tests. Never lower one to make a red build green -- that is the bug, not the fix.
-FLOOR_ORCHESTRATOR := 150
+FLOOR_ORCHESTRATOR := 166
 FLOOR_SDK_PY       := 28
 FLOOR_SDK_TS_FILES := 3
 # 17 Redis-backed, plus the /process connect-info regression, which also needs Redis.

@@ -43,7 +43,7 @@ class TestReflexClientEdgeCases:
 
         mock_response = {
             "request_id": "req-200",
-            "status": "Success",
+            "status": "success",
             "pii_detected": False,
             "pii_matches": [],
             "injection_detected": False,
@@ -82,7 +82,7 @@ class TestReflexClientEdgeCases:
 
         mock_response = {
             "request_id": "req-201",
-            "status": "Success",
+            "status": "success",
             "pii_detected": False,
             "pii_matches": [],
             "injection_detected": False,
@@ -111,7 +111,7 @@ class TestReflexClientEdgeCases:
 
         mock_response = {
             "request_id": "req-202",
-            "status": "Blocked",
+            "status": "blocked",
             "pii_detected": False,
             "pii_matches": [],
             "injection_detected": True,

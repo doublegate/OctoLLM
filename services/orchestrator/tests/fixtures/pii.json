@@ -1,0 +1,25 @@
+{
+  "cache_hit": false,
+  "injection_detected": false,
+  "injection_matches": [],
+  "pii_detected": true,
+  "pii_matches": [
+    {
+      "confidence": 0.9,
+      "end": 29,
+      "matched_text": "alice@example.com",
+      "pii_type": "email",
+      "start": 12
+    },
+    {
+      "confidence": 1.0,
+      "end": 55,
+      "matched_text": "123-45-6789",
+      "pii_type": "ssn",
+      "start": 44
+    }
+  ],
+  "processing_time_ms": 1.0,
+  "request_id": "00000000-0000-0000-0000-000000000000",
+  "status": "success"
+}

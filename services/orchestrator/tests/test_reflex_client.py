@@ -95,11 +95,11 @@ class TestReflexResponse:
     def test_pii_detected_response(self):
         """Test response with PII detection."""
         pii_match = PIIMatch(
-            pii_type="Email",
-            value="user@example.com",
-            position=12,
+            pii_type="email",
+            matched_text="user@example.com",
+            start=12,
+            end=28,
             confidence=1.0,
-            context="email is user@example.com and",
         )
         resp = ReflexResponse(
             request_id="req-123",
@@ -113,7 +113,7 @@ class TestReflexResponse:
         )
         assert resp.is_safe is False
         assert len(resp.pii_matches) == 1
-        assert resp.pii_matches[0].pii_type == "Email"
+        assert resp.pii_matches[0].pii_type == "email"
 
 
 # ==============================================================================
@@ -223,7 +223,7 @@ class TestReflexClient:
 
         mock_response = {
             "request_id": "req-123",
-            "status": "Success",
+            "status": "success",
             "pii_detected": False,
             "pii_matches": [],
             "injection_detected": False,
@@ -256,15 +256,15 @@ class TestReflexClient:
 
         mock_response = {
             "request_id": "req-124",
-            "status": "Success",
+            "status": "success",
             "pii_detected": True,
             "pii_matches": [
                 {
-                    "pii_type": "Email",
-                    "value": "user@example.com",
-                    "position": 12,
+                    "pii_type": "email",
+                    "matched_text": "user@example.com",
+                    "start": 12,
+                    "end": 28,
                     "confidence": 1.0,
-                    "context": "email is user@example.com and",
                 }
             ],
             "injection_detected": False,
@@ -295,23 +295,18 @@ class TestReflexClient:
 
         mock_response = {
             "request_id": "req-125",
-            "status": "Blocked",
+            "status": "blocked",
             "pii_detected": False,
             "pii_matches": [],
             "injection_detected": True,
             "injection_matches": [
                 {
                     "injection_type": "IgnorePrevious",
-                    "severity": "Critical",
+                    "severity": "critical",
                     "matched_text": "Ignore all previous instructions",
-                    "position": 0,
+                    "start": 0,
+                    "end": 32,
                     "confidence": 0.98,
-                    "context_analysis": {
-                        "is_quoted": False,
-                        "is_academic": False,
-                        "is_testing": False,
-                        "is_negation": False,
-                    },
                 }
             ],
             "cache_hit": False,
@@ -347,7 +342,7 @@ class TestReflexClient:
                     status_code=200,
                     json=lambda: {
                         "request_id": "req-126",
-                        "status": "Success",
+                        "status": "success",
                         "pii_detected": False,
                         "pii_matches": [],
                         "injection_detected": False,
@@ -476,7 +471,7 @@ class TestReflexClient:
 
         mock_response = {
             "request_id": "req-127",
-            "status": "Success",
+            "status": "success",
             "pii_detected": False,
             "pii_matches": [],
             "injection_detected": False,
@@ -531,7 +526,7 @@ class TestReflexClient:
 
         mock_response = {
             "request_id": "req-128",
-            "status": "Success",
+            "status": "success",
             "pii_detected": False,
             "pii_matches": [],
             "injection_detected": False,
