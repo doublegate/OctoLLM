@@ -60,4 +60,14 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 EXPOSE 8004
 
 # Run application
-CMD ["uvicorn", "services.arms.judge.src.main:app", "--host", "0.0.0.0", "--port", "8004"]
+# The module path is resolved from the service directory rather than from /app.
+# The previous CMD was `uvicorn services.arms.<arm>.src.main:app`, which needs a
+# package chain of __init__.py files that never existed -- and for the safety
+# guardian it could never work at all, because `safety-guardian` is not a legal
+# Python identifier. Every one of these five containers crash-looped.
+WORKDIR /app/services/arms/judge
+
+# octollm_stub lives here; the shared arm framework replaces it in Stage 4.
+ENV PYTHONPATH=/app/shared/python
+
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8004"]

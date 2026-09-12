@@ -223,7 +223,7 @@ services:
   safety-guardian-arm:
     build:
       context: ../..
-      dockerfile: services/arms/safety-guardian/Dockerfile
+      dockerfile: services/arms/safety_guardian/Dockerfile
     container_name: octollm-safety-guardian
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
@@ -232,7 +232,7 @@ services:
     ports:
       - "8005:8005"
     volumes:
-      - ../../services/arms/safety-guardian:/app/services/arms/safety-guardian:cached
+      - ../../services/arms/safety_guardian:/app/services/arms/safety_guardian:cached
     restart: unless-stopped
     networks:
       - octollm-network
