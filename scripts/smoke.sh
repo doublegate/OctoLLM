@@ -25,8 +25,14 @@
 
 set -euo pipefail
 
-ORCHESTRATOR="${ORCHESTRATOR_URL:-http://localhost:8000}"
-REFLEX="${REFLEX_URL:-http://localhost:8080}"
+# Host ports are overridable so a machine with a conflict can still run this, and the
+# port variables are the SAME ones compose reads -- `REFLEX_PORT=18080 make up smoke`
+# has to work end to end. Taking only a URL here meant setting the port moved the
+# service and left this script asking the old one, which is a check that fails for a
+# reason unrelated to the thing it checks.
+ORCHESTRATOR="${ORCHESTRATOR_URL:-http://localhost:${ORCHESTRATOR_PORT:-8000}}"
+REFLEX="${REFLEX_URL:-http://localhost:${REFLEX_PORT:-8080}}"
+PLANNER="${PLANNER_URL:-http://localhost:${PLANNER_PORT:-8001}}"
 
 fail() {
   echo "FAIL: $*" >&2
@@ -111,6 +117,48 @@ assert task['task_id'] == '${task_id}', f'wrong task returned: {task[\"task_id\"
 assert task['status'] == 'pending', f'expected pending before Stage 7, got {task[\"status\"]}'
 " || fail "the task did not read back correctly"
 pass "task reads back by id, status pending (no execution engine until Stage 7)"
+
+# ---------------------------------------------------------------------------
+# 4. The arm registry, and an arm answering honestly
+# ---------------------------------------------------------------------------
+#
+# Both SDKs shipped `listArms()` against an endpoint that did not exist, and against
+# two different paths. This is the assertion that it exists and says something true.
+
+echo
+echo "Checking the arm registry..."
+
+arms="$(curl -fsS "${ORCHESTRATOR}/arms?refresh=true")" || fail "GET /arms failed"
+
+echo "${arms}" | python3 -c "
+import json, sys
+arms = {a['arm_id']: a for a in json.load(sys.stdin)['arms']}
+assert len(arms) == 8, f'expected 8 arms, got {len(arms)}'
+# The five framework arms are running in this stack, so a probe must reach them.
+# If this fails, the registry is reporting a topology the network does not have.
+for arm_id in ('planner', 'retriever', 'coder', 'judge', 'safety-guardian'):
+    assert arms[arm_id]['status'] == 'healthy', f'{arm_id} probed {arms[arm_id][\"status\"]}'
+    assert arms[arm_id]['implemented'] is False, f'{arm_id} claims to be implemented'
+# The two unbuilt arms are listed rather than omitted, and say so.
+assert arms['memory']['status'] == 'unavailable'
+assert arms['red-team']['implemented_in_stage'] == 11
+" || fail "GET /arms did not describe the running stack"
+pass "registry lists 8 arms; the 5 running ones probe healthy"
+
+# Registration must not be able to introduce an arm: the orchestrator is the sole
+# signing authority for capability tokens, so an arm it can be told about is an arm
+# it can be told to trust.
+status="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${ORCHESTRATOR}/arms/register" \
+  -H 'content-type: application/json' -d '{"arm_id":"smoke-test-attacker"}' || true)"
+[ "${status}" = "403" ] || fail "registering an unknown arm returned ${status}, expected 403"
+pass "registering an unknown arm is refused (403)"
+
+# An unimplemented arm must answer 501 naming its stage -- never a plausible fake,
+# which would make an unimplemented arm indistinguishable from a working one.
+plan_status="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${PLANNER}/plan" \
+  -H 'content-type: application/json' -d '{"goal":"smoke"}' || true)"
+[ "${plan_status}" = "501" ] || fail "POST /plan returned ${plan_status}, expected 501"
+pass "planner POST /plan returns 501 naming Stage 8"
 
 echo
 echo "smoke: PASSED"

@@ -12,14 +12,14 @@ from ..models import HealthResponse, PlanRequest, PlanResponse
 
 class PlannerClient(BaseClient):
     """
-    Client for Planner Arm service (port 8002).
+    Client for Planner Arm service (port 8001).
 
     Specializes in breaking down complex goals into ordered execution steps.
     """
 
     def __init__(
         self,
-        base_url: str = "http://localhost:8002",
+        base_url: str = "http://localhost:8001",
         api_key: str | None = None,
         bearer_token: str | None = None,
         **kwargs: Any,
@@ -28,7 +28,7 @@ class PlannerClient(BaseClient):
         Initialize Planner client.
 
         Args:
-            base_url: Planner service URL (default: http://localhost:8002)
+            base_url: Planner service URL (default: http://localhost:8001)
             api_key: API key for authentication
             bearer_token: JWT bearer token for authentication
             **kwargs: Additional arguments for BaseClient

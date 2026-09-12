@@ -1,0 +1,87 @@
+[project]
+name = "octollm-common"
+version = "0.5.0"
+description = "OctoLLM shared arm framework: contracts, app factory, error envelope, LLM providers"
+requires-python = ">=3.14,<3.15"
+authors = [
+    {name = "OctoLLM Team", email = "hello@octollm.org"}
+]
+license = {text = "Apache-2.0"}
+readme = "README.md"
+keywords = ["ai", "llm", "distributed-systems", "fastapi"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.14",
+]
+
+# Deliberately small. This package is imported by all eight arm images and by the
+# orchestrator, so every dependency added here is added to nine services at once.
+dependencies = [
+    "fastapi>=0.141.1",
+    "pydantic>=2.13.5",
+    "httpx>=0.28.1",
+    "structlog>=26.1.0",
+]
+
+[project.optional-dependencies]
+# Each provider SDK is an extra, not a dependency. An arm image that talks to Ollama
+# has no reason to carry the OpenAI and Anthropic SDKs, and -- more importantly -- the
+# default install must be able to run the whole stack with no provider at all, which
+# is what FakeProvider is for.
+ollama = ["ollama>=0.6.1"]
+openai = ["openai>=3.13.0"]
+anthropic = ["anthropic>=1.5.0"]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+    # An INDEPENDENT validator for the fake's schema synthesis. Checking synthesised
+    # output with the code that synthesised it proves nothing; this is a separate
+    # implementation of the same spec. It becomes a runtime dependency in Stage 8,
+    # when the Judge arm's `schema` check needs it.
+    "jsonschema>=4.26.0",
+]
+
+[build-system]
+requires = ["setuptools>=83.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["octollm_common*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = [
+    "-q",
+    "--strict-markers",
+    "--cov=octollm_common",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+    # Higher than the orchestrator's 85 because this package is small, has no I/O in
+    # its default path, and is imported by nine services -- a defect here is nine
+    # services' defect.
+    "--cov-fail-under=90",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["octollm_common"]
+omit = ["*/tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

@@ -180,18 +180,19 @@ No version of OctoLLM has been tagged, published to PyPI or npm, or released as 
 container image.
 
 Work is tracked by a twelve-stage plan whose single rule is that every claim in this
-repository is either made true or deleted. Three stages are complete.
+repository is either made true or deleted. Four stages are complete.
 
 ### What actually runs
 
 | Component | State | Detail |
 |---|---|---|
-| **Reflex layer** (Rust, port 8080) | Implemented | ~8,500 lines; PII detection, prompt-injection detection, Redis cache, token-bucket rate limiting. 240 tests. `POST /process` has a known routing defect, fixed in Stage 3. |
-| **Orchestrator** (Python, port 8000) | Partial | FastAPI app, SQLAlchemy 2.0 models, reflex client with circuit breaker. 150 tests, 91% coverage. **It does not yet call any arm** — `POST /submit` validates, screens and persists; tasks stay `pending`. The execution engine lands in Stage 7. |
+| **Reflex layer** (Rust, port 8080) | Implemented | ~8,500 lines; PII detection, prompt-injection detection, Redis cache, token-bucket rate limiting. 240 tests. |
+| **Orchestrator** (Python, port 8000) | Partial | FastAPI app, SQLAlchemy 2.0 models, reflex client with circuit breaker, arm registry (`GET /arms`). 186 tests, 93% coverage. **It does not yet call any arm** — `POST /submit` validates, screens and persists; tasks stay `pending`. The execution engine lands in Stage 7. |
+| **Shared arm framework** (`octollm_common`) | Implemented | App factory, error envelope, contract models, arm roster, LLM providers. 103 tests, 95% coverage. Imported by all eight arms and the orchestrator. |
 | **Python SDK** | Implemented | 8 service clients, 28 tests. Unpublished. |
 | **TypeScript SDK** | Implemented | 8 service clients, 28 tests. Unpublished. |
 | **Executor arm** (Rust, port 8006) | Stub | 21 lines. Sandbox lands in Stage 9. |
-| **Planner / Retriever / Coder / Judge / Safety Guardian** (8001-8005) | Not started | Dockerfiles only, no application code. Stage 8. |
+| **Planner / Retriever / Coder / Judge / Safety Guardian** (8001-8005) | Scaffolded | Built on the shared framework: each serves `/health`, `/ready`, `/capabilities` and `/metrics`, and answers its own endpoint with **501 naming Stage 8** — never a plausible fake. |
 | **Memory / Curator** (8007) | Not started | Stage 6 — it is the Retriever's corpus, so it lands first. |
 | **Red Team** (8008) | Not started | Stage 11, flag-gated off and outside the default compose profile. |
 | **PostgreSQL / Redis / Qdrant** | Running | Qdrant is in the compose stack but nothing reads or writes it yet. |
@@ -200,18 +201,21 @@ repository is either made true or deleted. Three stages are complete.
 
 | Stage | Delivered |
 |---|---|
-| **0. CI that can fail** | Complete — `lint.yml` and `test.yml` replaced by `ci.yml`; 10 blocking jobs behind one `ci-gate`, which is the required check on `main`. Previously every test step was `\|\| echo "No tests found yet"` *and* `continue-on-error: true`, so 446 existing tests were never run by CI. |
-| **1. Makefile and VERSION** | Complete — `README` had documented `make lint` / `make test` / `make help` since Phase 0 with no Makefile. Every check is now a make target and **CI invokes those targets**. `VERSION` is propagated to 22 sites by `make version-check`; those sites previously held six different answers at once. |
+| **0. CI that can fail** | Complete — `lint.yml` and `test.yml` replaced by `ci.yml`; blocking jobs behind one `ci-gate`, which is the required check on `main`. Previously every test step was `\|\| echo "No tests found yet"` *and* `continue-on-error: true`, so 446 existing tests were never run by CI. |
+| **1. Makefile and VERSION** | Complete — `README` had documented `make lint` / `make test` / `make help` since Phase 0 with no Makefile. Every check is now a make target and **CI invokes those targets**. `VERSION` is propagated to 24 sites by `make version-check`; those sites previously held six different answers at once. |
 | **2. Secret scanning that works** | Complete — `.gitleaks.toml` was discarding all ~170 built-in rules (a `[[rules]]` block without `[extend] useDefault = true`) and exempting every markdown file, all of `docs/`, `tests/`, workflows and infra scripts. `scripts/gitleaks-selftest.sh` plants four secrets in four formerly-exempt locations and proves both that this config finds them and that the old one did not. |
-| **3-12** | In progress / planned. See [Roadmap](#roadmap). |
+| **3. The stack runs** | Complete — `make up` brings all eleven services to **healthy** and `make smoke` round-trips a task. `POST /process` had returned 500 on every request for the life of the service; all 23 compose variables were silently ignored; the reflex client could not parse a single real response; five arm images crash-looped; every arm's spec named its neighbour's port. |
+| **4. The shared arm framework** | Complete — one app factory, one error envelope, one set of contract models, one arm roster and one LLM provider boundary, imported by all eight arms and the orchestrator. `FakeProvider` makes every later test deterministic, and `make sdk-parity-check` found four SDK calls that could never have worked and sixteen clients defaulting to the wrong port. |
+| **5-12** | Planned. See [Roadmap](#roadmap). |
 
 ### Test suites
 
 | Suite | Tests | Run by CI |
 |---|---|---|
 | Rust workspace | 240 | yes |
-| Rust, Redis-backed | 17 | yes — these were `#[ignore]`d and had never executed anywhere |
-| Orchestrator | 150 | yes, coverage floored at 85% |
+| Rust, Redis-backed | 18 | yes — 17 of these were `#[ignore]`d and had never executed anywhere |
+| Shared arm framework | 103 | yes, coverage floored at 90% |
+| Orchestrator | 186 | yes, coverage floored at 85% |
 | Python SDK | 28 | yes |
 | TypeScript SDK | 28 | yes |
 
@@ -230,7 +234,7 @@ it now carries a correction banner rather than being silently left in place.
 ## CI/CD Pipeline
 
 `ci.yml` is the only blocking gate. **`CI gate` is the sole required status check on
-`main`** — it aggregates ten jobs, and `scripts/ci/check_gate_complete.py` fails the
+`main`** — it aggregates eleven jobs, and `scripts/ci/check_gate_complete.py` fails the
 build if a job is ever added without being wired into it, since an unwired job can fail
 while the gate goes green.
 
@@ -242,8 +246,9 @@ while the gate goes green.
 | `lint-typescript` | eslint, tsc |
 | `lint-config` | yamllint, OpenAPI validity, shellcheck, actionlint, `version-check` |
 | `secrets` | gitleaks over full history, plus the scanner self-test |
-| `test-rust` | 240 workspace tests + 17 Redis-backed |
-| `test-orchestrator` | 150 tests, coverage floored at 85% |
+| `test-rust` | 240 workspace tests + 18 Redis-backed |
+| `test-shared` | 103 tests, coverage floored at 90%; provider SDKs deliberately absent |
+| `test-orchestrator` | 186 tests, coverage floored at 85% |
 | `test-sdk-python` | 28 tests |
 | `test-sdk-typescript` | 28 tests |
 
@@ -257,9 +262,10 @@ Other workflows: `security.yml` (bandit, Snyk, cargo-audit — advisory), `mdboo
 `ENABLE_IMAGE_PUBLISH` repository variable). CodeQL runs through GitHub's default setup
 across Python, TypeScript, Actions and Rust.
 
-**Image builds are deliberately outside the gate.** Five service Dockerfiles still
-`CMD` into modules that do not exist, so those images cannot pass a smoke test. They
-join `ci-gate` in Stage 3.
+**Image builds are deliberately outside the gate.** They build and run today —
+`make up` brings all eleven services to healthy — but publishing them is gated on the
+`ENABLE_IMAGE_PUBLISH` repository variable until there is a release to publish. They
+join `ci-gate` in Stage 12, with the release pipeline.
 
 ## Quick Start (Development)
 
@@ -340,22 +346,27 @@ taken on your machine — `REFLEX_PORT=18080 make up`.
 |---|---|---|
 | Orchestrator | http://localhost:8000 | partial |
 | Reflex Layer | http://localhost:8080 | implemented |
-| Planner Arm | http://localhost:8001 | no code |
-| Retriever Arm | http://localhost:8002 | no code |
-| Coder Arm | http://localhost:8003 | no code |
-| Judge Arm | http://localhost:8004 | no code |
-| Safety Guardian Arm | http://localhost:8005 | no code |
-| Executor Arm | http://localhost:18006 (container 8006) | stub |
-| Memory / Curator Arm | 8007 | not in compose yet |
-| Red Team Arm | 8008 | not in compose yet |
+| Planner Arm | http://localhost:8001 | scaffolded; `POST /plan` returns 501 (Stage 8) |
+| Retriever Arm | http://localhost:8002 | scaffolded; `POST /search` returns 501 (Stage 8) |
+| Coder Arm | http://localhost:8003 | scaffolded; `POST /code` returns 501 (Stage 8) |
+| Judge Arm | http://localhost:8004 | scaffolded; `POST /validate` returns 501 (Stage 8) |
+| Safety Guardian Arm | http://localhost:8005 | scaffolded; `POST /check` returns 501 (Stage 8) |
+| Executor Arm | http://localhost:18006 (container 8006) | stub; sandbox lands in Stage 9 |
+| Memory / Curator Arm | 8007 | not in compose yet (Stage 6) |
+| Red Team Arm | 8008 | not in compose yet (Stage 11) |
+
+`GET http://localhost:8000/arms?refresh=true` lists all eight, each with the stage that
+builds it and the result of a live probe. An arm that is down reports `unavailable`
+rather than disappearing — "down" and "does not exist" are different facts.
 
 **Infrastructure** (these do work): PostgreSQL `localhost:15432` (user `octollm`,
 db `octollm`), Redis `localhost:6379`, Qdrant `localhost:6333` REST and `6334` gRPC,
 Prometheus `http://localhost:9090`, Grafana `http://localhost:3000`.
 
-The port map is being frozen in Stage 3; where a specification and a Dockerfile
-disagree today, the Dockerfile and compose file win, because that is what actually
-binds.
+The port map was frozen in Stage 3 and is enforced by `make port-map-check`: where a
+specification and a Dockerfile disagree, the Dockerfile and compose file win, because
+that is what actually binds. It covers both SDKs as of Stage 4, which is how sixteen
+clients defaulting to the wrong port were found.
 
 ### Development Workflow
 
@@ -405,7 +416,7 @@ criterion is **a green check that was not green before**.
 | 1 | Makefile, `VERSION`, `version_sync.py`, CI rewired to `make` | The README setup block is literally executable |
 | 2 | `.gitleaks.toml` rewrite plus self-test | Self-test finds 4 planted secrets; old config finds 0 |
 | 3 | Contract freeze, port map, reflex and orchestrator repair, Alembic, root compose, arm stubs | `compose up -d` all healthy; a task round-trips |
-| 4 | Shared arm framework, LLM providers, arm registry | Stack runs with no API keys |
+| 4 | Shared arm framework, LLM providers, arm registry | `FakeProvider` makes every later test deterministic; both SDKs stop calling routes that do not exist |
 | 5 | Neural Ring and capability tokens | Built **before** any arm, not retrofitted onto seven |
 | 6 | Memory / Curator arm | Qdrant is real; global semantic memory exists |
 | 7 | Execution engine (LangGraph), worker, cancellation | A task reaches `completed`; kill the worker mid-run and it resumes |
@@ -526,7 +537,7 @@ evaluation harness will report against, and **whatever number comes out is what 
 | PII + injection screening, in process, ≤1 KB input | P95 < 100 µs | **~12 µs** (6.3 µs PII + 6.2 µs injection, 919-byte text) |
 | PII screening, 8.6 KB input | P95 < 500 µs | **47 µs** |
 | Redaction (mask) | P95 < 5 µs | **0.12 µs** |
-| `POST /process` end to end, including Redis | P95 < 10 ms | not measured — needs the Stage 3 repair |
+| `POST /process` end to end, including Redis | P95 < 10 ms | not measured — the endpoint works as of Stage 3; the benchmark lands in Stage 10 |
 
 The old target was "Reflex Layer Latency < 10ms P95", which the detector beats by a
 factor of roughly 800. A target with that much slack cannot detect a regression: the

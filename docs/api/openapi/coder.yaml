@@ -43,6 +43,39 @@ paths:
                   model:
                     type: string
 
+  /ready:
+    get:
+      summary: Readiness check
+      description: |
+        Reports `implemented` honestly. "The container is up" and "the arm does
+        anything" must never be the same signal: five of these images crash-looped for
+        the life of this repository while the compose file, the diagrams and both SDKs
+        described a stack that had never once run, and a container reporting ready
+        while implementing nothing is the same failure wearing a green tick.
+      operationId: getReady
+      tags:
+        - health
+      responses:
+        '200':
+          description: Ready to serve what it can serve
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ready, arm_id, implemented]
+                properties:
+                  ready:
+                    type: boolean
+                  arm_id:
+                    type: string
+                  implemented:
+                    type: boolean
+                    description: False until the stage named in /capabilities builds it
+                  checks:
+                    type: object
+                    additionalProperties:
+                      type: boolean
+
   /metrics:
     get:
       summary: Prometheus metrics

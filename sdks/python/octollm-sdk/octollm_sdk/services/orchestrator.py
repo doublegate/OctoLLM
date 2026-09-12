@@ -8,7 +8,15 @@ arm delegation, and result integration.
 from typing import Any
 
 from ..client import BaseClient
-from ..models import ArmCapability, HealthResponse, TaskRequest, TaskResponse, TaskStatusResponse
+from ..models import (
+    ArmCapability,
+    HealthResponse,
+    RegisterArmRequest,
+    RegisterArmResponse,
+    TaskRequest,
+    TaskResponse,
+    TaskStatusResponse,
+)
 
 
 class OrchestratorClient(BaseClient):
@@ -99,7 +107,11 @@ class OrchestratorClient(BaseClient):
             Planner Arm: ['task_planning', 'goal_decomposition']
             Coder Arm: ['code_generation', 'debugging']
         """
-        response = await self.get("/capabilities", timeout=timeout)
+        # `/arms`, not `/capabilities`. The two SDKs disagreed about this path, and
+        # neither endpoint existed. `/capabilities` means *this service's own
+        # declaration* on every arm; reusing it here for "the arms I know about" is
+        # the kind of near-collision that produces a wrong client six months later.
+        response = await self.get("/arms", timeout=timeout)
         return [ArmCapability(**arm) for arm in response["arms"]]
 
     async def submit_task(
@@ -133,8 +145,11 @@ class OrchestratorClient(BaseClient):
             >>> print(f"Task ID: {response.task_id}")
             Task ID: task_abc123xyz789
         """
+        # `/submit`, not `/tasks`. The orchestrator has only ever served `POST /submit`
+        # -- `/tasks/{id}` is the read path. Both SDKs posted to `/tasks`, which is a
+        # 405 against the real service.
         response = await self.post(
-            "/tasks",
+            "/submit",
             json=task.model_dump(exclude_none=True),
             timeout=timeout,
         )
@@ -193,6 +208,50 @@ class OrchestratorClient(BaseClient):
         """
         response = await self.delete(f"/tasks/{task_id}", timeout=timeout)
         return TaskStatusResponse(**response)
+
+    async def register_arm(
+        self,
+        request: RegisterArmRequest,
+        timeout: float | None = None,
+    ) -> RegisterArmResponse:
+        """
+        Update what the orchestrator knows about an arm.
+
+        This deliberately **cannot introduce an arm**: an unknown `arm_id` is refused
+        with 403. An endpoint that let a caller add an arm to the routing table would
+        be a privilege escalation with extra steps, because the orchestrator is the
+        sole signing authority for capability tokens -- an arm it can be told about is
+        an arm it can be told to trust. Dynamic registration arrives in Stage 5, gated
+        on an orchestrator-issued token.
+
+        An omitted field is left alone rather than cleared, and `port`, `endpoint` and
+        `cost_tier` cannot be set at all: they are roster facts, and an arm able to
+        restate them could redirect its own traffic.
+
+        Args:
+            request: The arm id and the fields to update.
+            timeout: Request timeout in seconds
+
+        Returns:
+            RegisterArmResponse with the arm as the registry now holds it
+
+        Raises:
+            AuthorizationError: The arm id is not in the roster.
+
+        Example:
+            >>> from octollm_sdk import RegisterArmRequest
+            >>> response = await client.register_arm(
+            ...     RegisterArmRequest(arm_id="planner", implemented=True)
+            ... )
+            >>> print(response.arm.status)
+            healthy
+        """
+        response = await self.post(
+            "/arms/register",
+            json=request.model_dump(exclude_none=True),
+            timeout=timeout,
+        )
+        return RegisterArmResponse(**response)
 
     async def _make_plain_text_request(self, method: str, path: str, timeout: float | None) -> str:
         """Helper for plain text responses (metrics endpoint)."""

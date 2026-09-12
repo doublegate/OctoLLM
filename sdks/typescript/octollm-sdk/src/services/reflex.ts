@@ -1,5 +1,5 @@
 /**
- * Client for Reflex Layer service (port 8001)
+ * Client for Reflex Layer service (port 8080)
  *
  * The reflex layer provides fast preprocessing with caching and PII detection.
  */
@@ -17,7 +17,7 @@ export interface ReflexConfig extends Partial<ClientConfig> {
 export class ReflexClient extends BaseClient {
   constructor(config: ReflexConfig = {}) {
     super({
-      baseUrl: config.baseUrl || 'http://localhost:8001',
+      baseUrl: config.baseUrl || 'http://localhost:8080',
       ...config
     });
   }
@@ -33,7 +33,10 @@ export class ReflexClient extends BaseClient {
     request: PreprocessRequest,
     requestId?: string
   ): Promise<PreprocessResponse> {
-    return this.post<PreprocessResponse>('/preprocess', request, {
+    // `/process`, not `/preprocess`. The reflex layer has only ever served
+    // `/process`; this SDK asked for a path that has never existed, and no test
+    // noticed because every one of them mocked the transport.
+    return this.post<PreprocessResponse>('/process', request, {
       requestId
     });
   }
@@ -46,6 +49,22 @@ export class ReflexClient extends BaseClient {
    */
   async getCacheStats(requestId?: string): Promise<CacheStats> {
     return this.get<CacheStats>('/cache/stats', {
+      requestId
+    });
+  }
+
+  /**
+   * Empty the reflex cache.
+   *
+   * Not served yet: the reflex layer's response cache arrives in Stage 7, along with
+   * the two exits from the reflex arc that give it something worth caching. See
+   * `scripts/ci/check_sdk_parity.py`, which lists every such call with its stage and
+   * fails once the route exists and the entry is not removed.
+   *
+   * @param requestId - Optional request ID for tracing
+   */
+  async clearCache(requestId?: string): Promise<Record<string, unknown>> {
+    return this.post<Record<string, unknown>>('/cache/clear', undefined, {
       requestId
     });
   }

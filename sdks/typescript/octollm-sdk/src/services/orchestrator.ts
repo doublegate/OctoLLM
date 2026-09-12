@@ -51,7 +51,10 @@ export class OrchestratorClient extends BaseClient {
     task: TaskRequest,
     requestId?: string
   ): Promise<TaskResponse> {
-    return this.post<TaskResponse>('/tasks', task, {
+    // `/submit`, not `/tasks`. The orchestrator has only ever served `POST /submit`
+    // -- `/tasks/{id}` is the read path. Both SDKs posted to `/tasks`, which is a
+    // 405 against the real service.
+    return this.post<TaskResponse>('/submit', task, {
       requestId
     });
   }
@@ -144,6 +147,20 @@ export class OrchestratorClient extends BaseClient {
     requestId?: string
   ): Promise<RegisterArmResponse> {
     return this.post<RegisterArmResponse>('/arms/register', request, {
+      requestId
+    });
+  }
+
+  /**
+   * Fetch the orchestrator's Prometheus metrics as text.
+   *
+   * Returned raw rather than parsed: the exposition format is Prometheus's contract,
+   * not this SDK's, and a parser here would be one more thing to keep in step with it.
+   *
+   * @param requestId - Optional request ID for tracing
+   */
+  async metrics(requestId?: string): Promise<string> {
+    return this.get<string>('/metrics', {
       requestId
     });
   }

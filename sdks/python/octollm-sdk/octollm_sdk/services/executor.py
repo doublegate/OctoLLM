@@ -7,19 +7,24 @@ The Executor specializes in sandboxed command execution.
 from typing import Any
 
 from ..client import BaseClient
-from ..models import ExecutionRequest, ExecutionResult, HealthResponse
+from ..models import (
+    ExecutionRequest,
+    ExecutionResult,
+    HealthResponse,
+    SandboxStatusResponse,
+)
 
 
 class ExecutorClient(BaseClient):
     """
-    Client for Tool Executor Arm service (port 8003).
+    Client for Tool Executor Arm service (port 8006).
 
     Executes commands in isolated Docker containers with security controls.
     """
 
     def __init__(
         self,
-        base_url: str = "http://localhost:8003",
+        base_url: str = "http://localhost:18006",
         api_key: str | None = None,
         bearer_token: str | None = None,
         **kwargs: Any,
@@ -28,7 +33,7 @@ class ExecutorClient(BaseClient):
         Initialize Executor client.
 
         Args:
-            base_url: Executor service URL (default: http://localhost:8003)
+            base_url: Executor service URL (default: http://localhost:18006)
             api_key: API key for authentication
             bearer_token: JWT bearer token for authentication
             **kwargs: Additional arguments for BaseClient
@@ -85,3 +90,30 @@ class ExecutorClient(BaseClient):
         """Get executor capabilities."""
         response = await self.get("/capabilities", timeout=timeout)
         return response
+
+    async def get_sandbox_status(
+        self,
+        sandbox_id: str,
+        timeout: float | None = None,
+    ) -> SandboxStatusResponse:
+        """
+        Get the state of one execution sandbox.
+
+        Not served yet: the hardened sandbox arrives in Stage 9, and the executor is
+        still a Rust hello-world serving only `/health`. It is here because the
+        TypeScript SDK has carried `getSandboxStatus` since Phase 0 and this SDK had
+        no equivalent -- an asymmetry `scripts/ci/check_sdk_parity.py` now fails on.
+
+        Args:
+            sandbox_id: The sandbox to query
+            timeout: Request timeout in seconds
+
+        Returns:
+            SandboxStatusResponse with the sandbox state and, while running, its
+            resource usage
+
+        Raises:
+            NotFoundError: No such sandbox, or the endpoint does not exist yet.
+        """
+        response = await self.get(f"/sandbox/{sandbox_id}/status", timeout=timeout)
+        return SandboxStatusResponse(**response)

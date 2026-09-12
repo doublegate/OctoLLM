@@ -62,6 +62,16 @@ SITES: tuple[Site, ...] = (
         "orchestrator distribution",
     ),
     Site(
+        "shared/python/pyproject.toml",
+        r'(?m)^version = "([^"]+)"',
+        "shared arm framework distribution",
+    ),
+    Site(
+        "shared/python/octollm_common/app.py",
+        r'(?m)^    version: str = "([^"]+)",$',
+        "what every arm's GET /health reports -- reachable at runtime",
+    ),
+    Site(
         "sdks/python/octollm-sdk/pyproject.toml",
         r'(?m)^version = "([^"]+)"',
         "Python SDK distribution",

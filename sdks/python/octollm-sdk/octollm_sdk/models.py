@@ -124,17 +124,77 @@ class TaskStatusResponse(BaseModel):
 
 
 class ArmCapability(BaseModel):
-    """Arm registration and capability information."""
+    """
+    Arm registration and capability information, as `GET /arms` returns it.
+
+    Three shapes of this existed and disagreed: this model carried a `status` and no
+    schemas, the TypeScript SDK carried `input_schema`/`output_schema` and no status,
+    and no endpoint served either. This is the frozen shape -- the union of what is
+    actually knowable -- and it is what the orchestrator's registry returns.
+    """
 
     arm_id: str = Field(..., description="Unique arm identifier")
     name: str = Field(..., description="Human-readable arm name")
     description: str = Field(..., description="Arm purpose and capabilities")
-    capabilities: list[str] = Field(..., description="List of capabilities")
+    capabilities: list[str] = Field(default_factory=list, description="Routing tags")
     cost_tier: int = Field(..., ge=1, le=5, description="Cost tier (1=cheap, 5=expensive)")
-    endpoint: str = Field(..., description="Service endpoint URL")
-    status: Literal["healthy", "degraded", "unavailable"] = Field(
-        ..., description="Current arm status"
+
+    # `endpoint` is the PATH on the arm; `base_url` is where the arm listens. This
+    # field was documented as "Service endpoint URL" while every arm returns a path --
+    # two meanings under one name is how a client builds `http://hosthttp://host/plan`.
+    endpoint: str = Field(..., description="Path on the arm, e.g. '/plan'")
+    base_url: str = Field(..., description="Where the arm listens")
+    port: int = Field(..., ge=1, le=65535, description="Container port")
+
+    input_schema: dict[str, Any] = Field(
+        default_factory=dict, description="JSON Schema of the request, generated from the contract"
     )
+    output_schema: dict[str, Any] = Field(
+        default_factory=dict, description="JSON Schema of the response"
+    )
+
+    implemented: bool = Field(..., description="Whether the endpoint does anything yet")
+    implemented_in_stage: int = Field(..., description="Which v1.0.0 stage builds it")
+
+    publishes: list[str] = Field(default_factory=list, description="Ring artifact types produced")
+    subscribes: list[str] = Field(default_factory=list, description="Ring artifact types consumed")
+    peers: list[str] = Field(default_factory=list, description="Arms this one may call directly")
+
+    status: Literal["healthy", "degraded", "unavailable"] = Field(
+        "unavailable", description="Result of the orchestrator's last probe"
+    )
+    last_probed_at: datetime | None = Field(None, description="None if never probed")
+
+
+class RegisterArmRequest(BaseModel):
+    """
+    What `POST /arms/register` accepts.
+
+    Registration **updates** an arm already in the roster; it cannot introduce one.
+    Every field but `arm_id` is optional, and an omitted field is left alone rather
+    than cleared -- the difference between PATCH and PUT semantics is not academic
+    when the cleared field is what routing matches on.
+
+    `port`, `endpoint` and `cost_tier` are absent on purpose: they are roster facts,
+    and an arm able to restate them could redirect its own traffic.
+    """
+
+    arm_id: str = Field(..., min_length=1, description="Must already be in the roster")
+    base_url: str | None = Field(None, description="Override where this arm listens")
+    capabilities: list[str] | None = Field(None, description="Replaces the routing tags")
+    implemented: bool | None = Field(None, description="Whether the endpoint works yet")
+    publishes: list[str] | None = Field(None, description="Ring artifact types produced")
+    subscribes: list[str] | None = Field(None, description="Ring artifact types consumed")
+    peers: list[str] | None = Field(None, description="Declared ring edges; advisory")
+
+
+class RegisterArmResponse(BaseModel):
+    """Result of a registration."""
+
+    status: Literal["updated"] = Field(
+        "updated", description="Always 'updated': registration cannot introduce an arm"
+    )
+    arm: ArmCapability = Field(..., description="The arm as the registry now holds it")
 
 
 # ============================================================================
@@ -246,6 +306,28 @@ class ExecutionResult(BaseModel):
     stderr: str = Field(..., description="Standard error")
     duration_seconds: float = Field(..., description="Execution duration")
     sandbox_info: dict[str, Any] = Field(..., description="Sandbox container information")
+
+
+class SandboxResources(BaseModel):
+    """Resource usage of a running sandbox."""
+
+    cpu_percent: float = Field(..., description="CPU usage as a percentage")
+    memory_mb: float = Field(..., description="Resident memory in megabytes")
+
+
+class SandboxStatusResponse(BaseModel):
+    """
+    State of one execution sandbox.
+
+    Not served yet: the hardened sandbox arrives in Stage 9. The TypeScript SDK has
+    carried this shape since Phase 0 and the Python SDK had no equivalent, which is
+    the asymmetry `scripts/ci/check_sdk_parity.py` exists to catch.
+    """
+
+    sandbox_id: str = Field(..., description="Sandbox identifier")
+    status: Literal["running", "completed", "terminated"] = Field(..., description="Current state")
+    created_at: datetime = Field(..., description="When the sandbox was created")
+    resources: SandboxResources | None = Field(None, description="Usage, while running")
 
 
 # ============================================================================

@@ -1,5 +1,5 @@
 /**
- * Client for Safety Guardian Arm service (port 8007)
+ * Client for Safety Guardian Arm service (port 8005)
  *
  * The safety guardian detects PII and filters harmful content.
  */
@@ -17,7 +17,7 @@ export interface SafetyConfig extends Partial<ClientConfig> {
 export class SafetyClient extends BaseClient {
   constructor(config: SafetyConfig = {}) {
     super({
-      baseUrl: config.baseUrl || 'http://localhost:8007',
+      baseUrl: config.baseUrl || 'http://localhost:8005',
       ...config
     });
   }
@@ -47,6 +47,21 @@ export class SafetyClient extends BaseClient {
     requestId?: string
   ): Promise<SafetyCheckResponse> {
     return this.post<SafetyCheckResponse>('/check', request, {
+      requestId
+    });
+  }
+
+  /**
+   * Fetch this arm's own declaration: its id, routing tags, cost tier, the schemas
+   * it accepts and returns, and the Neural Ring edges it declares.
+   *
+   * The orchestrator's registry reads the same endpoint, which is how the ring
+   * topology reaches it over a protocol that already exists.
+   *
+   * @param requestId - Optional request ID for tracing
+   */
+  async capabilities(requestId?: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>('/capabilities', {
       requestId
     });
   }

@@ -17,6 +17,7 @@ import {
   APIError,
   ErrorResponse
 } from './exceptions';
+import { HealthResponse } from './models';
 
 export interface ClientConfig {
   baseUrl: string;
@@ -253,5 +254,19 @@ export class BaseClient {
     options?: Parameters<typeof this.request>[2]
   ): Promise<T> {
     return this.request<T>('DELETE', path, options);
+  }
+
+  /**
+   * Check the service's health.
+   *
+   * On the base client because all eight services serve `GET /health` -- it is the
+   * one route the whole stack has in common. The Python SDK has had this on every
+   * client since Phase 0; this SDK had it on none, which `check_sdk_parity.py` found
+   * the moment it compared the two.
+   *
+   * @param requestId - Optional request ID for tracing
+   */
+  async health(requestId?: string): Promise<HealthResponse> {
+    return this.get<HealthResponse>('/health', { requestId });
   }
 }

@@ -228,9 +228,12 @@ async def test_readiness_check_database_unhealthy():
 
             assert response.status_code == 503
             data = response.json()
-            # Response is wrapped in detail due to HTTPException
-            assert data["error"]["ready"] is False
-            assert data["error"]["checks"]["database"] is False
+            # The common envelope: which dependency is down is in `details`, because
+            # a probe reads the status code and an operator reads the body -- and
+            # both read every other error in this stack the same way.
+            assert data["error"]["code"] == "unavailable"
+            assert data["error"]["details"]["ready"] is False
+            assert data["error"]["details"]["checks"]["database"] is False
 
 
 @pytest.mark.asyncio
@@ -249,8 +252,8 @@ async def test_readiness_check_reflex_unavailable():
 
             assert response.status_code == 503
             data = response.json()
-            assert data["error"]["ready"] is False
-            assert data["error"]["checks"]["reflex_layer"] is False
+            assert data["error"]["details"]["ready"] is False
+            assert data["error"]["details"]["checks"]["reflex_layer"] is False
 
 
 # ==============================================================================
@@ -322,10 +325,13 @@ async def test_submit_task_invalid_missing_goal():
 
         assert response.status_code == 422
         data = response.json()
-        # 422 is raised by FastAPI's RequestValidationError handler, not the app's own
-        # HTTPException handler, so this response keeps FastAPI's {"detail": [...]}
-        # envelope rather than the {"error": ...} one the app uses elsewhere.
-        assert "detail" in data
+        # 422 used to be the one hole in the envelope: FastAPI's own
+        # RequestValidationError handler answered with `{"detail": [...]}` while every
+        # other error was `{"error": {...}}`, so a client had to branch on the status
+        # code to know which shape to parse. The shared handler closes it.
+        assert "detail" not in data
+        assert data["error"]["code"] == "validation_error"
+        assert data["error"]["details"]["errors"][0]["field"] == "body.goal"
 
 
 @pytest.mark.asyncio
@@ -339,8 +345,13 @@ async def test_submit_task_pii_detected(sample_task_request, sample_reflex_respo
 
             assert response.status_code == 400
             data = response.json()
-            assert "error" in data
-            assert data["error"]["pii_detected"] is True
+            assert data["error"]["code"] == "blocked_by_policy"
+            assert data["error"]["details"]["pii_detected"] is True
+            # The detected span never travels back. Echoing `matched_text` would put
+            # the SSN or credential into the caller's logs, inside the very response
+            # that exists to say it must not travel.
+            assert "matched_text" not in data["error"]["details"]["pii_matches"][0]
+            assert "123-45-6789" not in response.text
 
 
 @pytest.mark.asyncio
@@ -356,8 +367,9 @@ async def test_submit_task_injection_detected(
 
             assert response.status_code == 400
             data = response.json()
-            assert "error" in data
-            assert data["error"]["injection_detected"] is True
+            assert data["error"]["code"] == "blocked_by_policy"
+            assert data["error"]["details"]["injection_detected"] is True
+            assert "matched_text" not in data["error"]["details"]["injection_matches"][0]
 
 
 @pytest.mark.asyncio
@@ -371,7 +383,8 @@ async def test_submit_task_reflex_circuit_breaker_open(sample_task_request):
 
             assert response.status_code == 503
             data = response.json()
-            assert "circuit breaker" in data["error"].lower()
+            assert data["error"]["code"] == "unavailable"
+            assert "circuit breaker" in data["error"]["message"].lower()
 
 
 @pytest.mark.asyncio
@@ -385,7 +398,7 @@ async def test_submit_task_reflex_service_unavailable(sample_task_request):
 
             assert response.status_code == 503
             data = response.json()
-            assert "unavailable" in data["error"].lower()
+            assert "unavailable" in data["error"]["message"].lower()
 
 
 @pytest.mark.asyncio
@@ -471,8 +484,9 @@ async def test_get_task_status_non_existent():
 
                 assert response.status_code == 404
                 data = response.json()
-                assert "error" in data
-                assert task_id in data["error"]
+                assert data["error"]["code"] == "not_found"
+                assert task_id in data["error"]["message"]
+                assert data["error"]["request_id"], "an error a user can quote back"
 
 
 # ==============================================================================

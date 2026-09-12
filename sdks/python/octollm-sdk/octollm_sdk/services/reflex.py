@@ -13,7 +13,7 @@ from ..models import CacheStats, HealthResponse, PreprocessRequest, PreprocessRe
 
 class ReflexClient(BaseClient):
     """
-    Client for Reflex Layer service (port 8001).
+    Client for Reflex Layer service (port 8080).
 
     Fast preprocessing layer that handles cache lookups, PII detection,
     and prompt injection detection without LLM involvement.
@@ -21,7 +21,7 @@ class ReflexClient(BaseClient):
 
     def __init__(
         self,
-        base_url: str = "http://localhost:8001",
+        base_url: str = "http://localhost:8080",
         api_key: str | None = None,
         bearer_token: str | None = None,
         **kwargs: Any,
@@ -30,7 +30,7 @@ class ReflexClient(BaseClient):
         Initialize Reflex Layer client.
 
         Args:
-            base_url: Reflex service URL (default: http://localhost:8001)
+            base_url: Reflex service URL (default: http://localhost:8080)
             api_key: API key for authentication
             bearer_token: JWT bearer token for authentication
             **kwargs: Additional arguments for BaseClient
@@ -74,8 +74,11 @@ class ReflexClient(BaseClient):
             >>> print(f"Sanitized: {result.sanitized_input}")
             Sanitized: My email is [EMAIL]
         """
+        # `/process`, not `/preprocess`. The reflex layer has only ever served
+        # `/process`; this SDK asked for a path that has never existed, and no test
+        # noticed because every one of them mocked the transport.
         response = await self.post(
-            "/preprocess",
+            "/process",
             json=request.model_dump(exclude_none=True),
             timeout=timeout,
         )

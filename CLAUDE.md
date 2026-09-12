@@ -192,8 +192,9 @@ Implementation is underway. This is no longer a documentation-only repository.
 | Area | Location | State |
 |---|---|---|
 | Rust workspace | `Cargo.toml` (5 members) | `reflex-layer`, `arms/executor`, `shared/rust/{common,types,clients}`; 240 tests passing |
-| Orchestrator | `services/orchestrator/` | FastAPI app, SQLAlchemy models, Reflex client with circuit breaker; 150 tests passing |
-| Arm images | `services/arms/{coder,judge,planner,retriever,safety-guardian}/` | Dockerfiles only; no service code yet |
+| Orchestrator | `services/orchestrator/` | FastAPI app, SQLAlchemy models, Reflex client with circuit breaker, arm registry; 186 tests passing |
+| Shared framework | `shared/python/octollm_common/` | App factory, error envelope, contract models, arm roster, LLM providers; 103 tests |
+| Arm images | `services/arms/{coder,judge,planner,retriever,safety_guardian}/` | Built on the shared framework; each arm's own endpoint returns 501 naming Stage 8 |
 | Python SDK | `sdks/python/octollm-sdk/` | 8 service clients; 28 tests passing |
 | TypeScript SDK | `sdks/typescript/octollm-sdk/` | 8 service clients; 28 tests passing |
 
@@ -214,14 +215,15 @@ underlying commands by hand is fine for a tight loop, but the target is the cont
 
 ```bash
 make help              # every target, self-documenting
-make install           # both Python packages (editable) + the TypeScript SDK
+make install           # every Python package (editable) + the TypeScript SDK
 make verify            # everything ci-gate runs: version-check, lint, typecheck, all suites
 make format            # rewrite Python and Rust in place (the only target that MODIFIES)
 
 # Individual gates
 make lint-python lint-rust lint-typescript lint-config
 make typecheck
-make test              # 240 Rust + 150 orchestrator + 28 Python SDK + 28 TypeScript SDK
+make sdk-parity-check  # both SDKs agree, and call only routes that exist
+make test              # 240 Rust + 103 shared + 186 orchestrator + 28 Python SDK + 28 TypeScript SDK
 
 # The one suite `make verify` leaves out (needs Redis on :6379)
 make redis && make test-rust-redis && make redis-stop
@@ -283,9 +285,9 @@ exactly what a clean scan reports.
 
 ### Versioning
 
-`VERSION` at the repository root is the single source of truth, propagated to **22 sites**
+`VERSION` at the repository root is the single source of truth, propagated to **24 sites**
 by `scripts/version_sync.py` and enforced by `make version-check`. Before it existed those
-22 sites held six different answers at once, three of them reachable at runtime: `/health`
+those sites held six different answers at once, three of them reachable at runtime: `/health`
 reported `0.1.0` while spans reported `0.9.0` while the README badge said `1.2.0`.
 
 Current version is **0.5.0**, and it is the first number here that is true everywhere.
@@ -303,7 +305,7 @@ could not fail: every test step was `|| echo "No tests found yet (Phase 0)"` *an
 `continue-on-error: true`, and the summary job announced "Phase 0: No tests exist yet"
 over 240 Rust and 178 Python tests that CI never ran.
 
-Nine jobs, all blocking, all aggregated by `ci-gate` — **make `ci-gate` the only required
+Eleven jobs, all blocking, all aggregated by `ci-gate` — **make `ci-gate` the only required
 check in branch protection**:
 
 | Job | Covers |
@@ -314,7 +316,8 @@ check in branch protection**:
 | `lint-typescript` | eslint, tsc |
 | `lint-config` | yamllint, OpenAPI validity, shellcheck, actionlint |
 | `test-rust` | 240 workspace tests + the 17 Redis-backed ones against a `redis:8-alpine` service |
-| `test-orchestrator` | 150 tests, coverage floored at 85% by its own pytest config |
+| `test-shared` | 103 tests, coverage floored at 90%; provider extras deliberately NOT installed |
+| `test-orchestrator` | 186 tests, coverage floored at 85% by its own pytest config |
 | `test-sdk-python` | 28 tests |
 | `test-sdk-typescript` | 28 tests |
 
@@ -322,7 +325,7 @@ Three invariants hold and are enforced rather than remembered:
 
 - **No `continue-on-error`, no `|| echo`.** A gate that cannot fail is indistinguishable
   from one that passed.
-- **Every suite asserts a collection floor** (150 / 28 / 28 / 17). A suite that silently
+- **Every suite asserts a collection floor** (103 / 186 / 28 / 28 / 18). A suite that silently
   collects zero tests produces the same green check as one that ran them all. Raise a
   floor when you add tests; never lower one.
 - **`scripts/ci/check_gate_complete.py` fails if a job is added to `ci.yml` without being
@@ -344,13 +347,49 @@ Still outside the gate, deliberately:
   is a repository-settings change, not a code change.
 - **Snyk** stays advisory; it is skipped entirely without `SNYK_TOKEN`.
 
+### The shared arm framework
+
+`shared/python/octollm_common` is imported by all eight arms **and** the orchestrator, so
+a change here is a change to nine services. It is installed by `make install`; the
+container images reach it through `PYTHONPATH=/app/shared/python`.
+
+Four seams live there, and each exists because its absence produced a real defect:
+
+- **`models/contracts.py`** — every arm's request and response models, defined once. The
+  arms use them as FastAPI models and the orchestrator imports the same classes. Do not
+  add a second definition: the reflex client and the reflex layer kept separate
+  definitions of one payload, disagreed on four fields, and the client could not parse a
+  single real response while 39 of its tests passed against mocks built from its own
+  models.
+- **`roster.py`** — the eight arms, declared once. Each arm's `main.py` reads its spec
+  from here, the orchestrator's registry reads the whole roster, and
+  `check_port_map.py` checks it against what actually binds.
+- **`errors.py`** — one envelope for all nine services, `RequestValidationError`
+  included. Never return a bare `{"detail": ...}`.
+- **`llm/`** — `create_provider()` returns `FakeProvider` unless a provider is
+  explicitly configured, and **`OCTOLLM_FORCE_FAKE_LLM=1` overrides configuration
+  entirely**, which is what makes it impossible for a test to reach a model. A missing
+  key raises rather than falling back to the fake: a deployment that believes it is
+  calling a real model and is not would be far worse than one that refuses to start.
+  The provider SDKs are optional extras, so CI installs none of them and the adapter
+  tests substitute fake modules in `sys.modules`.
+
+### Both SDKs are checked against reality
+
+`make sdk-parity-check` derives what each service serves from the code that serves it
+(the orchestrator's route table, the roster plus the framework paths, the Rust
+`.route(...)` calls) and asserts both SDKs call the same set, that every call resolves
+or is listed with the stage that will build it, and that each framework arm's OpenAPI
+spec documents exactly what it serves.
+
+Every SDK test mocks the transport, which is why four broken calls survived 56 green
+tests — a mock is built from the same wrong belief as the client. Do not "fix" a parity
+failure by adding a PENDING entry for a path that is simply wrong.
+
 ### Known gaps
 
-- The arm services have Dockerfiles but no application code.
 - `services/orchestrator/pyproject.toml` declares the OpenTelemetry dependencies that
   `app/telemetry.py` imports, but the orchestrator image installs the **root**
   `pyproject.toml`, which does not. The two manifests need reconciling before that image
   can serve traced traffic.
-- The app returns `{"error": ...}` for `HTTPException` but FastAPI's default
-  `{"detail": [...]}` for 422 validation errors. The envelope is inconsistent by
-  accident, not design.
+- The six Python arms answer their own endpoint with 501. Stage 8 implements them.

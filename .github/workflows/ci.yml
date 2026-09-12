@@ -91,6 +91,7 @@ jobs:
       - name: Install project and type stubs
         run: |
           pip install "mypy==${MYPY_VERSION}"
+          pip install -e "shared/python[dev]"
           pip install -e "services/orchestrator[dev]"
           pip install -e "sdks/python/octollm-sdk"
 
@@ -188,6 +189,17 @@ jobs:
       - name: make port-map-check
         run: make port-map-check
 
+      # Every SDK test in this repository mocks the transport, which is why four
+      # broken calls survived 56 green tests: `POST /preprocess` against a service
+      # that has only served `/process`, `POST /tasks` against one that serves
+      # `/submit`, and two different paths for listing arms. This check derives what
+      # each service serves from the code that serves it, so a mock cannot agree with
+      # it. It also found that all sixteen SDK clients defaulted to the wrong port.
+      - name: make sdk-parity-check
+        run: |
+          pip install -e "shared/python"
+          make sdk-parity-check
+
   # ===========================================================================
   # Test
   # ===========================================================================
@@ -224,8 +236,38 @@ jobs:
       - name: make test-rust-redis
         run: make test-rust-redis
 
+  test-shared:
+    name: Test shared framework (floor 103)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      # The provider SDK extras (ollama, openai, anthropic) are deliberately NOT
+      # installed. The adapters' deferred imports are satisfied by fake modules in
+      # `sys.modules`, so this job proves the arms start -- and the suite runs -- with
+      # none of those packages present, which is the property the whole stack rests on.
+      - name: Install shared framework
+        run: pip install -e "shared/python[dev]"
+
+      - name: make test-shared
+        run: make test-shared
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: shared/python/coverage.xml
+          flags: shared
+          name: shared
+          fail_ci_if_error: false
+
   test-orchestrator:
-    name: Test orchestrator (floor 150)
+    name: Test orchestrator (floor 186)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -238,8 +280,14 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
 
-      - name: Install orchestrator
-        run: pip install -e ".[dev]"
+      # The shared framework first: the orchestrator imports `octollm_common` for the
+      # arm roster, the contract models its registry publishes, and the error envelope
+      # every service now shares. It is a sibling in this monorepo rather than a
+      # published dependency, so the install order is explicit.
+      - name: Install shared framework and orchestrator
+        run: |
+          pip install -e "../../shared/python"
+          pip install -e ".[dev]"
 
       # The root pyproject sets `testpaths = ["tests"]`, which is why these 150 tests
       # were unreachable from the repository root and CI ran only a placeholder. The
@@ -347,6 +395,7 @@ jobs:
       - lint-typescript
       - lint-config
       - test-rust
+      - test-shared
       - test-orchestrator
       - test-sdk-python
       - test-sdk-typescript

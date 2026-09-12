@@ -12,14 +12,14 @@ from ..models import HealthResponse, ValidationRequest, ValidationResult
 
 class JudgeClient(BaseClient):
     """
-    Client for Judge Arm service (port 8006).
+    Client for Judge Arm service (port 8004).
 
     Validates task outputs against acceptance criteria and quality standards.
     """
 
     def __init__(
         self,
-        base_url: str = "http://localhost:8006",
+        base_url: str = "http://localhost:8004",
         api_key: str | None = None,
         bearer_token: str | None = None,
         **kwargs: Any,
@@ -28,7 +28,7 @@ class JudgeClient(BaseClient):
         Initialize Judge client.
 
         Args:
-            base_url: Judge service URL (default: http://localhost:8006)
+            base_url: Judge service URL (default: http://localhost:8004)
             api_key: API key for authentication
             bearer_token: JWT bearer token for authentication
             **kwargs: Additional arguments for BaseClient

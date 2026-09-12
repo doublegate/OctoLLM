@@ -24,7 +24,8 @@ from uuid import uuid4
 import structlog
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import PlainTextResponse
+from octollm_common.errors import error_body, install_error_handlers
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 
 from app.config import get_settings
@@ -41,6 +42,13 @@ from app.models import (
     TaskSubmitResponse,
 )
 from app.reflex_client import ReflexCircuitBreakerOpen, ReflexClient, ReflexServiceUnavailable
+from app.registry import (
+    ListArmsResponse,
+    RegisterArmRequest,
+    RegisterArmResponse,
+    UnknownArm,
+    get_registry,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -212,36 +220,17 @@ app.add_middleware(
 # Exception Handlers
 # ==============================================================================
 
-
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
-    """Handle HTTP exceptions."""
-    logger.warning(
-        "http.exception",
-        status_code=exc.status_code,
-        detail=exc.detail,
-    )
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"error": exc.detail, "request_id": getattr(request.state, "request_id", None)},
-    )
-
-
-@app.exception_handler(Exception)
-async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    """Handle uncaught exceptions."""
-    logger.error(
-        "http.uncaught_exception",
-        error=str(exc),
-        error_type=type(exc).__name__,
-    )
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "error": "Internal server error",
-            "request_id": getattr(request.state, "request_id", None),
-        },
-    )
+# One envelope, shared with all eight arms:
+#
+#   {"error": {"code", "message", "details", "request_id", "timestamp"}}
+#
+# This service previously had its own: `{"error": <string-or-object>}` for
+# HTTPException and FastAPI's default `{"detail": [...]}` for request-validation
+# failures, so the shape a client saw depended on which kind of error occurred and
+# `error` was sometimes a string and sometimes an object. `docs/api/CONTRACT.md`
+# declared the nested envelope for both services in Stage 3; this is the service
+# catching up with its own contract.
+install_error_handlers(app)
 
 
 # ==============================================================================
@@ -255,7 +244,7 @@ async def general_exception_handler(request: Request, exc: Exception) -> JSONRes
     status_code=status.HTTP_202_ACCEPTED,
     tags=["tasks"],
 )
-async def submit_task(request: TaskRequest) -> TaskSubmitResponse:
+async def submit_task(request: TaskRequest, http_request: Request) -> TaskSubmitResponse:
     """
     Submit a new task for processing.
 
@@ -305,17 +294,31 @@ async def submit_task(request: TaskRequest) -> TaskSubmitResponse:
                 )
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail={
-                        "message": "Task blocked by security policy",
-                        "pii_detected": reflex_response.pii_detected,
-                        "injection_detected": reflex_response.injection_detected,
-                        "details": {
-                            "pii_matches": [m.model_dump() for m in reflex_response.pii_matches],
+                    # Pre-built envelope: the handler passes an already-wrapped body
+                    # through untouched, so this reaches the client in the same shape
+                    # as every other error rather than nested one level deeper.
+                    #
+                    # `matched_text` is stripped from each finding. The reflex layer
+                    # returns the offending span, and echoing it back would put the
+                    # detected credential or SSN into the caller's logs -- inside the
+                    # very response that exists to say it must not travel.
+                    detail=error_body(
+                        code="blocked_by_policy",
+                        message="Task blocked by security policy",
+                        request_id=getattr(http_request.state, "request_id", "unknown"),
+                        details={
+                            "pii_detected": reflex_response.pii_detected,
+                            "injection_detected": reflex_response.injection_detected,
+                            "pii_matches": [
+                                m.model_dump(exclude={"matched_text"})
+                                for m in reflex_response.pii_matches
+                            ],
                             "injection_matches": [
-                                m.model_dump() for m in reflex_response.injection_matches
+                                m.model_dump(exclude={"matched_text"})
+                                for m in reflex_response.injection_matches
                             ],
                         },
-                    },
+                    ),
                 )
 
             logger.info(
@@ -391,6 +394,66 @@ async def get_task_status(task_id: str) -> TaskResponse:
     return task.to_response()
 
 
+# ==============================================================================
+# Arm registry
+# ==============================================================================
+
+
+@app.get("/arms", response_model=ListArmsResponse, tags=["registry"])
+async def list_arms(refresh: bool = False) -> ListArmsResponse:
+    """
+    List every arm the orchestrator knows about.
+
+    Both SDKs have shipped this call since Phase 0 against an endpoint that did not
+    exist, and they disagreed about its path: TypeScript asked for `/arms`, Python for
+    `/capabilities`. `/arms` wins -- `/capabilities` means *this service's own
+    declaration* on every arm, and a near-collision like that produces a wrong client
+    later.
+
+    Args:
+        refresh: Probe each arm's `/capabilities` first. Off by default so the common
+            call is a memory read: this endpoint is polled, and eight HTTP requests
+            per poll would make the registry a source of load rather than of answers.
+
+    Returns:
+        Every arm in the roster, including the two that are not built yet, each
+        carrying the stage that builds it. An arm that is down reports `unavailable`
+        rather than disappearing -- "down" and "does not exist" are different facts.
+    """
+    registry = get_registry()
+    arms = await registry.refresh() if refresh else registry.all()
+    return ListArmsResponse(arms=arms)
+
+
+@app.post("/arms/register", response_model=RegisterArmResponse, tags=["registry"])
+async def register_arm(request: RegisterArmRequest) -> RegisterArmResponse:
+    """
+    Update what the orchestrator knows about an arm.
+
+    This deliberately **cannot introduce an arm**. An endpoint that lets a caller add
+    an arm to the routing table is a privilege escalation with extra steps: the
+    orchestrator is the sole signing authority for capability tokens, so an arm it can
+    be told about is an arm it can be told to trust. An unknown `arm_id` gets 403
+    naming Stage 5, which adds token-gated dynamic registration -- not a silent accept.
+
+    Raises:
+        403: The `arm_id` is not in the roster.
+    """
+    try:
+        arm = get_registry().register(request)
+    except UnknownArm as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=(
+                f"Unknown arm '{request.arm_id}'. Registration updates an arm in the "
+                "roster; it cannot introduce one. Dynamic registration arrives in "
+                "Stage 5 of the v1.0.0 plan, gated on an orchestrator-issued "
+                "capability token."
+            ),
+        ) from exc
+    return RegisterArmResponse(arm=arm)
+
+
 @app.get("/health", response_model=HealthResponse, tags=["health"])
 async def health_check() -> HealthResponse:
     """
@@ -407,7 +470,7 @@ async def health_check() -> HealthResponse:
 
 
 @app.get("/ready", response_model=ReadinessResponse, tags=["health"])
-async def readiness_check() -> ReadinessResponse:
+async def readiness_check(http_request: Request) -> ReadinessResponse:
     """
     Readiness check endpoint for Kubernetes readiness probe.
 
@@ -438,7 +501,15 @@ async def readiness_check() -> ReadinessResponse:
         logger.warning("orchestrator.not_ready", checks=checks)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={"ready": False, "checks": checks},
+            # Which dependency is down belongs in `details`, not at the top level: a
+            # probe reads the status code, and an operator reads the body, and both
+            # of them read every other error in this stack the same way.
+            detail=error_body(
+                code="unavailable",
+                message="One or more dependencies are not ready.",
+                request_id=getattr(http_request.state, "request_id", "unknown"),
+                details={"ready": False, "checks": checks},
+            ),
         )
 
     return ReadinessResponse(ready=True, checks=checks)

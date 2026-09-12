@@ -12,14 +12,14 @@ from ..models import CodeRequest, CodeResponse, HealthResponse
 
 class CoderClient(BaseClient):
     """
-    Client for Coder Arm service (port 8005).
+    Client for Coder Arm service (port 8003).
 
     Generates, debugs, and refactors code in multiple programming languages.
     """
 
     def __init__(
         self,
-        base_url: str = "http://localhost:8005",
+        base_url: str = "http://localhost:8003",
         api_key: str | None = None,
         bearer_token: str | None = None,
         **kwargs: Any,
@@ -28,7 +28,7 @@ class CoderClient(BaseClient):
         Initialize Coder client.
 
         Args:
-            base_url: Coder service URL (default: http://localhost:8005)
+            base_url: Coder service URL (default: http://localhost:8003)
             api_key: API key for authentication
             bearer_token: JWT bearer token for authentication
             **kwargs: Additional arguments for BaseClient
