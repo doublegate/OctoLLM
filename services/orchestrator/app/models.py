@@ -8,16 +8,18 @@ for database persistence.
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
+from uuid import UUID as PyUUID
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    """Declarative base for the orchestrator's ORM models."""
 
 
 # ==============================================================================
@@ -170,7 +172,7 @@ class ReadinessResponse(BaseModel):
 # ==============================================================================
 
 
-class Task(Base):  # type: ignore[valid-type,misc]
+class Task(Base):
     """
     Task database model.
 
@@ -179,29 +181,31 @@ class Task(Base):  # type: ignore[valid-type,misc]
 
     __tablename__ = "tasks"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    goal = Column(Text, nullable=False)
-    status = Column(
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    goal: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[TaskStatus] = mapped_column(
         SQLEnum(TaskStatus, native_enum=False),
         nullable=False,
         default=TaskStatus.PENDING,
         index=True,
     )
-    constraints = Column(JSON, nullable=False, default=dict)
-    context = Column(Text, nullable=True)
-    acceptance_criteria = Column(JSON, nullable=False, default=list)
-    budget = Column(JSON, nullable=False)
-    priority = Column(SQLEnum(Priority, native_enum=False), nullable=False, default=Priority.MEDIUM)
-    parent_task_id = Column(UUID(as_uuid=True), nullable=True)
-    assigned_arm = Column(String(100), nullable=True)
-    task_metadata = Column(JSON, nullable=False, default=dict)
-    created_at = Column(
+    constraints: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    context: Mapped[str | None] = mapped_column(Text, nullable=True)
+    acceptance_criteria: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    budget: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    priority: Mapped[Priority] = mapped_column(
+        SQLEnum(Priority, native_enum=False), nullable=False, default=Priority.MEDIUM
+    )
+    parent_task_id: Mapped[PyUUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    assigned_arm: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    task_metadata: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
         default=lambda: datetime.now(UTC),
         index=True,
     )
-    updated_at = Column(
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
         default=lambda: datetime.now(UTC),
@@ -209,7 +213,7 @@ class Task(Base):  # type: ignore[valid-type,misc]
     )
 
     # Relationship to task results
-    result = relationship(
+    result: Mapped[TaskResult | None] = relationship(
         "TaskResult", back_populates="task", uselist=False, cascade="all, delete-orphan"
     )
 
@@ -242,7 +246,7 @@ class Task(Base):  # type: ignore[valid-type,misc]
         )
 
 
-class TaskResult(Base):  # type: ignore[valid-type,misc]
+class TaskResult(Base):
     """
     Task result database model.
 
@@ -251,14 +255,16 @@ class TaskResult(Base):  # type: ignore[valid-type,misc]
 
     __tablename__ = "task_results"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    task_id = Column(
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    task_id: Mapped[PyUUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("tasks.id"), nullable=False, unique=True, index=True
     )
-    result = Column(JSON, nullable=True)
-    error = Column(Text, nullable=True)
-    processing_time_ms = Column(Integer, nullable=True)
-    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
+    result: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    processing_time_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
+    )
 
     # Relationship to task
-    task = relationship("Task", back_populates="result")
+    task: Mapped[Task] = relationship("Task", back_populates="result")
