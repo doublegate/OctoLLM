@@ -79,6 +79,8 @@ def create_arm_app(
     request_model: type[BaseModel] | None = None,
     response_model: type[BaseModel] | None = None,
     version: str = "0.5.0",
+    lifespan: Any | None = None,
+    readiness: Callable[[], Awaitable[dict[str, Any]]] | None = None,
 ) -> FastAPI:
     """
     Build an arm's application.
@@ -91,11 +93,20 @@ def create_arm_app(
             `octollm_common.models.contracts`. Passing anything else defeats the
             single-definition seam those exist to provide.
         version: Kept in step with `VERSION` by `scripts/version_sync.py`.
+        lifespan: An async context manager owning the arm's connections. Arms that
+            hold a database pool, a vector-store client or a ring consumer need one;
+            a stub does not, which is why it is optional.
+        readiness: Extra checks folded into `GET /ready`. An arm that depends on
+            another service must be able to say so -- reporting `ready: true` while
+            its database is unreachable is the same failure as a green check over a
+            suite that never ran. A check that raises is reported as failed rather
+            than propagating, because `/ready` must always answer.
     """
     app = FastAPI(
         title=f"OctoLLM {spec.name}",
         description=spec.description,
         version=version,
+        lifespan=lifespan,
     )
     install_error_handlers(app)
 
@@ -119,11 +130,18 @@ def create_arm_app(
     async def ready() -> dict[str, Any]:
         # `implemented` is reported here so that "the container is up" and "the arm
         # does anything" are never the same signal.
+        checks: dict[str, Any] = {"process": True}
+        if readiness is not None:
+            try:
+                checks.update(await readiness())
+            except Exception as exc:  # noqa: BLE001 - /ready must always answer
+                checks["error"] = str(exc)
+        ok = all(value is not False for value in checks.values())
         return {
-            "ready": True,
+            "ready": ok,
             "arm_id": spec.arm_id,
             "implemented": spec.implemented,
-            "checks": {"process": True},
+            "checks": checks,
         }
 
     @router.get("/capabilities", tags=["registry"])

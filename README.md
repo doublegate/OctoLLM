@@ -127,7 +127,7 @@ second regex corpus that would drift from the first.
 | Store | Holds | Owner |
 |---|---|---|
 | **PostgreSQL** | global semantic memory, task rows, execution checkpoints | Orchestrator + Memory arm |
-| **Qdrant** | per-arm episodic vectors | Memory arm (nothing reads or writes it today) |
+| **Qdrant** | per-arm episodic vectors | Memory arm (Stage 6) |
 | **Redis** | reflex cache, rate-limit buckets, and the ring's streams | Reflex layer + every arm |
 
 The ring is deliberately **advisory**: losing Redis degrades observability and memory,
@@ -187,13 +187,15 @@ repository is either made true or deleted. Four stages are complete.
 | Component | State | Detail |
 |---|---|---|
 | **Reflex layer** (Rust, port 8080) | Implemented | ~8,500 lines; PII detection, prompt-injection detection, Redis cache, token-bucket rate limiting. 241 tests. |
-| **Orchestrator** (Python, port 8000) | Partial | FastAPI app, SQLAlchemy 2.0 models, reflex client with circuit breaker, arm registry (`GET /arms`), capability signing authority. 225 tests, 93% coverage. **It does not yet call any arm** — `POST /submit` validates, screens and persists; tasks stay `pending`. The execution engine lands in Stage 7. |
-| **Shared arm framework** (`octollm_common`) | Implemented | App factory, error envelope, contract models, arm roster, LLM providers, capability tokens, the Neural Ring and peer clients. 210 tests, 96% coverage. Imported by all eight arms and the orchestrator. || **Python SDK** | Implemented | 8 service clients, 28 tests. Unpublished. |
+| **Orchestrator** (Python, port 8000) | Partial | FastAPI app, SQLAlchemy 2.0 models, reflex client with circuit breaker, arm registry (`GET /arms`), capability signing authority. 226 tests, 93% coverage. **It does not yet call any arm** — `POST /submit` validates, screens and persists; tasks stay `pending`. The execution engine lands in Stage 7. |
+| **Shared arm framework** (`octollm_common`) | Implemented | App factory, error envelope, contract models, arm roster, LLM providers, capability tokens, the Neural Ring and peer clients. 210 tests, 96% coverage. Imported by all eight arms and the orchestrator. |
+| **Memory / Curator arm** (Python, port 8007) | Implemented | `POST /recall` and `POST /remember`, both capability-gated, plus a Neural Ring consumer. Episodic vectors in Qdrant, semantic provenance in a dedicated `memory` Postgres schema. 63 tests against real engines. |
+| **Python SDK** | Implemented | 8 service clients, 28 tests. Unpublished. |
 | **TypeScript SDK** | Implemented | 8 service clients, 28 tests. Unpublished. |
 | **Executor arm** (Rust, port 8006) | Stub | 21 lines. Sandbox lands in Stage 9. |
 | **Planner / Retriever / Coder / Judge / Safety Guardian** (8001-8005) | Scaffolded | Built on the shared framework: each serves `/health`, `/ready`, `/capabilities` and `/metrics`, and answers its own endpoint with **501 naming Stage 8** — never a plausible fake. |
 | **Red Team** (8008) | Not started | Stage 11, flag-gated off and outside the default compose profile. |
-| **PostgreSQL / Redis / Qdrant** | Running | Redis now also carries the Neural Ring's artifact streams. Qdrant is in the compose stack but nothing reads or writes it until Stage 6. |
+| **PostgreSQL / Redis / Qdrant** | Running | All three are read and written: Postgres by the orchestrator and Memory, Redis by the reflex cache and the Neural Ring, Qdrant by Memory. |
 
 ### Stage progress
 
@@ -204,7 +206,9 @@ repository is either made true or deleted. Four stages are complete.
 | **2. Secret scanning that works** | Complete — `.gitleaks.toml` was discarding all ~170 built-in rules (a `[[rules]]` block without `[extend] useDefault = true`) and exempting every markdown file, all of `docs/`, `tests/`, workflows and infra scripts. `scripts/gitleaks-selftest.sh` plants four secrets in four formerly-exempt locations and proves both that this config finds them and that the old one did not. |
 | **3. The stack runs** | Complete — `make up` brings all eleven services to **healthy** and `make smoke` round-trips a task. `POST /process` had returned 500 on every request for the life of the service; all 23 compose variables were silently ignored; the reflex client could not parse a single real response; five arm images crash-looped; every arm's spec named its neighbour's port. |
 | **4. The shared arm framework** | Complete — one app factory, one error envelope, one set of contract models, one arm roster and one LLM provider boundary, imported by all eight arms and the orchestrator. `FakeProvider` makes every later test deterministic, and `make sdk-parity-check` found four SDK calls that could never have worked and sixteen clients defaulting to the wrong port. |
-| **5. The Neural Ring and capability tokens** | Complete — arms can coordinate without the brain, and something can finally stop them. Capability isolation had been 87KB of design document and **zero lines of code** while the executor's spec required a token on every request. Artifacts travel on Redis Streams within the topology each arm declares; the tight loops (Coder↔Judge) go over capability-gated HTTP. Authorization reads the **static roster**, never the arm-reported registry. Grants are ≤120s, bound to one callee and one task, and counted by the callee. See [ADR-010](docs/adr/010-neural-ring-and-capability-tokens.md). || **6-12** | Planned. See [Roadmap](#roadmap). |
+| **5. The Neural Ring and capability tokens** | Complete — arms can coordinate without the brain, and something can finally stop them. Capability isolation had been 87KB of design document and **zero lines of code** while the executor's spec required a token on every request. Artifacts travel on Redis Streams within the topology each arm declares; the tight loops (Coder↔Judge) go over capability-gated HTTP. Authorization reads the **static roster**, never the arm-reported registry. Grants are ≤120s, bound to one callee and one task, and counted by the callee. See [ADR-010](docs/adr/010-neural-ring-and-capability-tokens.md). |
+| **6. The Memory / Curator arm** | Complete — Qdrant had been in the compose stack since Phase 0 with **nothing reading or writing it**, and `alembic` had been a declared dependency, promised by four documents, with no `alembic.ini` anywhere. Memory now owns storage: semantic provenance in a dedicated `memory` Postgres schema, episodic vectors in Qdrant, one collection per (arm, embedding model) because swapping two models of the same dimension fails silently and meaninglessly. The data diode is enforceable — clearance is read from the capability token, never the request. `make migrate-check` caught four ORM/migration disagreements on its first run. See [ADR-011](docs/adr/011-memory-arm-and-the-two-stores.md). |
+| **7-12** | Planned. See [Roadmap](#roadmap). |
 
 ### Test suites
 
@@ -213,7 +217,9 @@ repository is either made true or deleted. Four stages are complete.
 | Rust workspace | 241 | yes |
 | Rust, Redis-backed | 18 | yes — 17 of these were `#[ignore]`d and had never executed anywhere |
 | Shared arm framework | 210 | yes, coverage floored at 90%, against a real Redis |
-| Orchestrator | 225 | yes, coverage floored at 85% || Python SDK | 28 | yes |
+| Orchestrator | 226 | yes, coverage floored at 85% |
+| Memory arm | 63 | yes, against real Postgres, Qdrant and Redis |
+| Python SDK | 28 | yes |
 | TypeScript SDK | 28 | yes |
 
 Every suite asserts a collection floor, because a suite that silently collects zero
@@ -221,7 +227,7 @@ tests produces exactly the same green check as one that ran them all.
 
 ### Repository inventory
 
-340 tracked markdown files (~277,000 lines), 8 OpenAPI specifications, 10 ADRs, 7 Grafana
+341 tracked markdown files (~277,000 lines), 9 OpenAPI specifications, 11 ADRs, 7 Grafana
 dashboards, 84 Prometheus alert rules, and a 13-service development compose stack.
 
 Much of that documentation was written ahead of the code and still describes intentions
@@ -231,7 +237,7 @@ it now carries a correction banner rather than being silently left in place.
 ## CI/CD Pipeline
 
 `ci.yml` is the only blocking gate. **`CI gate` is the sole required status check on
-`main`** — it aggregates eleven jobs, and `scripts/ci/check_gate_complete.py` fails the
+`main`** — it aggregates twelve jobs, and `scripts/ci/check_gate_complete.py` fails the
 build if a job is ever added without being wired into it, since an unwired job can fail
 while the gate goes green.
 
@@ -245,7 +251,9 @@ while the gate goes green.
 | `secrets` | gitleaks over full history, plus the scanner self-test |
 | `test-rust` | 241 workspace tests + 18 Redis-backed |
 | `test-shared` | 210 tests, coverage floored at 90%, against a `redis:8-alpine` service; provider SDKs deliberately absent |
-| `test-orchestrator` | 225 tests, coverage floored at 85% || `test-sdk-python` | 28 tests |
+| `test-orchestrator` | 226 tests, coverage floored at 85% |
+| `test-memory` | 63 tests against real Postgres, Qdrant and Redis; migrates and drift-checks first |
+| `test-sdk-python` | 28 tests |
 | `test-sdk-typescript` | 28 tests |
 
 Three properties are enforced rather than documented: **no step is `continue-on-error`
@@ -295,7 +303,7 @@ pre-commit install
 # OpenAPI validity, shellcheck, actionlint
 make lint
 
-# Run every suite: 241 Rust, 210 shared, 225 orchestrator, 28 Python SDK, 28 TypeScript SDK
+# Run every suite: 241 Rust, 210 shared, 226 orchestrator, 63 memory, 28 + 28 SDK TypeScript SDK
 make test
 
 # Everything CI runs, in one command

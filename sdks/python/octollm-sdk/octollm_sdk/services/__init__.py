@@ -7,6 +7,7 @@ Each service client provides typed methods for interacting with specific OctoLLM
 from .coder import CoderClient
 from .executor import ExecutorClient
 from .judge import JudgeClient
+from .memory import MemoryClient
 from .orchestrator import OrchestratorClient
 from .planner import PlannerClient
 from .reflex import ReflexClient
@@ -17,6 +18,7 @@ __all__ = [
     "CoderClient",
     "ExecutorClient",
     "JudgeClient",
+    "MemoryClient",
     "OrchestratorClient",
     "PlannerClient",
     "ReflexClient",

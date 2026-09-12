@@ -29,12 +29,20 @@ ORCHESTRATOR := services/orchestrator
 SHARED_PY    := shared/python
 SDK_PY       := sdks/python/octollm-sdk
 SDK_TS       := sdks/typescript/octollm-sdk
+MEMORY       := services/arms/memory
+
+# Where the Memory arm's migrations run. `?=` so an environment variable wins, which is
+# how CI points this at its own service container. The default is the HOST port the dev
+# stack publishes Postgres on, not the in-container 5432.
+MEMORY_DATABASE_URL ?= postgresql+psycopg://octollm:octollm_dev_password@localhost:15432/octollm
+export MEMORY_DATABASE_URL
 
 # Collection floors. A suite that silently collects zero tests reports exactly what a
 # suite that ran them all reports; these are what separate the two. Raise one when you
 # add tests. Never lower one to make a red build green -- that is the bug, not the fix.
-FLOOR_ORCHESTRATOR := 225
+FLOOR_ORCHESTRATOR := 226
 FLOOR_SHARED       := 210
+FLOOR_MEMORY       := 63
 FLOOR_SDK_PY       := 28
 FLOOR_SDK_TS_FILES := 3
 # 17 Redis-backed, plus the /process connect-info regression, which also needs Redis.
@@ -98,15 +106,15 @@ format: ## Rewrite Python and Rust in place (the only targets that MODIFY files)
 	cd $(SDK_TS) && npm run format
 
 .PHONY: typecheck
-typecheck: ## mypy over the shared framework, the orchestrator and the Python SDK
-	$(PYTHON) -m mypy $(SHARED_PY)/octollm_common $(ORCHESTRATOR)/app $(SDK_PY)/octollm_sdk
+typecheck: ## mypy over the shared framework, the orchestrator, the Memory arm and the Python SDK
+	$(PYTHON) -m mypy $(SHARED_PY)/octollm_common $(ORCHESTRATOR)/app $(SDK_PY)/octollm_sdk $(MEMORY)/src
 
 # =============================================================================
 # Test
 # =============================================================================
 
 .PHONY: test
-test: test-rust test-shared test-orchestrator test-sdk-python test-sdk-typescript ## Run every suite
+test: test-rust test-shared test-orchestrator test-memory test-sdk-python test-sdk-typescript ## Run every suite
 
 .PHONY: test-rust
 test-rust: ## Rust workspace tests (Redis-backed ones need `make redis`)
@@ -123,6 +131,48 @@ test-rust-redis: ## The Redis-backed Rust tests; needs Redis on localhost:6379
 	    echo "::error::expected at least $(FLOOR_RUST_IGNORED) Redis-backed tests, $$ran ran"; \
 	    exit 1; \
 	  fi
+
+.PHONY: test-shared
+test-memory: ## Memory arm suite (needs Postgres, Qdrant and Redis), coverage at 80%
+	@cd $(MEMORY) && collected=$$(PYTHONPATH=$(CURDIR)/$(SHARED_PY):$(CURDIR)/$(MEMORY) \
+	    $(PYTHON) -m pytest tests/ --collect-only -p no:cacheprovider --no-cov 2>&1 \
+	    | grep -oE '[0-9]+ tests? collected' | grep -oE '^[0-9]+' | tail -1); \
+	  echo "collected=$${collected:-0} (floor $(FLOOR_MEMORY))"; \
+	  if [ "$${collected:-0}" -lt $(FLOOR_MEMORY) ]; then \
+	    echo "::error::memory arm collected $${collected:-0} tests, floor is $(FLOOR_MEMORY)"; \
+	    exit 1; \
+	  fi
+	@# Every meaningful assertion in this suite is a property of a real engine --
+	@# ON CONFLICT against a unique constraint, a payload filter combined with a vector
+	@# search, at-least-once redelivery. They SKIP when the services are absent, and a
+	@# skipped suite reports exactly what a passing one reports.
+	@$(PYTHON) -c "import psycopg, os; \
+	  psycopg.connect(os.environ.get('MEMORY_PG_DSN', \
+	    'postgresql://octollm:octollm_dev_password@localhost:15432/octollm')).close()" >/dev/null 2>&1 \
+	  || { echo "::error::No Postgres. Run: make data-services   (or point MEMORY_DATABASE_URL at one)"; exit 1; }
+	@curl -sf $${MEMORY_QDRANT_URL:-http://localhost:6333}/readyz >/dev/null 2>&1 \
+	  || { echo "::error::No Qdrant at $${MEMORY_QDRANT_URL:-http://localhost:6333}. Run: make data-services"; exit 1; }
+	cd $(MEMORY) && PYTHONPATH=$(CURDIR)/$(SHARED_PY):$(CURDIR)/$(MEMORY) $(PYTHON) -m pytest tests/
+
+.PHONY: data-services
+data-services: ## Start only Postgres, Redis and Qdrant, and migrate -- what the suites need
+	@# `make verify` runs suites that assert against real engines, so it needs these
+	@# three. This is the cheap path: no image builds, just the datastores and the
+	@# schema the Memory suite asserts against.
+	docker compose up -d --wait postgres redis qdrant
+	@$(MAKE) --no-print-directory migrate
+
+.PHONY: migrate
+migrate: ## Apply the Memory arm's schema migrations
+	cd $(MEMORY) && PYTHONPATH=$(CURDIR)/$(SHARED_PY) alembic upgrade head
+
+.PHONY: migrate-check
+migrate-check: ## Fail if the ORM and the migrations describe different schemas
+	@# `alembic check` compares src/models.py against the live migrated database. It
+	@# caught four real disagreements the first time it ran: two DESC indexes declared
+	@# without their ordering, and two GIN indexes written as raw SQL in the migration
+	@# and therefore invisible to the comparison.
+	cd $(MEMORY) && PYTHONPATH=$(CURDIR)/$(SHARED_PY) alembic check
 
 .PHONY: test-shared
 test-shared: ## Shared arm framework suite (needs Redis on :6379), coverage at 90%
@@ -281,7 +331,7 @@ logs: ## Follow the logs of every service
 
 .PHONY: smoke
 smoke: ## Assert the running stack is healthy and a task round-trips
-	./scripts/smoke.sh
+	PYTHON=$(PYTHON) ./scripts/smoke.sh
 
 # =============================================================================
 # Local services

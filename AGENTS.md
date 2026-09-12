@@ -58,7 +58,7 @@ The system mirrors the octopus's distributed nervous system where:
 
 ## Documentation Structure
 
-The repository carries 340 tracked markdown files, **most written ahead of the code**.
+The repository carries 341 tracked markdown files, **most written ahead of the code**.
 Reconciling them is Stage 12. Until then only six are authoritative:
 
 | File | Holds |
@@ -94,7 +94,7 @@ plan), and anything under `docs/book/` (a committed build artifact).
 - Main Loop: Cache check → Plan generation → Step execution → Result integration → Validation
 
 **Layer 3: Execution** (The Arms)
-- **Planner Arm**: Task decomposition (Python, uses GPT-3.5-turbo)
+- **Planner Arm**: Task decomposition (Python, uses a small, cost-efficient model)
 - **Tool Executor Arm**: External actions in sandboxed environments (Rust for safety)
 - **Retriever Arm**: Knowledge base search
 - **Coder Arm**: Code generation, debugging, refactoring
@@ -162,7 +162,7 @@ Versions live in **### Toolchain** below — do not restate them here.
 **Orchestrator (Brain)**:
 ```python
 # FastAPI, Pydantic
-# LLM: OpenAI SDK (GPT-4) or Anthropic SDK (Claude 3)
+# LLM: a frontier provider, through the provider layer in `octollm_common/llm/`
 # Dependencies: langchain, redis, psycopg, prometheus-client, structlog
 ```
 
@@ -175,7 +175,7 @@ Versions live in **### Toolchain** below — do not restate them here.
 **Arms (Mixed)**:
 - Python for AI-heavy arms (Planner, Coder, Judge)
 - Rust for security-critical arms (Tool Executor)
-- Small models (Mistral 7B, GPT-3.5-turbo) for cost efficiency
+- Small, cost-efficient models where the task allows
 
 ### Security Patterns
 
@@ -187,7 +187,7 @@ Versions live in **### Toolchain** below — do not restate them here.
 
 ### Deployment
 
-- **Local Dev**: `docker-compose.yml` with all services
+- **Local Dev**: `compose.yaml` with all services
 - **Production**: Kubernetes with namespace `octollm`
 - **Monitoring**: Prometheus + Grafana dashboards
 - **Scaling**: HorizontalPodAutoscaler based on CPU/memory
@@ -238,16 +238,17 @@ orientation — which tree holds what — not a status report.
 |---|---|---|
 | Rust workspace | `Cargo.toml` (5 members) | `reflex-layer`, `arms/executor`, `shared/rust/{common,types,clients}`; 241 tests + 18 `#[ignore]`d Redis-backed |
 | Reflex layer | `reflex-layer/` (`:8080`) | Implemented. PII + prompt-injection detection, Redis cache, token-bucket rate limiting; `POST /process` works |
-| Orchestrator | `services/orchestrator/` (`:8000`) | FastAPI app, SQLAlchemy models, Reflex client with circuit breaker, arm registry, capability signing authority; 225 tests. **It does not call any arm** — Stage 7 |
+| Orchestrator | `services/orchestrator/` (`:8000`) | FastAPI app, SQLAlchemy models, Reflex client with circuit breaker, arm registry, capability signing authority; 226 tests. **It does not call any arm** — Stage 7 |
 | Shared framework | `shared/python/octollm_common/` | App factory, error envelope, contract models, arm roster, LLM providers, **capability tokens, the Neural Ring, peer clients**; 210 tests |
 | Python arms | `services/arms/{planner,retriever,coder,judge,safety_guardian}/` (`:8001`–`:8005`) | Scaffolded on the shared framework; serve `/health`, `/ready`, `/capabilities`, `/metrics`. Each arm's own endpoint returns 501 naming Stage 8 |
 | Executor arm | `services/arms/executor/` (`:8006`, host `:18006`) | Rust stub, `/health` only. Sandbox is Stage 9 |
-| Memory / Curator, Red Team | `:8007`, `:8008` | Not built (Stages 6 and 11). The roster declares all eight arms |
+| Memory / Curator | `services/arms/memory/` (`:8007`) | **Implemented.** `POST /recall` + `POST /remember`, both capability-gated; consumes `artifact` from the ring. Episodic vectors in Qdrant, semantic provenance in the `memory` Postgres schema |
+| Red Team | `:8008` | Not built (Stage 11). The roster declares all eight arms |
 | Python SDK | `sdks/python/octollm-sdk/` | 8 service clients; 28 tests passing |
 | TypeScript SDK | `sdks/typescript/octollm-sdk/` | 8 service clients; 28 tests passing |
 
-750 tests total. PostgreSQL, Redis and Qdrant run in the stack; **nothing reads or writes
-Qdrant** until Stage 6.
+PostgreSQL, Redis and Qdrant are all read and written — Qdrant by
+Memory as of Stage 6, so it is no longer a container nothing touches.
 
 ### Toolchain
 
@@ -277,12 +278,16 @@ make lint-python lint-rust lint-typescript lint-config
 make typecheck
 make gate-check        # every ci.yml job is wired into ci-gate.needs
 make sdk-parity-check  # both SDKs agree, and call only routes that exist
-make test              # 241 Rust + 210 shared + 225 orchestrator + 28 Python SDK + 28 TypeScript SDK
+make test              # 241 Rust + 210 shared + 226 orchestrator + 63 memory + 28 + 28 SDK
 
-# Redis on :6379 is required by `make test-shared` (the Neural Ring tests run
-# against a real one) and by the Redis-backed Rust suite, which `verify` omits.
-make redis && make verify && make test-rust-redis && make redis-stop
+# The suites assert against real engines. `make data-services` starts Postgres,
+# Redis and Qdrant and migrates -- no image builds -- which is everything
+# `make verify` needs beyond the Redis-backed Rust suite it omits.
+make data-services && make verify && make test-rust-redis
 
+# Memory's schema
+make migrate         # apply the `memory` schema migrations
+make migrate-check   # fail if the ORM and the migrations describe different schemas
 ```
 
 `make test-shared` **refuses to run** without Redis rather than letting the ring tests
@@ -297,10 +302,15 @@ being dug out of.
 ### Running the stack
 
 ```bash
-make up      # all 11 services, waits for HEALTHY (not merely "started")
-make smoke   # asserts health + that a task round-trips
+make up      # all 12 services, waits for HEALTHY (not merely "started")
+make smoke   # health, a task round-trip, and an artifact through Memory
 make down
 ```
+
+`make up` generates a per-run capability secret and passes it to compose **in the
+environment, never to a file**, so the gated routes work out of the box with nothing
+committed or left on disk. `make smoke` reads it back from the running container rather
+than being told it, so the two cannot disagree about what the stack is using.
 
 **No API keys needed.** Host ports are overridable if one is taken: `REFLEX_PORT=18080 make up`.
 
@@ -365,7 +375,7 @@ could not fail: every test step was `|| echo "No tests found yet (Phase 0)"` *an
 `continue-on-error: true`, and the summary job announced "Phase 0: No tests exist yet"
 over the 240 Rust and 178 Python tests that existed at the time and CI never ran.
 
-Eleven jobs, all blocking, all aggregated by `ci-gate` — **make `ci-gate` the only required
+Twelve jobs, all blocking, all aggregated by `ci-gate` — **make `ci-gate` the only required
 check in branch protection**:
 
 | Job | Covers |
@@ -377,7 +387,8 @@ check in branch protection**:
 | `lint-config` | yamllint, OpenAPI validity, shellcheck, actionlint |
 | `test-rust` | 241 workspace tests + the 18 Redis-backed ones against a `redis:8-alpine` service |
 | `test-shared` | 210 tests, coverage floored at 90%, against a `redis:8-alpine` service; provider extras deliberately NOT installed |
-| `test-orchestrator` | 225 tests, coverage floored at 85% by its own pytest config |
+| `test-orchestrator` | 226 tests, coverage floored at 85% by its own pytest config |
+| `test-memory` | 63 tests, coverage floored at 80%, against real Postgres, Qdrant and Redis; runs `make migrate` and `make migrate-check` first |
 | `test-sdk-python` | 28 tests |
 | `test-sdk-typescript` | 28 tests |
 | `secrets` | `make secrets-scan` + `make secrets-selftest` over tracked history |
@@ -386,7 +397,7 @@ Three invariants hold and are enforced rather than remembered:
 
 - **No `continue-on-error`, no `|| echo`.** A gate that cannot fail is indistinguishable
   from one that passed.
-- **Every suite asserts a collection floor** (210 / 225 / 28 / 28 / 18). A suite that silently
+- **Every suite asserts a collection floor** (210 / 226 / 63 / 28 / 28 / 18). A suite that silently
   collects zero tests produces the same green check as one that ran them all. Raise a
   floor when you add tests; never lower one.
 - **`scripts/ci/check_gate_complete.py` fails if a job is added to `ci.yml` without being
@@ -398,7 +409,7 @@ Still outside the gate, deliberately:
 - **Container builds** (`build.yml`) and the Trivy container scan (`security.yml`) are
   gated on the `ENABLE_IMAGE_PUBLISH` / `ENABLE_CONTAINER_SCAN` repository variables,
   which are unset — there is no release to publish until Stage 12. The images themselves
-  build and run (`make up` reaches HEALTHY on all eleven services), but nothing in
+  build and run (`make up` reaches HEALTHY on every long-lived service), but nothing in
   `ci-gate` builds them, so **build locally before merging a Dockerfile change**.
 - **CodeQL** runs through GitHub's **default setup**, not a workflow in this repository.
   Default setup is already configured for actions, javascript/typescript, python and rust
@@ -446,6 +457,24 @@ Four seams live there, and each exists because its absence produced a real defec
   calling a real model and is not would be far worse than one that refuses to start.
   The provider SDKs are optional extras, so CI installs none of them and the adapter
   tests substitute fake modules in `sys.modules`.
+
+### The Memory arm: three rules
+
+- **Clearance comes from the capability token, never the request.** `RecallRequest` has
+  no field for it and rejects one outright. This is the roster-not-registry rule one
+  layer out: a caller that states its own clearance is the same escalation as an arm that
+  states its own peers.
+- **Writes are idempotent, and must stay so.** Ring delivery is at-least-once, so a
+  redelivery is normal operation. `action_log.artifact_id` is unique and the insert is
+  `ON CONFLICT DO NOTHING` -- *not* `DO UPDATE*, so a replayed artifact cannot rewrite the
+  audit trail of the original.
+- **The episodic collection name carries the embedding model.** Changing between two
+  models of the same dimension fails silently and meaninglessly; a new model gets a new,
+  empty collection. Never strip the model from the name to "reuse" existing vectors.
+
+Schema changes go through Alembic (`make migrate`), and `make migrate-check` fails when
+the ORM and the migration disagree. A failure there is a question about which of the two
+is right, not an instruction to autogenerate over it. Rationale: `docs/adr/011`.
 
 ### Capability tokens: the one rule that is easy to get wrong
 
@@ -496,7 +525,9 @@ the stage that changes each, is in `docs/PROJECT-STATUS.md`.
 - `POST /arms/register` returns 503 by default — no `ORCHESTRATOR_CAPABILITY_SECRET` is
   configured, so it fails closed. Set one and it takes a capability token. Configured,
   not staged.
-- Qdrant runs and is unused — Memory owns it. Stage 6.
+- Recall ranking is **not semantic** with the default `FakeProvider`: it embeds by
+  hash, so identical text matches exactly and nothing else ranks meaningfully. Configure
+  a real embedding provider before reading meaning into the ordering.
 - Six performance targets read "not measured" — there is no eval harness. Stage 10.
 - Both SDKs call some routes that 404 — each is listed with its stage in
   `scripts/ci/check_sdk_parity.py`, and an entry that outlives its stage fails the check.
@@ -507,7 +538,11 @@ the stage that changes each, is in `docs/PROJECT-STATUS.md`.
   `app/telemetry.py` imports, but the orchestrator image installs the **root**
   `pyproject.toml`, which does not. The two manifests need reconciling before that image
   can serve traced traffic.
-- The five Python arms answer their own endpoint with 501. Stage 8 implements them.
+- The five remaining Python arms answer their own endpoint with 501. Stage 8 implements
+  them. Memory is the exception as of Stage 6.
+- **Only the `memory` schema is under Alembic.** The orchestrator's `public` tables still
+  come from `Base.metadata.create_all`. Two DDL paths is a drift risk; the orchestrator
+  joins the migration story when something needs it to.
 - **`POST /submit` and `GET /tasks/{id}` are still open.** The one mutating registry
   endpoint now requires a capability token (Stage 5). Do not add another mutating
   endpoint without a gate, and do not accept a field that says where a service lives --

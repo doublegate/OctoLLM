@@ -97,16 +97,21 @@ def test_listing_arms_returns_the_whole_roster(client: TestClient):
     ]
 
 
-def test_the_unbuilt_arms_are_listed_rather_than_omitted(client: TestClient):
+def test_the_unbuilt_arm_is_listed_rather_than_omitted(client: TestClient):
     """
-    A roster that silently omits the arms nobody has written is how a system comes to
-    be described by its aspirations. Memory and Red Team appear, each naming its stage.
+    A roster that silently omits the arm nobody has written is how a system comes to be
+    described by its aspirations. Red Team appears, naming its stage.
+
+    Memory was the other one until Stage 6 built it, and it is now the only arm in the
+    roster that claims to be implemented -- which is what makes it the interesting
+    assertion here rather than a footnote.
     """
     arms = {arm["arm_id"]: arm for arm in client.get("/arms").json()["arms"]}
 
-    assert arms["memory"]["implemented"] is False
-    assert arms["memory"]["implemented_in_stage"] == 6
+    assert arms["red-team"]["implemented"] is False
     assert arms["red-team"]["implemented_in_stage"] == 11
+    assert arms["memory"]["implemented"] is True
+    assert arms["memory"]["implemented_in_stage"] == 6
 
 
 def test_an_unprobed_arm_reports_unavailable_with_no_probe_timestamp(client: TestClient):
@@ -131,12 +136,26 @@ def test_the_listed_schemas_come_from_the_shared_contract_models(client: TestCli
 
 def test_an_arm_with_no_contract_yet_publishes_an_empty_schema(client: TestClient):
     """
-    Memory has no contract models until Stage 6. An invented schema would be worse
+    Red Team has no contract models until Stage 11. An invented schema would be worse
     than an empty one, because a client can act on it.
     """
     arms = {arm["arm_id"]: arm for arm in client.get("/arms").json()["arms"]}
 
-    assert arms["memory"]["input_schema"] == {}
+    assert arms["red-team"]["input_schema"] == {}
+
+
+def test_memory_publishes_the_schema_it_actually_serves(client: TestClient):
+    """
+    Stage 6 gave Memory contract models, so the registry publishes them.
+
+    Generated from `octollm_common.models.contracts` -- the same classes the arm uses
+    as its FastAPI models -- so this cannot describe a request the arm would reject.
+    """
+    arms = {arm["arm_id"]: arm for arm in client.get("/arms").json()["arms"]}
+
+    assert "query" in arms["memory"]["input_schema"]["properties"]
+    assert "hits" in arms["memory"]["output_schema"]["properties"]
+    assert "withheld" in arms["memory"]["output_schema"]["properties"]
 
 
 def test_endpoint_is_a_path_and_base_url_is_where_the_arm_listens(client: TestClient):

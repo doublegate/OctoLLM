@@ -37,6 +37,17 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "shared" / "python"))
 sys.path.insert(0, str(REPO_ROOT / "services" / "orchestrator"))
 
+import structlog  # noqa: E402
+
+# structlog writes to STDOUT by default, and `issue_peer_token` logs `capability_issued`
+# on every mint. That made this script's stdout a log line followed by the token, so
+# `$(mint_capability.py ...)` captured both -- and substituting that into an
+# Authorization header produced a malformed request that uvicorn answered with a bare
+# `400 Invalid HTTP request received`, naming neither the header nor the cause.
+#
+# Diagnostics go to stderr so that the contract this file's docstring states is true:
+# stdout carries the token and nothing else.
+structlog.configure(logger_factory=structlog.PrintLoggerFactory(file=sys.stderr))
 
 from app.capabilities import REGISTRY_WRITE_SCOPE, RingAuthority, UndeclaredEdge  # noqa: E402
 from octollm_common.capability import CapabilityConfigError  # noqa: E402
@@ -49,8 +60,14 @@ def main() -> int:
     )
     parser.add_argument(
         "--scope",
-        default=REGISTRY_WRITE_SCOPE,
-        help=f"Scope to grant (default: {REGISTRY_WRITE_SCOPE})",
+        action="append",
+        help=(
+            "Scope to grant; repeatable. Defaults to "
+            f"{REGISTRY_WRITE_SCOPE} for an admin token, and to the callee's own "
+            "endpoint scope for a peer token. A `clearance:<level>` scope grants a "
+            "data-diode clearance, which is how the Memory arm learns what a caller "
+            "may see -- it is never read from the request."
+        ),
     )
     parser.add_argument(
         "--subject",
@@ -99,11 +116,12 @@ def main() -> int:
                 task_id=args.task_id,
                 max_calls=args.max_calls,
                 ttl_seconds=args.ttl,
+                scope=args.scope,
             )
         else:
             token = authority.issue_admin_token(
                 subject=args.subject,
-                scope=args.scope,
+                scope=(args.scope or [REGISTRY_WRITE_SCOPE])[0],
                 max_calls=args.max_calls,
                 ttl_seconds=args.ttl,
             )

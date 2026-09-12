@@ -9,6 +9,82 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Stage 6 — the Memory / Curator arm
+
+- **`services/arms/memory/`**, the first arm in this repository that answers with
+  something rather than a 501. `POST /recall` and `POST /remember`, both capability-gated,
+  plus a Neural Ring consumer that ingests `artifact` without anyone calling it.
+- **The `memory` Postgres schema** — `entities`, `relationships`, `task_history` and
+  `action_log`, transcribed from `docs/implementation/memory-systems.md` rather than
+  redesigned. Dedicated rather than shared with `public`: a role scoped to
+  `GRANT USAGE ON SCHEMA memory` cannot read the orchestrator's tables however thoroughly
+  the arm ingesting every other arm's output is compromised.
+- **Episodic memory in Qdrant**, which had been in the compose stack since Phase 0 with
+  **nothing reading or writing it**. One collection per (arm, embedding model), and the
+  model is in the name because changing between two models of the *same dimension* fails
+  silently: the writes succeed, the searches return results, and every score is
+  meaningless. The dimension is probed from the live provider, never configured.
+- **Alembic**, for the first time. It has been a declared dependency since Phase 0 and
+  four documents told people to run `alembic upgrade head` against a project with no
+  `alembic.ini`, no `env.py` and no `versions/`. Scoped to the `memory` schema by
+  `include_object`, so an autogenerate run cannot propose dropping another service's
+  tables.
+- **`make migrate-check`**, which compares the ORM against the migrated database and
+  **caught four real disagreements on its first run** — two `DESC` indexes declared
+  without their ordering, and two GIN indexes written as raw SQL and therefore invisible
+  to the comparison.
+- **`action_log.artifact_id`, unique**, which the design document does not have. Ring
+  delivery is at-least-once, so a redelivery is normal operation; without it the second
+  delivery doubles the record and every count built on it is wrong. The same defect as
+  `store_task_result`, fixed before the traffic that would expose it.
+- **An enforceable data diode.** `RecallRequest` has no field for the caller's clearance;
+  it is read from a `clearance:<level>` scope on the capability token and defaults to
+  `internal` when the grant is silent. Filtering happens in the Qdrant query rather than
+  after it, so `limit` is honoured among documents the caller may see, and `withheld`
+  reports how many were suppressed.
+- **`make test-memory`, `make migrate`, `make data-services`**, and a `test-memory` CI job
+  with Postgres, Qdrant and Redis as services. The suite runs against real engines and the
+  target refuses to run without them.
+- **`MemoryClient` in both SDKs**, `docs/api/openapi/memory.yaml`, and
+  `docs/adr/011-memory-arm-and-the-two-stores.md`.
+- **`make smoke` round-trips an artifact through Memory** — remember, duplicate
+  detection, recall — against the running stack, with a capability token minted from the
+  secret the stack is actually using.
+
+### Fixed
+
+- **`RequireCapability` answered 403 instead of 401 when no token was presented at all**,
+  because task binding was checked before token presence. That collapsed the distinction
+  Stage 5 introduced deliberately: 401 tells a client to obtain a token, 403 tells it not
+  to bother. Found by a Memory test asserting the 401.
+- **`scripts/mint_capability.py` wrote a structlog line to stdout**, so command
+  substitution captured a log line *and* the token. Pasted into an `Authorization` header
+  that produced a malformed request, which uvicorn answered with a bare
+  `400 Invalid HTTP request received` naming neither the header nor the cause — while the
+  script's own docstring claimed stdout carried the token and nothing else. Diagnostics
+  now go to stderr.
+- **`make sdk-parity-check` had two blind spots.** Its TypeScript regex required a generic
+  type parameter, so an ordinary `this.post('/x', body)` matched nothing and was exempt
+  from every assertion in the file; and `arm_routes` derived only `spec.endpoint`, so any
+  route an arm added beyond it was unchecked. The check now covers 9 services and 34
+  calls, and reads one `FRAMEWORK_ARMS` list rather than two that could disagree.
+- **`check_compose_env.py` and `check_port_map.py` did not know about the Memory arm**,
+  which would have left its environment and ports unchecked — the exact gap those checks
+  exist to close.
+
+### Changed
+
+- **Collection floors raised**: shared framework 210, orchestrator 226, memory 63 (new).
+- **`roster.py` marks Memory `implemented: True`** — the first arm to do so. A test
+  asserts the implemented list explicitly, so Stage 8 flipping the next one has to come
+  through it.
+- **`make up` generates a per-run capability secret** and passes it to compose in the
+  environment, never to a file, so the stack is fully usable out of the box without a
+  committed or on-disk secret. `make smoke` reads it back from the running container.
+- **`create_arm_app` accepts `lifespan` and `readiness`**, so an arm that owns connections
+  can open them and report on them honestly. `/ready` is now false when a declared check
+  fails.
+
 #### Stage 5 — the Neural Ring and capability tokens
 
 - **`octollm_common.capability`** — capability tokens, which existed as 87KB of design

@@ -34,12 +34,49 @@ from collections.abc import Awaitable, Callable
 import structlog
 from fastapi import HTTPException, Request, status
 
-from .capability import CapabilityClaims, CapabilityDenied, CapabilityVerifier
+from .capability import (
+    CapabilityClaims,
+    CapabilityConfigError,
+    CapabilityDenied,
+    CapabilityVerifier,
+)
 from .errors import error_body
 
 logger = structlog.get_logger(__name__)
 
-__all__ = ["CapabilityPolicy", "RequireCapability", "bearer_token"]
+__all__ = ["CapabilityPolicy", "RequireCapability", "bearer_token", "clearance_from"]
+
+#: Scope prefix granting a data-diode clearance, e.g. `memory:clearance:confidential`.
+#: Encoded in the scope list rather than as a new claim so that clearance travels
+#: through the existing token format -- and, more importantly, so it is something the
+#: orchestrator grants rather than something a caller states about itself.
+CLEARANCE_PREFIX = "clearance:"
+
+
+def clearance_from(claims: CapabilityClaims, default: str = "internal") -> str:
+    """
+    Read the caller's data-diode clearance out of a verified grant.
+
+    Returns `default` -- the *safer* level -- when the token grants none. A token that
+    says nothing about clearance must not thereby receive the highest one, and the
+    request model deliberately has no field a caller could use to assert it.
+
+    The highest granted level wins when several are present, which only happens if an
+    issuer mints a redundant token; it is resolved rather than treated as an error
+    because refusing a *wider* grant at the callee would be a confusing failure.
+    """
+    from .models.provenance import Sensitivity
+
+    granted = [
+        scope.removeprefix(CLEARANCE_PREFIX)
+        for scope in claims.scope
+        if scope.startswith(CLEARANCE_PREFIX)
+    ]
+    levels = [level for level in granted if level in {s.value for s in Sensitivity}]
+    if not levels:
+        return default
+    order = [s.value for s in Sensitivity]
+    return max(levels, key=order.index)
 
 
 def bearer_token(request: Request) -> str:
@@ -75,14 +112,35 @@ class CapabilityPolicy:
 
     def __init__(
         self,
-        verifier: CapabilityVerifier,
+        verifier: CapabilityVerifier | None = None,
         *,
         scope: str | None = None,
         bind_task: bool = True,
+        verifier_factory: Callable[[], CapabilityVerifier] | None = None,
     ) -> None:
-        self.verifier = verifier
+        if (verifier is None) == (verifier_factory is None):
+            raise ValueError("pass exactly one of verifier or verifier_factory")
+        self._verifier = verifier
+        self._factory = verifier_factory
         self.scope = scope
         self.bind_task = bind_task
+
+    @property
+    def verifier(self) -> CapabilityVerifier:
+        """
+        The verifier, built on first use when this policy was given a factory.
+
+        Deferred construction matters for an arm. A verifier raises
+        `CapabilityConfigError` when no signing secret is configured, and building one
+        at import time would stop an unconfigured container from serving `/health` --
+        turning "authorization is not set up" into "this service is down", which are
+        different problems with different fixes. Deferring it means the arm starts,
+        reports itself honestly, and refuses the gated routes with 503.
+        """
+        if self._verifier is None:
+            assert self._factory is not None  # noqa: S101 - guaranteed by __init__
+            self._verifier = self._factory()
+        return self._verifier
 
 
 def RequireCapability(  # noqa: N802 - a dependency factory, named like the thing it makes
@@ -111,6 +169,22 @@ def RequireCapability(  # noqa: N802 - a dependency factory, named like the thin
         token = bearer_token(request)
         request_id = getattr(request.state, "request_id", "unknown")
 
+        # Token presence is checked FIRST, ahead of task binding. A caller with no
+        # token at all must be told to obtain one (401) whatever else is missing from
+        # the request; answering 403 because a header was absent would tell an
+        # unauthenticated client that retrying is pointless, and it would collapse the
+        # 401/403 distinction into "something was wrong".
+        if not token:
+            logger.warning("capability_denied", reason="missing_token", path=request.url.path)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=error_body(
+                    code="unauthenticated",
+                    message="A capability token is required.",
+                    request_id=request_id,
+                ),
+            )
+
         task_id: str | None = None
         if policy.bind_task:
             task_id = request.headers.get("x-task-id") or None
@@ -128,7 +202,26 @@ def RequireCapability(  # noqa: N802 - a dependency factory, named like the thin
                 )
 
         try:
-            claims = await policy.verifier.verify(
+            verifier = policy.verifier
+        except CapabilityConfigError as exc:
+            # Not configured is not the same as not authorized. 503 tells an operator
+            # to set a secret; 403 would tell a caller to find a better token.
+            logger.error("capability_unconfigured", path=request.url.path, error=str(exc))
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=error_body(
+                    code="unavailable",
+                    message=(
+                        "Capability tokens are not configured on this deployment, so "
+                        "this endpoint is disabled. Set the capability signing secret "
+                        "to enable it."
+                    ),
+                    request_id=request_id,
+                ),
+            ) from exc
+
+        try:
+            claims = await verifier.verify(
                 token,
                 required_scope=policy.scope,
                 task_id=task_id,

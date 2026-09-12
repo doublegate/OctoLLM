@@ -1,0 +1,62 @@
+[project]
+name = "octollm-memory-arm"
+version = "0.5.0"
+description = "OctoLLM Memory / Curator arm: episodic vectors in Qdrant, semantic provenance in Postgres"
+requires-python = ">=3.14,<3.15"
+license = {text = "Apache-2.0"}
+
+# The runtime dependencies are installed from the root manifest, which is what the
+# container image does. This file exists for the test configuration below and to name
+# the extras a developer needs; it is not a second source of truth for versions.
+dependencies = [
+    "fastapi>=0.162.0",
+    "pydantic>=2.14.1",
+    "pydantic-settings>=2.16.1",
+    "sqlalchemy>=2.1.6",
+    "psycopg[binary]>=3.3.5",
+    "qdrant-client>=1.20.0",
+    "alembic>=1.20.1",
+    "redis>=8.1.0",
+    "structlog>=26.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.1",
+    "pytest-cov>=7.1.0",
+    "httpx>=0.28.1",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = [
+    "-q",
+    "--strict-markers",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+    # Lower than the shared framework's 90 because this arm's uncovered paths are the
+    # failure branches of two network clients -- a Qdrant that accepts a write and then
+    # fails to report its own collection config, for instance. Those are reachable in
+    # production and worth having, and unreachable in a suite that is not permitted to
+    # break the services it runs against.
+    "--cov-fail-under=80",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+omit = ["*/tests/*", "*/alembic/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]

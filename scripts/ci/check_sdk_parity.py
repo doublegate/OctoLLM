@@ -59,6 +59,7 @@ SDK_MODULES: dict[str, tuple[str, str]] = {
     "judge": ("judge", "judge"),
     "safety-guardian": ("safety_guardian", "safety"),
     "executor": ("executor", "executor"),
+    "memory": ("memory", "memory"),
 }
 
 #: Calls both SDKs make against something no service serves yet, each with the stage
@@ -106,10 +107,16 @@ _PY_CALL = re.compile(
     re.VERBOSE,
 )
 _PY_PLAIN = re.compile(r"""_make_plain_text_request\(\s*["'](\w+)["'],\s*f?["']([^"']+)["']""")
-# `[^(]*` rather than `[^>]*` for the type parameter: a nested generic such as
-# `Record<string, unknown>` contains a `>` of its own, and stopping at the first one
-# silently skipped every call that used one. A type parameter never contains `(`.
-_TS_CALL = re.compile(r"""this\.(get|post|put|delete|patch)<[^(]*?>\(\s*[`'"]([^`'"]+)[`'"]""")
+# Two things this has to tolerate, each of which silently hid calls from every
+# assertion in this file when it did not:
+#
+#   * a nested generic -- `Record<string, unknown>` contains a `>` of its own, so
+#     `[^>]*` stopped at the wrong one and skipped the call. A type parameter never
+#     contains `(`, so `[^(]*?` is the safe stop.
+#   * **no** generic at all -- `this.post('/recall', body)` is ordinary TypeScript and
+#     was matched by nothing, so a client written that way was exempt from the parity
+#     check entirely. That is how a whole service's calls can pass unexamined.
+_TS_CALL = re.compile(r"""this\.(get|post|put|delete|patch)(?:<[^(]*?>)?\(\s*[`'"]([^`'"]+)[`'"]""")
 
 
 def python_sdk_calls(stem: str) -> set[Call]:
@@ -156,11 +163,34 @@ def orchestrator_routes() -> set[Call]:
     return routes
 
 
+#: Routes an arm adds beyond `create_arm_app`'s framework set and its own
+#: `spec.endpoint`. Derived from the service module's `add_api_route` calls, so an arm
+#: cannot grow a route that this check is unaware of -- which is precisely what
+#: happened to `POST /remember`: the SDKs called it, no route in `arm_routes` served
+#: it, and the check passed because it did not know to look.
+_EXTRA_ROUTE = re.compile(
+    r"""add_api_route\(\s*["']([^"']+)["'],[^)]*?methods=\[\s*["'](\w+)["']""",
+    re.DOTALL,
+)
+
+
+def arm_extra_routes(arm_id: str) -> set[Call]:
+    module = REPO_ROOT / "services" / "arms" / arm_id.replace("-", "_") / "src" / "main.py"
+    if not module.exists():
+        return set()
+    found = _EXTRA_ROUTE.findall(module.read_text())
+    return {(method.upper(), normalise(path)) for path, method in found}
+
+
 def arm_routes(arm_id: str) -> set[Call]:
     from octollm_common.roster import SPECS  # noqa: PLC0415
 
     spec = SPECS[arm_id]
-    return {*FRAMEWORK_PATHS, ("POST", normalise(spec.endpoint))}
+    return {
+        *FRAMEWORK_PATHS,
+        ("POST", normalise(spec.endpoint)),
+        *arm_extra_routes(arm_id),
+    }
 
 
 _RUST_ROUTE = re.compile(r"""\.route\(\s*"([^"]+)"\s*,\s*(get|post|put|delete|patch)\(""")
@@ -173,6 +203,17 @@ def rust_routes(main_rs: Path) -> set[Call]:
     }
 
 
+#: Arms whose whole route set is decided by `create_arm_app` plus their own
+#: `add_api_route` calls, so the spec can be checked against it exactly. The executor is
+#: Rust and the other two services have hand-written specs describing more than they
+#: serve, which PENDING already covers.
+#:
+#: One list, read by both `served()` and `check_specs_match_routes`. Two lists is how an
+#: arm ends up in the SDK registry with an empty route set, which makes every call it
+#: makes look unserved -- or, worse, exempts it from the check entirely.
+FRAMEWORK_ARMS = ("planner", "retriever", "coder", "judge", "safety-guardian", "memory")
+
+
 def served() -> dict[str, set[Call]]:
     """What each service actually answers, derived from the code that answers it."""
     routes = {
@@ -180,7 +221,7 @@ def served() -> dict[str, set[Call]]:
         "reflex-layer": rust_routes(REPO_ROOT / "services/reflex-layer/src/main.rs"),
         "executor": rust_routes(REPO_ROOT / "services/arms/executor/src/main.rs"),
     }
-    for arm_id in ("planner", "retriever", "coder", "judge", "safety-guardian"):
+    for arm_id in FRAMEWORK_ARMS:
         routes[arm_id] = arm_routes(arm_id)
     return routes
 
@@ -219,12 +260,6 @@ def check_service(service: str, available: set[Call]) -> list[str]:
             f"with the stage that will."
         )
     return failures
-
-
-#: Arms whose whole route set is decided by `create_arm_app`, so the spec can be
-#: checked against it exactly. The executor is Rust and the other two services have
-#: hand-written specs describing more than they serve, which PENDING already covers.
-FRAMEWORK_ARMS = ("planner", "retriever", "coder", "judge", "safety-guardian")
 
 
 def check_specs_match_routes(routes: dict[str, set[Call]]) -> list[str]:

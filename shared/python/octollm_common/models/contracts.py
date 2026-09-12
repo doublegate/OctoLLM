@@ -35,6 +35,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from .provenance import Artifact, Sensitivity
+
 __all__ = [
     "ArmRequest",
     "ArmResponse",
@@ -44,9 +46,15 @@ __all__ = [
     "CodeResponse",
     "ExecuteRequest",
     "ExecuteResponse",
+    "MemoryHit",
+    "MemoryScope",
     "PlanRequest",
     "PlanResponse",
     "PlanStep",
+    "RecallRequest",
+    "RecallResponse",
+    "RememberRequest",
+    "RememberResponse",
     "SearchRequest",
     "SearchResponse",
     "SearchResult",
@@ -255,3 +263,95 @@ class ExecuteResponse(ArmResponse):
     stderr: str = ""
     timed_out: bool = False
     duration_ms: int = Field(0, ge=0)
+
+
+# ---------------------------------------------------------------------------
+# Memory / Curator :8007 -- POST /recall, POST /remember
+# ---------------------------------------------------------------------------
+
+
+class MemoryScope(StrEnum):
+    """
+    Which store answered, or is being written to.
+
+    `episodic` is per-arm experience in Qdrant; `semantic` is the global knowledge
+    graph in Postgres. Naming the store in the response is what lets a bad recall be
+    attributed to the index rather than to the ranking -- the same reason the
+    Retriever names its fusion strategy.
+    """
+
+    EPISODIC = "episodic"
+    SEMANTIC = "semantic"
+
+
+class RememberRequest(ArmRequest):
+    """
+    Commit one artifact to memory.
+
+    The artifact carries its own provenance, including `sensitivity`, and Memory
+    stores that label rather than deriving one. An artifact whose label is decided by
+    the store instead of the producer is a label nobody can audit.
+    """
+
+    artifact: Artifact
+    index_episodic: bool = Field(
+        True,
+        description="Embed and index in this arm's episodic collection. False writes "
+        "provenance to the semantic store only -- used for artifacts whose content is "
+        "not worth a vector, such as an acknowledgement.",
+    )
+
+
+class RememberResponse(ArmResponse):
+    artifact_id: str
+    episodic_written: bool = Field(..., description="Indexed in Qdrant")
+    semantic_written: bool = Field(..., description="Recorded in the knowledge graph")
+    duplicate: bool = Field(
+        False,
+        description="This artifact_id was already stored. Writes are idempotent because "
+        "ring delivery is at-least-once, so a redelivery must not double-count.",
+    )
+
+
+class RecallRequest(ArmRequest):
+    """
+    Ask memory what it knows.
+
+    Note what is **absent**: any field naming the caller's clearance. Sensitivity is
+    read from the capability token, never from the request -- a caller that states its
+    own clearance is the same escalation as an arm that states its own peers.
+    """
+
+    query: str = Field(..., min_length=1, max_length=10_000)
+    top_k: int = Field(10, ge=1, le=100)
+    scope: MemoryScope = MemoryScope.EPISODIC
+    arm_id: str | None = Field(
+        None, description="Whose episodic memory to search. None searches the caller's."
+    )
+
+
+class MemoryHit(BaseModel):
+    """One recalled artifact, with enough provenance to judge whether to trust it."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    artifact_id: str
+    artifact_type: str
+    content: str
+    score: float = Field(..., ge=0.0, le=1.0)
+    created_by: str = Field(..., description="arm_id of the producer")
+    task_id: str = Field(..., description="The task that produced it")
+    sensitivity: Sensitivity
+    created_at: datetime
+
+
+class RecallResponse(ArmResponse):
+    hits: list[MemoryHit] = Field(default_factory=list)
+    scope: MemoryScope
+    withheld: int = Field(
+        0,
+        ge=0,
+        description="Matches suppressed because they exceed the caller's clearance. "
+        "Reported as a count so the diode is visible: silently returning fewer results "
+        "makes a clearance problem look like an empty index.",
+    )

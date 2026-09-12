@@ -283,7 +283,7 @@ jobs:
           fail_ci_if_error: false
 
   test-orchestrator:
-    name: Test orchestrator (floor 225)
+    name: Test orchestrator (floor 226)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -320,6 +320,81 @@ jobs:
           files: services/orchestrator/coverage.xml
           flags: orchestrator
           name: orchestrator
+          fail_ci_if_error: false
+
+  test-memory:
+    name: Test Memory arm (floor 63, against Postgres + Qdrant + Redis)
+    runs-on: ubuntu-latest
+    # Real engines, not doubles. Every assertion worth making about this arm is a
+    # property of the engine underneath it: ON CONFLICT against a unique constraint, a
+    # GIN index on a tsvector expression, a payload filter combined with a vector
+    # search, at-least-once redelivery. SQLite has no JSONB and no schemas, and
+    # qdrant-client's local mode is a separate implementation of the query language --
+    # a suite passing against either would prove agreement with a substitute.
+    services:
+      postgres:
+        image: postgres:17.7-alpine
+        env:
+          POSTGRES_USER: octollm
+          POSTGRES_PASSWORD: octollm
+          POSTGRES_DB: octollm
+        options: >-
+          --health-cmd "pg_isready -U octollm"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      qdrant:
+        image: qdrant/qdrant:v1.12.5
+        ports:
+          - 6333:6333
+      redis:
+        image: redis:8-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    env:
+      MEMORY_DATABASE_URL: postgresql+psycopg://octollm:octollm@localhost:5432/octollm
+      MEMORY_QDRANT_URL: http://localhost:6333
+      REDIS_URL: redis://localhost:6379/0
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install the arm and the shared framework
+        run: |
+          pip install -e "shared/python[dev]"
+          pip install -e "services/arms/memory[dev]"
+
+      # The suite asserts against the MIGRATED schema and skips if it is absent, so
+      # this step is what makes the tests run rather than quietly pass.
+      - name: make migrate
+        run: make migrate
+
+      # The ORM and the migration must not drift apart. This caught four real
+      # disagreements the first time it ran.
+      - name: make migrate-check
+        run: make migrate-check
+
+      - name: make test-memory
+        run: make test-memory
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: services/arms/memory/coverage.xml
+          flags: memory
+          name: memory
           fail_ci_if_error: false
 
   test-sdk-python:
@@ -413,6 +488,7 @@ jobs:
       - test-rust
       - test-shared
       - test-orchestrator
+      - test-memory
       - test-sdk-python
       - test-sdk-typescript
       - secrets

@@ -96,10 +96,31 @@ def reflex_env_names() -> set[str]:
     return {f"REFLEX_{section}__{field}".upper() for section, field in keys}
 
 
+def memory_env_names() -> set[str]:
+    """`MEMORY_<FIELD>` for every field on the Memory arm's Settings."""
+    sys.path.insert(0, str(REPO_ROOT / "services" / "arms" / "memory"))
+    try:
+        from src.config import Settings as MemorySettings  # noqa: PLC0415
+    except ModuleNotFoundError as exc:  # pragma: no cover
+        sys.exit(
+            f"cannot import the Memory arm's Settings ({exc}).\n"
+            "It needs pydantic-settings and the shared framework on the path."
+        )
+    prefix = MemorySettings.model_config.get("env_prefix", "")
+    return {f"{prefix}{name}".upper() for name in MemorySettings.model_fields}
+
+
 # Which schema applies to which compose service.
+#
+# An arm that sets environment variables and is absent from this table is an arm whose
+# configuration is unchecked -- which is the state every service was in when all 23
+# compose variables were silently ignored. Add a service here in the same change that
+# gives it settings.
 SCHEMAS = {
     "orchestrator": ("ORCHESTRATOR_", orchestrator_env_names),
     "reflex-layer": ("REFLEX_", reflex_env_names),
+    "memory-arm": ("MEMORY_", memory_env_names),
+    "memory-migrate": ("MEMORY_", memory_env_names),
 }
 
 

@@ -144,7 +144,7 @@ class RingAuthority:
         max_calls: int = 5,
         max_tokens: int | None = None,
         ttl_seconds: int | None = None,
-        scope: str | None = None,
+        scope: str | list[str] | None = None,
     ) -> str:
         """
         Mint a grant for one declared edge, one task, and a bounded number of calls.
@@ -169,11 +169,18 @@ class RingAuthority:
                 "octollm_common.roster if it is intended; it is reviewed there."
             )
 
+        if scope is None:
+            scopes = [scope_for(callee)]
+        elif isinstance(scope, str):
+            scopes = [scope]
+        else:
+            scopes = list(scope)
+
         token = self._issuer.issue(
             caller=caller,
             callee=callee,
             task_id=task_id,
-            scope=[scope or scope_for(callee)],
+            scope=scopes,
             constraints=PeerConstraints(max_calls=max_calls, max_tokens=max_tokens),
             ttl_seconds=ttl_seconds or self._default_ttl,
         )

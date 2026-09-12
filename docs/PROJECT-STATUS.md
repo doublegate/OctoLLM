@@ -2,7 +2,7 @@
 
 **The single source of truth for where OctoLLM actually is.**
 
-**Version**: 0.5.0 · **Updated**: 2026-09-12 · **Stages complete**: 0–5 of 12
+**Version**: 0.5.0 · **Updated**: 2026-09-12 · **Stages complete**: 0–6 of 12
 
 > **If you are Claude Code starting a session, read this file first, then `CLAUDE.md`
 > at the repository root.** This file is *where the project is*. `CLAUDE.md` is *how to
@@ -49,12 +49,12 @@ The full plan lives at `~/.claude/plans/vectorized-singing-honey.md` (not in the
 | **Shared arm framework** (`octollm_common`) | **Implemented** | App factory, error envelope, contract models, arm roster, LLM providers, capability tokens, the Neural Ring and peer clients. Imported by all eight arms *and* the orchestrator. |
 | **Planner / Retriever / Coder / Judge / Safety Guardian** (`:8001`–`:8005`) | **Scaffolded** | Serve `/health`, `/ready`, `/capabilities`, `/metrics`. Their own endpoint returns **501 naming Stage 8** — never a plausible fake. |
 | **Executor arm** (Rust, `:8006`, host `:18006`) | **Stub** | 21 lines, serves `/health` only. Sandbox is Stage 9. |
-| **Memory / Curator** (`:8007`) | **Not built** | Stage 6. It is the Retriever's corpus, so it lands before the Retriever is useful. |
+| **Memory / Curator** (`:8007`) | **Implemented** | `POST /recall` and `POST /remember`, both capability-gated. Consumes `artifact` from the ring. Episodic vectors in Qdrant, semantic provenance in a dedicated `memory` Postgres schema. |
 | **Red Team** (`:8008`) | **Not built** | Stage 11. Flag-gated off, outside the default compose profile. |
 | **Python SDK / TypeScript SDK** | **Implemented** | 8 service clients each. Unpublished — neither name exists on PyPI or npm. |
-| **PostgreSQL / Redis / Qdrant** | **Running** | Redis also carries the Neural Ring's artifact streams. Qdrant is in the stack and **nothing reads or writes it** until Stage 6. |
+| **PostgreSQL / Redis / Qdrant** | **Running** | All three are now read and written: Postgres by the orchestrator and Memory, Redis by the reflex cache and the Neural Ring, **Qdrant by Memory** — as of Stage 6 it is no longer a container nothing touches. |
 
-`make up` brings all eleven services to **healthy**; `make smoke` passes.
+`make up` brings all twelve services to **healthy**; `make smoke` passes, and it now round-trips an artifact through Memory.
 
 ### Test suites — all derived, all run by CI
 
@@ -63,9 +63,11 @@ The full plan lives at `~/.claude/plans/vectorized-singing-honey.md` (not in the
 | Rust workspace | **241** | — | `cargo test --workspace --all-features` |
 | Rust, Redis-backed | **18** | 18 | `#[ignore]`d; 17 had never executed *anywhere* before Stage 0 |
 | Shared framework | **210** | 210 | coverage floored at 90%; includes the Neural Ring against a real Redis |
-| Orchestrator | **225** | 225 | coverage floored at 85% || Python SDK | **28** | 28 | |
+| Orchestrator | **226** | 226 | coverage floored at 85% |
+| Memory arm | **63** | 63 | coverage floored at 80%; against real Postgres, Qdrant and Redis |
+| Python SDK | **28** | 28 | |
 | TypeScript SDK | **28** (3 files) | 3 files | had no CI job at all before Stage 0 |
-| **Total** | **750** | | |
+| **Total** | **814** | | |
 
 **Every suite asserts a collection floor.** A suite that silently collects zero tests
 produces exactly the same green check as one that ran them all. Raise a floor when you
@@ -86,8 +88,8 @@ before*.
 | **3** | ✅ merged (#44) | **The stack comes up.** Six defects each made it unrunnable; two more were visible only by running it. |
 | **4** | ✅ merged (#46) | **The shared arm framework.** Six defects, all in code that green tests already covered. |
 | **5** | ✅ merged | **Neural Ring + capability tokens.** Built *before* any arm — retrofitting seven is strictly worse. |
-| **6** | ⬜ next | **Memory / Curator arm.** Qdrant becomes real; global semantic memory exists. |
-| **7** | ⬜ | **Execution engine** (LangGraph), worker, cancellation. A task finally reaches `completed`. |
+| **6** | ✅ merged | **Memory / Curator arm.** Qdrant is real; global semantic memory exists. |
+| **7** | ⬜ next | **Execution engine** (LangGraph), worker, cancellation. A task finally reaches `completed`. |
 | **8** | ⬜ | The remaining six Python arms. Coder↔Judge peer loop converges. |
 | **9** | ⬜ | Executor sandbox + capability enforcement. 18-test escape suite, plus a negative control proving escapes succeed unhardened. |
 | **10** | ⬜ | Evaluation harness + benchmark gates. Real numbers replace every "TBD". |
@@ -96,6 +98,101 @@ before*.
 
 **Stages 0–3 deliver a working, honest, releasable system on their own.** That is the
 natural fallback boundary if scope has to be cut.
+
+---
+
+## What is new (Stage 6, merged 2026-09-12)
+
+**Qdrant stopped being a container nothing reads.** It has been in the compose stack
+since Phase 0 with nothing reading or writing it, while the architecture documents
+described "Global Semantic Memory", "Local Episodic Memory" and "Data Diodes". Memory was
+a layer with no owner.
+
+| Piece | What it is |
+|---|---|
+| `services/arms/memory/` | The arm. `POST /recall`, `POST /remember`, and a Neural Ring consumer. |
+| `memory` Postgres schema | `entities`, `relationships`, `task_history`, `action_log` — transcribed from `docs/implementation/memory-systems.md`, which has carried an implementable schema since before any of this was built. |
+| Qdrant episodic store | One collection per (arm, embedding model). |
+| `services/arms/memory/alembic/` | **The first migration environment in this repository.** |
+
+### Alembic exists now, and so does a check that can fail
+
+`alembic` has been a declared dependency since Phase 0, and four documents told people to
+run `alembic upgrade head` against a project with no `alembic.ini`, no `env.py` and no
+`versions/`. Tables came from `Base.metadata.create_all`.
+
+`make migrate-check` compares the ORM against the migrated database. **It caught four
+real disagreements the first time it ran** — two `DESC` indexes declared without their
+ordering, and two GIN indexes written as raw SQL in the migration and so invisible to the
+comparison. A schema described twice with nothing forcing agreement is the defect this
+repository spent its first phase in.
+
+The orchestrator's `public` tables still come from `create_all`. Known gap, listed below.
+
+### The embedding-model trap, and the name that prevents it
+
+A collection is `octollm_episodic__<arm>__<model>`. Changing embedding *dimension* fails
+loudly, which is fine. Changing between two **different models of the same dimension**
+does not fail at all: writes succeed, searches return results, scores look plausible, and
+every one is meaningless, because cosine similarity across two embedding spaces measures
+nothing. Putting the model in the name makes that a new, empty collection instead.
+
+The dimension is **probed** from the live provider, never configured — a configured
+dimension is a second place for the truth to live, and the one that goes stale.
+
+### The data diode is enforceable now
+
+`RecallRequest` has **no field** for the caller's clearance. It is read from a
+`clearance:<level>` scope on the capability token, defaulting to `internal` when the
+grant is silent. Asking for more in the body is a 422, not a quiet ignore.
+
+That is Stage 5's roster-not-registry rule one layer out: *a caller that states its own
+clearance is the same escalation as an arm that states its own peers.* Filtering happens
+in the Qdrant query rather than after it, so `limit` is honoured among documents the
+caller may see, and `withheld` reports the count — silently returning fewer results makes
+a clearance boundary look like an empty index.
+
+### Proven against the running stack
+
+`make smoke` now round-trips an artifact through Memory: remember → duplicate detection →
+recall, with a capability token minted against the secret the stack is actually using.
+That is Stage 6's exit criterion as a green check rather than a claim.
+
+### What Stage 6 found in Stage 5's work
+
+Two defects, both in code that was green:
+
+1. **`RequireCapability` checked task binding before token presence**, so a request with
+   no token at all got 403 instead of 401 — collapsing the distinction Stage 5 introduced
+   deliberately. Found by a Memory test asserting the 401.
+2. **`scripts/mint_capability.py` wrote a structlog line to stdout**, so `$(mint...)`
+   captured a log line *and* the token. Substituting that into an `Authorization` header
+   produced a malformed request that uvicorn answered with a bare
+   `400 Invalid HTTP request received`, naming neither the header nor the cause. The
+   script's own docstring claimed stdout carried the token and nothing else.
+
+`make sdk-parity-check` had two blind spots of its own: its TypeScript regex required a
+generic type parameter, so `this.post('/x', body)` was invisible and exempt from every
+assertion; and `arm_routes` knew only about `spec.endpoint`, so an arm's extra routes were
+unchecked. Both are fixed, and the check now covers **9 services, 34 calls**.
+
+### Tested against real engines
+
+Postgres, Qdrant and Redis — not SQLite, not a hand-written double, not qdrant-client's
+local mode. Every assertion worth making here is a property of the engine underneath:
+`ON CONFLICT DO NOTHING` against a named constraint, a GIN index on a `tsvector`
+expression, a payload filter combined with a vector search, at-least-once redelivery.
+`make test-memory` **refuses to run** when they are absent rather than skipping.
+
+### One honest limitation
+
+With the default `FakeProvider`, `embed()` returns hash-derived unit vectors: identical
+text scores 1.0, two different texts score near zero. **Recall works, is deterministic,
+and is not semantic.** That keeps the stack runnable with no API keys and every test
+reproducible, but a deployment reading meaning into the ordering must configure a real
+embedding provider first.
+
+Rationale and alternatives: `docs/adr/011-memory-arm-and-the-two-stores.md`.
 
 ---
 
@@ -251,7 +348,7 @@ Do not "fix" these. They are correct for the current stage, and a test asserts e
 | A submitted task stays `pending` forever | No execution engine exists. `make smoke` **asserts** `pending` on purpose. | Stage 7 |
 | Every arm's own endpoint returns **501** | A stub that answered convincingly would make an unimplemented arm indistinguishable from a working one. | Stage 8 |
 | `POST /arms/register` returns **503** by default | No `ORCHESTRATOR_CAPABILITY_SECRET` is configured, so it fails closed. Set one and it takes a capability token. | configured, not staged |
-| Qdrant is running and unused | Memory owns it. | Stage 6 |
+| Recall ranking is not semantic | `FakeProvider` embeds by hash, so identical text matches exactly and nothing else ranks meaningfully. Configure a real embedding provider. | configured, not staged |
 | Six performance targets read "not measured" | There is no eval harness yet. Whatever number comes out is what ships. | Stage 10 |
 | Container images are built but not published | Gated on `ENABLE_IMAGE_PUBLISH`; there is no release to publish. | Stage 12 |
 | Both SDKs call some routes that 404 | Listed with their stage in `scripts/ci/check_sdk_parity.py`; an entry that outlives its stage fails the check. | 7 and 9 |
@@ -325,7 +422,7 @@ Two smaller ones raised at Stage 4 and not yet answered:
 
 ## Documents you can trust, and documents you cannot
 
-The repository carries 340 tracked markdown files, most written ahead of the code.
+The repository carries 341 tracked markdown files, most written ahead of the code.
 Reconciling them is Stage 12. Until then:
 
 **Authoritative:**

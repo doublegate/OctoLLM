@@ -53,6 +53,8 @@ from octollm_common.models.contracts import (
     ExecuteResponse,
     PlanRequest,
     PlanResponse,
+    RecallRequest,
+    RecallResponse,
     SearchRequest,
     SearchResponse,
     ValidateRequest,
@@ -76,10 +78,10 @@ __all__ = [
 
 ArmStatus = Literal["healthy", "degraded", "unavailable"]
 
-#: The contract models each arm's endpoint accepts and returns. Arms with no contract
-#: yet (memory, red-team) are absent, and their schemas are published as `{}` rather
-#: than as a guess -- an invented schema is worse than an empty one, because a client
-#: can act on it.
+#: The contract models each arm's endpoint accepts and returns. An arm with no contract
+#: yet (red-team, Stage 11) is absent, and its schemas are published as `{}` rather than
+#: as a guess -- an invented schema is worse than an empty one, because a client can act
+#: on it.
 _CONTRACT_MODELS: dict[str, tuple[type[BaseModel], type[BaseModel]]] = {
     "planner": (PlanRequest, PlanResponse),
     "retriever": (SearchRequest, SearchResponse),
@@ -87,6 +89,7 @@ _CONTRACT_MODELS: dict[str, tuple[type[BaseModel], type[BaseModel]]] = {
     "judge": (ValidateRequest, ValidateResponse),
     "safety-guardian": (CheckRequest, CheckResponse),
     "executor": (ExecuteRequest, ExecuteResponse),
+    "memory": (RecallRequest, RecallResponse),
 }
 
 

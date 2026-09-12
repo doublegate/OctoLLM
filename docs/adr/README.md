@@ -91,6 +91,10 @@ Links to relevant resources, discussions, or documentation.
   - **Status**: Accepted
   - **Summary**: Arms coordinate without the brain — Redis Streams for artifacts, capability-gated HTTP for the tight loops — with topology declared in the roster and authorization reading only that, never the arm-reported registry. Tokens are ≤120s, bound to one callee and one task, and counted by the callee rather than trusted to the caller. Amends `capability-isolation.md:167`, which the ring made false
 
+- [ADR-011: The Memory Arm, Two Stores, and an Enforceable Data Diode](./011-memory-arm-and-the-two-stores.md)
+  - **Status**: Accepted
+  - **Summary**: Memory owns storage — semantic provenance in a dedicated `memory` Postgres schema, episodic vectors in Qdrant, which nothing had ever read or written. Alembic exists for the first time, scoped to that schema, with `alembic check` catching ORM/migration drift (it found four disagreements on its first run). The collection name carries the embedding model, because swapping two models of the same dimension fails silently and meaninglessly. Clearance is read from the capability token and never from the request
+
 ## Creating New ADRs
 
 When making a significant architectural decision:
