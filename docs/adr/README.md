@@ -81,7 +81,11 @@ Links to relevant resources, discussions, or documentation.
 
 - [ADR-008: Versioning, the VERSION File, and the Makefile as the Command Surface](./008-versioning-and-release.md)
   - **Status**: Accepted
-  - **Summary**: One `VERSION` file propagated to 20 sites by a check that can fail; current version is 0.5.0 because nothing was ever tagged or published; every check is a make target and CI invokes those targets rather than its own copy
+  - **Summary**: One `VERSION` file propagated to 22 sites by a check that can fail; current version is 0.5.0 because nothing was ever tagged or published; every check is a make target and CI invokes those targets rather than its own copy
+
+- [ADR-009: Performance Targets](./009-performance-targets.md)
+  - **Status**: Accepted
+  - **Summary**: Replaces seven targets that could not be met, measured, or in one case mean anything — a reflex target 800x looser than the measured detector, a 60% cache-hit target that describes a different workload and measured a cache holding verdicts rather than answers, and one latency percentile applied to every task shape at once
 
 ## Creating New ADRs
 

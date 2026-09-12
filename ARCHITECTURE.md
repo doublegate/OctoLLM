@@ -198,14 +198,24 @@ Each arm receives time-limited JWT tokens with specific permissions:
 
 ## Performance Targets
 
+> Revised 2026-09-12. The six targets below replaced an earlier set that recorded every
+> row as TBD; three are now measured. The full table, with the reasoning for each number,
+> lives in `README.md#performance-targets` and `docs/adr/009-performance-targets.md`.
+
 | Metric | Target | Measured |
 |--------|--------|----------|
-| Reflex Layer Latency | <10ms P95 | TBD |
-| Orchestrator Latency | <100ms P95 | TBD |
-| End-to-End Task Latency | <30s P95 | TBD |
-| Task Success Rate | >95% | TBD |
-| Cache Hit Rate | >60% (after warmup) | TBD |
-| Cost per Task | <50% vs monolithic GPT-4 | TBD |
+| Reflex screening, in process, <=1 KB | <100 us P95 | **~12 us** |
+| Reflex screening, 8.6 KB | <500 us P95 | **47 us** |
+| Redaction (mask) | <5 us P95 | **0.12 us** |
+| `POST /process` end to end, incl. Redis | <10ms P95 | TBD (Stage 3) |
+| Orchestrator overhead, excluding arm time | <100ms P95 | TBD (Stage 7) |
+| Task latency, multi-arm | <45s P95 | TBD (Stage 10) |
+| Task latency, single arm | <8s P95 | TBD (Stage 10) |
+| Task success, 50-task corpus | >=70% | TBD (Stage 10) |
+| Head-bypass rate | >=25% | TBD (Stage 7) |
+| Verdict cache hit rate | >=35% | TBD (Stage 7) |
+| Answer cache hit rate | >=10% | TBD (Stage 7) |
+| Cost per task vs single-shot baseline | <=50% | TBD (Stage 10) |
 
 ## Technology Stack
 
