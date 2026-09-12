@@ -1,5 +1,17 @@
 # Current Project Status
 
+> **SUPERSEDED — do not act on this file.** The current status lives in
+> [`docs/PROJECT-STATUS.md`](../../PROJECT-STATUS.md).
+>
+> Everything below was written on 2025-11-15 and is wrong in ways worth recording. It
+> reports "Overall: ~22%" and "Phase 1: 40%" in the same breath; it calls Sprint 1.2
+> complete while that sprint's own definition of done was unmet; and the `v1.2.0` it
+> names was never tagged, published or built — the repository has **zero git tags**.
+>
+> It is kept unedited rather than deleted, because it is evidence of the failure the
+> v1.0.0 plan exists to correct: documentation written ahead of the code, with nothing
+> able to contradict it.
+
 **Last Updated**: 2025-11-15
 
 ## Overall Progress

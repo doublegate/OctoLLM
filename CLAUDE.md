@@ -2,6 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> ## Read `docs/PROJECT-STATUS.md` first
+>
+> This file is **how to work here** — commands, conventions, and invariants.
+> [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md) is **where the project is** — what
+> runs today, what is deliberately not true yet, which stage is next, and which
+> decisions are waiting on a human.
+>
+> Both matter, and the status file changes far more often. Read it at the start of every
+> session, and update it in the same change as anything that makes one of its numbers
+> wrong.
+>
+> **The governing rule of this repository: every claim in it is either made true or
+> deleted.** It spent its first phase describing a system that had not been built, with
+> nothing in CI able to contradict it. Do not add a make target that does not run, a
+> document that states an intention as a fact, or a test that cannot fail.
+
 ## Project Overview
 
 **OctoLLM** is a distributed AI architecture for offensive security and developer tooling, inspired by octopus neurobiology. Implementation is underway: a Rust workspace (reflex layer, executor arm, three shared crates), a Python FastAPI orchestrator, six arm service images, and Python + TypeScript SDKs all exist alongside the architectural documentation.
@@ -191,8 +207,8 @@ Implementation is underway. This is no longer a documentation-only repository.
 
 | Area | Location | State |
 |---|---|---|
-| Rust workspace | `Cargo.toml` (5 members) | `reflex-layer`, `arms/executor`, `shared/rust/{common,types,clients}`; 240 tests passing |
-| Orchestrator | `services/orchestrator/` | FastAPI app, SQLAlchemy models, Reflex client with circuit breaker, arm registry; 186 tests passing |
+| Rust workspace | `Cargo.toml` (5 members) | `reflex-layer`, `arms/executor`, `shared/rust/{common,types,clients}`; 241 tests passing |
+| Orchestrator | `services/orchestrator/` | FastAPI app, SQLAlchemy models, Reflex client with circuit breaker, arm registry; 197 tests passing |
 | Shared framework | `shared/python/octollm_common/` | App factory, error envelope, contract models, arm roster, LLM providers; 103 tests |
 | Arm images | `services/arms/{coder,judge,planner,retriever,safety_guardian}/` | Built on the shared framework; each arm's own endpoint returns 501 naming Stage 8 |
 | Python SDK | `sdks/python/octollm-sdk/` | 8 service clients; 28 tests passing |
@@ -223,7 +239,7 @@ make format            # rewrite Python and Rust in place (the only target that 
 make lint-python lint-rust lint-typescript lint-config
 make typecheck
 make sdk-parity-check  # both SDKs agree, and call only routes that exist
-make test              # 240 Rust + 103 shared + 186 orchestrator + 28 Python SDK + 28 TypeScript SDK
+make test              # 241 Rust + 103 shared + 197 orchestrator + 28 Python SDK + 28 TypeScript SDK
 
 # The one suite `make verify` leaves out (needs Redis on :6379)
 make redis && make test-rust-redis && make redis-stop
@@ -303,7 +319,7 @@ literal into a test — assert against `__version__`.
 `ci.yml` is the blocking gate. It replaced `lint.yml` and `test.yml`, which between them
 could not fail: every test step was `|| echo "No tests found yet (Phase 0)"` *and*
 `continue-on-error: true`, and the summary job announced "Phase 0: No tests exist yet"
-over 240 Rust and 178 Python tests that CI never ran.
+over the 240 Rust and 178 Python tests that existed at the time and CI never ran.
 
 Eleven jobs, all blocking, all aggregated by `ci-gate` — **make `ci-gate` the only required
 check in branch protection**:
@@ -315,9 +331,9 @@ check in branch protection**:
 | `lint-rust` | `cargo fmt`/`clippy` at **workspace** scope, including the three `shared/rust` crates |
 | `lint-typescript` | eslint, tsc |
 | `lint-config` | yamllint, OpenAPI validity, shellcheck, actionlint |
-| `test-rust` | 240 workspace tests + the 17 Redis-backed ones against a `redis:8-alpine` service |
+| `test-rust` | 241 workspace tests + the 18 Redis-backed ones against a `redis:8-alpine` service |
 | `test-shared` | 103 tests, coverage floored at 90%; provider extras deliberately NOT installed |
-| `test-orchestrator` | 186 tests, coverage floored at 85% by its own pytest config |
+| `test-orchestrator` | 197 tests, coverage floored at 85% by its own pytest config |
 | `test-sdk-python` | 28 tests |
 | `test-sdk-typescript` | 28 tests |
 

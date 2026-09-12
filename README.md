@@ -186,8 +186,8 @@ repository is either made true or deleted. Four stages are complete.
 
 | Component | State | Detail |
 |---|---|---|
-| **Reflex layer** (Rust, port 8080) | Implemented | ~8,500 lines; PII detection, prompt-injection detection, Redis cache, token-bucket rate limiting. 240 tests. |
-| **Orchestrator** (Python, port 8000) | Partial | FastAPI app, SQLAlchemy 2.0 models, reflex client with circuit breaker, arm registry (`GET /arms`). 186 tests, 93% coverage. **It does not yet call any arm** — `POST /submit` validates, screens and persists; tasks stay `pending`. The execution engine lands in Stage 7. |
+| **Reflex layer** (Rust, port 8080) | Implemented | ~8,500 lines; PII detection, prompt-injection detection, Redis cache, token-bucket rate limiting. 241 tests. |
+| **Orchestrator** (Python, port 8000) | Partial | FastAPI app, SQLAlchemy 2.0 models, reflex client with circuit breaker, arm registry (`GET /arms`). 197 tests, 93% coverage. **It does not yet call any arm** — `POST /submit` validates, screens and persists; tasks stay `pending`. The execution engine lands in Stage 7. |
 | **Shared arm framework** (`octollm_common`) | Implemented | App factory, error envelope, contract models, arm roster, LLM providers. 103 tests, 95% coverage. Imported by all eight arms and the orchestrator. |
 | **Python SDK** | Implemented | 8 service clients, 28 tests. Unpublished. |
 | **TypeScript SDK** | Implemented | 8 service clients, 28 tests. Unpublished. |
@@ -212,7 +212,7 @@ repository is either made true or deleted. Four stages are complete.
 
 | Suite | Tests | Run by CI |
 |---|---|---|
-| Rust workspace | 240 | yes |
+| Rust workspace | 241 | yes |
 | Rust, Redis-backed | 18 | yes — 17 of these were `#[ignore]`d and had never executed anywhere |
 | Shared arm framework | 103 | yes, coverage floored at 90% |
 | Orchestrator | 186 | yes, coverage floored at 85% |
@@ -246,9 +246,9 @@ while the gate goes green.
 | `lint-typescript` | eslint, tsc |
 | `lint-config` | yamllint, OpenAPI validity, shellcheck, actionlint, `version-check` |
 | `secrets` | gitleaks over full history, plus the scanner self-test |
-| `test-rust` | 240 workspace tests + 18 Redis-backed |
+| `test-rust` | 241 workspace tests + 18 Redis-backed |
 | `test-shared` | 103 tests, coverage floored at 90%; provider SDKs deliberately absent |
-| `test-orchestrator` | 186 tests, coverage floored at 85% |
+| `test-orchestrator` | 197 tests, coverage floored at 85% |
 | `test-sdk-python` | 28 tests |
 | `test-sdk-typescript` | 28 tests |
 
@@ -299,7 +299,7 @@ pre-commit install
 # OpenAPI validity, shellcheck, actionlint
 make lint
 
-# Run every suite: 240 Rust, 150 orchestrator, 28 Python SDK, 28 TypeScript SDK
+# Run every suite: 241 Rust, 103 shared, 197 orchestrator, 28 Python SDK, 28 TypeScript SDK
 make test
 
 # Everything CI runs, in one command
