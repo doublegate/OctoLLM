@@ -94,6 +94,22 @@ updates:
       prefix: "chore(deps)"
       prefix-development: "chore(deps-dev)"
     labels: [dependencies, typescript, sdk]
+    ignore:
+      # axios 1.19 reworked AxiosInstance's call signatures, and axios-retry 4.5.0 --
+      # still the latest release, peer range "0.x || 1.x" -- types its entry point
+      # against the pre-1.19 shape. `axiosRetry(this.axiosInstance, ...)` therefore
+      # fails to compile:
+      #
+      #   TS2345: Argument of type 'AxiosInstance' is not assignable to parameter of
+      #   type 'AxiosStatic | AxiosInstance'.
+      #
+      # package.json pins ">=1.18.1 <1.19.0" for this reason, verified by bisecting
+      # 1.13.2 through 1.20.0 during the September 2026 consolidation. Without this
+      # entry Dependabot re-proposes the bump every week (it opened PR #35 within
+      # minutes of this file landing) and the TypeScript SDK job fails every time.
+      # Remove it when axios-retry ships support for axios >= 1.19.
+      - dependency-name: "axios"
+        versions: [">=1.19.0"]
 
   # --- GitHub Actions -----------------------------------------------------------
   # Actions drift silently: a workflow pinned to a deprecated major keeps running until
