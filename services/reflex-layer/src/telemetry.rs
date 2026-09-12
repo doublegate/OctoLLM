@@ -67,7 +67,7 @@ pub async fn init_telemetry(service_name: &str, environment: &str) {
         KeyValue::new("deployment.environment", environment.to_string()),
         KeyValue::new(
             "service.version",
-            env::var("APP_VERSION").unwrap_or_else(|_| "0.9.0".to_string()),
+            env::var("APP_VERSION").unwrap_or_else(|_| "0.5.0".to_string()),
         ),
     ]);
 

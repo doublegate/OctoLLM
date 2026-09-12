@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     # Service Configuration
     service_name: str = Field(default="orchestrator", description="Service name")
-    version: str = Field(default="0.1.0", description="Service version")
+    version: str = Field(default="0.5.0", description="Service version")
     environment: str = Field(default="development", description="Environment (dev/staging/prod)")
     debug: bool = Field(default=False, description="Debug mode")
 

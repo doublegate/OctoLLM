@@ -9,7 +9,7 @@ info:
     **Port**: 8003
     **Cost Tier**: 3 (Medium-High - sandboxing overhead)
     **Average Latency**: 0.5-5 seconds
-  version: 0.3.0
+  version: 0.5.0
 
 servers:
   - url: http://localhost:8003

@@ -1,6 +1,6 @@
 [project]
 name = "octollm-orchestrator"
-version = "0.1.0"
+version = "0.5.0"
 description = "OctoLLM Orchestrator Service - Central brain for AI orchestration"
 requires-python = ">=3.14,<3.15"
 authors = [

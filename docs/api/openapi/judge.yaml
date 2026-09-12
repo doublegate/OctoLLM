@@ -10,7 +10,7 @@ info:
     **Port**: 8006
     **Cost Tier**: 2 (Medium - uses GPT-3.5-turbo)
     **Average Latency**: 0.5-2 seconds
-  version: 0.3.0
+  version: 0.5.0
 
 servers:
   - url: http://localhost:8006

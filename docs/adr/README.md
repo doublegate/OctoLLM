@@ -69,6 +69,20 @@ Links to relevant resources, discussions, or documentation.
   - **Status**: Accepted
   - **Summary**: Kubernetes for production with Docker Compose for development, cloud-agnostic design
 
+- [ADR-006: Cloud Provider Selection](./006-cloud-provider-selection.md)
+  - **Status**: Accepted
+  - **Summary**: Cloud provider evaluation and selection criteria
+
+- [ADR-007: Unraid Local Deployment Strategy](./007-unraid-local-deployment.md)
+  - **Status**: Proposed
+  - **Summary**: Running the stack on Unraid as a first-class local deployment target
+
+### Engineering Practice
+
+- [ADR-008: Versioning, the VERSION File, and the Makefile as the Command Surface](./008-versioning-and-release.md)
+  - **Status**: Accepted
+  - **Summary**: One `VERSION` file propagated to 20 sites by a check that can fail; current version is 0.5.0 because nothing was ever tagged or published; every check is a make target and CI invokes those targets rather than its own copy
+
 ## Creating New ADRs
 
 When making a significant architectural decision:
@@ -128,5 +142,5 @@ Don't create ADRs for:
 
 ---
 
-**Last Updated**: 2025-11-10
+**Last Updated**: 2026-09-12
 **Owner**: Architecture Team

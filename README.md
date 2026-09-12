@@ -16,7 +16,7 @@ Inspired by the octopus's distributed nervous system, OctoLLM reimagines AI arch
 [![Python](https://img.shields.io/badge/Python-3.14-blue.svg)](https://www.python.org/)
 [![Rust](https://img.shields.io/badge/Rust-1.91.1+-orange.svg)](https://www.rust-lang.org/)
 [![Phase](https://img.shields.io/badge/Phase-1%20Sprint%201.2%20COMPLETE-brightgreen.svg)](to-dos/MASTER-TODO.md)
-[![Version](https://img.shields.io/badge/Version-1.2.0-brightgreen.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.5.0-brightgreen.svg)](CHANGELOG.md)
 
 ## What is OctoLLM?
 
@@ -260,25 +260,42 @@ OctoLLM uses GitHub Actions for continuous integration and deployment with 4 com
 - Rust 1.91.1+ (for Rust services)
 - OpenAI API key (for LLM functionality in Phase 1+)
 
-### Phase 0 Setup (Current)
+### Setup
 
 ```bash
 # Clone repository
 git clone https://github.com/doublegate/OctoLLM.git
 cd OctoLLM
 
+# Install both Python packages (editable) and the TypeScript SDK
+make install
+
 # Install pre-commit hooks (recommended)
 python -m pip install pre-commit
 pre-commit install
 
-# Verify setup - run linting and formatting checks
-make lint  # or: ruff check . && black --check . && cargo fmt --check
+# Lint everything: ruff, black, clippy, rustfmt, eslint, tsc, yamllint,
+# OpenAPI validity, shellcheck, actionlint
+make lint
 
-# Run placeholder tests (validates project structure)
-make test  # or: pytest tests/ -v
+# Run every suite: 240 Rust, 150 orchestrator, 28 Python SDK, 28 TypeScript SDK
+make test
+
+# Everything CI runs, in one command
+make verify
 
 # View all available commands
 make help
+```
+
+`make verify` is the same set of checks the `ci-gate` check runs, invoked through the
+same targets — CI calls these targets rather than keeping its own copy of the commands,
+so a local pass and a CI pass mean the same thing by construction.
+
+The one suite `make verify` leaves out needs a running Redis:
+
+```bash
+make redis && make test-rust-redis && make redis-stop
 ```
 
 ### Development Environment (Phase 0)

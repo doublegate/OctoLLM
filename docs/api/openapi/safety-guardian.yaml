@@ -9,7 +9,7 @@ info:
     **Port**: 8007
     **Cost Tier**: 1 (Low - no LLM calls, pure regex)
     **Average Latency**: <100ms
-  version: 0.3.0
+  version: 0.5.0
 
 servers:
   - url: http://localhost:8007

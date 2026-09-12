@@ -9,6 +9,7 @@ import os
 import pytest
 from pydantic import ValidationError
 
+from app import __version__
 from app.config import Settings, get_settings, reset_settings
 
 # ==============================================================================
@@ -29,7 +30,12 @@ def test_settings_defaults():
     settings = Settings()
 
     assert settings.service_name == "orchestrator"
-    assert settings.version == "0.1.0"
+    # Asserted against app.__version__, not a literal: scripts/version_sync.py keeps
+    # every version site in step with VERSION, and a literal here would turn each
+    # release into a test edit -- which is how a suite learns to be edited rather
+    # than trusted. This still has teeth: it fails if the payload stops reporting
+    # the package version.
+    assert settings.version == __version__
     assert settings.environment == "development"
     assert settings.debug is False
     assert settings.host == "0.0.0.0"  # nosec B104  # Test assertion for default config value

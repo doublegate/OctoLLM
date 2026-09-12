@@ -9,7 +9,7 @@ info:
     **Port**: 8004
     **Cost Tier**: 1 (Low - no expensive LLM calls)
     **Average Latency**: 100-500ms
-  version: 0.3.0
+  version: 0.5.0
 
 servers:
   - url: http://localhost:8004

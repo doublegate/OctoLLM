@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "octollm"
-version = "0.1.0"
+version = "0.5.0"
 description = "OctoLLM - Distributed AI Architecture for Offensive Security and Developer Tooling"
 authors = ["OctoLLM Team"]
 license = "Apache-2.0"

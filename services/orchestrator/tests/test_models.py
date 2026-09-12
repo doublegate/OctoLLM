@@ -10,6 +10,7 @@ from uuid import UUID, uuid4
 import pytest
 from pydantic import ValidationError
 
+from app import __version__
 from app.models import (
     HealthResponse,
     Priority,
@@ -327,7 +328,12 @@ def test_health_response_defaults():
 
     assert response.status == "healthy"
     assert isinstance(response.timestamp, datetime)
-    assert response.version == "0.1.0"
+    # Asserted against app.__version__, not a literal: scripts/version_sync.py keeps
+    # every version site in step with VERSION, and a literal here would turn each
+    # release into a test edit -- which is how a suite learns to be edited rather
+    # than trusted. This still has teeth: it fails if the payload stops reporting
+    # the package version.
+    assert response.version == __version__
 
 
 def test_health_response_custom_version():

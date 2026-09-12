@@ -39,7 +39,7 @@ info:
     Currently no rate limiting (Sprint 1.2).
     Future sprints will implement per-user rate limiting with Redis.
 
-  version: 1.0.0
+  version: 0.5.0
   contact:
     name: OctoLLM Team
     url: https://github.com/doublegate/OctoLLM
