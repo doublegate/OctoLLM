@@ -7,7 +7,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Python 3.14 is now the project's target runtime.** `requires-python` on the root
+  project, the orchestrator and the Python SDK is `>=3.14`; the service images are
+  `python:3.14.7-slim`; `black`/`ruff` `target-version` and `mypy` `python_version` are
+  `py314`/`3.14`; CI lints and tests on 3.14 only. The root project's upper bound is
+  `<3.15` because presidio 2.2.364 declares `Requires-Python <3.15`.
+- **Consolidated every open dependency update into one change** (supersedes Dependabot
+  PRs #8, #21, #29 and Snyk PRs #11-#19, #22-#28), taking the latest *compatible*
+  version rather than the version each bot asked for:
+  - Container base images: `python:3.13.7/3.14.1/3.14.2-slim` -> `python:3.14.7-slim`
+    (all six Python services), `debian:13.1-slim` -> `debian:13.6-slim`,
+    `rust:1.91.1-slim` -> `rust:1.98.1-slim`.
+  - Rust: `jsonwebtoken` 9.3 -> 11.0 (Dependabot asked for 10.3), `redis` 0.27 -> 1.7
+    with `deadpool` 0.12 -> 0.13 and `deadpool-redis` 0.18 -> 0.23, `reqwest` 0.12 ->
+    0.13, `tower-http` 0.6 -> 0.7, `sha2` 0.10 -> 0.11, `config` 0.14 -> 0.15,
+    `fancy-regex` 0.14 -> 0.19, `criterion` 0.5 -> 0.8, `mockall` 0.13 -> 0.15,
+    `fake` 2.10 -> 5.1, plus minor bumps across tokio/axum/hyper/uuid/regex.
+  - Python: `langchain-core` 1.0.4 -> 1.6.3 (Dependabot asked for 1.0.7), `openai`
+    2 -> 3, `anthropic` 0.72 -> 1.5, `redis` 5 -> 8, `starlette` 0.49 -> 1.6,
+    `fastapi` -> 0.141.1, `mypy` 1 -> 2, and every other top-level dependency.
+  - TypeScript SDK: `jest` 29 -> 30, `eslint` 9 -> 10, `@types/jest` 29 -> 30, plus
+    minor bumps; `npm audit` goes from 14 vulnerabilities (1 critical, 8 high) to 0.
+  - GitHub Actions: `checkout` v4/v5 -> v7, `setup-python` v5 -> v7, `setup-node` v4 ->
+    v7, `cache` v4 -> v6, `upload-artifact` v4 -> v7, `codecov-action` v5 -> v7,
+    `codeql-action` v3 -> v4, `gitleaks-action` v2 -> v3, the `docker/*` actions, and
+    the mdBook/Pages actions.
+  - `.pre-commit-config.yaml` hook revisions updated to match.
+- Replaced `dotenv` with the API-compatible `dotenvy`: `dotenv` is unmaintained
+  (RUSTSEC-2021-0141) and was the only advisory `cargo audit` reported. `cargo audit` is
+  now clean.
+- Replaced the archived `actions-rs/toolchain@v1` with `actions-rust-lang/setup-rust-toolchain@v2`,
+  and pinned `aquasecurity/trivy-action` from the floating `@master` to a release tag.
+- Pinned `ruff`/`black`/`mypy` versions in the lint workflow. The unpinned
+  `pip install ruff` meant a newly-stabilised rule could turn a green `main` red with no
+  commit to blame, which is what had happened (169 `UP045`/`UP006`/`UP035` violations).
+- Migrated the TypeScript SDK from `.eslintrc.js` to flat `eslint.config.mjs`.
+
+### Fixed
+- **The orchestrator rejected every task submission that omitted `budget`.**
+  `submit_task` built its `TaskContract` with `budget=request.budget or None`, but
+  `TaskContract.budget` is non-optional with a model default, so the omitted case raised
+  a `ValidationError` and returned 500 instead of using the default.
+- **`Database()` could not be constructed at all.** It passed `poolclass=QueuePool` to
+  `create_async_engine`, which SQLAlchemy rejects outright on an asyncio engine
+  ("Pool class QueuePool cannot be used with asyncio engine"). Now uses
+  `AsyncAdaptedQueuePool`.
+- `app.state.reflex_client` is seeded at application construction. It was only assigned
+  by the lifespan handler, so any ASGI runner that does not emit lifespan events turned
+  every handler that reads it into an `AttributeError` at request time.
+- **`services/arms/coder/Dockerfile` could not build.** Its base image had been bumped to
+  Python 3.14 while the `COPY --from=builder` line still referenced
+  `/usr/local/lib/python3.13/site-packages`. All six Python service Dockerfiles now copy
+  `/usr/local/lib` wholesale, so a future base-image bump cannot reintroduce this.
+- **Injection detection returned results in a nondeterministic order.**
+  `InjectionDetector::detect()` iterates a `HashMap`, and its sort had no tiebreak beyond
+  severity and confidence, so two equal-ranked matches came back in whatever order the
+  process's hash seed produced. `matches[0]` — and therefore `get_highest_severity()` and
+  the API response — varied run to run for the same input. Now tiebroken on match offset
+  and injection type, with a regression test.
+- `build.yml` built five of six Python services from the wrong path
+  (`services/<name>/Dockerfile`; the arms live at `services/arms/<name>/Dockerfile`).
+- `snyk-security.yml` had failed on every run since it was added: it was the unmodified
+  upstream sample, including a literal `docker build -t your/image-to-test .` against a
+  repository-root Dockerfile that does not exist. Rewritten to run Snyk Code and IaC,
+  guarded on `SNYK_TOKEN` being present.
+- Corrected 21 pre-existing test failures that no CI job was running (the Rust suite goes
+  from 186 passing/2 failing to 240 passing; the orchestrator suite from 133 passing/12
+  failing/5 erroring to 150 passing; the Python SDK from 15/17 to 17/17). Causes were
+  stale `httpx` usage (`AsyncClient(app=...)`, removed in 0.28), fixtures referencing a
+  `ProcessStatus.ALLOWED` member and `PIIType`/`InjectionType` enums that never existed,
+  assertions against FastAPI's default `{"detail": ...}` envelope where the app returns
+  `{"error": ...}`, a fixture used without being requested, and two wrong-length test
+  fixtures (a 19-character API key asserted valid against a 20-character minimum, and a
+  12-character task id asserted valid against a 16-character pattern).
+- Pinned `spacy` to `^3.8.16`. The resolver otherwise settled on spacy 3.7.5 and
+  `srsly` 2.4.8, which has no cp314 wheel and fails to compile against the Python 3.14
+  C API, so the orchestrator image could not be built.
+- Replaced the `yourusername`/`octollm.example.com` placeholder URLs in the TypeScript and
+  Python SDK manifests with the real repository URLs.
+
 ### Added
+- `reflex_layer::hex::encode_lower`, replacing `format!("{:x}", digest)` on the cache-key
+  and PII-redaction paths. `sha2` 0.11 returns `hybrid_array::Array`, which does not
+  implement `LowerHex`. Covered by unit tests including a pinned SHA-256 vector.
 - Comprehensive mdBook documentation with 134 pages across 12 major sections
 - Phase 0 archive document for historical reference (docs/phases/PHASE-0-README-ARCHIVE.md)
 - Complete OpenAPI specifications for all 8 components (Orchestrator, Reflex Layer, 6 Arms)

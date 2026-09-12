@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**OctoLLM** is a distributed AI architecture for offensive security and developer tooling, inspired by octopus neurobiology. This is currently a **design/architecture repository** containing comprehensive documentation and technical specifications for the system, but no implementation code yet.
+**OctoLLM** is a distributed AI architecture for offensive security and developer tooling, inspired by octopus neurobiology. Implementation is underway: a Rust workspace (reflex layer, executor arm, three shared crates), a Python FastAPI orchestrator, six arm service images, and Python + TypeScript SDKs all exist alongside the architectural documentation.
 
 ### Core Concept
 
@@ -74,7 +74,7 @@ The system mirrors the octopus's distributed nervous system where:
 
 ## Development Roadmap
 
-**Phase 1: Proof of Concept** (Months 1-2) - NOT YET STARTED
+**Phase 1: Proof of Concept** (Months 1-2) - IN PROGRESS
 - Reflex preprocessing layer
 - Orchestrator (basic planning/delegation)
 - Two arms: Planner + Tool Executor
@@ -185,10 +185,64 @@ pytest --cov=orchestrator --cov=arms --cov-report=html
 
 ## Current Status
 
-This is a **pre-implementation repository**. All content is architectural documentation and technical specifications. No code has been written yet beyond examples in the documentation.
+Implementation is underway. This is no longer a documentation-only repository.
 
-When beginning implementation:
-1. Start with minimal Docker Compose setup (reflex + orchestrator + 2 arms)
-2. Focus on core orchestration loop first
-3. Add arms incrementally as capabilities are needed
-4. Defer Kubernetes/production concerns until Phase 2
+### What exists
+
+| Area | Location | State |
+|---|---|---|
+| Rust workspace | `Cargo.toml` (5 members) | `reflex-layer`, `arms/executor`, `shared/rust/{common,types,clients}`; 240 tests passing |
+| Orchestrator | `services/orchestrator/` | FastAPI app, SQLAlchemy models, Reflex client with circuit breaker; 150 tests passing |
+| Arm images | `services/arms/{coder,judge,planner,retriever,safety-guardian}/` | Dockerfiles only; no service code yet |
+| Python SDK | `sdks/python/octollm-sdk/` | 8 service clients; 17 tests passing |
+| TypeScript SDK | `sdks/typescript/octollm-sdk/` | 8 service clients; 22 tests passing |
+
+### Toolchain
+
+- **Python 3.14** (`>=3.14,<3.15` at the root; the `<3.15` bound comes from presidio).
+  Service images are `python:3.14.7-slim`.
+- **Rust** edition 2021, MSRV 1.91.1; builder images are `rust:1.98.1-slim`, runtime
+  `debian:13.6-slim`.
+- Poetry for the root Python environment; `services/orchestrator/` and each SDK carry
+  their own manifest.
+
+### Commands
+
+```bash
+# Rust
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo test --workspace
+cargo fmt --all -- --check
+
+# Python (root: ruff + black are the blocking CI gates)
+ruff check .
+black --check .
+cd services/orchestrator && pytest tests/          # 150 tests
+cd sdks/python/octollm-sdk && pytest tests/        # 17 tests
+
+# TypeScript SDK
+cd sdks/typescript/octollm-sdk && npm ci && npm run build && npm test && npm run lint
+```
+
+### What CI does and does not cover
+
+`lint.yml` (ruff, black, rustfmt, clippy) and `security.yml` (bandit, gitleaks) are the
+only blocking gates. Note the gaps before trusting a green check:
+
+- `test.yml` runs `pytest tests/unit/` from the repository root, which contains only a
+  placeholder. **The orchestrator and SDK suites are not run by CI.** The Rust test steps
+  are `continue-on-error: true`.
+- The TypeScript SDK has no CI job at all.
+- Container builds in `build.yml` and the Trivy scan in `security.yml` are `if: false`,
+  so Dockerfile changes are not validated by CI. Build them locally before merging one.
+
+### Known gaps
+
+- The arm services have Dockerfiles but no application code.
+- `services/orchestrator/pyproject.toml` declares the OpenTelemetry dependencies that
+  `app/telemetry.py` imports, but the orchestrator image installs the **root**
+  `pyproject.toml`, which does not. The two manifests need reconciling before that image
+  can serve traced traffic.
+- The app returns `{"error": ...}` for `HTTPException` but FastAPI's default
+  `{"detail": [...]}` for 422 validation errors. The envelope is inconsistent by
+  accident, not design.

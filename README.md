@@ -13,8 +13,8 @@ Inspired by the octopus's distributed nervous system, OctoLLM reimagines AI arch
 [![Test](https://github.com/doublegate/OctoLLM/workflows/Test/badge.svg)](https://github.com/doublegate/OctoLLM/actions?query=workflow%3ATest)
 [![Security](https://github.com/doublegate/OctoLLM/workflows/Security%20Scan/badge.svg)](https://github.com/doublegate/OctoLLM/actions?query=workflow%3A%22Security+Scan%22)
 [![codecov](https://codecov.io/gh/doublegate/OctoLLM/branch/main/graph/badge.svg)](https://codecov.io/gh/doublegate/OctoLLM)
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
-[![Rust](https://img.shields.io/badge/Rust-1.82.0-orange.svg)](https://www.rust-lang.org/)
+[![Python](https://img.shields.io/badge/Python-3.14-blue.svg)](https://www.python.org/)
+[![Rust](https://img.shields.io/badge/Rust-1.91.1+-orange.svg)](https://www.rust-lang.org/)
 [![Phase](https://img.shields.io/badge/Phase-1%20Sprint%201.2%20COMPLETE-brightgreen.svg)](to-dos/MASTER-TODO.md)
 [![Version](https://img.shields.io/badge/Version-1.2.0-brightgreen.svg)](CHANGELOG.md)
 
@@ -199,7 +199,7 @@ OctoLLM uses GitHub Actions for continuous integration and deployment with 4 com
 ### Test Workflow
 **Status**: ✅ PASSING | **Duration**: ~2m 30s | **Triggers**: Push/PR to main/develop
 
-- **Python Unit Tests**: pytest on Python 3.11 and 3.12 with matrix strategy
+- **Python Unit Tests**: pytest on Python 3.14
 - **Rust Unit Tests**: cargo test for reflex-layer and executor services
 - **Integration Tests**: PostgreSQL 15 + Redis 7 services with health checks
 - **Coverage**: Codecov integration with XML reports
@@ -256,8 +256,8 @@ OctoLLM uses GitHub Actions for continuous integration and deployment with 4 com
 - Text editor (VS Code recommended)
 
 **Optional** (for local development without Docker):
-- Python 3.11+ (for Python services)
-- Rust 1.82.0+ (for Rust services)
+- Python 3.14 (for Python services; `>=3.14,<3.15`)
+- Rust 1.91.1+ (for Rust services)
 - OpenAI API key (for LLM functionality in Phase 1+)
 
 ### Phase 0 Setup (Current)
@@ -438,8 +438,8 @@ See [MASTER-TODO.md](to-dos/MASTER-TODO.md) for complete 7-phase roadmap (420+ t
 
 | Language | Version | Usage | Phase 0 Status | Phase 1+ Status |
 |----------|---------|-------|---------------|----------------|
-| **Python** | 3.11+ | Orchestrator, 5 Arms | ✅ Configured (pyproject.toml, linting) | Full implementation |
-| **Rust** | 1.82.0 | Reflex Layer, Executor | ✅ Configured (Cargo.toml, linting) | Full implementation |
+| **Python** | 3.14 | Orchestrator, 5 Arms | ✅ Configured (pyproject.toml, linting) | Full implementation |
+| **Rust** | 1.91.1 (MSRV) | Reflex Layer, Executor | ✅ Configured (Cargo.toml, linting) | Full implementation |
 
 ### Web Frameworks
 
@@ -461,7 +461,7 @@ See [MASTER-TODO.md](to-dos/MASTER-TODO.md) for complete 7-phase roadmap (420+ t
 | Tool | Purpose | Phase 0 Status | Details |
 |------|---------|---------------|---------|
 | **GitHub Actions** | CI/CD automation | ✅ Operational | 4 workflows (lint, test, security, build) |
-| **Codecov** | Coverage reporting | ✅ Integrated | Coverage uploads for Python 3.11 |
+| **Codecov** | Coverage reporting | ✅ Integrated | Coverage uploads for Python 3.14 |
 | **Pre-commit** | Quality gates | ✅ Operational | 15+ hooks (Black, Ruff, mypy, rustfmt, clippy) |
 
 ### Security
@@ -725,8 +725,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for comprehensive guidelines (will be exp
 
 ---
 
-**Last Updated**: 2025-12-16
-**Document Version**: 7.1 (Python Code Quality and Codecov Enhancements)
+**Last Updated**: 2026-09-12
+**Document Version**: 7.2 (Dependency consolidation; Python 3.14 target)
 **Sprint Status**: Sprint 1.2 complete (Orchestrator Core) | **Phase 1 SPRINT 1.3 NEXT** ✅
 **Next Review**: After Phase 1 Sprint 1.3 completion (Planner Arm Integration)
 **Repository**: https://github.com/doublegate/OctoLLM
@@ -777,7 +777,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for comprehensive guidelines (will be exp
   - Sprint 1.1 Completion Report
   - Sprint 1.2 Handoff Document
 
-**Technology**: Rust 1.82.0 | Axum 0.8 | Tokio 1.43 | Redis 7+
+**Technology**: Rust 1.91.1 (MSRV) | Axum 0.8 | Tokio 1.53 | Redis 8+
 **Status**: Ready for Sprint 1.2 (Orchestrator integration)
 
 ### Sprint 1.2: Orchestrator Integration ✅ **PHASE 2 COMPLETE** (2025-11-15)
@@ -827,7 +827,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for comprehensive guidelines (will be exp
   - Sprint 1.2 completion report (956 lines)
   - Sprint 1.3 handoff document (1,176 lines)
 
-**Technology**: Python 3.11+ | FastAPI 0.115+ | SQLAlchemy 2.0 | PostgreSQL 15+
+**Technology**: Python 3.14 | FastAPI 0.141+ | SQLAlchemy 2.0 | PostgreSQL 17+
 **Status**: Core complete, pipeline deferred to Sprint 1.3
 **Next**: Sprint 1.3 - Planner Arm Integration
 

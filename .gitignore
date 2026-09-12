@@ -1,6 +1,6 @@
 # ================================================================
 # OctoLLM .gitignore
-# Last Updated: 2025-11-10
+# Last Updated: 2026-09-12
 # ================================================================
 
 # ================================================================
@@ -74,7 +74,9 @@ dmypy.json
 cython_debug/
 
 # Poetry
-poetry.lock  # Commit this in production, ignore in monorepo
+# poetry.lock is deliberately COMMITTED (it pins the service images' dependency set).
+# Do not add it here: a trailing "# ..." on a gitignore line is part of the pattern,
+# not a comment, so the previous entry here silently matched nothing.
 
 # ================================================================
 # Rust
@@ -214,6 +216,12 @@ override.tf.json
 # ================================================================
 *secret*.yaml
 !*secret*.example.yaml
+# These two are declaration templates: every value is a secretKeyRef/remoteRef pointing
+# at an external store, so no secret material is present. They are tracked deliberately,
+# and are named here so that stays an explicit decision rather than a rule that quietly
+# does not apply to files already in the index.
+!infrastructure/secrets/secret-definitions.yaml
+!infrastructure/secrets/kubernetes-integration/external-secrets.yaml
 kubeconfig
 kubeconfig.*
 *.kubeconfig
@@ -302,9 +310,17 @@ docker-compose.local.yml
 *_generated.py
 *_generated.rs
 
-# Cache directories
-.cache/
-cache/
+# Cache directories.
+#
+# These are ANCHORED on purpose. A bare `cache/` matches any directory named "cache" at
+# any depth, and it was swallowing services/reflex-layer/src/cache/ -- a Rust source
+# module, not a cache. Its five files stayed in the index only because they predate the
+# rule; any new file added to that module would have been dropped silently.
+/.cache/
+/cache/
+**/.pytest_cache/
+**/.ruff_cache/
+**/.mypy_cache/
 
 # Backup files
 *.backup
@@ -317,7 +333,7 @@ docs/.doctrees/
 site/
 
 # ================================================================
-# Node.js (if used for tooling)
+# Node.js / TypeScript SDK
 # ================================================================
 node_modules/
 npm-debug.log
@@ -327,6 +343,12 @@ yarn-error.log
 .eslintcache
 .node_repl_history
 .yarn-integrity
+*.tsbuildinfo
+# jest --coverage output (the Python "htmlcov/" rule above does not cover this)
+sdks/typescript/*/coverage/
+# tsc output for the SDK. The generic "dist/" rules above already match it; this is
+# spelled out so the SDK's build artefacts are obvious to anyone reading this file.
+sdks/typescript/*/dist/
 
 # ================================================================
 # END OF .gitignore
