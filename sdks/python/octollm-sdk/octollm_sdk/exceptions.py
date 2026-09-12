@@ -36,28 +36,32 @@ class AuthenticationError(OctoLLMError):
     """Raised when authentication fails (401)."""
 
     def __init__(self, message: str = "Authentication failed", **kwargs: Any):
-        super().__init__(message, status_code=401, **kwargs)
+        kwargs.setdefault("status_code", 401)
+        super().__init__(message, **kwargs)
 
 
 class AuthorizationError(OctoLLMError):
     """Raised when authorization fails (403)."""
 
     def __init__(self, message: str = "Insufficient permissions", **kwargs: Any):
-        super().__init__(message, status_code=403, **kwargs)
+        kwargs.setdefault("status_code", 403)
+        super().__init__(message, **kwargs)
 
 
 class ValidationError(OctoLLMError):
     """Raised when request validation fails (400, 422)."""
 
     def __init__(self, message: str = "Validation error", **kwargs: Any):
-        super().__init__(message, status_code=422, **kwargs)
+        kwargs.setdefault("status_code", 422)
+        super().__init__(message, **kwargs)
 
 
 class NotFoundError(OctoLLMError):
     """Raised when a resource is not found (404)."""
 
     def __init__(self, message: str = "Resource not found", **kwargs: Any):
-        super().__init__(message, status_code=404, **kwargs)
+        kwargs.setdefault("status_code", 404)
+        super().__init__(message, **kwargs)
 
 
 class RateLimitError(OctoLLMError):
@@ -69,7 +73,8 @@ class RateLimitError(OctoLLMError):
         retry_after: int | None = None,
         **kwargs: Any,
     ):
-        super().__init__(message, status_code=429, **kwargs)
+        kwargs.setdefault("status_code", 429)
+        super().__init__(message, **kwargs)
         self.retry_after = retry_after
 
     def __str__(self) -> str:
@@ -83,14 +88,16 @@ class ServiceUnavailableError(OctoLLMError):
     """Raised when a service is unavailable (503)."""
 
     def __init__(self, message: str = "Service temporarily unavailable", **kwargs: Any):
-        super().__init__(message, status_code=503, **kwargs)
+        kwargs.setdefault("status_code", 503)
+        super().__init__(message, **kwargs)
 
 
 class TimeoutError(OctoLLMError):
     """Raised when a request times out."""
 
     def __init__(self, message: str = "Request timeout", **kwargs: Any):
-        super().__init__(message, status_code=408, **kwargs)
+        kwargs.setdefault("status_code", 408)
+        super().__init__(message, **kwargs)
 
 
 class APIError(OctoLLMError):

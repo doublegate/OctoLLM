@@ -122,15 +122,20 @@ class BaseClient:
         Raises:
             Appropriate OctoLLM exception based on status code
         """
+        # Only a non-JSON body is exceptional. A body that parses but is not an object
+        # (a bare list or string) is checked with isinstance rather than by catching the
+        # AttributeError that .get() would raise, so a genuine AttributeError raised from
+        # somewhere else is not silently swallowed.
         try:
             error_data = response.json()
-            message = error_data.get("message", response.text)
+        except ValueError:  # json.JSONDecodeError subclasses ValueError
+            error_data = None
+
+        message = response.text or f"HTTP {response.status_code}"
+        details = None
+        if isinstance(error_data, dict):
+            message = error_data.get("message") or message
             details = error_data.get("details")
-        except ValueError, AttributeError:
-            # ValueError: body is not JSON (json.JSONDecodeError subclasses it).
-            # AttributeError: body is valid JSON but not an object, so .get() is absent.
-            message = response.text or f"HTTP {response.status_code}"
-            details = None
 
         # Map status codes to exceptions
         if response.status_code == 401:

@@ -58,6 +58,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      # python-3.12, not 3.14, while the rest of this file is on 3.14: snyk/actions
+      # publishes no 3.13 or 3.14 image (python-3.12 is the newest variant in the repo).
+      # Harmless here -- Snyk reads pyproject.toml and poetry.lock, not the interpreter.
+      # Bump when snyk ships a newer image.
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/python-3.12@master
         continue-on-error: true  # Don't fail build on vulnerabilities yet
