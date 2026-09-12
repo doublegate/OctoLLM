@@ -9,6 +9,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Stage 5 — the Neural Ring and capability tokens
+
+- **`octollm_common.capability`** — capability tokens, which existed as 87KB of design
+  document and zero lines of code while `docs/api/openapi/executor.yaml` required one on
+  every request. HS256 with a `kid` from day one, a TTL capped at **120 seconds** and
+  refused rather than clamped above it, a per-callee `aud`, a per-task binding, and
+  `constraints.max_calls` **counted by the callee** — a bound the caller is trusted to
+  respect is a request, not a bound. `algorithms=["HS256"]` is passed explicitly on every
+  decode, and `kid` selects from a fixed map built at startup, never from the token.
+- **`octollm_common.ring`** — artifacts on Redis Streams, bounded by the topology each arm
+  declares in `ArmSpec.publishes` / `subscribes`. Consumer groups give at-least-once
+  delivery with explicit acknowledgement, so a crash mid-handler redelivers rather than
+  drops; one group per arm means replicas share work while a second arm gets its own copy.
+  A message that does not parse is acked and logged rather than redelivered forever — a
+  poison pill looks exactly like an arm that has stopped working.
+- **`octollm_common.peer`** — direct arm-to-arm HTTP for the loops the documents name
+  (Coder↔Judge above all), with `PeerLoopContract` bounding iterations, an absolute
+  deadline and a token budget inside a single graph node. `UsageAccumulator` produces the
+  **cumulative** `usage` every arm response carries: the orchestrator cannot observe a peer
+  call, so without it the orchestrator is not under-reporting off-graph spend, it is
+  structurally unable to report it.
+- **`octollm_common.security.RequireCapability`** — the callee-side FastAPI gate.
+  Enforcement in the runtime rather than in the spec, which is the difference between a
+  required credential and a documented one. 401 when no token is presented so a client
+  knows to obtain one, 403 when a token will never work so it does not spin; the denial
+  reason is logged and never returned, because "expired" versus "bad signature" tells a
+  forger which half to work on.
+- **`octollm_common.models.provenance`** — the `data-flow.md` envelope transcribed
+  verbatim, plus `trace_id` (a ring message is otherwise the one hop with no place in a
+  trace), `engagement_id` (Red Team audit binding), `sensitivity` (what makes the data
+  diode enforceable rather than aspirational, defaulting to `internal` and never
+  `public`), and `promoted_from` (memory lineage). `content_sha256` is computed and any
+  supplied value overwritten — a hash filled in by the producer proves nothing.
+- **`app.capabilities.RingAuthority`** — the orchestrator as sole signing authority.
+  It mints only for edges the **static roster** declares, never the live registry:
+  `ArmRegistry` accepts `peers` from an arm's own `/capabilities` response, so a
+  compromised arm could otherwise widen its own reach by lying to a probe. A test performs
+  that attack and asserts the token is still refused.
+- **`scripts/mint_capability.py`** — how an operator obtains an administrative token.
+  There is deliberately no endpoint that issues one: an endpoint that mints authority for
+  whoever asks is an endpoint an attacker asks nicely.
+- **`ORCHESTRATOR_CAPABILITY_SECRET` / `_KID` / `_TTL_SECONDS`**, replacing
+  `ORCHESTRATOR_ARM_REGISTRATION_TOKEN`. Unset by default, and every capability-gated
+  endpoint then fails closed with 503. A short or placeholder secret is refused at
+  construction, so a misconfigured service dies at startup rather than reporting itself
+  healthy and failing on the first real request.
+- **`docs/adr/010-neural-ring-and-capability-tokens.md`**, recording the transport split,
+  why authorization reads the roster rather than the registry, the HS256 symmetry
+  limitation, and the four alternatives considered.
+
+### Changed
+
+- **`POST /arms/register` now requires a capability token**, not a shared secret. Stage 4
+  shipped that secret and recorded it as a stopgap; the replacement is narrower in three
+  ways — it expires within 120 seconds, it names the orchestrator as its audience so it
+  cannot be presented to an arm, and it is counted, so a captured `Authorization` header
+  is worth at most one replay inside a two-minute window.
+- **CI's `test-shared` job runs against a `redis:8-alpine` service.** The 15 Neural Ring
+  tests use a real Redis rather than a fake, because a double implements whatever the code
+  already assumes and so cannot show that a consumer group survives a restart, that an
+  unacknowledged message redelivers, or that `mkstream` lets a consumer start before its
+  producer. They skip when no Redis is reachable, which is exactly why the gate must
+  provide one.
+- **Collection floors raised**: shared framework 103 → **210**, orchestrator 197 → **225**.
+
 #### Stage 4 — the shared arm framework
 
 - **`shared/python/octollm_common`**, an installable package (`pip install -e
@@ -83,6 +148,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `scripts/smoke.sh` honoured `REFLEX_URL` but not `REFLEX_PORT`, so relocating a port
   with the documented variable moved the service and left the smoke test asking the old
   one — a check failing for a reason unrelated to what it checks.
+
+### Changed
+
+- **`docs/security/capability-isolation.md` no longer claims a compromised arm has "no
+  access to other arms."** The threat-model row now reads "no access beyond task-scoped,
+  orchestrator-issued, expiring peer capabilities" — true both today and once the Neural
+  Ring (Stage 5) lets arms talk without the brain. The old wording would have become
+  false the day the ring shipped, which is why it gated Stage 5.
+- **`AGENTS.md` is the canonical working guide**, with `CLAUDE.md` and `GEMINI.md` as
+  symlinks to it. Universal engineering rules now come from the shared Master-Claude
+  core; the project block holds only what is specific to OctoLLM.
 
 ### Removed
 

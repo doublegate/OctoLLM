@@ -187,15 +187,13 @@ repository is either made true or deleted. Four stages are complete.
 | Component | State | Detail |
 |---|---|---|
 | **Reflex layer** (Rust, port 8080) | Implemented | ~8,500 lines; PII detection, prompt-injection detection, Redis cache, token-bucket rate limiting. 241 tests. |
-| **Orchestrator** (Python, port 8000) | Partial | FastAPI app, SQLAlchemy 2.0 models, reflex client with circuit breaker, arm registry (`GET /arms`). 197 tests, 93% coverage. **It does not yet call any arm** — `POST /submit` validates, screens and persists; tasks stay `pending`. The execution engine lands in Stage 7. |
-| **Shared arm framework** (`octollm_common`) | Implemented | App factory, error envelope, contract models, arm roster, LLM providers. 103 tests, 95% coverage. Imported by all eight arms and the orchestrator. |
-| **Python SDK** | Implemented | 8 service clients, 28 tests. Unpublished. |
+| **Orchestrator** (Python, port 8000) | Partial | FastAPI app, SQLAlchemy 2.0 models, reflex client with circuit breaker, arm registry (`GET /arms`), capability signing authority. 225 tests, 93% coverage. **It does not yet call any arm** — `POST /submit` validates, screens and persists; tasks stay `pending`. The execution engine lands in Stage 7. |
+| **Shared arm framework** (`octollm_common`) | Implemented | App factory, error envelope, contract models, arm roster, LLM providers, capability tokens, the Neural Ring and peer clients. 210 tests, 96% coverage. Imported by all eight arms and the orchestrator. || **Python SDK** | Implemented | 8 service clients, 28 tests. Unpublished. |
 | **TypeScript SDK** | Implemented | 8 service clients, 28 tests. Unpublished. |
 | **Executor arm** (Rust, port 8006) | Stub | 21 lines. Sandbox lands in Stage 9. |
 | **Planner / Retriever / Coder / Judge / Safety Guardian** (8001-8005) | Scaffolded | Built on the shared framework: each serves `/health`, `/ready`, `/capabilities` and `/metrics`, and answers its own endpoint with **501 naming Stage 8** — never a plausible fake. |
-| **Memory / Curator** (8007) | Not started | Stage 6 — it is the Retriever's corpus, so it lands first. |
 | **Red Team** (8008) | Not started | Stage 11, flag-gated off and outside the default compose profile. |
-| **PostgreSQL / Redis / Qdrant** | Running | Qdrant is in the compose stack but nothing reads or writes it yet. |
+| **PostgreSQL / Redis / Qdrant** | Running | Redis now also carries the Neural Ring's artifact streams. Qdrant is in the compose stack but nothing reads or writes it until Stage 6. |
 
 ### Stage progress
 
@@ -206,7 +204,7 @@ repository is either made true or deleted. Four stages are complete.
 | **2. Secret scanning that works** | Complete — `.gitleaks.toml` was discarding all ~170 built-in rules (a `[[rules]]` block without `[extend] useDefault = true`) and exempting every markdown file, all of `docs/`, `tests/`, workflows and infra scripts. `scripts/gitleaks-selftest.sh` plants four secrets in four formerly-exempt locations and proves both that this config finds them and that the old one did not. |
 | **3. The stack runs** | Complete — `make up` brings all eleven services to **healthy** and `make smoke` round-trips a task. `POST /process` had returned 500 on every request for the life of the service; all 23 compose variables were silently ignored; the reflex client could not parse a single real response; five arm images crash-looped; every arm's spec named its neighbour's port. |
 | **4. The shared arm framework** | Complete — one app factory, one error envelope, one set of contract models, one arm roster and one LLM provider boundary, imported by all eight arms and the orchestrator. `FakeProvider` makes every later test deterministic, and `make sdk-parity-check` found four SDK calls that could never have worked and sixteen clients defaulting to the wrong port. |
-| **5-12** | Planned. See [Roadmap](#roadmap). |
+| **5. The Neural Ring and capability tokens** | Complete — arms can coordinate without the brain, and something can finally stop them. Capability isolation had been 87KB of design document and **zero lines of code** while the executor's spec required a token on every request. Artifacts travel on Redis Streams within the topology each arm declares; the tight loops (Coder↔Judge) go over capability-gated HTTP. Authorization reads the **static roster**, never the arm-reported registry. Grants are ≤120s, bound to one callee and one task, and counted by the callee. See [ADR-010](docs/adr/010-neural-ring-and-capability-tokens.md). || **6-12** | Planned. See [Roadmap](#roadmap). |
 
 ### Test suites
 
@@ -214,9 +212,8 @@ repository is either made true or deleted. Four stages are complete.
 |---|---|---|
 | Rust workspace | 241 | yes |
 | Rust, Redis-backed | 18 | yes — 17 of these were `#[ignore]`d and had never executed anywhere |
-| Shared arm framework | 103 | yes, coverage floored at 90% |
-| Orchestrator | 186 | yes, coverage floored at 85% |
-| Python SDK | 28 | yes |
+| Shared arm framework | 210 | yes, coverage floored at 90%, against a real Redis |
+| Orchestrator | 225 | yes, coverage floored at 85% || Python SDK | 28 | yes |
 | TypeScript SDK | 28 | yes |
 
 Every suite asserts a collection floor, because a suite that silently collects zero
@@ -224,7 +221,7 @@ tests produces exactly the same green check as one that ran them all.
 
 ### Repository inventory
 
-332 tracked markdown files (~277,000 lines), 8 OpenAPI specifications, 8 ADRs, 7 Grafana
+340 tracked markdown files (~277,000 lines), 8 OpenAPI specifications, 10 ADRs, 7 Grafana
 dashboards, 84 Prometheus alert rules, and a 13-service development compose stack.
 
 Much of that documentation was written ahead of the code and still describes intentions
@@ -247,9 +244,8 @@ while the gate goes green.
 | `lint-config` | yamllint, OpenAPI validity, shellcheck, actionlint, `version-check` |
 | `secrets` | gitleaks over full history, plus the scanner self-test |
 | `test-rust` | 241 workspace tests + 18 Redis-backed |
-| `test-shared` | 103 tests, coverage floored at 90%; provider SDKs deliberately absent |
-| `test-orchestrator` | 197 tests, coverage floored at 85% |
-| `test-sdk-python` | 28 tests |
+| `test-shared` | 210 tests, coverage floored at 90%, against a `redis:8-alpine` service; provider SDKs deliberately absent |
+| `test-orchestrator` | 225 tests, coverage floored at 85% || `test-sdk-python` | 28 tests |
 | `test-sdk-typescript` | 28 tests |
 
 Three properties are enforced rather than documented: **no step is `continue-on-error`
@@ -299,7 +295,7 @@ pre-commit install
 # OpenAPI validity, shellcheck, actionlint
 make lint
 
-# Run every suite: 241 Rust, 103 shared, 197 orchestrator, 28 Python SDK, 28 TypeScript SDK
+# Run every suite: 241 Rust, 210 shared, 225 orchestrator, 28 Python SDK, 28 TypeScript SDK
 make test
 
 # Everything CI runs, in one command
@@ -313,10 +309,13 @@ make help
 same targets — CI calls these targets rather than keeping its own copy of the commands,
 so a local pass and a CI pass mean the same thing by construction.
 
-The one suite `make verify` leaves out needs a running Redis:
+Redis must be running: `make test-shared` **refuses to start** without it, because the
+Neural Ring tests run against a real one and would otherwise skip — and a skipped suite
+reports exactly what a passing one reports. The Redis-backed Rust suite is the one thing
+`verify` leaves out.
 
 ```bash
-make redis && make test-rust-redis && make redis-stop
+make redis && make verify && make test-rust-redis && make redis-stop
 ```
 
 ### Development Environment
@@ -377,10 +376,11 @@ git commit -m "feat: your change"   # pre-commit hooks run automatically
 ```
 
 `make verify` covers version-check, gate-check, all four linters, mypy, the secret scan
-and its self-test, and every suite. The one thing it leaves out needs a running Redis:
+and its self-test, and every suite. It needs Redis running, and the Redis-backed Rust
+suite is the one thing it leaves out:
 
 ```bash
-make redis && make test-rust-redis && make redis-stop
+make redis && make verify && make test-rust-redis && make redis-stop
 ```
 
 See [Local Development Guide](docs/development/local-setup.md) for detail.

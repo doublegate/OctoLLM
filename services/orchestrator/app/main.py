@@ -15,7 +15,6 @@ Usage:
     uvicorn app.main:app --reload --port 8000
 """
 
-import hmac
 import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -26,9 +25,12 @@ import structlog
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
+from octollm_common.capability import CapabilityClaims
 from octollm_common.errors import error_body, install_error_handlers
+from octollm_common.security import CapabilityPolicy, RequireCapability
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 
+from app.capabilities import REGISTRY_WRITE_SCOPE, RingAuthority
 from app.config import get_settings
 from app.database import create_task, get_database, get_task, get_task_count_by_status
 from app.models import (
@@ -52,6 +54,10 @@ from app.registry import (
 )
 
 logger = structlog.get_logger(__name__)
+
+#: The process-wide capability-signing authority. Built on first use by
+#: `get_ring_authority` so that importing this module does not require a secret.
+_ring_authority: RingAuthority | None = None
 
 # ==============================================================================
 # Prometheus Metrics
@@ -426,62 +432,85 @@ async def list_arms(refresh: bool = False) -> ListArmsResponse:
     return ListArmsResponse(arms=arms)
 
 
-def _authorize_registration(http_request: Request) -> None:
+def get_ring_authority() -> RingAuthority:
     """
-    Gate the one mutating endpoint on the registry.
+    The process-wide signing authority, or `None` if this deployment has no secret.
 
-    This service has **no authentication at all** until Stage 5 issues capability
-    tokens, and an unauthenticated caller able to restate an arm's details is a
-    routing-control primitive: mark a stub `implemented` and the dispatcher will send
-    work to something that cannot do it; blank an arm's `capabilities` and it stops
-    being selected at all.
+    Built lazily and cached on the module so that a service which never touches a
+    capability-gated route does not require the secret merely to import.
+    """
+    global _ring_authority
+    if _ring_authority is None:
+        settings = get_settings()
+        if not settings.capability_secret:
+            raise _capabilities_unconfigured()
+        # Raises CapabilityConfigError on a short or placeholder secret. That
+        # propagates as a 500 here rather than a 503, and correctly so: an unset
+        # secret is a deployment that opted out, while a bad one is a deployment that
+        # tried and got it wrong, and the two want different operator responses.
+        _ring_authority = RingAuthority(
+            secret=settings.capability_secret,
+            kid=settings.capability_kid,
+            default_ttl_seconds=settings.capability_ttl_seconds,
+        )
+    return _ring_authority
 
-    So the endpoint fails **closed**. With no `ORCHESTRATOR_ARM_REGISTRATION_TOKEN`
-    configured it refuses every write with 503, which is the correct default for a
-    deployment that has not thought about this yet. With one configured it requires a
-    matching bearer token, compared in constant time.
 
-    This is a stopgap with a known replacement: Stage 5 makes the orchestrator the
-    signing authority for per-arm capability tokens, and this shared secret goes away
-    with it. It is here because shipping the endpoint ungated would put the hole in
-    `main` before the traffic that makes it exploitable arrives.
+def reset_ring_authority() -> None:
+    """Drop the cached authority. Used by tests when settings change."""
+    global _ring_authority
+    _ring_authority = None
+
+
+def _capabilities_unconfigured() -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail=error_body(
+            code="unavailable",
+            message=(
+                "Capability tokens are not configured on this deployment. Set "
+                "ORCHESTRATOR_CAPABILITY_SECRET to at least 32 random characters "
+                "to enable capability-gated endpoints. They are off by default "
+                "because a service that has not configured authorization should "
+                "refuse, not allow."
+            ),
+            request_id="unknown",
+        ),
+    )
+
+
+async def _authorize_registration(http_request: Request) -> CapabilityClaims:
+    """
+    Gate the one mutating endpoint on the registry, with a real capability token.
+
+    An unauthenticated caller able to restate an arm's details is a routing-control
+    primitive: mark a stub `implemented` and the dispatcher sends work to something
+    that cannot do it; blank an arm's `capabilities` and it stops being selected at
+    all. So this endpoint has always failed closed.
+
+    Until Stage 5 it did so against a **shared secret**, which was a stopgap and was
+    recorded as one. This is the replacement. The caller now presents a capability
+    token that the orchestrator itself signed, addressed to the orchestrator
+    (`aud=orchestrator`), carrying `registry:write`, and spendable once by default.
+    That is strictly narrower than the old secret in three ways: it expires in at most
+    two minutes, it cannot be presented to any arm, and it is counted.
+
+    Mint one with `scripts/mint_capability.py --scope registry:write`.
 
     Raises:
-        503: No token is configured, so registration is disabled.
-        401: The bearer token is absent or does not match.
+        503: No capability secret is configured, so registration is disabled.
+        401: No token was presented.
+        403: A token was presented and does not authorize this.
     """
-    settings = get_settings()
-    configured = settings.arm_registration_token
-
-    if not configured:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=error_body(
-                code="unavailable",
-                message=(
-                    "Arm registration is disabled. Set ORCHESTRATOR_ARM_REGISTRATION_TOKEN "
-                    "to enable it. It is off by default because this service has no "
-                    "authentication until Stage 5 of the v1.0.0 plan, and an "
-                    "unauthenticated caller able to restate an arm's details can "
-                    "control where the orchestrator sends work."
-                ),
-                request_id=getattr(http_request.state, "request_id", "unknown"),
-            ),
-        )
-
-    header = http_request.headers.get("authorization", "")
-    scheme, _, presented = header.partition(" ")
-    # `compare_digest` rather than `==`: the comparison is against a secret, and a
-    # short-circuiting compare leaks its prefix through timing.
-    if scheme.lower() != "bearer" or not hmac.compare_digest(presented, configured):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=error_body(
-                code="unauthenticated",
-                message="Arm registration requires a valid bearer token.",
-                request_id=getattr(http_request.state, "request_id", "unknown"),
-            ),
-        )
+    authority = get_ring_authority()
+    policy = CapabilityPolicy(
+        authority.verifier,
+        scope=REGISTRY_WRITE_SCOPE,
+        # Registration is an operator action, not a step in a task, so there is no
+        # task to bind to. Every other capability-gated route binds.
+        bind_task=False,
+    )
+    return await RequireCapability(policy)(http_request)
 
 
 @app.post("/arms/register", response_model=RegisterArmResponse, tags=["registry"])
@@ -504,10 +533,10 @@ async def register_arm(request: RegisterArmRequest, http_request: Request) -> Re
 
     Raises:
         503: Registration is not enabled on this deployment.
-        401: The bearer token is absent or wrong.
-        403: The `arm_id` is not in the roster.
+        401: No capability token was presented.
+        403: The token does not authorize this, or the `arm_id` is not in the roster.
     """
-    _authorize_registration(http_request)
+    await _authorize_registration(http_request)
 
     try:
         arm = get_registry().register(request)

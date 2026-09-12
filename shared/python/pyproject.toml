@@ -23,6 +23,11 @@ dependencies = [
     "pydantic>=2.14.1",
     "httpx>=0.28.1",
     "structlog>=26.1.0",
+    # Stage 5. Both are declared here rather than per-arm because the Neural Ring and
+    # its capability tokens live in this package, so every arm gets them at once or
+    # none does. `pyjwt` was already a root dependency that nothing imported.
+    "pyjwt>=2.14.0",
+    "redis>=8.1.0",
 ]
 
 [project.optional-dependencies]

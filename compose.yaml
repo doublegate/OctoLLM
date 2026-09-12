@@ -116,10 +116,15 @@ services:
       ORCHESTRATOR_LOG_LEVEL: ${LOG_LEVEL:-INFO}
       ORCHESTRATOR_ENVIRONMENT: ${ENVIRONMENT:-development}
       ORCHESTRATOR_TASK_DEFAULT_TIMEOUT: ${TASK_TIMEOUT:-300}
-      # Empty by default, which DISABLES POST /arms/register. The endpoint
-      # mutates routing state and this service has no authentication until
-      # Stage 5, so it fails closed rather than shipping open.
-      ORCHESTRATOR_ARM_REGISTRATION_TOKEN: ${ARM_REGISTRATION_TOKEN:-}
+      # Empty by default, which DISABLES every capability-gated endpoint --
+      # POST /arms/register today, peer token issuance from Stage 7. A
+      # deployment that has not configured authorization should refuse, not
+      # allow, so the endpoints answer 503 rather than shipping open.
+      # Generate with `openssl rand -hex 32`; shorter or placeholder values are
+      # refused at startup rather than on first use.
+      ORCHESTRATOR_CAPABILITY_SECRET: ${CAPABILITY_SECRET:-}
+      ORCHESTRATOR_CAPABILITY_KID: ${CAPABILITY_KID:-k1}
+      ORCHESTRATOR_CAPABILITY_TTL_SECONDS: ${CAPABILITY_TTL_SECONDS:-60}
       # Optional. The stack must come up without either.
       ORCHESTRATOR_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ORCHESTRATOR_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
@@ -170,6 +175,7 @@ services:
     # Host 18006 deliberately: 8006 is the CONTAINER port, and the canonical port map
     # records both. The README claimed localhost:8006 for years.
     ports: ["${EXECUTOR_PORT:-18006}:8006"]
+
 
 volumes:
   postgres_data:

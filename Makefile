@@ -33,8 +33,8 @@ SDK_TS       := sdks/typescript/octollm-sdk
 # Collection floors. A suite that silently collects zero tests reports exactly what a
 # suite that ran them all reports; these are what separate the two. Raise one when you
 # add tests. Never lower one to make a red build green -- that is the bug, not the fix.
-FLOOR_ORCHESTRATOR := 197
-FLOOR_SHARED       := 103
+FLOOR_ORCHESTRATOR := 225
+FLOOR_SHARED       := 210
 FLOOR_SDK_PY       := 28
 FLOOR_SDK_TS_FILES := 3
 # 17 Redis-backed, plus the /process connect-info regression, which also needs Redis.
@@ -125,7 +125,7 @@ test-rust-redis: ## The Redis-backed Rust tests; needs Redis on localhost:6379
 	  fi
 
 .PHONY: test-shared
-test-shared: ## Shared arm framework suite, coverage enforced at 90% by its pytest config
+test-shared: ## Shared arm framework suite (needs Redis on :6379), coverage at 90%
 	@cd $(SHARED_PY) && collected=$$($(PYTHON) -m pytest tests/ --collect-only \
 	    -p no:cacheprovider --no-cov 2>&1 \
 	    | grep -oE '[0-9]+ tests? collected' | grep -oE '^[0-9]+' | tail -1); \
@@ -134,6 +134,18 @@ test-shared: ## Shared arm framework suite, coverage enforced at 90% by its pyte
 	    echo "::error::shared framework collected $${collected:-0} tests, floor is $(FLOOR_SHARED)"; \
 	    exit 1; \
 	  fi
+	@# The Neural Ring tests run against a REAL Redis and SKIP when none is reachable.
+	@# A skipped suite reports exactly what a passing one reports, which is the single
+	@# defect this repository is being dug out of -- so refuse to run rather than
+	@# quietly cover less. CI provides a redis:8-alpine service; locally, `make redis`.
+	@$(PYTHON) -c "import redis, os; \
+	  redis.from_url(os.environ.get('REDIS_URL', 'redis://localhost:6379/0')).ping()" \
+	  >/dev/null 2>&1 || { \
+	    echo "::error::No Redis on :6379. The Neural Ring tests would SKIP, and a"; \
+	    echo "           skipped suite is indistinguishable from a passing one."; \
+	    echo "           Run: make redis && make test-shared && make redis-stop"; \
+	    exit 1; \
+	  }
 	cd $(SHARED_PY) && $(PYTHON) -m pytest tests/
 
 .PHONY: test-orchestrator
@@ -240,7 +252,19 @@ verify: version-check diagram-check gate-check compose-env-check port-map-check 
 
 .PHONY: up
 up: ## Build and start the whole stack; waits for every service to be HEALTHY
-	docker compose up -d --build --wait
+	@# A per-run capability secret, generated here and passed to compose in the
+	@# environment. It is never written to a file.
+	@#
+	@# That keeps two things true at once: the stack is fully usable out of the box,
+	@# including the capability-gated routes Memory's whole surface sits behind, and
+	@# no secret is committed or left on disk. A hardcoded development default would
+	@# be the third option and the wrong one -- it is exactly the placeholder the
+	@# issuer refuses at startup.
+	@#
+	@# `make smoke` reads it back out of the running container rather than being told
+	@# it, so the two commands cannot disagree about what the stack is using.
+	CAPABILITY_SECRET="$${CAPABILITY_SECRET:-$$(openssl rand -hex 32)}" \
+	  docker compose up -d --build --wait
 	@$(MAKE) --no-print-directory ps
 
 .PHONY: down

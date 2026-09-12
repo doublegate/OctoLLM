@@ -237,8 +237,24 @@ jobs:
         run: make test-rust-redis
 
   test-shared:
-    name: Test shared framework (floor 103)
+    name: Test shared framework (floor 210, incl. Neural Ring against Redis)
     runs-on: ubuntu-latest
+    # The Neural Ring tests run against a REAL Redis, not a fake. A double would
+    # implement whatever `ring.py` already assumes, so it could not tell us that a
+    # consumer group survives a restart, that an unacknowledged message redelivers,
+    # or that `mkstream` lets a consumer start before its producer. They skip when no
+    # Redis is reachable, which is why this service must exist: a skip locally must
+    # never be a skip in the gate.
+    services:
+      redis:
+        image: redis:8-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
     steps:
       - uses: actions/checkout@v7
 
@@ -267,7 +283,7 @@ jobs:
           fail_ci_if_error: false
 
   test-orchestrator:
-    name: Test orchestrator (floor 197)
+    name: Test orchestrator (floor 225)
     runs-on: ubuntu-latest
     defaults:
       run:
