@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/doublegate/OctoLLM#readme",
   "dependencies": {
-    "axios": ">=1.18.1 <1.19.0",
+    "axios": ">=1.18.1 <1.21.0",
     "axios-retry": "^4.5.0"
   },
   "devDependencies": {
