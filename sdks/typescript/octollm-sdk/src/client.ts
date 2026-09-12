@@ -28,6 +28,36 @@ export interface ClientConfig {
 }
 
 /**
+ * Coerce an arbitrary error body into an ErrorResponse.
+ *
+ * A gateway or proxy will happily return HTML, plain text, or a bare JSON array in
+ * place of the documented error object. Casting that straight to ErrorResponse type-checks
+ * but leaves `errorData.error.code` undefined at runtime, so the shape is verified here
+ * instead. Anything unrecognised is preserved under `details.body` rather than discarded,
+ * which is what you actually want when debugging a 502 from an intermediary.
+ */
+function toErrorResponse(data: unknown, fallbackMessage: string): ErrorResponse {
+  const hasErrorObject =
+    typeof data === 'object' &&
+    data !== null &&
+    'error' in data &&
+    typeof (data as { error: unknown }).error === 'object' &&
+    (data as { error: unknown }).error !== null;
+
+  if (hasErrorObject) {
+    return data as ErrorResponse;
+  }
+
+  return {
+    error: {
+      code: 'unknown',
+      message: fallbackMessage,
+      ...(data === undefined || data === null ? {} : { details: { body: data } })
+    }
+  };
+}
+
+/**
  * Base client for all OctoLLM service clients
  */
 export class BaseClient {
@@ -146,9 +176,7 @@ export class BaseClient {
 
     if (error.response) {
       const statusCode = error.response.status;
-      const errorData: ErrorResponse = (error.response.data as ErrorResponse) || {
-        error: { code: 'unknown', message: error.message }
-      };
+      const errorData = toErrorResponse(error.response.data, error.message);
 
       switch (statusCode) {
         case 401:
