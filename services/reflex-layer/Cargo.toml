@@ -69,6 +69,10 @@ uuid = { workspace = true }
 mockall = { workspace = true }
 criterion = { workspace = true }
 fake = { workspace = true }
+# The /process regression test binds a real socket and makes a real request, because
+# that is the only way to exercise the connect-info path the defect lived in.
+reqwest = { workspace = true }
+serde_json = { workspace = true }
 
 [[bench]]
 name = "pii_bench"

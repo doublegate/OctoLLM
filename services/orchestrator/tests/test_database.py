@@ -7,6 +7,7 @@ Tests database initialization, CRUD operations, and error handling using SQLite 
 from uuid import UUID, uuid4
 
 import pytest
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.database import (
@@ -19,7 +20,7 @@ from app.database import (
     store_task_result,
     update_task_status,
 )
-from app.models import Priority, ResourceBudget, Task, TaskContract, TaskStatus
+from app.models import Priority, ResourceBudget, Task, TaskContract, TaskResult, TaskStatus
 
 # ==============================================================================
 # Fixtures
@@ -345,6 +346,69 @@ async def test_store_task_result_success(test_database, sample_contract):
     async with test_database.session() as session:
         task = await get_task(session, task_id)
         assert task.status == TaskStatus.COMPLETED
+
+
+@pytest.mark.asyncio
+async def test_store_task_result_is_idempotent(test_database, sample_contract):
+    """
+    Regression test. store_task_result unconditionally INSERTed a TaskResult, and
+    TaskResult.task_id is unique=True, so the second call for a task raised
+    IntegrityError -- despite the docstring saying "Create or update result".
+
+    This is the failure mode that matters for the execution engine: it checkpoints
+    and resumes, a resumed graph re-runs its terminal node, and the second write
+    turned a recoverable task into a permanently stuck one.
+    """
+    async with test_database.session() as session:
+        created_task = await create_task(session, sample_contract)
+        task_id = str(created_task.id)
+
+    async with test_database.session() as session:
+        first = await store_task_result(
+            session, task_id, result={"output": "first"}, processing_time_ms=100
+        )
+        assert first is not None
+
+    # The same call again, as a resumed graph would make it.
+    async with test_database.session() as session:
+        second = await store_task_result(
+            session, task_id, result={"output": "second"}, processing_time_ms=250
+        )
+        assert second is not None
+        assert second.result == {"output": "second"}
+        assert second.processing_time_ms == 250
+
+    # Exactly one row, carrying the latest values -- not two rows, and not a raise.
+    async with test_database.session() as session:
+        rows = (
+            (await session.execute(select(TaskResult).where(TaskResult.task_id == UUID(task_id))))
+            .scalars()
+            .all()
+        )
+        assert len(rows) == 1
+        assert rows[0].result == {"output": "second"}
+
+
+@pytest.mark.asyncio
+async def test_store_task_result_can_overwrite_a_result_with_an_error(
+    test_database, sample_contract
+):
+    """A retry that ends badly must replace the earlier success, not sit beside it."""
+    async with test_database.session() as session:
+        created_task = await create_task(session, sample_contract)
+        task_id = str(created_task.id)
+
+    async with test_database.session() as session:
+        await store_task_result(session, task_id, result={"output": "ok"})
+
+    async with test_database.session() as session:
+        final = await store_task_result(session, task_id, error="timeout on resume")
+        assert final.error == "timeout on resume"
+        assert final.result is None
+
+    async with test_database.session() as session:
+        task = await get_task(session, task_id)
+        assert task.status == TaskStatus.FAILED
 
 
 @pytest.mark.asyncio

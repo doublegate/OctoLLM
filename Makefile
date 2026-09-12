@@ -35,7 +35,8 @@ SDK_TS       := sdks/typescript/octollm-sdk
 FLOOR_ORCHESTRATOR := 150
 FLOOR_SDK_PY       := 28
 FLOOR_SDK_TS_FILES := 3
-FLOOR_RUST_IGNORED := 17
+# 17 Redis-backed, plus the /process connect-info regression, which also needs Redis.
+FLOOR_RUST_IGNORED := 18
 
 .PHONY: help
 help: ## Show this help
