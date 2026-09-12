@@ -349,6 +349,54 @@ async def test_store_task_result_success(test_database, sample_contract):
 
 
 @pytest.mark.asyncio
+async def test_get_task_result_is_usable_after_the_session_closes(test_database, sample_contract):
+    """
+    Regression test for a 500 on GET /tasks/{id} that only appeared against a real
+    database and a real request.
+
+    `Task.to_response()` reads `task.result`, and `main.py` calls it AFTER the
+    session context has exited -- so the relationship lazy-loaded on a detached
+    instance and raised DetachedInstanceError. Async SQLAlchemy cannot lazy-load
+    under any circumstances: detached it raises this, attached it raises
+    MissingGreenlet. `get_task` now eager-loads with selectinload.
+
+    Every test here passed while the endpoint 500'd, because none of them touched
+    the relationship outside the session. `scripts/smoke.sh` is what caught it.
+    """
+    async with test_database.session() as session:
+        created_task = await create_task(session, sample_contract)
+        task_id = str(created_task.id)
+
+    async with test_database.session() as session:
+        await store_task_result(session, task_id, result={"output": "done"})
+
+    # Fetch inside a session, use outside it -- exactly what the endpoint does.
+    async with test_database.session() as session:
+        task = await get_task(session, task_id)
+
+    response = task.to_response()
+    assert response.task_id == task_id
+    assert response.result == {"output": "done"}
+
+
+@pytest.mark.asyncio
+async def test_get_task_without_a_result_is_also_usable_when_detached(
+    test_database, sample_contract
+):
+    """The same path for a task that has no result row yet -- the common case."""
+    async with test_database.session() as session:
+        created_task = await create_task(session, sample_contract)
+        task_id = str(created_task.id)
+
+    async with test_database.session() as session:
+        task = await get_task(session, task_id)
+
+    response = task.to_response()
+    assert response.status == TaskStatus.PENDING
+    assert response.result is None
+
+
+@pytest.mark.asyncio
 async def test_store_task_result_is_idempotent(test_database, sample_contract):
     """
     Regression test. store_task_result unconditionally INSERTed a TaskResult, and

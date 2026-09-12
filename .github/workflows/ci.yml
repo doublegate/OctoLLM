@@ -182,6 +182,12 @@ jobs:
           pip install -e "services/orchestrator[dev]"
           make compose-env-check
 
+      # Four sources disagreed about which port each service listens on, and the
+      # arms' OpenAPI specs were shifted a whole slot: planner documented 8002
+      # (the retriever's), the executor documented 8003 (the coder's).
+      - name: make port-map-check
+        run: make port-map-check
+
   # ===========================================================================
   # Test
   # ===========================================================================

@@ -12,9 +12,9 @@ info:
   version: 0.5.0
 
 servers:
-  - url: http://localhost:8002
+  - url: http://localhost:8001
     description: Local development
-  - url: http://planner:8002
+  - url: http://planner:8001
     description: Docker Compose / Kubernetes internal
 
 tags:

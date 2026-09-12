@@ -12,6 +12,7 @@ from uuid import UUID
 import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import selectinload
 from sqlalchemy.pool import AsyncAdaptedQueuePool
 
 from app.config import get_settings
@@ -209,7 +210,15 @@ async def get_task(session: AsyncSession, task_id: str) -> Task | None:
         logger.warning("database.invalid_task_id", task_id=task_id)
         return None
 
-    result = await session.execute(select(Task).where(Task.id == task_uuid))
+    # selectinload, not lazy loading. `Task.to_response()` reads `task.result`, and
+    # callers use the task after the session context has exited -- so the lazy load
+    # raised DetachedInstanceError on GET /tasks/{id} against a real database. Async
+    # SQLAlchemy cannot lazy-load at all in any case: outside a session it detaches,
+    # and inside one it raises MissingGreenlet. The relationship is always needed
+    # here, so it is always fetched.
+    result = await session.execute(
+        select(Task).where(Task.id == task_uuid).options(selectinload(Task.result))
+    )
     task: Task | None = result.scalar_one_or_none()
 
     if task:
