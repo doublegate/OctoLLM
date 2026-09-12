@@ -17,6 +17,33 @@ from app.config import Settings, get_settings, reset_settings
 # ==============================================================================
 
 
+def test_database_url_rejects_a_folded_scalar_space():
+    """
+    Regression test. The validator checked only the scheme prefix, so a URL with a
+    space in it was accepted and failed later at the driver.
+
+    That is exactly what the development compose file produced: it built the value
+    with a YAML folded scalar (`>-`), which joins its lines with a space, giving
+    `postgresql://user:pass @postgres:5432/octollm`.
+    """
+    with pytest.raises(ValidationError, match="whitespace"):
+        Settings(database_url="postgresql://octollm:pw @postgres:5432/octollm")
+
+
+def test_database_url_requires_a_host_and_a_database_name():
+    with pytest.raises(ValidationError, match="no host"):
+        Settings(database_url="postgresql://octollm:pw@/octollm")
+
+    with pytest.raises(ValidationError, match="no database name"):
+        Settings(database_url="postgresql://octollm:pw@postgres:5432")
+
+
+def test_database_url_accepts_the_compose_value():
+    """The exact string docker-compose.dev.yml sets must validate."""
+    url = "postgresql://octollm:octollm_dev_password@postgres:5432/octollm"
+    assert Settings(database_url=url).database_url == url
+
+
 def test_settings_defaults():
     """Test Settings loads with default values."""
     # Reset any existing settings

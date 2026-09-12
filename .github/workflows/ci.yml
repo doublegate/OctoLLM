@@ -173,6 +173,15 @@ jobs:
       - name: make diagram-check
         run: make diagram-check
 
+      # Every variable compose sets must be one the service actually reads. All 23 of
+      # them were silently ignored before this check existed -- the orchestrator's
+      # were unprefixed against env_prefix="ORCHESTRATOR_", and the reflex layer's
+      # used a separator that made most of its config unreachable.
+      - name: make compose-env-check
+        run: |
+          pip install -e "services/orchestrator[dev]"
+          make compose-env-check
+
   # ===========================================================================
   # Test
   # ===========================================================================

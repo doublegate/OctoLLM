@@ -4,6 +4,8 @@ Configuration management for Orchestrator service.
 Loads settings from environment variables with validation and defaults.
 """
 
+from urllib.parse import urlparse
+
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -27,6 +29,9 @@ class Settings(BaseSettings):
     version: str = Field(default="0.5.0", description="Service version")
     environment: str = Field(default="development", description="Environment (dev/staging/prod)")
     debug: bool = Field(default=False, description="Debug mode")
+    # The compose file set LOG_LEVEL for this service from the beginning; there was no
+    # field to receive it, and nothing in the app configured a level at all.
+    log_level: str = Field(default="INFO", description="Root log level")
 
     # Server Configuration
     host: str = Field(default="0.0.0.0", description="Server bind host")  # nosec B104
@@ -108,9 +113,35 @@ class Settings(BaseSettings):
     @field_validator("database_url")
     @classmethod
     def validate_database_url(cls, v: str) -> str:
-        """Ensure database URL is PostgreSQL."""
-        if not v.startswith("postgresql://") and not v.startswith("postgresql+psycopg://"):
-            raise ValueError("Database URL must be a PostgreSQL connection string")
+        """
+        Ensure the database URL is a usable PostgreSQL connection string.
+
+        This checked only the scheme prefix, which let malformed URLs through to the
+        driver. That is not hypothetical: the development compose file built this value
+        with a YAML folded scalar (`>-`), which joins its lines with a SPACE, producing
+        `postgresql://user:pass @postgres:5432/octollm`. The prefix check passed it and
+        the failure surfaced later as a connection error naming a host that does not
+        exist.
+        """
+        if not v.startswith(("postgresql://", "postgresql+psycopg://")):
+            raise ValueError(
+                "Database URL must start with postgresql:// or postgresql+psycopg:// "
+                f"(got {v.split('://', 1)[0] if '://' in v else v!r})"
+            )
+
+        if any(ch.isspace() for ch in v):
+            raise ValueError(
+                "Database URL contains whitespace. A YAML folded scalar (`>-`) joins "
+                "its lines with a space and will silently corrupt a URL written across "
+                "several lines; quote it on one line instead."
+            )
+
+        parsed = urlparse(v)
+        if not parsed.hostname:
+            raise ValueError(f"Database URL has no host: {v.split('@')[-1]!r}")
+        if not parsed.path.lstrip("/"):
+            raise ValueError("Database URL has no database name after the host")
+
         return v
 
     @field_validator("redis_url")

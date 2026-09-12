@@ -203,8 +203,12 @@ secrets-selftest: ## Prove the scanner works: 4 planted secrets found, old confi
 gate-check: ## Fail if a CI job is not wired into ci-gate
 	$(PYTHON) scripts/ci/check_gate_complete.py .github/workflows/ci.yml
 
+.PHONY: compose-env-check
+compose-env-check: ## Fail if a compose env var is not one the service actually reads
+	$(PYTHON) scripts/ci/check_compose_env.py
+
 .PHONY: verify
-verify: version-check diagram-check gate-check lint typecheck secrets-scan secrets-selftest test ## Everything CI runs, minus the Redis suite
+verify: version-check diagram-check gate-check compose-env-check lint typecheck secrets-scan secrets-selftest test ## Everything CI runs, minus the Redis suite
 	@printf '\n\033[32mverify: OK\033[0m  (for the Redis-backed Rust tests: make redis test-rust-redis)\n'
 
 # =============================================================================
