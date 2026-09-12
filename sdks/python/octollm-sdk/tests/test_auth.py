@@ -3,6 +3,7 @@ Tests for authentication helpers.
 """
 
 import pytest
+
 from octollm_sdk.auth import get_auth_headers, validate_api_key, validate_bearer_token
 
 
@@ -35,7 +36,10 @@ def test_get_auth_headers_none():
 
 def test_validate_api_key_valid():
     """Test API key validation with valid keys."""
-    assert validate_api_key("sk-12345abcdef67890") is True
+    # validate_api_key() requires a total length of at least 20; "sk-" plus 17
+    # characters is the shortest key it accepts. The previous fixture here was 19
+    # characters long, so this assertion had never passed.
+    assert validate_api_key("sk-12345abcdef678901") is True
     assert validate_api_key("sk-" + "a" * 20) is True
 
 

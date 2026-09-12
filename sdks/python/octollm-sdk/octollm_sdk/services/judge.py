@@ -4,8 +4,6 @@ Judge Arm service client.
 The Judge specializes in output validation and quality assurance.
 """
 
-from typing import Optional
-
 from ..client import BaseClient
 from ..models import HealthResponse, ValidationRequest, ValidationResult
 
@@ -20,8 +18,8 @@ class JudgeClient(BaseClient):
     def __init__(
         self,
         base_url: str = "http://localhost:8006",
-        api_key: Optional[str] = None,
-        bearer_token: Optional[str] = None,
+        api_key: str | None = None,
+        bearer_token: str | None = None,
         **kwargs,
     ):
         """
@@ -40,7 +38,7 @@ class JudgeClient(BaseClient):
             **kwargs,
         )
 
-    async def health(self, timeout: Optional[float] = None) -> HealthResponse:
+    async def health(self, timeout: float | None = None) -> HealthResponse:
         """Check service health."""
         response = await self.get("/health", timeout=timeout)
         return HealthResponse(**response)
@@ -48,7 +46,7 @@ class JudgeClient(BaseClient):
     async def validate(
         self,
         request: ValidationRequest,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> ValidationResult:
         """
         Validate task output.
@@ -88,7 +86,7 @@ class JudgeClient(BaseClient):
         )
         return ValidationResult(**response)
 
-    async def get_capabilities(self, timeout: Optional[float] = None) -> dict:
+    async def get_capabilities(self, timeout: float | None = None) -> dict:
         """Get judge capabilities."""
         response = await self.get("/capabilities", timeout=timeout)
         return response

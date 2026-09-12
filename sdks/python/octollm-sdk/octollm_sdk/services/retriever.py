@@ -4,8 +4,6 @@ Retriever Arm service client.
 The Retriever specializes in knowledge base search and document retrieval.
 """
 
-from typing import Optional
-
 from ..client import BaseClient
 from ..models import HealthResponse, SearchRequest, SearchResponse
 
@@ -20,8 +18,8 @@ class RetrieverClient(BaseClient):
     def __init__(
         self,
         base_url: str = "http://localhost:8004",
-        api_key: Optional[str] = None,
-        bearer_token: Optional[str] = None,
+        api_key: str | None = None,
+        bearer_token: str | None = None,
         **kwargs,
     ):
         """
@@ -40,7 +38,7 @@ class RetrieverClient(BaseClient):
             **kwargs,
         )
 
-    async def health(self, timeout: Optional[float] = None) -> HealthResponse:
+    async def health(self, timeout: float | None = None) -> HealthResponse:
         """Check service health."""
         response = await self.get("/health", timeout=timeout)
         return HealthResponse(**response)
@@ -48,7 +46,7 @@ class RetrieverClient(BaseClient):
     async def search(
         self,
         request: SearchRequest,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> SearchResponse:
         """
         Search the knowledge base.
@@ -80,7 +78,7 @@ class RetrieverClient(BaseClient):
         )
         return SearchResponse(**response)
 
-    async def get_capabilities(self, timeout: Optional[float] = None) -> dict:
+    async def get_capabilities(self, timeout: float | None = None) -> dict:
         """Get retriever capabilities."""
         response = await self.get("/capabilities", timeout=timeout)
         return response

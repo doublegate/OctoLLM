@@ -4,7 +4,7 @@ OctoLLM SDK Exception Classes
 Custom exceptions for clear error handling and debugging.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class OctoLLMError(Exception):
@@ -13,9 +13,9 @@ class OctoLLMError(Exception):
     def __init__(
         self,
         message: str,
-        status_code: Optional[int] = None,
-        details: Optional[Dict[str, Any]] = None,
-        request_id: Optional[str] = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
+        request_id: str | None = None,
     ):
         super().__init__(message)
         self.message = message
@@ -66,7 +66,7 @@ class RateLimitError(OctoLLMError):
     def __init__(
         self,
         message: str = "Rate limit exceeded",
-        retry_after: Optional[int] = None,
+        retry_after: int | None = None,
         **kwargs: Any,
     ):
         super().__init__(message, status_code=429, **kwargs)

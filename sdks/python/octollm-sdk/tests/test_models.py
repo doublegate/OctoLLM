@@ -2,9 +2,10 @@
 Tests for Pydantic models.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 import pytest
+
 from octollm_sdk.models import (
     CodeRequest,
     ResourceBudget,
@@ -65,18 +66,18 @@ def test_resource_budget_validation():
 def test_task_response_status_enum():
     """Test TaskResponse status enum validation."""
     response = TaskResponse(
-        task_id="task_abc123xyz789",
+        task_id="task_abc123xyz789defg",
         status="processing",
-        created_at=datetime.now(),
+        created_at=datetime.now(UTC),
     )
     assert response.status == "processing"
 
     # Invalid status should be rejected
     with pytest.raises(ValueError):
         TaskResponse(
-            task_id="task_abc123xyz789",
+            task_id="task_abc123xyz789defg",
             status="invalid_status",
-            created_at=datetime.now(),
+            created_at=datetime.now(UTC),
         )
 
 

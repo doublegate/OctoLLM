@@ -10,7 +10,6 @@ This example demonstrates:
 
 import asyncio
 import logging
-from typing import Optional
 
 from octollm_sdk import (
     AuthenticationError,
@@ -35,7 +34,7 @@ async def submit_task_with_retry(
     client: OrchestratorClient,
     task: TaskRequest,
     max_retries: int = 3,
-) -> Optional[str]:
+) -> str | None:
     """
     Submit a task with automatic retry for transient errors.
 
@@ -135,19 +134,18 @@ async def submit_task_with_retry(
                 logger.error(f"Details: {e.details}")
 
             # Retry on 5xx errors
-            if e.status_code and e.status_code >= 500:
-                if attempt < max_retries - 1:
-                    wait_time = 2**attempt
-                    logger.info(f"Server error, retrying in {wait_time} seconds...")
-                    await asyncio.sleep(wait_time)
-                    attempt += 1
-                    continue
+            if e.status_code and e.status_code >= 500 and attempt < max_retries - 1:
+                wait_time = 2**attempt
+                logger.info(f"Server error, retrying in {wait_time} seconds...")
+                await asyncio.sleep(wait_time)
+                attempt += 1
+                continue
 
             return None
 
-        except Exception as e:
+        except Exception:
             # Unexpected errors
-            logger.exception(f"Unexpected error: {e}")
+            logger.exception("Unexpected error")
             return None
 
     logger.error(f"Failed to submit task after {max_retries} attempts")

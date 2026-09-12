@@ -5,8 +5,6 @@ The Reflex Layer provides fast preprocessing including cache checks,
 PII detection, and prompt injection detection.
 """
 
-from typing import Optional
-
 from ..client import BaseClient
 from ..models import CacheStats, HealthResponse, PreprocessRequest, PreprocessResponse
 
@@ -22,8 +20,8 @@ class ReflexClient(BaseClient):
     def __init__(
         self,
         base_url: str = "http://localhost:8001",
-        api_key: Optional[str] = None,
-        bearer_token: Optional[str] = None,
+        api_key: str | None = None,
+        bearer_token: str | None = None,
         **kwargs,
     ):
         """
@@ -42,7 +40,7 @@ class ReflexClient(BaseClient):
             **kwargs,
         )
 
-    async def health(self, timeout: Optional[float] = None) -> HealthResponse:
+    async def health(self, timeout: float | None = None) -> HealthResponse:
         """Check service health."""
         response = await self.get("/health", timeout=timeout)
         return HealthResponse(**response)
@@ -50,7 +48,7 @@ class ReflexClient(BaseClient):
     async def preprocess(
         self,
         request: PreprocessRequest,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> PreprocessResponse:
         """
         Preprocess input text.
@@ -81,7 +79,7 @@ class ReflexClient(BaseClient):
         )
         return PreprocessResponse(**response)
 
-    async def get_cache_stats(self, timeout: Optional[float] = None) -> CacheStats:
+    async def get_cache_stats(self, timeout: float | None = None) -> CacheStats:
         """
         Get cache statistics.
 
@@ -99,7 +97,7 @@ class ReflexClient(BaseClient):
         response = await self.get("/cache/stats", timeout=timeout)
         return CacheStats(**response)
 
-    async def clear_cache(self, timeout: Optional[float] = None) -> dict:
+    async def clear_cache(self, timeout: float | None = None) -> dict:
         """
         Clear the cache.
 
