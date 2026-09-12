@@ -1,9 +1,36 @@
 # OctoLLM Master TODO
 
-**Project Status**: Phase 1 In Progress (Sprint 1.2 Complete, Sprint 1.3 Next)
+> ## SUPERSEDED as a plan, 2026-09-12
+>
+> **The active roadmap is the twelve-stage plan to v1.0.0**, summarised in
+> [README.md](../README.md#roadmap). This document predates it by ten months and was
+> written for a staffed team on a different set of assumptions. It is retained because
+> its Phases 2-6 remain a useful inventory of work that outlives v1.0.0 (Kubernetes,
+> compliance, autoscaling, cost optimization), and a fresh roadmap is minted from it
+> after the release.
+>
+> **Do not read the status claims below as current.** Three of them are wrong in ways
+> worth naming, because each is the same failure the v1.0.0 plan exists to fix — a
+> claim recorded once and never checked against the repository:
+>
+> | Claim below | Actual |
+> |---|---|
+> | "Phase 0 ✅ **100% COMPLETE**" | **118 of that phase's own 227 checkboxes are unchecked** (48% checked). The summary contradicts its own body. |
+> | "Overall Progress: ~22%" | 173 of 935 checkboxes are checked, which is 18.5%. |
+> | "CI/CD pipeline passing on all checks" (checked) | CI was structurally incapable of failing until 2026-09-12. Every test step was `\|\| echo "No tests found yet"` **and** `continue-on-error: true`; 446 tests existed in the tree and CI ran none of them. |
+>
+> Nothing below mentions the decisions the project is now built on: LangGraph as the
+> execution engine, the eight-arm roster (this document assumes six), the Neural Ring,
+> the Memory/Curator and Red Team arms, the hardened-Docker sandbox that replaced
+> gVisor, or the `ci-gate` / `VERSION` / secret-scanner work already delivered.
+>
+> Estimates below (~$177,900, 5-8 engineers, 36-48 weeks, 37 sprints) describe a
+> staffed-team plan. Actual delivery is one developer with AI assistance.
+
+**Project Status**: SUPERSEDED — see the banner above
 **Target**: Production-Ready Distributed AI System
-**Last Updated**: 2025-11-16
-**Total Documentation**: 170+ files, ~243,210 lines + mdBook site with 134 pages
+**Last Updated**: 2025-11-16 (content); 2026-09-12 (superseded)
+**Total Documentation**: 332 tracked markdown files, ~277,000 lines
 
 ---
 

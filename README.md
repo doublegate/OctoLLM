@@ -9,13 +9,11 @@ Inspired by the octopus's distributed nervous system, OctoLLM reimagines AI arch
 </p>
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Lint](https://github.com/doublegate/OctoLLM/workflows/Lint/badge.svg)](https://github.com/doublegate/OctoLLM/actions?query=workflow%3ALint)
-[![Test](https://github.com/doublegate/OctoLLM/workflows/Test/badge.svg)](https://github.com/doublegate/OctoLLM/actions?query=workflow%3ATest)
-[![Security](https://github.com/doublegate/OctoLLM/workflows/Security%20Scan/badge.svg)](https://github.com/doublegate/OctoLLM/actions?query=workflow%3A%22Security+Scan%22)
+[![CI](https://github.com/doublegate/OctoLLM/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/OctoLLM/actions/workflows/ci.yml)
+[![Security](https://github.com/doublegate/OctoLLM/actions/workflows/security.yml/badge.svg)](https://github.com/doublegate/OctoLLM/actions/workflows/security.yml)
 [![codecov](https://codecov.io/gh/doublegate/OctoLLM/branch/main/graph/badge.svg)](https://codecov.io/gh/doublegate/OctoLLM)
 [![Python](https://img.shields.io/badge/Python-3.14-blue.svg)](https://www.python.org/)
 [![Rust](https://img.shields.io/badge/Rust-1.91.1+-orange.svg)](https://www.rust-lang.org/)
-[![Phase](https://img.shields.io/badge/Phase-1%20Sprint%201.2%20COMPLETE-brightgreen.svg)](to-dos/MASTER-TODO.md)
 [![Version](https://img.shields.io/badge/Version-0.5.0-brightgreen.svg)](CHANGELOG.md)
 
 ## What is OctoLLM?
@@ -30,7 +28,7 @@ OctoLLM is a distributed AI system inspired by octopus neurobiology, where:
 
 Biological octopuses have:
 - **40M neurons in brain** → Strategic planning (Orchestrator)
-- **350M neurons in arms** → Local intelligence (6 specialized arms)
+- **350M neurons in arms** → Local intelligence (eight specialized arms)
 - **Direct arm-to-arm communication** → Inter-component messaging without orchestrator bottleneck
 - **Fast reflexes** → Preprocessing layer for common patterns (<10ms latency)
 
@@ -42,209 +40,162 @@ OctoLLM applies these principles to build a distributed AI system that is **more
 graph TB
     subgraph "Ingress Layer"
         API[API Gateway]
-        REF[Reflex Layer<br/><10ms]
+        REF[Reflex Layer<br/>Rust - implemented]
     end
 
     subgraph "Orchestration Layer"
-        ORCH[Orchestrator Brain<br/>GPT-4/Claude]
+        ORCH[Orchestrator Brain<br/>Python - partial]
         GMEM[(Global Memory<br/>PostgreSQL)]
     end
 
-    subgraph "Execution Layer - Arms"
-        PLAN[Planner Arm<br/>Task Decomposition]
-        EXEC[Executor Arm<br/>Sandboxed Actions]
-        CODE[Coder Arm<br/>Code Generation]
-        JUDG[Judge Arm<br/>Validation]
-        SAFE[Guardian Arm<br/>PII Protection]
-        RETR[Retriever Arm<br/>Knowledge Search]
+    subgraph "Execution Layer - Eight Arms"
+        PLAN[Planner<br/>8001]
+        RETR[Retriever<br/>8002]
+        CODE[Coder<br/>8003]
+        JUDG[Judge<br/>8004]
+        SAFE[Safety Guardian<br/>8005]
+        EXEC[Executor<br/>8006]
+        MEM[Memory / Curator<br/>8007]
+        RED[Red Team<br/>8008]
     end
 
     API --> REF
     REF --> ORCH
-    ORCH --> PLAN & EXEC & CODE & JUDG & SAFE & RETR
+    ORCH --> PLAN & RETR & CODE & JUDG & SAFE & EXEC & MEM & RED
     ORCH <--> GMEM
+    CODE <-. Neural Ring .-> JUDG
 ```
+
+The eight-arm roster is biomimicry, not decoration: an octopus has roughly 40M neurons
+in its brain and 350M in its arms. **Arms are designed to talk to each other directly**
+(the "Neural Ring": Redis Streams plus capability-token-gated peer HTTP) rather than
+routing every exchange through the orchestrator.
+
+Only the reflex layer and part of the orchestrator are implemented today. See
+[Current Status](#current-status) for what exists, arm by arm.
 
 ## Key Features
 
+> **Design goals, not measured results.** Nothing in this section is benchmarked yet.
+> The evaluation harness that will produce real numbers lands in Stage 10 of the
+> [v1.0.0 plan](#roadmap); until then every figure below is a target. See
+> [Performance Targets](#performance-targets).
+
 ### 1. Distributed Intelligence
-- **Swarm Decision-Making**: Multiple arms work in parallel for high-stakes decisions
-- **Autonomous Execution**: Arms make local decisions without constant orchestrator involvement
-- **Conflict Resolution**: Judge arm arbitrates disagreements between proposals
 
-### 2. Performance Optimization
-- **Reflex Cache**: 60%+ cache hit rate for common queries (<10ms latency)
-- **Hierarchical Processing**: Simple tasks use cheap models, complex tasks use GPT-4
-- **Cost Efficiency**: 50% cost reduction vs monolithic LLM systems
+- **Direct arm-to-arm communication**: peer calls that bypass the orchestrator, so the
+  brain is not a bottleneck for tight loops such as Coder to Judge
+- **Swarm decision-making**: multiple arms work in parallel for high-stakes decisions
+- **Conflict resolution**: the Judge arm arbitrates disagreements between proposals
 
-### 3. Security First
-- **Capability Isolation**: Time-limited JWT tokens, sandboxed execution (gVisor)
-- **PII Protection**: Multi-layer redaction (regex, NLP, embedding-based)
-- **Prompt Injection Defense**: Pattern matching at reflex layer
-- **Compliance Ready**: SOC 2 Type II, ISO 27001, GDPR/CCPA
+### 2. Hierarchical Processing
 
-### 4. Production Ready
-- **Kubernetes Deployment**: Horizontal Pod Autoscaling, multi-zone HA
-- **Comprehensive Monitoring**: Prometheus + Grafana + Loki + Jaeger
-- **Disaster Recovery**: 15-minute RPO, 1-hour RTO with automated backups
-- **Cost Optimization**: Spot instances, model selection, aggressive caching
+- **Reflex layer**: pattern matching, PII detection and rate limiting without ever
+  reaching a language model
+- **Cheap models for simple work**, frontier models reserved for genuinely hard problems
+- **Pluggable LLM provider**: Ollama by default for local development, OpenAI and
+  Anthropic opt-in, and a deterministic fake provider so the stack and its tests run
+  with **no API keys at all**
+
+### 3. Security by Construction
+
+- **Capability isolation**: short-lived, per-arm, per-task JWT capability tokens
+- **Sandboxed execution**: the executor arm runs each task in a hardened, ephemeral
+  container (all capabilities dropped, read-only root, no network by default, custom
+  seccomp profile, argv-only allowlist with no shell anywhere in the path)
+- **Ingress and egress are separate gates**: the reflex layer screens untrusted input;
+  the Safety Guardian arm screens arm output, generated code and synthesized answers
+- **Prompt-injection defence** at the reflex layer, with the Red Team arm's tool output
+  routed back through the Guardian because a probed target's own HTTP response is
+  attacker-controlled text
 
 ## Current Status
 
-### Phase 1 Progress: Proof of Concept
+**Version 0.5.0.** This is pre-release software under active development toward v1.0.0.
+No version of OctoLLM has been tagged, published to PyPI or npm, or released as a
+container image.
 
-**Current Sprint**: Sprint 1.2 ✅ **COMPLETE** (2025-11-15)
-**Sprint Status**: Orchestrator Core complete - production-ready
-**Next Sprint**: Phase 1 Sprint 1.3 (Planner Arm Integration) - Ready to start
-**Overall Progress**: Phase 0: 100% ✅ | Phase 1: ~22% (2/9 sprints complete: Reflex Layer + Orchestrator)
-**Version**: 1.2.0 | **Sprint 1.2 Completion**: November 15, 2025 | **Sprint 1.3 Start**: TBD
+Work is tracked by a twelve-stage plan whose single rule is that every claim in this
+repository is either made true or deleted. Three stages are complete.
 
-### Recent Achievements
+### What actually runs
 
-**Documentation Reorganization** (2025-11-16):
-- ✅ **Comprehensive mdBook Site**: 134 pages across 12 major sections deployed to GitHub Pages
-  - **Live Site**: [https://doublegate.github.io/OctoLLM/](https://doublegate.github.io/OctoLLM/)
-  - Full-text search with 17.1MB search index
-  - Hierarchical navigation with breadcrumbs
-  - Complete OpenAPI specifications for all 8 components
-- ✅ **Phase 0 Archive**: Historical record preserved at [docs/phases/PHASE-0-README-ARCHIVE.md](docs/phases/PHASE-0-README-ARCHIVE.md)
-- ✅ **README Streamlined**: Reduced by 291 lines (26.5%) by archiving Phase 0 content
-- ✅ **100% Documentation Coverage**: All project content integrated into searchable mdBook format
+| Component | State | Detail |
+|---|---|---|
+| **Reflex layer** (Rust, port 8080) | Implemented | ~8,500 lines; PII detection, prompt-injection detection, Redis cache, token-bucket rate limiting. 240 tests. `POST /process` has a known routing defect, fixed in Stage 3. |
+| **Orchestrator** (Python, port 8000) | Partial | FastAPI app, SQLAlchemy 2.0 models, reflex client with circuit breaker. 150 tests, 91% coverage. **It does not yet call any arm** — `POST /submit` validates, screens and persists; tasks stay `pending`. The execution engine lands in Stage 7. |
+| **Python SDK** | Implemented | 8 service clients, 28 tests. Unpublished. |
+| **TypeScript SDK** | Implemented | 8 service clients, 28 tests. Unpublished. |
+| **Executor arm** (Rust, port 8006) | Stub | 21 lines. Sandbox lands in Stage 9. |
+| **Planner / Retriever / Coder / Judge / Safety Guardian** (8001-8005) | Not started | Dockerfiles only, no application code. Stage 8. |
+| **Memory / Curator** (8007) | Not started | Stage 6 — it is the Retriever's corpus, so it lands first. |
+| **Red Team** (8008) | Not started | Stage 11, flag-gated off and outside the default compose profile. |
+| **PostgreSQL / Redis / Qdrant** | Running | Qdrant is in the compose stack but nothing reads or writes it yet. |
 
-**Codecov Integration** (2025-11-16):
-- ✅ **Coverage Analytics**: 80% project target, 85% patch target with branch coverage
-- ✅ **Test Analytics**: JUnit XML reporting for pytest with automated result uploads
-- ✅ **Bundle Analysis**: Configuration prepared for TypeScript SDK optimization
-- ✅ **Component Flags**: 10 granular coverage flags (orchestrator, reflex-layer, 6 arms, 2 SDKs)
-- ✅ **CI/CD Integration**: Automated coverage and test result uploads in GitHub Actions
-- ✅ **Advanced Features**: Carryforward flags for stable components, after_n_builds for accuracy
+### Stage progress
 
-**Sprint 1.2 Completion** (2025-11-15):
-- ✅ Orchestrator Core: 1,776 lines Python, 87 tests passing, 85%+ coverage
-- ✅ Reflex Layer Integration: Circuit breaker pattern, retry logic, health checks
-- ✅ Database Layer: Async SQLAlchemy 2.0 + PostgreSQL with connection pooling
-- ✅ Complete OpenAPI specification and comprehensive documentation
+| Stage | Delivered |
+|---|---|
+| **0. CI that can fail** | Complete — `lint.yml` and `test.yml` replaced by `ci.yml`; 10 blocking jobs behind one `ci-gate`, which is the required check on `main`. Previously every test step was `\|\| echo "No tests found yet"` *and* `continue-on-error: true`, so 446 existing tests were never run by CI. |
+| **1. Makefile and VERSION** | Complete — `README` had documented `make lint` / `make test` / `make help` since Phase 0 with no Makefile. Every check is now a make target and **CI invokes those targets**. `VERSION` is propagated to 22 sites by `make version-check`; those sites previously held six different answers at once. |
+| **2. Secret scanning that works** | Complete — `.gitleaks.toml` was discarding all ~170 built-in rules (a `[[rules]]` block without `[extend] useDefault = true`) and exempting every markdown file, all of `docs/`, `tests/`, workflows and infra scripts. `scripts/gitleaks-selftest.sh` plants four secrets in four formerly-exempt locations and proves both that this config finds them and that the old one did not. |
+| **3-12** | In progress / planned. See [Roadmap](#roadmap). |
 
-### Operational Infrastructure
+### Test suites
 
-| Component | Status | Details |
-|-----------|--------|---------|
-| **CI/CD Pipeline** | ✅ Complete | 4 workflows operational (lint, test, security, build) |
-| **Security Scanning** | ✅ Complete | Multi-layer: SAST (Bandit), dependencies (Snyk, cargo-audit), secrets (gitleaks) |
-| **Test Framework** | ✅ Complete | pytest + cargo test + Codecov integration |
-| **Development Environment** | ✅ Complete | Docker Compose with 13 services, hot-reload support |
-| **Pre-commit Hooks** | ✅ Complete | 15+ quality checks (Black, Ruff, mypy, rustfmt, clippy) |
-| **Container Builds** | ⏸️ Disabled | Multi-arch builds configured, will enable in Phase 1 |
-| **Documentation** | ✅ Complete | 170+ files, ~243,210 lines (includes Sprint 0.10 validation & Phase 1 planning) |
-| **API Documentation & SDKs** | ✅ Complete | TypeScript SDK, Postman/Insomnia collections, 8 service docs, 6 schema docs, 6 diagrams |
-| **Monitoring & Observability** | ✅ Complete | Grafana (6 dashboards), Prometheus (50+ alerts), Loki, Jaeger (Sprint 0.9) |
+| Suite | Tests | Run by CI |
+|---|---|---|
+| Rust workspace | 240 | yes |
+| Rust, Redis-backed | 17 | yes — these were `#[ignore]`d and had never executed anywhere |
+| Orchestrator | 150 | yes, coverage floored at 85% |
+| Python SDK | 28 | yes |
+| TypeScript SDK | 28 | yes |
 
-### Phase 0 Foundation (Complete)
+Every suite asserts a collection floor, because a suite that silently collects zero
+tests produces exactly the same green check as one that ran them all.
 
-Phase 0 established the foundational infrastructure for OctoLLM development. For complete details on all 10 sprints, achievements, and metrics, see:
+### Repository inventory
 
-**[Phase 0: Foundation - Complete Archive](docs/phases/PHASE-0-README-ARCHIVE.md)** - 100% Complete (November 10-13, 2025)
+332 tracked markdown files (~277,000 lines), 8 OpenAPI specifications, 8 ADRs, 7 Grafana
+dashboards, 84 Prometheus alert rules, and a 13-service development compose stack.
 
-**Key Highlights**:
-- 10/10 sprints completed (Repository setup, Dev environment, CI/CD, API specs, Cloud IaC, Local deployment, Monitoring)
-- 170+ documentation files (~243,210 lines)
-- 4 GitHub Actions workflows operational
-- 3 deployment options (Docker Compose, GCP/Kubernetes, Unraid)
-- $15,252/year cloud cost savings (vs AWS)
-- 96/100 security score, 0 critical vulnerabilities
-
-### Component Status
-
-| Component | Phase 0 Status | Phase 1 Target |
-|-----------|---------------|----------------|
-| **Orchestrator** | ✅ Docker + config | Full implementation (FastAPI + LLM integration) |
-| **Reflex Layer** | ✅ Docker + minimal Rust | Full implementation (PII detection, caching, rate limiting) |
-| **Planner Arm** | ✅ Docker + config | Full implementation (task decomposition) |
-| **Executor Arm** | ✅ Docker + minimal Rust | Full implementation (sandboxed execution) |
-| **Coder Arm** | ✅ Docker + config | Phase 2 implementation |
-| **Judge Arm** | ✅ Docker + config | Phase 2 implementation |
-| **Retriever Arm** | ✅ Docker + config | Phase 2 implementation |
-| **Safety Guardian** | ✅ Docker + config | Phase 2 implementation |
-| **PostgreSQL** | ✅ Operational | Schema implementation in Phase 1 |
-| **Redis** | ✅ Operational | Full caching logic in Phase 1 |
-| **Qdrant** | ✅ Operational | Vector embeddings in Phase 2 |
-
-**Note**: Phase 0 focuses on infrastructure setup. Full service implementation begins in Phase 1 (December 2025).
-
-### Documentation Inventory
-
-- **Architecture**: 3 files, 5,550 lines (system overview, data flow, swarm decision-making)
-- **Components**: 11 files (orchestrator, reflex layer, 6 arms + 2 infrastructure)
-- **Implementation**: 7 files (getting started, dev environment, custom arms, memory systems)
-- **Security**: 6 files, 22,394 lines (threat model, PII protection, compliance)
-- **Operations**: 11 files (deployment, monitoring, DR, scaling, troubleshooting, monitoring runbook, alert procedures)
-- **Engineering**: 5 files, 3,360 lines (coding standards, error handling, logging)
-- **API**: 23 files (API-OVERVIEW, 8 services, 6 schemas, collections, OpenAPI specs)
-- **Architecture Diagrams**: 6 files, 1,544 lines (Mermaid diagrams for visualization)
-- **ADR**: 7 files (architecture decisions - includes ADR-007 Unraid)
-- **Sprint Reports**: 9 files (completion reports for Sprints 0.3-0.9)
-- **TODOs**: 15 files (MASTER-TODO + phase-specific + Sprint 0.6 tracking)
+Much of that documentation was written ahead of the code and still describes intentions
+as if they were facts. Correcting it is Stage 12; where a document is known to be wrong
+it now carries a correction banner rather than being silently left in place.
 
 ## CI/CD Pipeline
 
-OctoLLM uses GitHub Actions for continuous integration and deployment with 4 comprehensive workflows:
+`ci.yml` is the only blocking gate. **`CI gate` is the sole required status check on
+`main`** — it aggregates ten jobs, and `scripts/ci/check_gate_complete.py` fails the
+build if a job is ever added without being wired into it, since an unwired job can fail
+while the gate goes green.
 
-### Lint Workflow
-**Status**: ✅ PASSING | **Duration**: ~1m 9s | **Triggers**: Push/PR to main/develop
+| Job | Covers |
+|---|---|
+| `lint-python` | ruff, black |
+| `typecheck-python` | mypy, against real installed dependencies |
+| `lint-rust` | `cargo fmt` and `clippy -D warnings`, whole workspace |
+| `lint-typescript` | eslint, tsc |
+| `lint-config` | yamllint, OpenAPI validity, shellcheck, actionlint, `version-check` |
+| `secrets` | gitleaks over full history, plus the scanner self-test |
+| `test-rust` | 240 workspace tests + 17 Redis-backed |
+| `test-orchestrator` | 150 tests, coverage floored at 85% |
+| `test-sdk-python` | 28 tests |
+| `test-sdk-typescript` | 28 tests |
 
-- **Python**: Ruff (linting + import sorting), Black (formatting), mypy (type checking)
-- **Rust**: rustfmt (formatting), clippy (linting with `-D warnings`)
-- **Features**: Dependency caching, concurrency control, automatic failure detection
+Three properties are enforced rather than documented: **no step is `continue-on-error`
+and none swallows a failure**; **every suite asserts a collection floor**; and **every
+CI job invokes a `make` target** rather than its own copy of the commands, so a local
+pass and a CI pass mean the same thing by construction.
 
-### Test Workflow
-**Status**: ✅ PASSING | **Duration**: ~2m 30s | **Triggers**: Push/PR to main/develop
+Other workflows: `security.yml` (bandit, Snyk, cargo-audit — advisory), `mdbook.yml`
+(documentation site), and `build.yml` (container images, gated off by the
+`ENABLE_IMAGE_PUBLISH` repository variable). CodeQL runs through GitHub's default setup
+across Python, TypeScript, Actions and Rust.
 
-- **Python Unit Tests**: pytest on Python 3.14
-- **Rust Unit Tests**: cargo test for reflex-layer and executor services
-- **Integration Tests**: PostgreSQL 15 + Redis 7 services with health checks
-- **Coverage**: Codecov integration with XML reports
-- **Phase 0 Note**: Placeholder tests validate project structure (real tests in Phase 1)
-
-### Security Workflow
-**Status**: ✅ PASSING | **Duration**: ~3m 0s | **Triggers**: Push/PR, daily at midnight UTC
-
-- **SAST**: Bandit for Python code vulnerabilities
-- **Dependencies**: Snyk (Python packages), cargo-audit (Rust crates)
-- **Secrets**: gitleaks for credential detection (full git history scan)
-- **Container**: Trivy (disabled in Phase 0, will enable in Phase 1)
-- **Integration**: SARIF results to GitHub Security tab, 30-day artifact retention
-
-### Build Workflow
-**Status**: ⏸️ DISABLED (Phase 0) | **Duration**: ~7s (summary only) | **Triggers**: Push/PR, version tags
-
-- **Multi-arch**: linux/amd64, linux/arm64
-- **Registry**: GitHub Container Registry (GHCR)
-- **Services**: 8 total (orchestrator, reflex-layer, 6 arms)
-- **Features**: BuildKit caching, automatic tagging, post-build vulnerability scanning
-- **Phase 1 Activation**: Change `if: false` to `if: true` in workflow file
-
-### Security Achievements
-
-**Sprint 0.3 Security Fixes** (2025-11-11):
-- ✅ Fixed 7 CVEs: 4 HIGH + 3 MEDIUM severity
-- ✅ python-multipart: DoS and ReDoS vulnerabilities patched
-- ✅ starlette: DoS vulnerabilities patched
-- ✅ langchain: SQL injection and DoS vulnerabilities patched
-- ✅ Daily automated security scans operational
-
-**Current Security Posture**:
-- Multi-layer scanning (SAST, dependency, secrets)
-- Zero HIGH/CRITICAL vulnerabilities in production dependencies
-- Automated daily scans with GitHub Security tab integration
-
-### Workflow Files
-```
-.github/workflows/
-├── lint.yml          # Code quality checks
-├── test.yml          # Unit + integration tests
-├── security.yml      # Security scanning
-└── build.yml         # Docker image builds
-```
+**Image builds are deliberately outside the gate.** Five service Dockerfiles still
+`CMD` into modules that do not exist, so those images cannot pass a smoke test. They
+join `ci-gate` in Stage 3.
 
 ## Quick Start (Development)
 
@@ -298,156 +249,114 @@ The one suite `make verify` leaves out needs a running Redis:
 make redis && make test-rust-redis && make redis-stop
 ```
 
-### Development Environment (Phase 0)
+### Development Environment
 
 ```bash
-# Start development environment (placeholder services + databases)
+# Start the development stack (databases, monitoring, and service containers)
 cd infrastructure/docker-compose
-docker-compose -f docker-compose.dev.yml up -d
-
-# Check service health
-docker-compose -f docker-compose.dev.yml ps
-
-# View logs for specific service
-docker-compose -f docker-compose.dev.yml logs -f orchestrator
-
-# Stop environment
-docker-compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml ps
+docker compose -f docker-compose.dev.yml logs -f orchestrator
+docker compose -f docker-compose.dev.yml down
 ```
 
-### Service Access (Phase 0)
+> **The stack does not come up healthy yet.** Five of the eight service Dockerfiles
+> `CMD` into Python modules that do not exist, so those containers crash-loop, and the
+> compose environment variables do not currently reach either real service. Both are
+> fixed in Stage 3, whose exit criterion is `docker compose up -d` reaching all-healthy
+> with a task round-tripping end to end. The databases and monitoring services do work.
 
-**OctoLLM Services** (placeholder in Phase 0):
-- **Orchestrator**: http://localhost:8000
-- **Reflex Layer**: http://localhost:8080 (minimal Rust service)
-- **Planner Arm**: http://localhost:8001
-- **Coder Arm**: http://localhost:8003
-- **Judge Arm**: http://localhost:8004
-- **Retriever Arm**: http://localhost:8002
-- **Safety Guardian**: http://localhost:8005
-- **Executor Arm**: http://localhost:8006 (minimal Rust service)
+### Service Access
 
-**Infrastructure Services** (fully operational):
-- **PostgreSQL**: localhost:15432 (user: octollm, db: octollm)
-- **Redis**: localhost:6379
-- **Qdrant**: localhost:6333 (REST API), localhost:6334 (gRPC)
-- **Prometheus**: http://localhost:9090
-- **Grafana**: http://localhost:3000
+**OctoLLM services** (host port -> container port):
 
-**Note**: Phase 0 services are minimal "hello world" placeholders. Full implementation begins in Phase 1 (December 2025).
+| Service | URL | State |
+|---|---|---|
+| Orchestrator | http://localhost:8000 | partial |
+| Reflex Layer | http://localhost:8080 | implemented |
+| Planner Arm | http://localhost:8001 | no code |
+| Retriever Arm | http://localhost:8002 | no code |
+| Coder Arm | http://localhost:8003 | no code |
+| Judge Arm | http://localhost:8004 | no code |
+| Safety Guardian Arm | http://localhost:8005 | no code |
+| Executor Arm | http://localhost:18006 (container 8006) | stub |
+| Memory / Curator Arm | 8007 | not in compose yet |
+| Red Team Arm | 8008 | not in compose yet |
+
+**Infrastructure** (these do work): PostgreSQL `localhost:15432` (user `octollm`,
+db `octollm`), Redis `localhost:6379`, Qdrant `localhost:6333` REST and `6334` gRPC,
+Prometheus `http://localhost:9090`, Grafana `http://localhost:3000`.
+
+The port map is being frozen in Stage 3; where a specification and a Dockerfile
+disagree today, the Dockerfile and compose file win, because that is what actually
+binds.
 
 ### Development Workflow
 
 ```bash
-# Make code changes
-# ...
-
-# Run pre-commit hooks manually (before commit)
-pre-commit run --all-files
-
-# Run tests
-pytest tests/unit/ -v
-cargo test --manifest-path services/reflex-layer/Cargo.toml
-
-# Format code
-black .
-cargo fmt --manifest-path services/reflex-layer/Cargo.toml
-
-# Check linting
-ruff check .
-cargo clippy --manifest-path services/reflex-layer/Cargo.toml -- -D warnings
-
-# Commit changes (pre-commit hooks run automatically)
-git add .
-git commit -m "feat: your feature description"
+make format             # rewrite Python and Rust in place
+make verify             # everything ci-gate runs, in one command
+git commit -m "feat: your change"   # pre-commit hooks run automatically
 ```
 
-See [Local Development Guide](docs/development/local-setup.md) for detailed instructions.
+`make verify` covers version-check, gate-check, all four linters, mypy, the secret scan
+and its self-test, and every suite. The one thing it leaves out needs a running Redis:
+
+```bash
+make redis && make test-rust-redis && make redis-stop
+```
+
+See [Local Development Guide](docs/development/local-setup.md) for detail.
 
 ## Use Cases
 
 ### 1. Offensive Security Operations
+
 - **Vulnerability Assessment**: Swarm of arms analyzes code from multiple perspectives (OWASP, STRIDE, pentesting)
 - **Exploit Development**: Coder arm generates exploits, Judge arm validates, Guardian ensures ethical boundaries
 - **Reconnaissance**: Retriever arm aggregates OSINT from multiple sources
 
 ### 2. Developer Tooling
+
 - **Code Review**: 4-arm swarm checks style, performance, security, test coverage
 - **Documentation Generation**: Coder arm writes docs, Judge validates accuracy
 - **Debugging Assistance**: Retriever finds similar issues, Planner suggests fix strategies
 
 ### 3. Research & Analysis
+
 - **Literature Review**: Retriever arm queries arXiv, Google Scholar, GitHub
 - **Comparative Analysis**: Multiple arms research alternatives, Judge synthesizes findings
 - **Technical Writing**: Coder drafts content, Judge ensures accuracy
 
 ## Roadmap
 
-### Historical Phases
+The active plan is twelve stages to v1.0.0. Each stage is one pull request whose exit
+criterion is **a green check that was not green before**.
 
-- **[Phase 0: Foundation](docs/phases/PHASE-0-README-ARCHIVE.md)** - 100% Complete (November 10-13, 2025)
-  - Infrastructure setup, CI/CD, API specifications, cloud provisioning, monitoring
-  - 10/10 sprints completed in <1 week (>50% faster than 2-week estimate)
+| Stage | Content | Exit criterion |
+|---|---|---|
+| 0 | CI that can fail, CodeQL, Dependabot, codecov | Zero `continue-on-error`; every suite executing |
+| 1 | Makefile, `VERSION`, `version_sync.py`, CI rewired to `make` | The README setup block is literally executable |
+| 2 | `.gitleaks.toml` rewrite plus self-test | Self-test finds 4 planted secrets; old config finds 0 |
+| 3 | Contract freeze, port map, reflex and orchestrator repair, Alembic, root compose, arm stubs | `compose up -d` all healthy; a task round-trips |
+| 4 | Shared arm framework, LLM providers, arm registry | Stack runs with no API keys |
+| 5 | Neural Ring and capability tokens | Built **before** any arm, not retrofitted onto seven |
+| 6 | Memory / Curator arm | Qdrant is real; global semantic memory exists |
+| 7 | Execution engine (LangGraph), worker, cancellation | A task reaches `completed`; kill the worker mid-run and it resumes |
+| 8 | The remaining six Python arms | Coder-to-Judge peer loop converges |
+| 9 | Executor sandbox and capability enforcement | 18-test escape suite green, **and** a negative control proves escapes succeed unhardened |
+| 10 | Evaluation harness and benchmark gates | Real numbers replace every "TBD" |
+| 11 | Red Team arm (flag-gated off) | Scope-guard property tests; the deny path writes its audit row |
+| 12 | Documentation truth pass, release pipeline, **cut v1.0.0** | Attestations verify; published images pull and run |
 
----
+Stages 0-3 deliver a working, honest, releasable system on their own; that is the
+natural fallback boundary if scope has to be cut.
 
-### Phase 1: Proof of Concept (Planned)
-
-**Timeline**: December 2025 (estimated 2 weeks) | **Prerequisites**: Phase 0 complete
-
-**Goal**: Minimal end-to-end task execution with 4 core components
-
-**Deliverables**:
-- Reflex Layer implementation (Rust) - <10ms latency, PII detection, caching
-- Orchestrator core implementation (Python) - Task routing, LLM integration
-- Planner Arm implementation (Python) - Task decomposition with GPT-3.5-turbo
-- Executor Arm implementation (Rust) - Sandboxed command execution
-- Basic end-to-end workflow testing
-- E2E tests with >90% success rate
-
-**Success Criteria**:
-- All 4 components deployed and healthy
-- E2E tests passing (>90% success rate)
-- Latency targets met (P99 <30s)
-- Security tests passing (no sandbox escapes)
-
----
-
-### Phase 2: Core Capabilities (Planned)
-
-**Timeline**: Estimated 8-10 weeks | **Prerequisites**: Phase 1 complete
-
-**Deliverables**:
-- 4 additional arms (Coder, Judge, Retriever, Safety Guardian)
-- Distributed memory system (PostgreSQL + Qdrant + Redis)
-- Kubernetes production deployment
-- Swarm decision-making
-- Load testing (1,000 concurrent tasks)
-
----
-
-### Phase 3-6: Advanced Features (Planned)
-
-See [MASTER-TODO.md](to-dos/MASTER-TODO.md) for complete 7-phase roadmap (420+ tasks).
-
-**Phase 3**: Operations & Deployment (4-6 weeks) - Monitoring, alerting, disaster recovery
-**Phase 4**: Engineering & Standards (3-4 weeks) - Code quality, testing, documentation
-**Phase 5**: Security Hardening (8-10 weeks) - Capability isolation, PII protection, penetration testing
-**Phase 6**: Production Readiness (8-10 weeks) - Autoscaling, cost optimization, compliance certification
-
----
-
-### Overall Project Status
-
-**Timeline**: 12 months estimated (36-48 weeks)
-**Budget**: ~$177,900 total (37 sprints, 420+ tasks)
-**Team Size**: 5-8 engineers (mixed skills) | **Phase 0**: Single developer | **Phase 1**: 3-4 engineers
-**Overall Progress**: 100% Phase 0 complete (10/10 sprints) | **Phase 0 COMPLETE** ✅
-**Documentation**: 170+ files, ~243,210 lines
-**Next Milestone**: Phase 1 Sprint 1.1 (Reflex Layer Implementation) - 8.5 weeks, 340 hours
-**Phase 0 Completion**: November 13, 2025 ✅
-**Phase 1 Start**: TBD (team onboarding in progress)
-**Production Launch**: Estimated Q3 2026
+**Beyond v1.0.0**, `to-dos/MASTER-TODO.md` holds the earlier seven-phase roadmap. It is
+superseded as a plan — it predates this work by ten months and its own Phase 0 summary
+claims 100% completion while 118 of that phase's 227 checkboxes are unchecked — but it
+remains a useful inventory of work that outlives v1.0.0 (Kubernetes, compliance,
+autoscaling, cost optimization). A fresh roadmap is minted after the release.
 
 ## Technology Stack
 
@@ -535,19 +444,31 @@ See [MASTER-TODO.md](to-dos/MASTER-TODO.md) for complete 7-phase roadmap (420+ t
 
 ## Performance Targets
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| Reflex Cache Hit Rate | > 60% | `octollm_cache_hits_total / octollm_tasks_total` |
-| P50 Latency | < 2s | `histogram_quantile(0.5, octollm_task_duration_seconds)` |
-| P95 Latency | < 10s | `histogram_quantile(0.95, octollm_task_duration_seconds)` |
-| P99 Latency | < 30s | `histogram_quantile(0.99, octollm_task_duration_seconds)` |
-| Task Success Rate | > 95% | `octollm_tasks_total{status="success"} / octollm_tasks_total` |
-| Cost per Task | < 50% baseline | Token usage metrics vs monolithic LLM |
-| PII Leakage Rate | < 0.1% | Manual evaluation + automated scanning |
+**None of these is measured.** `ARCHITECTURE.md` records all six system performance
+targets as TBD, there is no benchmark corpus, and no baseline exists to compare
+against. They are stated here as design goals so that the evaluation harness built in
+Stage 10 has something falsifiable to report against.
+
+| Metric | Target | How it will be measured | Measured today |
+|---|---|---|---|
+| Reflex cache hit rate | > 60% | `octollm_cache_hits_total / octollm_tasks_total` | not measured |
+| P50 latency | < 2s | `histogram_quantile(0.5, octollm_task_duration_seconds)` | not measured |
+| P95 latency | < 10s | `histogram_quantile(0.95, octollm_task_duration_seconds)` | not measured |
+| P99 latency | < 30s | `histogram_quantile(0.99, octollm_task_duration_seconds)` | not measured |
+| Task success rate | > 95% | `octollm_tasks_total{status="success"} / octollm_tasks_total` | not measured |
+| Cost per task | < 50% of baseline | token usage vs a single-shot LLM baseline | not measured |
+| PII leakage rate | < 0.1% | evaluation corpus plus automated scanning | not measured |
+
+The charter sets a concrete bar — 70% of 50 synthetic security tasks completed
+correctly, at under 3x the latency of a single-shot baseline. Stage 10 builds that
+corpus, that baseline, and the runner, and **publishes whatever number comes out**. A
+v1.0.0 with an honest 58% and a reproducible harness is worth more than a badge over an
+unmeasured repository.
 
 ## Documentation
 
 ### For Developers
+
 - [Getting Started](./docs/implementation/getting-started.md) - 15-minute quick-start
 - [Development Environment](./docs/implementation/dev-environment.md) - Docker Compose setup
 - [Custom Arms Guide](./docs/implementation/custom-arms.md) - Build your own specialized arms
@@ -555,12 +476,14 @@ See [MASTER-TODO.md](to-dos/MASTER-TODO.md) for complete 7-phase roadmap (420+ t
 - [Debugging Guide](./docs/implementation/debugging.md) - Troubleshooting playbooks
 
 ### For Architects
+
 - [System Overview](./docs/architecture/system-overview.md) - High-level architecture
 - [Data Flow](./docs/architecture/data-flow.md) - Request processing pipeline
 - [Swarm Decision-Making](./docs/architecture/swarm-decision-making.md) - Multi-arm consensus
 - [ADRs](./docs/adr/) - Architecture Decision Records
 
 ### For Operators
+
 - [Deployment Guide](./docs/operations/deployment-guide.md) - Docker Compose + Kubernetes
 - [Monitoring & Alerting](./docs/operations/monitoring-alerting.md) - Prometheus + Grafana
 - [Disaster Recovery](./docs/operations/disaster-recovery.md) - Backup and restore
@@ -568,13 +491,17 @@ See [MASTER-TODO.md](to-dos/MASTER-TODO.md) for complete 7-phase roadmap (420+ t
 - [Scaling Guide](./docs/operations/scaling.md) - HPA, VPA, cluster autoscaling
 
 ### For Security Teams
+
 - [Security Overview](./docs/security/overview.md) - Defense in depth
 - [Threat Model](./docs/security/threat-model.md) - STRIDE analysis (5,106 lines)
 - [PII Protection](./docs/security/pii-protection.md) - GDPR/CCPA compliance
 - [Security Testing](./docs/security/security-testing.md) - SAST, DAST, penetration testing
-- [Compliance](./docs/security/compliance.md) - SOC 2, ISO 27001, HIPAA
+- [Compliance](./docs/security/compliance.md) - a *target* framework mapping. **No compliance
+  work has been done and no audit has been performed**; read it as a checklist of what
+  such an effort would involve, not as a statement of posture.
 
 ### For Project Managers
+
 - [Master TODO](./to-dos/MASTER-TODO.md) - Complete 7-phase roadmap (420+ tasks)
 - [Phase 0 TODO](./to-dos/PHASE-0-PROJECT-SETUP.md) - Project setup (45 tasks, 2 weeks)
 - [Status & Progress](./to-dos/status/README.md) - Sprint reports and tracking
@@ -588,6 +515,7 @@ We welcome contributions! Please see:
 - [SECURITY.md](./SECURITY.md) - Vulnerability disclosure policy
 
 ### Development Workflow
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes (follow [coding standards](./docs/engineering/coding-standards.md))
@@ -600,6 +528,7 @@ We welcome contributions! Please see:
 ## Security
 
 ### Reporting Vulnerabilities
+
 **DO NOT** open public issues for security vulnerabilities.
 
 Please report security issues to: **security@octollm.org**
@@ -613,6 +542,7 @@ See [SECURITY.md](./SECURITY.md) for full policy.
 This project is licensed under the **Apache License 2.0** - see the [LICENSE](./LICENSE) file for details.
 
 ### Why Apache 2.0?
+
 - Permissive open-source license
 - Patent protection for contributors and users
 - Compatible with commercial use
@@ -621,17 +551,20 @@ This project is licensed under the **Apache License 2.0** - see the [LICENSE](./
 ## Acknowledgments
 
 ### Biological Inspiration
+
 - **Octopus vulgaris** research on distributed nervous systems
 - Neuroscience studies on autonomous arm control
 - Swarm intelligence and consensus algorithms
 
 ### Technology Inspiration
+
 - **LangChain** / **LlamaIndex** for LLM orchestration patterns
 - **Ray** for distributed Python execution
 - **Kubernetes** for container orchestration
 - **Prometheus** ecosystem for observability
 
 ### Open Source Projects
+
 - OpenAI, Anthropic for LLM APIs
 - PostgreSQL, Redis, Qdrant for data persistence
 - FastAPI, Axum for web frameworks
@@ -643,208 +576,4 @@ This project is licensed under the **Apache License 2.0** - see the [LICENSE](./
 - **Security**: security@octollm.org
 - **General Inquiries**: hello@octollm.org
 - **GitHub Issues**: [github.com/doublegate/OctoLLM/issues](https://github.com/doublegate/OctoLLM/issues)
-
-## Contributing
-
-OctoLLM is currently in **Phase 0 (Project Setup & Infrastructure)** and not yet accepting external contributions. We're focused on establishing the foundational architecture and CI/CD infrastructure before opening to the community.
-
-### Current Development Status
-
-- **Team**: Single developer (Phase 0)
-- **Status**: Pre-implementation (infrastructure and documentation)
-- **Phase 0 Completion**: Late November 2025
-- **Phase 1 Start**: December 2025
-
-### Future Contribution Process (Phase 1+)
-
-Once we enter Phase 1, we will welcome contributions! The planned process:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Install** pre-commit hooks (`pre-commit install`)
-4. **Make** your changes following our coding standards
-5. **Test** thoroughly (target: 85% Python coverage, 80% Rust coverage)
-6. **Commit** using Conventional Commits format (`feat:`, `fix:`, `docs:`, `test:`)
-7. **Push** to your fork
-8. **Open** a Pull Request
-
-### Quality Standards
-
-**Code Quality** (enforced by CI/CD):
-- **Python**: Black (formatting), Ruff (linting), mypy (type checking)
-- **Rust**: rustfmt (formatting), clippy (linting with `-D warnings`)
-- **Commits**: Conventional Commits format
-- **Coverage**: 85% Python, 80% Rust minimum (Phase 1+)
-
-**CI/CD Requirements** (must pass):
-- ✅ Lint workflow (Python + Rust)
-- ✅ Test workflow (unit + integration)
-- ✅ Security workflow (SAST + dependency scanning)
-- ✅ Pre-commit hooks (15+ checks)
-
-### Development Setup (For Future Contributors)
-
-```bash
-# Clone repository
-git clone https://github.com/doublegate/OctoLLM.git
-cd OctoLLM
-
-# Install pre-commit hooks
-python -m pip install pre-commit
-pre-commit install
-
-# Run pre-commit checks manually
-pre-commit run --all-files
-
-# Run tests (Phase 1+)
-pytest tests/ -v --cov=services
-cargo test --manifest-path services/reflex-layer/Cargo.toml
-
-# Start development environment
-cd infrastructure/docker-compose
-docker-compose -f docker-compose.dev.yml up -d
-```
-
-### Code of Conduct
-
-Be respectful, inclusive, and collaborative. Detailed code of conduct will be published when external contributions open in Phase 1.
-
-### How to Stay Updated
-
-- **Watch** this repository for updates
-- **Star** to show your interest
-- **Follow** development progress in [CHANGELOG.md](CHANGELOG.md)
-- **Read** sprint completion reports in [to-dos/status/](to-dos/status/)
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for comprehensive guidelines (will be expanded for Phase 1).
-
----
-
-## Acknowledgments
-
-### Biological Inspiration
-- **Octopus vulgaris** research on distributed nervous systems and autonomous control
-- Neuroscience studies on swarm intelligence and consensus algorithms
-- Nature's solution to distributed computing challenges
-
-### Technology Stack
-- **LangChain** and **LlamaIndex** for LLM orchestration patterns
-- **OpenAI** and **Anthropic** for frontier LLM capabilities
-- **PostgreSQL**, **Redis**, and **Qdrant** for data persistence
-- **FastAPI** and **Axum** for high-performance web frameworks
-- **Docker** and **Kubernetes** for containerization and orchestration
-
-### Development Tools
-- **Claude Code** (Anthropic) for AI-assisted development and documentation
-- **GitHub Actions** for CI/CD automation
-- **Codecov** for test coverage analysis
-- **Snyk** for security vulnerability scanning
-
----
-
-**Last Updated**: 2026-09-12
-**Document Version**: 7.2 (Dependency consolidation; Python 3.14 target)
-**Sprint Status**: Sprint 1.2 complete (Orchestrator Core) | **Phase 1 SPRINT 1.3 NEXT** ✅
-**Next Review**: After Phase 1 Sprint 1.3 completion (Planner Arm Integration)
-**Repository**: https://github.com/doublegate/OctoLLM
-**Documentation Site**: https://doublegate.github.io/OctoLLM/
-
----
-
-*Built with ❤️ / 🐙 Inspired by the Intelligence of Cephalopods*
-
-### Sprint 1.1: Reflex Layer Implementation ✅ **COMPLETE** (2025-11-14)
-
-**Production-Ready Preprocessing Service** (~8,650 lines Rust, 218 tests passing):
-
-- ✅ **PII Detection**: 18 patterns (SSN, credit cards, emails, API keys, etc.)
-  - Performance: 1.2-460µs (10-5,435x faster than 5ms target)
-  - Luhn validation for credit cards, RFC-compliant email validation
-  - 62/62 unit tests passing
-
-- ✅ **Injection Detection**: 14 OWASP-aligned patterns with context analysis
-  - Performance: 1.8-6.7µs (1,493-5,435x faster than 10ms target)
-  - Context-aware severity adjustment (quoted, academic, testing)
-  - 63/63 unit tests passing (all edge cases fixed)
-
-- ✅ **Redis Caching**: SHA-256 keyed with differential TTL
-  - Performance: <0.5ms P95 for cache hits (2x better than target)
-  - Deterministic cache key generation
-  - 64/64 unit tests passing (7 require Redis)
-
-- ✅ **Rate Limiting**: Token bucket algorithm (distributed via Redis)
-  - Performance: <3ms P95 for checks (1.67x better than target)
-  - Multi-dimensional: User (1K/h), IP (100/h), Endpoint, Global
-  - 64/64 unit tests passing (7 require Redis)
-
-- ✅ **HTTP API**: Full integration with middleware and metrics
-  - POST /process - Main processing pipeline
-  - GET /health, /ready - Kubernetes probes
-  - GET /metrics - 13 Prometheus metrics
-  - 37/37 API tests passing
-
-- ✅ **Comprehensive Testing**: 218/218 tests passing (100%)
-  - 188 unit tests + 30 integration tests
-  - ~85% code coverage
-  - Criterion benchmarks for all components
-
-- ✅ **Complete Documentation**:
-  - Component documentation with troubleshooting
-  - OpenAPI 3.0 specification
-  - Sprint 1.1 Completion Report
-  - Sprint 1.2 Handoff Document
-
-**Technology**: Rust 1.91.1 (MSRV) | Axum 0.8 | Tokio 1.53 | Redis 8+
-**Status**: Ready for Sprint 1.2 (Orchestrator integration)
-
-### Sprint 1.2: Orchestrator Integration ✅ **PHASE 2 COMPLETE** (2025-11-15)
-
-**Production-Ready Orchestrator Core** (1,776 lines Python, 87 tests passing, 85%+ coverage):
-
-- ✅ **FastAPI Application**: 6 REST endpoints operational
-  - POST /submit - Task submission with Reflex Layer validation
-  - GET /tasks/{id} - Task status retrieval
-  - GET /health - Kubernetes liveness probe
-  - GET /ready - Readiness check (database + Reflex Layer)
-  - GET /metrics - Prometheus metrics (prepared)
-  - GET / - Service information
-
-- ✅ **Reflex Layer Integration**: Production-ready circuit breaker (504 lines)
-  - Circuit breaker pattern (failure threshold: 5, reset: 60s)
-  - Retry logic with exponential backoff (1-5 seconds)
-  - Health check and readiness probes
-  - Performance: All endpoints 2-5x faster than targets
-
-- ✅ **Database Layer**: Async SQLAlchemy 2.0 + PostgreSQL (383 lines)
-  - Connection pooling (pool_size=10, max_overflow=20)
-  - CRUD operations for tasks and results
-  - Async operations with asyncpg driver
-
-- ✅ **Data Models**: Pydantic + SQLAlchemy ORM (255 lines)
-  - TaskRequest, TaskResponse, ResourceBudget, TaskContract
-  - Task, TaskResult (database models)
-  - TaskStatus, Priority enums
-
-- ✅ **Configuration Management**: Environment-based settings (148 lines)
-  - Pydantic BaseSettings with ORCHESTRATOR_ prefix
-  - Environment variable validation
-  - PostgreSQL-only database support
-
-- ✅ **Comprehensive Testing**: 87/87 tests passing (100% pass rate)
-  - test_reflex_client.py: 39 tests, 97% coverage
-  - test_models.py: 34 tests, 92% coverage
-  - test_config.py: 26 tests, 88% coverage
-  - test_database.py: 27 tests, 85% coverage
-  - Total: 2,776 lines test code
-
-- ✅ **Complete Documentation**: 4,769 lines
-  - services/orchestrator/README.md (641 lines)
-  - docs/components/orchestrator.md (1,039 lines)
-  - docs/api/openapi/orchestrator.yaml (957 lines)
-  - Sprint 1.2 completion report (956 lines)
-  - Sprint 1.3 handoff document (1,176 lines)
-
-**Technology**: Python 3.14 | FastAPI 0.141+ | SQLAlchemy 2.0 | PostgreSQL 17+
-**Status**: Core complete, pipeline deferred to Sprint 1.3
-**Next**: Sprint 1.3 - Planner Arm Integration
 
