@@ -5,6 +5,8 @@ The Orchestrator is the central brain that coordinates task planning,
 arm delegation, and result integration.
 """
 
+from typing import Any
+
 from ..client import BaseClient
 from ..models import ArmCapability, HealthResponse, TaskRequest, TaskResponse, TaskStatusResponse
 
@@ -22,7 +24,7 @@ class OrchestratorClient(BaseClient):
         base_url: str = "http://localhost:8000",
         api_key: str | None = None,
         bearer_token: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         """
         Initialize Orchestrator client.
@@ -76,9 +78,9 @@ class OrchestratorClient(BaseClient):
             # TYPE orchestrator_tasks_total counter
             orchestrator_tasks_total 1234
         """
-        # Override content type handling for plain text response
-        async with self._make_plain_text_request("GET", "/metrics", timeout) as response:
-            return response
+        # _make_plain_text_request is a coroutine returning the body, not an async context
+        # manager; `async with` on it raised AttributeError on every call.
+        return await self._make_plain_text_request("GET", "/metrics", timeout)
 
     async def list_arms(self, timeout: float | None = None) -> list[ArmCapability]:
         """

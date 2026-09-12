@@ -4,6 +4,8 @@ Planner Arm service client.
 The Planner specializes in task decomposition and execution planning.
 """
 
+from typing import Any
+
 from ..client import BaseClient
 from ..models import HealthResponse, PlanRequest, PlanResponse
 
@@ -20,7 +22,7 @@ class PlannerClient(BaseClient):
         base_url: str = "http://localhost:8002",
         api_key: str | None = None,
         bearer_token: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         """
         Initialize Planner client.

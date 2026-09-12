@@ -23,12 +23,12 @@ from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
-from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
+from opentelemetry.instrumentation.psycopg import PsycopgInstrumentor
 from opentelemetry.instrumentation.redis import RedisInstrumentor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.sdk.trace.sampling import ParentBasedTraceIdRatioBased
+from opentelemetry.sdk.trace.sampling import ParentBasedTraceIdRatio
 
 
 def init_telemetry(
@@ -47,7 +47,7 @@ def init_telemetry(
         sampling_rate: Trace sampling rate (0.0-1.0)
     """
     # Get configuration from environment
-    environment = environment or os.getenv("ENVIRONMENT", "dev")
+    resolved_environment: str = environment or os.getenv("ENVIRONMENT") or "dev"
     jaeger_endpoint = jaeger_endpoint or os.getenv(
         "JAEGER_ENDPOINT",
         "http://jaeger-collector.octollm-monitoring.svc.cluster.local:4317",
@@ -55,7 +55,7 @@ def init_telemetry(
 
     # Set sampling rate based on environment
     if sampling_rate is None:
-        sampling_rate = 1.0 if environment == "dev" else 0.10
+        sampling_rate = 1.0 if resolved_environment == "dev" else 0.10
 
     # Create resource with service metadata
     resource = Resource.create(
@@ -63,13 +63,13 @@ def init_telemetry(
             "service.name": service_name,
             "service.namespace": "octollm",
             "service.instance.id": os.getenv("HOSTNAME", "unknown"),
-            "deployment.environment": environment,
+            "deployment.environment": resolved_environment,
             "service.version": os.getenv("APP_VERSION", "0.9.0"),
         }
     )
 
     # Configure tracer provider with sampling
-    sampler = ParentBasedTraceIdRatioBased(sampling_rate)
+    sampler = ParentBasedTraceIdRatio(sampling_rate)
     provider = TracerProvider(resource=resource, sampler=sampler)
 
     # Configure OTLP exporter to Jaeger
@@ -86,13 +86,13 @@ def init_telemetry(
     trace.set_tracer_provider(provider)
 
     # Auto-instrument FastAPI
-    FastAPIInstrumentor.instrument()
+    FastAPIInstrumentor().instrument()
 
     # Auto-instrument HTTP client (for LLM API calls)
-    HTTPXClientInstrumentor.instrument()
+    HTTPXClientInstrumentor().instrument()
 
     # Auto-instrument database
-    Psycopg2Instrumentor().instrument()
+    PsycopgInstrumentor().instrument()
 
     # Auto-instrument Redis
     RedisInstrumentor().instrument()

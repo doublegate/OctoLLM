@@ -4,6 +4,8 @@ Judge Arm service client.
 The Judge specializes in output validation and quality assurance.
 """
 
+from typing import Any
+
 from ..client import BaseClient
 from ..models import HealthResponse, ValidationRequest, ValidationResult
 
@@ -20,7 +22,7 @@ class JudgeClient(BaseClient):
         base_url: str = "http://localhost:8006",
         api_key: str | None = None,
         bearer_token: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         """
         Initialize Judge client.

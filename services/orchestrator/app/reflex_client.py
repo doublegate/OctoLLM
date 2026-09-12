@@ -373,7 +373,7 @@ class ReflexClient:
         # Apply circuit breaker
         @self.circuit_breaker.call
         async def _execute() -> ReflexResponse:
-            return cast(ReflexResponse, await self._make_request(request))
+            return await self._make_request(request)
 
         try:
             response = await cast(Callable[[], Awaitable[ReflexResponse]], _execute)()

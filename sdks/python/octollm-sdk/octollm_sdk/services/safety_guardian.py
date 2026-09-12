@@ -4,6 +4,8 @@ Safety Guardian Arm service client.
 The Safety Guardian specializes in PII detection and content filtering.
 """
 
+from typing import Any
+
 from ..client import BaseClient
 from ..models import HealthResponse, SafetyRequest, SafetyResult
 
@@ -20,7 +22,7 @@ class SafetyGuardianClient(BaseClient):
         base_url: str = "http://localhost:8007",
         api_key: str | None = None,
         bearer_token: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         """
         Initialize Safety Guardian client.
