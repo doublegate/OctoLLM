@@ -54,6 +54,10 @@ COPY --chown=octollm:octollm shared/python ./shared/python
 # Numeric, per hadolint DL3066: a name need not resolve on the host.
 USER 1000:1000
 
+# The application package is `app`, rooted at services/orchestrator/, and its modules
+# import each other as `from app.config import ...`. Run from there so that resolves.
+WORKDIR /app/services/orchestrator
+
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD ["curl", "-f", "http://localhost:8000/health"]
@@ -62,4 +66,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 EXPOSE 8000
 
 # Run application
-CMD ["uvicorn", "services.orchestrator.src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# The FastAPI app is services/orchestrator/app/main.py. The previous target,
+# services.orchestrator.src.api.main, does not exist -- services/orchestrator/src/
+# holds only .gitkeep placeholders -- so the container started uvicorn and then died
+# on ModuleNotFoundError. No CI job builds or runs these images, so it went unseen.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
