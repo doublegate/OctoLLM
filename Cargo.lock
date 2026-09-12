@@ -842,7 +842,7 @@ dependencies = [
 
 [[package]]
 name = "executor-arm"
-version = "0.1.0"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "axum",
@@ -1695,7 +1695,7 @@ dependencies = [
 
 [[package]]
 name = "octollm-clients"
-version = "0.1.0"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "reqwest",
@@ -1708,7 +1708,7 @@ dependencies = [
 
 [[package]]
 name = "octollm-common"
-version = "0.1.0"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1721,7 +1721,7 @@ dependencies = [
 
 [[package]]
 name = "octollm-types"
-version = "0.1.0"
+version = "0.5.0"
 dependencies = [
  "chrono",
  "serde",
@@ -2219,7 +2219,7 @@ dependencies = [
 
 [[package]]
 name = "reflex-layer"
-version = "0.1.0"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "async-trait",

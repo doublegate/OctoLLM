@@ -153,7 +153,7 @@ class HealthResponse(BaseModel):
         default_factory=lambda: datetime.now(UTC),
         description="Check timestamp",
     )
-    version: str = Field(default="0.1.0", description="Service version")
+    version: str = Field(default="0.5.0", description="Service version")
 
 
 class ReadinessResponse(BaseModel):

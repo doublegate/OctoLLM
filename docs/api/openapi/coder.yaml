@@ -9,7 +9,7 @@ info:
     **Port**: 8005
     **Cost Tier**: 4 (High - uses GPT-4)
     **Average Latency**: 2-5 seconds
-  version: 0.3.0
+  version: 0.5.0
 
 servers:
   - url: http://localhost:8005

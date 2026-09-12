@@ -12,6 +12,7 @@ import pytest
 from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 
+from app import __version__
 from app.main import app
 from app.models import ResourceBudget, TaskStatus
 from app.reflex_client import (
@@ -174,7 +175,12 @@ def test_health_check_returns_version(client):
     response = client.get("/health")
 
     data = response.json()
-    assert data["version"] == "0.1.0"
+    # Asserted against app.__version__, not a literal: scripts/version_sync.py keeps
+    # every version site in step with VERSION, and a literal here would turn each
+    # release into a test edit -- which is how a suite learns to be edited rather
+    # than trusted. This still has teeth: it fails if the payload stops reporting
+    # the package version.
+    assert data["version"] == __version__
 
 
 # ==============================================================================

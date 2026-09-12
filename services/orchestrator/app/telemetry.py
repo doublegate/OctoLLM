@@ -64,7 +64,7 @@ def init_telemetry(
             "service.namespace": "octollm",
             "service.instance.id": os.getenv("HOSTNAME", "unknown"),
             "deployment.environment": resolved_environment,
-            "service.version": os.getenv("APP_VERSION", "0.9.0"),
+            "service.version": os.getenv("APP_VERSION", "0.5.0"),
         }
     )
 
