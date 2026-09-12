@@ -30,9 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`scripts/ci/check_gate_complete.py`** — fails if a job is added to `ci.yml` without
   being added to `ci-gate.needs`. Branch protection can only require named checks, so
   an unwired job is advisory by omission: it can fail while the gate goes green.
-- **`.github/workflows/codeql.yml`** — dataflow analysis over Python, JavaScript/
-  TypeScript, GitHub Actions and Rust. Reports to the Security tab weekly; deliberately
-  not part of `ci-gate` until its initial backlog is triaged.
 - **`.github/dependabot.yml`** — did not exist, so only GitHub's default security
   updates ran and routine version drift went unwatched. Covers all four Python
   manifests (including `sdks/python/octollm-sdk/uv.lock`, which the September

@@ -264,9 +264,12 @@ Still outside the gate, deliberately:
   which are unset. Five service Dockerfiles still `CMD` into modules that do not exist,
   so those images cannot pass a smoke test yet. Build locally before merging a Dockerfile
   change. They join `ci-gate` once the services they build are real.
-- **CodeQL** (`codeql.yml`) reports to the Security tab on a weekly schedule rather than
-  blocking. A dataflow engine's first run on an unanalysed codebase produces a backlog to
-  triage, not a merge decision.
+- **CodeQL** runs through GitHub's **default setup**, not a workflow in this repository.
+  Default setup is already configured for actions, javascript/typescript, python and rust
+  on a weekly schedule, and an advanced-setup workflow cannot coexist with it — GitHub
+  refuses SARIF from an advanced configuration while default setup is enabled. Its query
+  suite is `default`; raising it to `extended` (the equivalent of `security-and-quality`)
+  is a repository-settings change, not a code change.
 - **Snyk** stays advisory; it is skipped entirely without `SNYK_TOKEN`.
 
 ### Known gaps
