@@ -67,7 +67,8 @@ EXPOSE 8001
 # Python identifier. Every one of these five containers crash-looped.
 WORKDIR /app/services/arms/planner
 
-# octollm_stub lives here; the shared arm framework replaces it in Stage 4.
+# The shared arm framework lives here: the app factory, the error envelope, the
+# contract models and the roster this arm reads its own declaration from.
 ENV PYTHONPATH=/app/shared/python
 
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8001"]

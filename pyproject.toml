@@ -157,6 +157,18 @@ module = [
     "langchain.*",
     "presidio_analyzer.*",
     "presidio_anonymizer.*",
+    # The provider SDKs are optional extras of octollm-common, imported inside their
+    # own constructors so the stack runs with none of them installed -- which is the
+    # point, and which CI proves by installing none of them. A type check that
+    # required them would make them hard dependencies through the back door.
+    #
+    # The cost is real and accepted: mypy cannot check the adapter calls against the
+    # SDKs' own types in CI. That check still happens, in the one place it can -- a
+    # local run with the extras present, which is how the `temperature` argument
+    # anthropic>=1.5 no longer accepts was caught.
+    "ollama.*",
+    "openai.*",
+    "anthropic.*",
 ]
 ignore_missing_imports = true
 

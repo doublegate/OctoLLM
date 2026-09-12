@@ -42,6 +42,8 @@ class Service:
         directory: str,
         openapi: str | None,
         built: bool = True,
+        sdk_python: str | None = None,
+        sdk_typescript: str | None = None,
     ) -> None:
         self.container_port = container_port
         # Usually the same as the container port. The executor is the exception, and
@@ -51,6 +53,10 @@ class Service:
         self.directory = directory
         self.openapi = openapi
         self.built = built
+        # The SDK module stems, where they differ between the two languages
+        # (`safety_guardian.py` against `safety.ts`). None means no client exists.
+        self.sdk_python = sdk_python
+        self.sdk_typescript = sdk_typescript
 
 
 CANONICAL: dict[str, Service] = {
@@ -60,6 +66,8 @@ CANONICAL: dict[str, Service] = {
         compose_service="orchestrator",
         directory="services/orchestrator",
         openapi="orchestrator",
+        sdk_python="orchestrator",
+        sdk_typescript="orchestrator",
     ),
     "reflex-layer": Service(
         container_port=8080,
@@ -67,6 +75,8 @@ CANONICAL: dict[str, Service] = {
         compose_service="reflex-layer",
         directory="services/reflex-layer",
         openapi="reflex-layer",
+        sdk_python="reflex",
+        sdk_typescript="reflex",
     ),
     "planner": Service(
         container_port=8001,
@@ -74,6 +84,8 @@ CANONICAL: dict[str, Service] = {
         compose_service="planner-arm",
         directory="services/arms/planner",
         openapi="planner",
+        sdk_python="planner",
+        sdk_typescript="planner",
     ),
     "retriever": Service(
         container_port=8002,
@@ -81,6 +93,8 @@ CANONICAL: dict[str, Service] = {
         compose_service="retriever-arm",
         directory="services/arms/retriever",
         openapi="retriever",
+        sdk_python="retriever",
+        sdk_typescript="retriever",
     ),
     "coder": Service(
         container_port=8003,
@@ -88,6 +102,8 @@ CANONICAL: dict[str, Service] = {
         compose_service="coder-arm",
         directory="services/arms/coder",
         openapi="coder",
+        sdk_python="coder",
+        sdk_typescript="coder",
     ),
     "judge": Service(
         container_port=8004,
@@ -95,6 +111,8 @@ CANONICAL: dict[str, Service] = {
         compose_service="judge-arm",
         directory="services/arms/judge",
         openapi="judge",
+        sdk_python="judge",
+        sdk_typescript="judge",
     ),
     "safety-guardian": Service(
         container_port=8005,
@@ -102,6 +120,8 @@ CANONICAL: dict[str, Service] = {
         compose_service="safety-guardian-arm",
         directory="services/arms/safety_guardian",
         openapi="safety-guardian",
+        sdk_python="safety_guardian",
+        sdk_typescript="safety",
     ),
     "executor": Service(
         # The one service whose host and container ports differ, so the map records
@@ -112,6 +132,8 @@ CANONICAL: dict[str, Service] = {
         compose_service="executor-arm",
         directory="services/arms/executor",
         openapi="executor",
+        sdk_python="executor",
+        sdk_typescript="executor",
     ),
     # Not built yet; listed so the ports are reserved and the map is the whole map.
     "memory": Service(
@@ -233,10 +255,57 @@ def check_openapi() -> list[str]:
     return problems
 
 
+def check_sdks() -> list[str]:
+    """
+    Both SDKs' default base URLs and their stated ports.
+
+    Every one of the sixteen was wrong: the same whole-slot shift as the OpenAPI
+    specs, so the Python planner client defaulted to `localhost:8002` -- the
+    retriever's -- and the safety-guardian client to 8007, which is Memory's.
+    Constructing a client with no arguments therefore talked to the wrong service, or
+    to nothing, and no SDK test could see it because all of them mock the transport.
+
+    The HOST port is what belongs here: an SDK is used from a developer's machine, so
+    the executor is 18006 rather than 8006.
+    """
+    problems = []
+    sources = (
+        ("sdks/python/octollm-sdk/octollm_sdk/services", "sdk_python", "py"),
+        ("sdks/typescript/octollm-sdk/src/services", "sdk_typescript", "ts"),
+    )
+
+    for directory, attribute, suffix in sources:
+        for name, svc in CANONICAL.items():
+            stem = getattr(svc, attribute)
+            if stem is None:
+                continue
+            path = REPO_ROOT / directory / f"{stem}.{suffix}"
+            if not path.is_file():
+                problems.append(f"{directory}/{stem}.{suffix}: missing, but {name} has a client")
+                continue
+            text = path.read_text()
+
+            for port in {int(p) for p in re.findall(r"localhost:(\d{4,5})", text)}:
+                if port != svc.host_port:
+                    problems.append(
+                        f"{directory}/{stem}.{suffix}: defaults to localhost:{port}, but "
+                        f"{name} is published on host port {svc.host_port}"
+                    )
+
+            for port in {int(p) for p in re.findall(r"\(port (\d{4,5})\)", text)}:
+                if port not in (svc.container_port, svc.host_port):
+                    problems.append(
+                        f"{directory}/{stem}.{suffix}: states port {port}, but {name} is "
+                        f"{svc.container_port} (host {svc.host_port})"
+                    )
+    return problems
+
+
 def main() -> int:
     problems: list[str] = []
     problems += check_ports_are_unique()
     problems += check_dockerfiles()
+    problems += check_sdks()
     for name in COMPOSE_FILES:
         path = REPO_ROOT / name
         if path.is_file():

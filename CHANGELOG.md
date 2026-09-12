@@ -8,6 +8,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+#### Stage 4 — the shared arm framework
+
+- **`shared/python/octollm_common`**, an installable package (`pip install -e
+  "shared/python[dev]"`, or `make install`) imported by all eight arms **and** the
+  orchestrator. One app factory, one error envelope, one set of contract models, one
+  LLM provider boundary, one arm roster. 103 tests, coverage floored at 90%.
+- **`octollm_common.models.contracts`** — every arm's request and response models,
+  defined once. The arms import them as their FastAPI models and the orchestrator
+  imports the same classes as its client models, so a field rename is an error at
+  import time rather than a 422 in production.
+- **`octollm_common.roster`** — the eight arms declared once, read by each arm's
+  service module, by the orchestrator's registry, and by `check_port_map.py`. Memory
+  (Stage 6) and Red Team (Stage 11) are listed with `implemented: false` rather than
+  omitted: a roster that leaves out the unbuilt arms is how a system comes to be
+  described by its aspirations.
+- **`octollm_common.llm`** — a provider protocol with `FakeProvider`, Ollama, OpenAI
+  and Anthropic. The fake resolves a response by scripted key, then prompt hash, then
+  schema-valid synthesis, then deterministic lorem, and `embed()` returns hash-derived
+  **unit vectors** so retriever ranking is golden-testable. The provider SDKs are
+  optional extras; `create_provider()` returns the fake unless a provider is explicitly
+  configured, and `OCTOLLM_FORCE_FAKE_LLM=1` overrides configuration entirely, so **no
+  test can reach a model over the network**. A missing key fails loudly rather than
+  degrading to the fake.
+- **`GET /arms` and `POST /arms/register`** on the orchestrator. Both SDKs have shipped
+  a `listArms()` call since Phase 0 against an endpoint that did not exist — and
+  against two different paths.
+
+  Registration is **disabled unless `ORCHESTRATOR_ARM_REGISTRATION_TOKEN` is set**, and
+  then requires a matching bearer token compared in constant time. It refuses an
+  unknown `arm_id` with 403, and does not accept `base_url`, `port`, `endpoint` or
+  `cost_tier` at all. Each refusal is the same principle: this service has no
+  authentication until Stage 5, and a caller able to restate an arm's details — where
+  it listens most of all — controls where the orchestrator sends work. It fails closed.
+  `GET /arms` stays open, because the roster is public information.
+- **`scripts/ci/check_sdk_parity.py`** (`make sdk-parity-check`) — asserts that both
+  SDKs call the same `(method, path)` set, that every call resolves to a route derived
+  from the code that serves it, that each framework arm's OpenAPI spec documents
+  exactly what it serves, and that no exemption outlives the stage it names. Every SDK
+  test mocks the transport, which is why the defects below survived 56 green tests.
+- `make test-shared` and a blocking `test-shared` CI job, wired into `ci-gate`.
+
+### Fixed
+
+#### Stage 4
+
+- **Four SDK calls could never have worked.** The Python SDK asked the reflex layer for
+  `POST /preprocess` (it has only ever served `/process`); both SDKs posted tasks to
+  `POST /tasks` (the orchestrator serves `/submit`, and `/tasks/{id}` is the read path);
+  and the two disagreed about listing arms — TypeScript asked `/arms`, Python asked
+  `/capabilities`. `/arms` won.
+- **All sixteen SDK clients defaulted to the wrong port** — the same whole-slot shift
+  already found in the OpenAPI specs. The Python planner client defaulted to
+  `localhost:8002`, which is the retriever's; the safety-guardian client to 8007, which
+  is Memory's. Constructing any client with no arguments talked to the wrong service or
+  to nothing. `check_port_map.py` now covers both SDKs.
+- **The TypeScript SDK had no `health()` on any client** while the Python SDK had one on
+  all eight, and no `capabilities()` on any arm client. The Python SDK had no
+  `register_arm()` or `get_sandbox_status()`. Found by the parity check the moment it
+  compared the two.
+- **The orchestrator's error envelope did not match its own contract.** It returned
+  `{"error": "<string>"}` for `HTTPException` and FastAPI's default `{"detail": [...]}`
+  for validation failures, so the shape a client saw depended on which kind of error
+  occurred and `error` was sometimes a string and sometimes an object. All nine services
+  now share `octollm_common.errors`, 422 included.
+- **The block-by-policy response echoed the detected PII back to the caller.** A
+  rejected SSN or credential was returned in `pii_matches[].matched_text`, inside the
+  very response that exists to say it must not travel. The span is reported; the text
+  is not.
+- **`anthropic>=1.5` does not accept `temperature`** on `messages.create`; the adapter
+  passed it, which would have been a 400 on every Anthropic request. Caught by mypy
+  against the real SDK and confirmed against the installed signature.
+- `scripts/smoke.sh` honoured `REFLEX_URL` but not `REFLEX_PORT`, so relocating a port
+  with the documented variable moved the service and left the smoke test asking the old
+  one — a check failing for a reason unrelated to what it checks.
+
+### Removed
+
+- **`shared/python/octollm_stub`**, superseded by the shared framework, along with the
+  three empty `shared/python/{clients,common,models}` scaffolding directories.
+
+### Added
 - **The stack comes up.** `make up` brings all eleven services to a **healthy** state
   and `make smoke` round-trips a task — submitted, screened by the reflex layer,
   persisted, read back by id. Neither had happened before. `compose.yaml` at the

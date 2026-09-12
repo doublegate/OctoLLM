@@ -143,7 +143,11 @@ export interface JSONSchema {
 }
 
 /**
- * Arm capability information
+ * Arm capability information, as `GET /arms` returns it.
+ *
+ * Three shapes of this existed and disagreed: this one carried schemas and no status,
+ * the Python SDK carried a status and no schemas, and no endpoint served either. This
+ * is the frozen shape -- the union of what is actually knowable.
  */
 export interface ArmCapability {
   /** Unique arm identifier */
@@ -152,16 +156,40 @@ export interface ArmCapability {
   name: string;
   /** Description of arm capabilities */
   description: string;
-  /** Input JSON schema */
+  /** JSON Schema of the request, generated from the shared contract model */
   input_schema: JSONSchema;
-  /** Output JSON schema */
+  /** JSON Schema of the response */
   output_schema: JSONSchema;
   /** Capability tags for routing */
   capabilities: string[];
   /** Cost tier (1=cheap, 5=expensive) */
   cost_tier: number;
-  /** Kubernetes service endpoint */
+  /**
+   * Path on the arm, e.g. '/plan'.
+   *
+   * This was documented as "Kubernetes service endpoint", meaning a URL, while every
+   * arm returns a path. Two meanings under one name is how a client comes to request
+   * `http://planner-arm:8001http://planner-arm:8001/plan`. The URL is `base_url`.
+   */
   endpoint: string;
+  /** Where the arm listens, e.g. 'http://planner-arm:8001' */
+  base_url: string;
+  /** Container port */
+  port: number;
+  /** Whether the endpoint does anything yet */
+  implemented: boolean;
+  /** Which v1.0.0 stage builds it */
+  implemented_in_stage: number;
+  /** Neural Ring artifact types this arm produces */
+  publishes: string[];
+  /** Neural Ring artifact types this arm consumes */
+  subscribes: string[];
+  /** Arms this one may call directly */
+  peers: string[];
+  /** Result of the orchestrator's last probe */
+  status: 'healthy' | 'degraded' | 'unavailable';
+  /** ISO-8601 timestamp, or null if never probed */
+  last_probed_at: string | null;
 }
 
 /**
@@ -173,22 +201,47 @@ export interface ListArmsResponse {
 }
 
 /**
- * Register arm request
+ * Register arm request.
+ *
+ * Registration **updates** an arm that is already in the roster; it cannot introduce
+ * one, and an unknown `arm_id` is refused with 403. An endpoint that let a caller add
+ * an arm to the routing table would be a privilege escalation with extra steps: the
+ * orchestrator is the sole signing authority for capability tokens, so an arm it can
+ * be told about is an arm it can be told to trust.
+ *
+ * Every field but `arm_id` is optional, and an omitted field is left alone rather than
+ * cleared -- the difference between PATCH and PUT semantics is not academic when the
+ * cleared field is what routing matches on.
+ *
+ * `base_url`, `port`, `endpoint` and `cost_tier` are absent on purpose. They are roster
+ * facts, and a caller able to restate where an arm listens could redirect that arm's
+ * traffic to a host it controls.
+ *
+ * The endpoint requires a bearer token and is **disabled** unless the orchestrator has
+ * one configured, so construct the client with `bearerToken`.
  */
 export interface RegisterArmRequest {
-  /** Unique arm identifier */
+  /** Unique arm identifier; must already be in the roster */
   arm_id: string;
-  /** Arm capability information */
-  capability: Omit<ArmCapability, 'arm_id'>;
+  /** Replaces the routing tags */
+  capabilities?: string[];
+  /** Whether the endpoint works yet */
+  implemented?: boolean;
+  /** Neural Ring artifact types produced */
+  publishes?: string[];
+  /** Neural Ring artifact types consumed */
+  subscribes?: string[];
+  /** Declared ring edges; advisory, since tokens are issued from the roster */
+  peers?: string[];
 }
 
 /**
  * Register arm response
  */
 export interface RegisterArmResponse {
-  /** Registration status */
-  status: 'registered' | 'updated';
-  /** Registered arm capability */
+  /** Always 'updated': registration cannot introduce an arm */
+  status: 'updated';
+  /** The arm as the registry now holds it */
   arm: ArmCapability;
 }
 

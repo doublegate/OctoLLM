@@ -26,13 +26,15 @@ VERSION := $(shell cat VERSION)
 PYTHON ?= python3
 
 ORCHESTRATOR := services/orchestrator
+SHARED_PY    := shared/python
 SDK_PY       := sdks/python/octollm-sdk
 SDK_TS       := sdks/typescript/octollm-sdk
 
 # Collection floors. A suite that silently collects zero tests reports exactly what a
 # suite that ran them all reports; these are what separate the two. Raise one when you
 # add tests. Never lower one to make a red build green -- that is the bug, not the fix.
-FLOOR_ORCHESTRATOR := 168
+FLOOR_ORCHESTRATOR := 197
+FLOOR_SHARED       := 103
 FLOOR_SDK_PY       := 28
 FLOOR_SDK_TS_FILES := 3
 # 17 Redis-backed, plus the /process connect-info regression, which also needs Redis.
@@ -51,7 +53,8 @@ help: ## Show this help
 # =============================================================================
 
 .PHONY: install
-install: ## Install both Python packages (editable) and the TypeScript SDK
+install: ## Install every Python package (editable) and the TypeScript SDK
+	$(PYTHON) -m pip install -e "$(SHARED_PY)[dev]"
 	$(PYTHON) -m pip install -e "$(ORCHESTRATOR)[dev]"
 	$(PYTHON) -m pip install -e "$(SDK_PY)[dev]"
 	cd $(SDK_TS) && npm ci
@@ -95,15 +98,15 @@ format: ## Rewrite Python and Rust in place (the only targets that MODIFY files)
 	cd $(SDK_TS) && npm run format
 
 .PHONY: typecheck
-typecheck: ## mypy over the orchestrator and the Python SDK
-	mypy $(ORCHESTRATOR)/app $(SDK_PY)/octollm_sdk
+typecheck: ## mypy over the shared framework, the orchestrator and the Python SDK
+	mypy $(SHARED_PY)/octollm_common $(ORCHESTRATOR)/app $(SDK_PY)/octollm_sdk
 
 # =============================================================================
 # Test
 # =============================================================================
 
 .PHONY: test
-test: test-rust test-orchestrator test-sdk-python test-sdk-typescript ## Run every suite
+test: test-rust test-shared test-orchestrator test-sdk-python test-sdk-typescript ## Run every suite
 
 .PHONY: test-rust
 test-rust: ## Rust workspace tests (Redis-backed ones need `make redis`)
@@ -120,6 +123,18 @@ test-rust-redis: ## The Redis-backed Rust tests; needs Redis on localhost:6379
 	    echo "::error::expected at least $(FLOOR_RUST_IGNORED) Redis-backed tests, $$ran ran"; \
 	    exit 1; \
 	  fi
+
+.PHONY: test-shared
+test-shared: ## Shared arm framework suite, coverage enforced at 90% by its pytest config
+	@cd $(SHARED_PY) && collected=$$($(PYTHON) -m pytest tests/ --collect-only \
+	    -p no:cacheprovider --no-cov 2>&1 \
+	    | grep -oE '[0-9]+ tests? collected' | grep -oE '^[0-9]+' | tail -1); \
+	  echo "collected=$${collected:-0} (floor $(FLOOR_SHARED))"; \
+	  if [ "$${collected:-0}" -lt $(FLOOR_SHARED) ]; then \
+	    echo "::error::shared framework collected $${collected:-0} tests, floor is $(FLOOR_SHARED)"; \
+	    exit 1; \
+	  fi
+	cd $(SHARED_PY) && $(PYTHON) -m pytest tests/
 
 .PHONY: test-orchestrator
 test-orchestrator: ## Orchestrator suite, coverage enforced at 85% by its pytest config
@@ -208,11 +223,15 @@ compose-env-check: ## Fail if a compose env var is not one the service actually 
 	$(PYTHON) scripts/ci/check_compose_env.py
 
 .PHONY: port-map-check
-port-map-check: ## Fail if any Dockerfile, compose file or OpenAPI spec disagrees on a port
+port-map-check: ## Fail if any Dockerfile, compose file, spec or SDK disagrees on a port
 	$(PYTHON) scripts/ci/check_port_map.py
 
+.PHONY: sdk-parity-check
+sdk-parity-check: ## Fail if the two SDKs disagree, or call a route nothing serves
+	$(PYTHON) scripts/ci/check_sdk_parity.py
+
 .PHONY: verify
-verify: version-check diagram-check gate-check compose-env-check port-map-check lint typecheck secrets-scan secrets-selftest test ## Everything CI runs, minus the Redis suite
+verify: version-check diagram-check gate-check compose-env-check port-map-check sdk-parity-check lint typecheck secrets-scan secrets-selftest test ## Everything CI runs, minus the Redis suite
 	@printf '\n\033[32mverify: OK\033[0m  (for the Redis-backed Rust tests: make redis test-rust-redis)\n'
 
 # =============================================================================

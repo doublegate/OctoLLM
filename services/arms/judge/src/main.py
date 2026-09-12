@@ -1,19 +1,25 @@
 """
-Judge arm — stub.
+Judge arm.
 
-No implementation yet; this exists so the image serves something real instead
-of crash-looping, and so `docker compose up` can reach a healthy state. The
-/execute endpoint returns 501 rather than a plausible fake, so an unimplemented
-arm is never mistaken for a working one. Stage 8 builds the real thing.
+Not implemented yet: `POST /validate` returns 501 naming the stage that builds it,
+rather than a plausible fake. A stub that answered convincingly would make an
+unimplemented arm indistinguishable from a working one.
+
+Everything specific to this arm lives elsewhere on purpose:
+
+  * its declaration is one entry in `octollm_common.roster`, which the orchestrator's
+    registry and `scripts/ci/check_port_map.py` read from the same place;
+  * its request and response models come from `octollm_common.models.contracts`,
+    which the orchestrator imports as its client models -- so a field rename here is
+    a type error there rather than a 422 discovered in production.
+
+What remains is the wiring, and there is deliberately nothing else to get wrong.
 """
 
-from octollm_stub import create_stub_app
+from octollm_common import create_arm_app
+from octollm_common.models.contracts import ValidateRequest, ValidateResponse
+from octollm_common.roster import spec_for
 
-app = create_stub_app(
-    arm_id="judge",
-    name="Judge",
-    description="Validates arm output and scores quality; arbitrates disagreements.",
-    port=8004,
-    capabilities=["validation", "quality_scoring"],
-    implemented_in_stage=8,
-)
+SPEC = spec_for("judge")
+
+app = create_arm_app(SPEC, request_model=ValidateRequest, response_model=ValidateResponse)

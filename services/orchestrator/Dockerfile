@@ -58,6 +58,12 @@ USER 1000:1000
 # import each other as `from app.config import ...`. Run from there so that resolves.
 WORKDIR /app/services/orchestrator
 
+# The shared arm framework. The orchestrator imports `octollm_common` for the arm
+# roster, the contract models its registry publishes, and the error envelope every
+# service now shares -- the same seam the arms import their FastAPI models from, which
+# is what makes a field rename a type error rather than a 422 in production.
+ENV PYTHONPATH=/app/shared/python
+
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD ["curl", "-f", "http://localhost:8000/health"]

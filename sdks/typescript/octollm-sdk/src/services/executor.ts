@@ -1,5 +1,5 @@
 /**
- * Client for Executor Arm service (port 8003)
+ * Client for Executor Arm service (port 8006)
  *
  * The executor arm runs commands in sandboxed environments.
  */
@@ -17,7 +17,7 @@ export interface ExecutorConfig extends Partial<ClientConfig> {
 export class ExecutorClient extends BaseClient {
   constructor(config: ExecutorConfig = {}) {
     super({
-      baseUrl: config.baseUrl || 'http://localhost:8003',
+      baseUrl: config.baseUrl || 'http://localhost:18006',
       ...config
     });
   }
@@ -60,6 +60,21 @@ export class ExecutorClient extends BaseClient {
     requestId?: string
   ): Promise<SandboxStatusResponse> {
     return this.get<SandboxStatusResponse>(`/sandbox/${sandboxId}/status`, {
+      requestId
+    });
+  }
+
+  /**
+   * Fetch this arm's own declaration: its id, routing tags, cost tier, the schemas
+   * it accepts and returns, and the Neural Ring edges it declares.
+   *
+   * The orchestrator's registry reads the same endpoint, which is how the ring
+   * topology reaches it over a protocol that already exists.
+   *
+   * @param requestId - Optional request ID for tracing
+   */
+  async capabilities(requestId?: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>('/capabilities', {
       requestId
     });
   }

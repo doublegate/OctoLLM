@@ -1,5 +1,5 @@
 /**
- * Client for Retriever Arm service (port 8004)
+ * Client for Retriever Arm service (port 8002)
  *
  * The retriever arm performs semantic search over knowledge bases.
  */
@@ -17,7 +17,7 @@ export interface RetrieverConfig extends Partial<ClientConfig> {
 export class RetrieverClient extends BaseClient {
   constructor(config: RetrieverConfig = {}) {
     super({
-      baseUrl: config.baseUrl || 'http://localhost:8004',
+      baseUrl: config.baseUrl || 'http://localhost:8002',
       ...config
     });
   }
@@ -46,6 +46,21 @@ export class RetrieverClient extends BaseClient {
     requestId?: string
   ): Promise<SearchResponse> {
     return this.post<SearchResponse>('/search', request, {
+      requestId
+    });
+  }
+
+  /**
+   * Fetch this arm's own declaration: its id, routing tags, cost tier, the schemas
+   * it accepts and returns, and the Neural Ring edges it declares.
+   *
+   * The orchestrator's registry reads the same endpoint, which is how the ring
+   * topology reaches it over a protocol that already exists.
+   *
+   * @param requestId - Optional request ID for tracing
+   */
+  async capabilities(requestId?: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>('/capabilities', {
       requestId
     });
   }

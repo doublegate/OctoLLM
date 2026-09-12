@@ -12,14 +12,14 @@ from ..models import HealthResponse, SearchRequest, SearchResponse
 
 class RetrieverClient(BaseClient):
     """
-    Client for Retriever Arm service (port 8004).
+    Client for Retriever Arm service (port 8002).
 
     Performs semantic and keyword search across knowledge bases.
     """
 
     def __init__(
         self,
-        base_url: str = "http://localhost:8004",
+        base_url: str = "http://localhost:8002",
         api_key: str | None = None,
         bearer_token: str | None = None,
         **kwargs: Any,
@@ -28,7 +28,7 @@ class RetrieverClient(BaseClient):
         Initialize Retriever client.
 
         Args:
-            base_url: Retriever service URL (default: http://localhost:8004)
+            base_url: Retriever service URL (default: http://localhost:8002)
             api_key: API key for authentication
             bearer_token: JWT bearer token for authentication
             **kwargs: Additional arguments for BaseClient

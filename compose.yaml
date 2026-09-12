@@ -116,6 +116,10 @@ services:
       ORCHESTRATOR_LOG_LEVEL: ${LOG_LEVEL:-INFO}
       ORCHESTRATOR_ENVIRONMENT: ${ENVIRONMENT:-development}
       ORCHESTRATOR_TASK_DEFAULT_TIMEOUT: ${TASK_TIMEOUT:-300}
+      # Empty by default, which DISABLES POST /arms/register. The endpoint
+      # mutates routing state and this service has no authentication until
+      # Stage 5, so it fails closed rather than shipping open.
+      ORCHESTRATOR_ARM_REGISTRATION_TOKEN: ${ARM_REGISTRATION_TOKEN:-}
       # Optional. The stack must come up without either.
       ORCHESTRATOR_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ORCHESTRATOR_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}

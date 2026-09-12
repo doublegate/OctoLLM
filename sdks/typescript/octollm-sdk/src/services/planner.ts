@@ -1,5 +1,5 @@
 /**
- * Client for Planner Arm service (port 8002)
+ * Client for Planner Arm service (port 8001)
  *
  * The planner arm decomposes complex tasks into executable subtasks.
  */
@@ -17,7 +17,7 @@ export interface PlannerConfig extends Partial<ClientConfig> {
 export class PlannerClient extends BaseClient {
   constructor(config: PlannerConfig = {}) {
     super({
-      baseUrl: config.baseUrl || 'http://localhost:8002',
+      baseUrl: config.baseUrl || 'http://localhost:8001',
       ...config
     });
   }
@@ -42,6 +42,21 @@ export class PlannerClient extends BaseClient {
    */
   async plan(request: PlanRequest, requestId?: string): Promise<PlanResponse> {
     return this.post<PlanResponse>('/plan', request, {
+      requestId
+    });
+  }
+
+  /**
+   * Fetch this arm's own declaration: its id, routing tags, cost tier, the schemas
+   * it accepts and returns, and the Neural Ring edges it declares.
+   *
+   * The orchestrator's registry reads the same endpoint, which is how the ring
+   * topology reaches it over a protocol that already exists.
+   *
+   * @param requestId - Optional request ID for tracing
+   */
+  async capabilities(requestId?: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>('/capabilities', {
       requestId
     });
   }

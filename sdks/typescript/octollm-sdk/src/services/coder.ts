@@ -1,5 +1,5 @@
 /**
- * Client for Coder Arm service (port 8005)
+ * Client for Coder Arm service (port 8003)
  *
  * The coder arm generates, debugs, and refactors code.
  */
@@ -17,7 +17,7 @@ export interface CoderConfig extends Partial<ClientConfig> {
 export class CoderClient extends BaseClient {
   constructor(config: CoderConfig = {}) {
     super({
-      baseUrl: config.baseUrl || 'http://localhost:8005',
+      baseUrl: config.baseUrl || 'http://localhost:8003',
       ...config
     });
   }
@@ -42,6 +42,21 @@ export class CoderClient extends BaseClient {
    */
   async code(request: CodeRequest, requestId?: string): Promise<CodeResponse> {
     return this.post<CodeResponse>('/code', request, {
+      requestId
+    });
+  }
+
+  /**
+   * Fetch this arm's own declaration: its id, routing tags, cost tier, the schemas
+   * it accepts and returns, and the Neural Ring edges it declares.
+   *
+   * The orchestrator's registry reads the same endpoint, which is how the ring
+   * topology reaches it over a protocol that already exists.
+   *
+   * @param requestId - Optional request ID for tracing
+   */
+  async capabilities(requestId?: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>('/capabilities', {
       requestId
     });
   }

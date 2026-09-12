@@ -170,44 +170,40 @@ paths:
                 pii_detected:
                   summary: PII detected in task goal
                   value:
-                    error: "Task blocked by security policy"
-                    request_id: "req-123e4567"
-                    details:
-                      pii_detected: true
-                      injection_detected: false
-                      pii_matches:
-                        - pii_type: "Email"
-                          value: "user@example.com"
-                          position: 42
-                          confidence: 0.95
-                          context: "Contact me at user@example.com for updates"
+                    error:
+                      code: "blocked_by_policy"
+                      message: "Task blocked by security policy"
+                      # `matched_text` is stripped from every finding. Echoing the
+                      # detected span back would put the credential or SSN into the
+                      # caller's logs, inside the very response that says it must
+                      # not travel.
+                      details:
+                        pii_detected: true
+                        injection_detected: false
+                        pii_matches:
+                          - pii_type: "email"
+                            start: 42
+                            end: 58
+                            confidence: 0.95
+                      request_id: "req-123e4567"
+                      timestamp: "2026-09-12T12:00:00Z"
                 injection_detected:
                   summary: Injection attempt detected
                   value:
-                    error: "Task blocked by security policy"
-                    request_id: "req-789def01"
-                    details:
-                      pii_detected: false
-                      injection_detected: true
-                      injection_matches:
-                        - injection_type: "IGNORE_PREVIOUS"
-                          severity: "Critical"
-                          matched_text: "Ignore all previous instructions"
-                          position: 0
-                          confidence: 0.98
-                          context_analysis:
-                            is_quoted: false
-                            is_academic: false
-                            is_testing: false
-                            is_negation: false
-                validation_error:
-                  summary: Request validation failed
-                  value:
-                    error: "Validation error"
-                    request_id: "req-abc123"
-                    details:
-                      field: "goal"
-                      issue: "Field required"
+                    error:
+                      code: "blocked_by_policy"
+                      message: "Task blocked by security policy"
+                      details:
+                        pii_detected: false
+                        injection_detected: true
+                        injection_matches:
+                          - injection_type: "ignore_previous_instructions"
+                            severity: "critical"
+                            start: 0
+                            end: 31
+                            confidence: 0.98
+                      request_id: "req-789def01"
+                      timestamp: "2026-09-12T12:00:00Z"
 
         '503':
           description: Reflex Layer service unavailable (circuit breaker open)
@@ -219,20 +215,21 @@ paths:
                 circuit_breaker_open:
                   summary: Circuit breaker is open
                   value:
-                    error: "Reflex Layer temporarily unavailable (circuit breaker open)"
-                    request_id: "req-xyz789"
-                    details:
-                      circuit_breaker_state: "open"
-                      failure_count: 5
-                      last_failure_time: "2025-11-15T12:00:00Z"
+                    error:
+                      code: "unavailable"
+                      message: "Reflex Layer temporarily unavailable (circuit breaker open)"
+                      details: {}
+                      request_id: "req-xyz789"
+                      timestamp: "2026-09-12T12:00:00Z"
                 service_unavailable:
                   summary: Reflex Layer not responding
                   value:
-                    error: "Reflex Layer service unavailable"
-                    request_id: "req-def456"
-                    details:
-                      error_type: "ConnectionError"
-                      message: "Failed to connect to http://reflex-layer:8080"
+                    error:
+                      code: "unavailable"
+                      message: "Reflex Layer service unavailable"
+                      details: {}
+                      request_id: "req-def456"
+                      timestamp: "2026-09-12T12:00:00Z"
 
   /tasks/{task_id}:
     get:
@@ -321,9 +318,135 @@ paths:
                 not_found:
                   summary: Task ID does not exist
                   value:
-                    error: "Task 999e9999-e99b-99d9-a999-999999999999 not found"
-                    request_id: "req-notfound"
-                    details: {}
+                    error:
+                      code: "not_found"
+                      message: "Task 999e9999-e99b-99d9-a999-999999999999 not found"
+                      details: {}
+                      request_id: "req-notfound"
+                      timestamp: "2026-09-12T12:00:00Z"
+
+  /arms:
+    get:
+      summary: List every arm the orchestrator knows about
+      description: |
+        Both SDKs have shipped this call since Phase 0 against an endpoint that did
+        not exist, and they disagreed about its path: TypeScript asked for `/arms`,
+        Python for `/capabilities`. `/arms` wins -- `/capabilities` means *this
+        service's own declaration* on every arm, and a near-collision like that
+        produces a wrong client later.
+
+        The roster is shared with every arm's own service module and with
+        `scripts/ci/check_port_map.py`, so there is no second list to drift.
+
+        All eight arms are returned, **including the two that are not built yet**
+        (memory, Stage 6; red-team, Stage 11), each naming the stage that builds it.
+        A roster that silently omits the unbuilt arms is how a system comes to be
+        described by its aspirations. An arm that is down reports `unavailable`
+        rather than disappearing: "down" and "does not exist" are different facts.
+
+      tags:
+        - registry
+      operationId: list_arms
+      parameters:
+        - name: refresh
+          in: query
+          required: false
+          description: |
+            Probe each arm's `/capabilities` before answering. Off by default so the
+            common call is a memory read -- this endpoint is polled, and eight HTTP
+            requests per poll would make the registry a source of load rather than of
+            answers.
+          schema:
+            type: boolean
+            default: false
+
+      responses:
+        '200':
+          description: The roster
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListArmsResponse'
+
+  /arms/register:
+    post:
+      summary: Update what the orchestrator knows about an arm
+      description: |
+        This deliberately **cannot introduce an arm**. An endpoint that lets a caller
+        add an arm to the routing table is a privilege escalation with extra steps:
+        the orchestrator is the sole signing authority for capability tokens, so an
+        arm it can be told about is an arm it can be told to trust. An unknown
+        `arm_id` gets 403 naming Stage 5, which adds token-gated dynamic
+        registration -- not a silent accept.
+
+        It also **cannot move an arm**. `base_url`, `port`, `endpoint` and `cost_tier`
+        are not accepted at all: they are roster facts, and a caller able to restate
+        where an arm listens could redirect that arm's traffic to a host it
+        controls -- every task step routed there, carrying task content and, from
+        Stage 5, a capability token. Refusing an unknown `arm_id` while accepting a
+        `base_url` on a known one would have been no protection at all.
+
+        An omitted field is left alone rather than cleared.
+
+        **Authentication.** This endpoint requires a bearer token matching
+        `ORCHESTRATOR_ARM_REGISTRATION_TOKEN`, and is **disabled with 503 when no
+        token is configured** — which is the default. The service has no other
+        authentication until Stage 5 issues capability tokens, and an unauthenticated
+        caller able to restate an arm's details controls where the orchestrator sends
+        work, so it fails closed. The read path (`GET /arms`) stays open: the roster
+        is public information.
+
+      tags:
+        - registry
+      operationId: register_arm
+      security:
+        - armRegistrationToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterArmRequest'
+
+      responses:
+        '200':
+          description: The arm was updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterArmResponse'
+        '401':
+          description: The bearer token is absent or does not match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Registration is not enabled on this deployment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: The arm id is not in the roster
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unknown_arm:
+                  summary: Registration cannot introduce an arm
+                  value:
+                    error:
+                      code: "forbidden"
+                      message: >-
+                        Unknown arm 'attacker-arm'. Registration updates an arm in the
+                        roster; it cannot introduce one. Dynamic registration arrives
+                        in Stage 5 of the v1.0.0 plan, gated on an orchestrator-issued
+                        capability token.
+                      details: {}
+                      request_id: "req-unknownarm"
+                      timestamp: "2026-09-12T12:00:00Z"
 
   /health:
     get:
@@ -871,33 +994,249 @@ components:
               type: integer
               example: 0
 
-    ErrorResponse:
+    ArmCapability:
+      type: object
+      description: |
+        One arm, as the registry reports it.
+
+        Three shapes of this existed and disagreed: the TypeScript SDK carried
+        `input_schema`/`output_schema` and no status, the Python SDK carried a status
+        and no schemas, and no endpoint served either. This is the one that wins, and
+        it is the union of what is actually knowable.
+      required:
+        - arm_id
+        - name
+        - description
+        - cost_tier
+        - endpoint
+        - base_url
+        - port
+        - implemented
+        - implemented_in_stage
+        - status
+      properties:
+        arm_id:
+          type: string
+          example: "planner"
+        name:
+          type: string
+          example: "Planner"
+        description:
+          type: string
+        capabilities:
+          type: array
+          description: Routing tags
+          items:
+            type: string
+          example: ["task_planning", "goal_decomposition"]
+        cost_tier:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 3
+        endpoint:
+          type: string
+          description: |
+            The PATH on the arm. Both SDKs documented this as "Kubernetes service
+            endpoint", meaning a URL, while every arm returns a path -- two meanings
+            under one name is how a client builds
+            `http://planner-arm:8001http://planner-arm:8001/plan`. The URL is
+            `base_url`.
+          example: "/plan"
+        base_url:
+          type: string
+          description: Where the arm listens
+          example: "http://planner-arm:8001"
+        port:
+          type: integer
+          example: 8001
+        input_schema:
+          type: object
+          description: |
+            JSON Schema of the request, generated from the shared contract model the
+            arm uses as its own FastAPI model. `{}` for an arm with no contract yet --
+            an invented schema would be worse than an empty one, because a client can
+            act on it.
+          additionalProperties: true
+        output_schema:
+          type: object
+          additionalProperties: true
+        implemented:
+          type: boolean
+          description: Whether the endpoint does anything yet
+          example: false
+        implemented_in_stage:
+          type: integer
+          description: Which v1.0.0 stage builds it
+          example: 8
+        publishes:
+          type: array
+          description: Neural Ring artifact types this arm produces
+          items:
+            type: string
+        subscribes:
+          type: array
+          description: Neural Ring artifact types this arm consumes
+          items:
+            type: string
+        peers:
+          type: array
+          description: |
+            Arms this one may call directly. The orchestrator issues a peer capability
+            token ONLY for an edge named here, so an undeclared edge is unreachable
+            rather than merely discouraged.
+          items:
+            type: string
+        status:
+          type: string
+          enum: ["healthy", "degraded", "unavailable"]
+          description: Result of the orchestrator's last probe
+          example: "unavailable"
+        last_probed_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Null if never probed
+
+    ListArmsResponse:
+      type: object
+      description: |
+        Wrapped in an object rather than returned as a bare array: a top-level JSON
+        array cannot grow a field -- paging, a probe timestamp, a count -- without
+        breaking every client that parses it.
+      required:
+        - arms
+      properties:
+        arms:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArmCapability'
+
+    RegisterArmRequest:
       type: object
       required:
+        - arm_id
+      properties:
+        arm_id:
+          type: string
+          description: Must already be in the roster
+          example: "planner"
+        capabilities:
+          type: array
+          items:
+            type: string
+        implemented:
+          type: boolean
+        publishes:
+          type: array
+          items:
+            type: string
+        subscribes:
+          type: array
+          items:
+            type: string
+        peers:
+          type: array
+          description: |
+            Advisory: the orchestrator issues peer tokens from its own roster, so an
+            arm cannot widen its own reach by registering a peer the roster does not
+            name.
+          items:
+            type: string
+
+    RegisterArmResponse:
+      type: object
+      required:
+        - status
+        - arm
+      properties:
+        status:
+          type: string
+          enum: ["updated"]
+          description: Always 'updated'; registration cannot introduce an arm
+        arm:
+          $ref: '#/components/schemas/ArmCapability'
+
+    ErrorResponse:
+      type: object
+      description: |
+        The one error envelope, shared by the orchestrator, the reflex layer and all
+        eight arms -- FastAPI's 422 validation failures included.
+
+        It was previously `{"error": "<string>"}` here, and FastAPI's own
+        `{"detail": [...]}` for request-validation failures, so the shape a client saw
+        depended on which kind of error occurred and `error` was sometimes a string
+        and sometimes an object. A client could not parse that without branching on
+        the status code.
+
+        `request_id` is always present: an error a user can quote back is the
+        difference between a support conversation and a guessing game.
+      required:
         - error
-        - request_id
       properties:
         error:
-          type: string
-          description: Error message
-          example: "Task blocked by security policy"
-
-        request_id:
-          type: string
-          description: Request identifier for debugging
-          example: "req-123e4567"
-
-        details:
           type: object
-          description: Additional error details
-          additionalProperties: true
-          example:
-            pii_detected: true
-            pii_matches:
-              - pii_type: "Email"
-                value: "user@example.com"
-                position: 42
-                confidence: 0.95
+          required:
+            - code
+            - message
+            - details
+            - request_id
+            - timestamp
+          properties:
+            code:
+              type: string
+              description: |
+                Stable, machine-readable. Branch on this, never on the message.
+              enum:
+                - bad_request
+                - blocked_by_policy
+                - unauthenticated
+                - forbidden
+                - not_found
+                - conflict
+                - validation_error
+                - rate_limited
+                - not_implemented
+                - unavailable
+                - internal_error
+                - http_error
+              example: "blocked_by_policy"
+
+            message:
+              type: string
+              description: |
+                Human-readable. For an unhandled exception this is deliberately
+                generic -- the text routinely contains a connection string or a
+                fragment of the input, and the request id is what ties the response
+                to the traceback instead.
+              example: "Task blocked by security policy"
+
+            details:
+              type: object
+              description: |
+                Always present, `{}` when empty, so a client never branches on its
+                absence. Never contains a rejected value: a validation failure
+                reports the field and the reason, not the input.
+              additionalProperties: true
+              example:
+                pii_detected: true
+                pii_matches:
+                  - pii_type: "email"
+                    start: 42
+                    end: 58
+                    confidence: 0.95
+
+            request_id:
+              type: string
+              description: |
+                Echoed from `X-Request-ID` when the caller sent one, minted otherwise.
+                Never absent.
+              example: "req-123e4567"
+
+            timestamp:
+              type: string
+              format: date-time
+              example: "2026-09-12T12:00:00Z"
 
     # ==============================================================================
     # Enums
@@ -930,6 +1269,22 @@ components:
   # ==============================================================================
 
   securitySchemes:
+    armRegistrationToken:
+      type: http
+      scheme: bearer
+      description: |
+        The shared secret required by `POST /arms/register`, configured as
+        `ORCHESTRATOR_ARM_REGISTRATION_TOKEN`. When it is unset — the default — the
+        endpoint refuses every write with 503.
+
+        This is a deliberate stopgap with a known replacement. Stage 5 makes the
+        orchestrator the signing authority for per-arm capability tokens, and this
+        secret goes away with it. It exists because shipping the one mutating
+        endpoint on the registry ungated would put the hole in `main` before the
+        traffic that makes it exploitable arrives.
+
+        No other endpoint is authenticated yet.
+
     BearerAuth:
       type: http
       scheme: bearer

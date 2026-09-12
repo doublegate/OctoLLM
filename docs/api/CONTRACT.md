@@ -1,8 +1,9 @@
 # The OctoLLM API Contract
 
-**Status**: Frozen as of Stage 3 of the v1.0.0 plan (2026-09-12)
+**Status**: Frozen as of Stage 3 of the v1.0.0 plan (2026-09-12); extended in Stage 4
+with the arm surface, the registry and the shared error envelope
 **Enforced by**: `make port-map-check`, `make compose-env-check`,
-`services/orchestrator/tests/test_reflex_contract.py`
+`make sdk-parity-check`, `services/orchestrator/tests/test_reflex_contract.py`
 
 Four mutually incompatible descriptions of these APIs existed: the implementations,
 the OpenAPI specifications, `docs/api/component-contracts.md`, and the two SDKs.
@@ -119,10 +120,107 @@ A single nested envelope, in **both** services, including FastAPI's 422:
            "request_id": "...", "timestamp": "..."}}
 ```
 
-FastAPI's default `{"detail": [...]}` for validation errors is the one remaining
-exception, and it is a defect rather than a design: the app already returns the
-nested envelope for `HTTPException`, so the shape a client sees depends on which
-kind of error occurred. Fixed alongside the shared framework in Stage 4.
+All nine services install the same handlers, from `octollm_common.errors`. FastAPI's
+default `{"detail": [...]}` for validation failures was the one hole — the app
+returned the nested envelope for `HTTPException` and FastAPI's own shape for a 422, so
+a client had to branch on the status code to know which to parse. It is closed as of
+Stage 4.
+
+`code` is the field to branch on; the message is for a human. `details` is always
+present, `{}` when empty, so a client never branches on its absence, and it **never
+contains a rejected value**: a validation failure reports the field and the reason,
+not the input, and a request blocked for PII reports the span rather than the text.
+`request_id` is always present — echoed from `X-Request-ID` when the caller sent one,
+minted otherwise.
+
+| `code` | Status |
+|---|---|
+| `bad_request` | 400 |
+| `blocked_by_policy` | 400 (reflex layer found PII or an injection attempt) |
+| `unauthenticated` / `forbidden` | 401 / 403 |
+| `not_found` / `conflict` | 404 / 409 |
+| `validation_error` | 422 |
+| `rate_limited` | 429 |
+| `not_implemented` | 501 (an arm that Stage 8 has not built yet) |
+| `unavailable` | 503 |
+| `internal_error` | 500 |
+
+## The arm surface
+
+Every arm is built by `octollm_common.create_arm_app`, which gives all eight the same
+five routes and no room to differ:
+
+| Route | |
+|---|---|
+| `GET /health` | liveness while the process is up |
+| `GET /ready` | readiness, stating `implemented` honestly |
+| `GET /capabilities` | the arm's `ArmSpec`, which is what the registry reads |
+| `GET /metrics` | Prometheus exposition |
+| `POST <endpoint>` | the arm's own work — `/plan`, `/search`, `/code`, `/validate`, `/check`, `/execute` |
+
+An arm with no implementation answers its own endpoint with **501 naming the stage
+that builds it**, and its OpenAPI document still describes the request body it *will*
+accept. A stub that answered convincingly would make an unimplemented arm
+indistinguishable from a working one.
+
+`GET /capabilities` also carries `publishes`, `subscribes` and `peers` — the Neural
+Ring topology — so the orchestrator learns it from a call it was already making. The
+orchestrator issues a peer capability token **only** for an edge named in `peers`.
+
+## The arm registry
+
+`GET /arms` on the orchestrator, **not** `GET /capabilities`. Both SDKs shipped this
+call against an endpoint that did not exist and disagreed about the path; on an arm,
+`/capabilities` means that arm's own declaration, and reusing the name here for "the
+arms I know about" is the kind of near-collision that produces a wrong client later.
+
+All eight arms are returned, including the two that are not built yet, each naming its
+stage. An arm that is down reports `status: "unavailable"` rather than disappearing:
+"down" and "does not exist" are different facts, and the registry is the only thing
+that can tell them apart. `?refresh=true` probes each arm's `/capabilities` first; it
+is off by default because this endpoint is polled.
+
+`POST /arms/register` **updates** an arm in the roster. Three refusals, and each one
+is the same principle applied at a different layer:
+
+- **503 when no token is configured**, which is the default. The service has no
+  authentication at all until Stage 5 issues capability tokens, and an unauthenticated
+  caller able to restate an arm's details controls where the orchestrator sends work.
+  It fails closed. `ORCHESTRATOR_ARM_REGISTRATION_TOKEN` enables it; the token is
+  compared in constant time. This is a stopgap that Stage 5 removes.
+- **403 for an unknown `arm_id`.** The orchestrator is the sole signing authority for
+  capability tokens, so an endpoint that could add an arm to the routing table is a
+  privilege escalation with extra steps.
+- **422 for `base_url`, `port`, `endpoint` or `cost_tier`**, which are not accepted
+  fields. A caller able to restate where an arm listens could redirect that arm's
+  traffic to a host it controls — every task step routed there, carrying task content
+  and, from Stage 5, a capability token. Refusing an unknown `arm_id` while accepting
+  a `base_url` on a known one would have been no protection at all. An arm moves when
+  its configuration moves, not when it says so.
+
+The read path (`GET /arms`) stays open: the roster is public information — it is in the
+README, the specs and both SDKs — and gating it would break health dashboards without
+protecting anything.
+
+The roster itself is `octollm_common.roster`, read by each arm's service module, by the
+registry, and by `scripts/ci/check_port_map.py`. There is no second list.
+
+## The SDKs are checked against the implementations
+
+`make sdk-parity-check` derives what each service serves from the code that serves it
+and asserts that both SDKs call the same `(method, path)` set, that every call resolves
+or is listed with the stage that will build it, and that each framework arm's spec
+documents exactly what it serves.
+
+Every SDK test mocks its transport, which is why four broken calls survived 56 green
+tests: a mock is built from the same wrong belief as the client. `POST /preprocess`
+became `POST /process`, `POST /tasks` became `POST /submit`, and `GET /capabilities`
+became `GET /arms`. Sixteen clients also defaulted to the wrong port — the same
+whole-slot shift as the specs — which `make port-map-check` now covers.
+
+Calls that are deliberately ahead of the implementation are listed in
+`scripts/ci/check_sdk_parity.py` with the stage that builds them, and an entry that
+outlives its stage fails the check.
 
 ## What was deleted
 

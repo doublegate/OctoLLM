@@ -12,14 +12,14 @@ from ..models import HealthResponse, SafetyRequest, SafetyResult
 
 class SafetyGuardianClient(BaseClient):
     """
-    Client for Safety Guardian Arm service (port 8007).
+    Client for Safety Guardian Arm service (port 8005).
 
     Detects PII, prompt injection, and harmful content to ensure safe operation.
     """
 
     def __init__(
         self,
-        base_url: str = "http://localhost:8007",
+        base_url: str = "http://localhost:8005",
         api_key: str | None = None,
         bearer_token: str | None = None,
         **kwargs: Any,
@@ -28,7 +28,7 @@ class SafetyGuardianClient(BaseClient):
         Initialize Safety Guardian client.
 
         Args:
-            base_url: Safety Guardian service URL (default: http://localhost:8007)
+            base_url: Safety Guardian service URL (default: http://localhost:8005)
             api_key: API key for authentication
             bearer_token: JWT bearer token for authentication
             **kwargs: Additional arguments for BaseClient
