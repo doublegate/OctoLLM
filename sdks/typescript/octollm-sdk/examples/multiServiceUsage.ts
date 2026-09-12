@@ -4,12 +4,7 @@
  * Demonstrates using multiple specialized arms directly.
  */
 
-import {
-  PlannerClient,
-  CoderClient,
-  JudgeClient,
-  SafetyClient
-} from '../src';
+import { PlannerClient, CoderClient, JudgeClient, SafetyClient, OctoLLMError } from '../src';
 
 async function main() {
   const apiKey = process.env.OCTOLLM_API_KEY || 'your-api-key-here';
@@ -100,7 +95,12 @@ async function main() {
       });
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (!(error instanceof OctoLLMError)) {
+      console.error('Error:', error instanceof Error ? error.message : String(error));
+      return;
+    }
+
     console.error('Error:', error.message);
     if (error.statusCode) {
       console.error(`Status Code: ${error.statusCode}`);

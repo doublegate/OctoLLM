@@ -31,7 +31,7 @@ export interface TaskRequest {
   /** Success conditions for validation */
   acceptance_criteria?: string[];
   /** Additional context and metadata */
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   /** Resource budget constraints */
   budget?: ResourceBudget;
 }
@@ -137,9 +137,9 @@ export interface TaskStatusResponse {
  */
 export interface JSONSchema {
   type: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   required?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -203,7 +203,7 @@ export interface PreprocessRequest {
   /** Input text to preprocess */
   input: string;
   /** Optional request context */
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 /**
@@ -215,7 +215,7 @@ export interface PreprocessResponse {
   /** Preprocessed output (if not cached) */
   output?: string;
   /** Cached response (if cached) */
-  response?: any;
+  response?: unknown;
   /** PII detection results */
   pii_detected: boolean;
   /** Injection attack detection results */
@@ -348,7 +348,7 @@ export interface SearchRequest {
   /** Minimum relevance score (0.0-1.0) */
   min_score?: number;
   /** Filter by metadata */
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
 }
 
 /**
@@ -362,7 +362,7 @@ export interface SearchResult {
   /** Relevance score (0.0-1.0) */
   score: number;
   /** Document metadata */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -399,7 +399,7 @@ export interface CodeRequest {
   /** Programming language */
   language?: string;
   /** Additional context */
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 /**

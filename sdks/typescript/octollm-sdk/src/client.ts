@@ -98,12 +98,12 @@ export class BaseClient {
   /**
    * Make HTTP request
    */
-  protected async request<T = any>(
+  protected async request<T = unknown>(
     method: string,
     path: string,
     options: {
-      data?: any;
-      params?: Record<string, any>;
+      data?: unknown;
+      params?: Record<string, unknown>;
       headers?: Record<string, string>;
       requestId?: string;
       timeout?: number;
@@ -126,7 +126,7 @@ export class BaseClient {
     try {
       const response: AxiosResponse<T> = await this.axiosInstance.request(config);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.handleError(error);
     }
   }
@@ -134,10 +134,19 @@ export class BaseClient {
   /**
    * Handle HTTP errors and convert to appropriate exception
    */
-  private handleError(error: any): OctoLLMError {
+  private handleError(error: unknown): OctoLLMError {
+    if (!axios.isAxiosError(error)) {
+      return new APIError({
+        error: {
+          code: 'unknown_error',
+          message: error instanceof Error ? error.message : String(error)
+        }
+      });
+    }
+
     if (error.response) {
       const statusCode = error.response.status;
-      const errorData: ErrorResponse = error.response.data || {
+      const errorData: ErrorResponse = (error.response.data as ErrorResponse) || {
         error: { code: 'unknown', message: error.message }
       };
 
@@ -151,12 +160,13 @@ export class BaseClient {
         case 400:
         case 422:
           return new ValidationError(errorData);
-        case 429:
+        case 429: {
           const retryAfter = error.response.headers['retry-after'];
           return new RateLimitError(
             errorData,
-            retryAfter ? parseInt(retryAfter) : undefined
+            retryAfter ? parseInt(retryAfter, 10) : undefined
           );
+        }
         case 503:
           return new ServiceUnavailableError(errorData);
         default:
@@ -179,38 +189,38 @@ export class BaseClient {
    * Convenience methods for HTTP verbs
    */
 
-  protected async get<T = any>(
+  protected async get<T = unknown>(
     path: string,
     options?: Omit<Parameters<typeof this.request>[2], 'data'>
   ): Promise<T> {
     return this.request<T>('GET', path, options);
   }
 
-  protected async post<T = any>(
+  protected async post<T = unknown>(
     path: string,
-    data?: any,
+    data?: unknown,
     options?: Parameters<typeof this.request>[2]
   ): Promise<T> {
     return this.request<T>('POST', path, { ...options, data });
   }
 
-  protected async put<T = any>(
+  protected async put<T = unknown>(
     path: string,
-    data?: any,
+    data?: unknown,
     options?: Parameters<typeof this.request>[2]
   ): Promise<T> {
     return this.request<T>('PUT', path, { ...options, data });
   }
 
-  protected async patch<T = any>(
+  protected async patch<T = unknown>(
     path: string,
-    data?: any,
+    data?: unknown,
     options?: Parameters<typeof this.request>[2]
   ): Promise<T> {
     return this.request<T>('PATCH', path, { ...options, data });
   }
 
-  protected async delete<T = any>(
+  protected async delete<T = unknown>(
     path: string,
     options?: Parameters<typeof this.request>[2]
   ): Promise<T> {
