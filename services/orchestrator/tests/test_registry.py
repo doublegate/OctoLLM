@@ -12,8 +12,12 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 
+from app.config import get_settings, reset_settings
 from app.main import app
 from app.registry import ArmRegistry, RegisterArmRequest, UnknownArm, reset_registry
+
+TOKEN = "registration-token-for-tests"
+AUTH = {"authorization": f"Bearer {TOKEN}"}
 
 
 @pytest.fixture(autouse=True)
@@ -22,6 +26,21 @@ def _fresh_registry():
     reset_registry()
     yield
     reset_registry()
+
+
+@pytest.fixture
+def registration_enabled(monkeypatch: pytest.MonkeyPatch):
+    """
+    Turn the registration endpoint on for the tests that exercise it.
+
+    It is **off** unless a token is configured, which is why this fixture has to
+    exist at all -- and the tests that do not request it prove the default.
+    """
+    reset_settings()
+    monkeypatch.setenv("ORCHESTRATOR_ARM_REGISTRATION_TOKEN", TOKEN)
+    assert get_settings().arm_registration_token == TOKEN
+    yield
+    reset_settings()
 
 
 @pytest.fixture
@@ -114,10 +133,12 @@ def test_the_response_is_an_object_not_a_bare_array(client: TestClient):
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.usefixtures("registration_enabled")
 def test_registering_a_known_arm_updates_it(client: TestClient):
     response = client.post(
         "/arms/register",
         json={"arm_id": "planner", "implemented": True, "capabilities": ["planning"]},
+        headers=AUTH,
     )
 
     assert response.status_code == 200
@@ -128,6 +149,7 @@ def test_registering_a_known_arm_updates_it(client: TestClient):
     assert body["arm"]["last_probed_at"] is not None
 
 
+@pytest.mark.usefixtures("registration_enabled")
 def test_registration_cannot_introduce_an_arm(client: TestClient):
     """
     The security property this endpoint is shaped around.
@@ -136,24 +158,39 @@ def test_registration_cannot_introduce_an_arm(client: TestClient):
     extra steps: the orchestrator is the sole signing authority for capability tokens,
     so an arm it can be told about is an arm it can be told to trust.
     """
-    response = client.post("/arms/register", json={"arm_id": "attacker-arm"})
+    response = client.post("/arms/register", json={"arm_id": "attacker-arm"}, headers=AUTH)
 
     assert response.status_code == 403
     assert "Stage 5" in response.json()["error"]["message"]
     assert len(client.get("/arms").json()["arms"]) == 8, "nothing was added"
 
 
-def test_an_arm_cannot_move_its_own_port_or_endpoint(client: TestClient):
+@pytest.mark.usefixtures("registration_enabled")
+@pytest.mark.parametrize(
+    "field, value",
+    [
+        ("port", 9999),
+        ("endpoint", "/hijacked"),
+        ("base_url", "http://attacker.example"),
+        ("cost_tier", 1),
+    ],
+)
+def test_registration_cannot_move_an_arm(client: TestClient, field: str, value: object):
     """
-    Those are roster facts. An arm that could restate them could redirect its own
-    traffic, which makes the roster advisory and the registry authoritative in the
-    wrong direction.
+    The escalation that matters most, and the one this endpoint got wrong first.
+
+    A caller able to restate where an arm listens redirects that arm's traffic to a
+    host it controls -- every task step routed there, carrying task content and, from
+    Stage 5, a capability token. Refusing an unknown `arm_id` while accepting a
+    `base_url` on a known one would have been no protection at all.
     """
-    response = client.post("/arms/register", json={"arm_id": "planner", "port": 9999})
+    response = client.post("/arms/register", json={"arm_id": "planner", field: value}, headers=AUTH)
 
-    assert response.status_code == 422, "the field is not accepted at all"
+    assert response.status_code == 422, f"{field} must not be accepted at all"
+    assert client.get("/arms").json()["arms"][0]["base_url"] == "http://planner-arm:8001"
 
 
+@pytest.mark.usefixtures("registration_enabled")
 def test_omitted_fields_are_left_alone_rather_than_cleared(client: TestClient):
     """
     A registration that names only `implemented` must not blank the capabilities. The
@@ -162,9 +199,79 @@ def test_omitted_fields_are_left_alone_rather_than_cleared(client: TestClient):
     """
     before = client.get("/arms").json()["arms"][0]["capabilities"]
 
-    after = client.post("/arms/register", json={"arm_id": "planner", "implemented": True})
+    after = client.post(
+        "/arms/register", json={"arm_id": "planner", "implemented": True}, headers=AUTH
+    )
 
     assert after.json()["arm"]["capabilities"] == before
+
+
+# ---------------------------------------------------------------------------
+# Authentication on the one mutating endpoint
+# ---------------------------------------------------------------------------
+
+
+def test_registration_is_disabled_unless_a_token_is_configured(client: TestClient):
+    """
+    Fail **closed**.
+
+    This service has no authentication at all until Stage 5 issues capability tokens,
+    and an unauthenticated caller able to restate an arm's details controls where the
+    orchestrator sends work: mark a stub `implemented` and the dispatcher sends it
+    work it cannot do; blank an arm's `capabilities` and it stops being selected.
+    Refusing by default is the only correct posture for that.
+    """
+    reset_settings()
+
+    response = client.post(
+        "/arms/register", json={"arm_id": "planner", "implemented": True}, headers=AUTH
+    )
+
+    assert response.status_code == 503
+    assert "ORCHESTRATOR_ARM_REGISTRATION_TOKEN" in response.json()["error"]["message"]
+    assert client.get("/arms").json()["arms"][0]["implemented"] is False, "no mutation"
+
+
+@pytest.mark.usefixtures("registration_enabled")
+@pytest.mark.parametrize(
+    "headers",
+    [
+        pytest.param({}, id="no header"),
+        pytest.param({"authorization": "Bearer wrong-token"}, id="wrong token"),
+        pytest.param({"authorization": TOKEN}, id="no scheme"),
+        pytest.param({"authorization": f"Basic {TOKEN}"}, id="wrong scheme"),
+        pytest.param({"authorization": "Bearer "}, id="empty token"),
+    ],
+)
+def test_a_bad_token_is_refused_and_changes_nothing(client: TestClient, headers: dict):
+    response = client.post(
+        "/arms/register", json={"arm_id": "planner", "implemented": True}, headers=headers
+    )
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "unauthenticated"
+    assert client.get("/arms").json()["arms"][0]["implemented"] is False, "no mutation"
+
+
+@pytest.mark.usefixtures("registration_enabled")
+def test_the_refusal_does_not_disclose_the_configured_token(client: TestClient):
+    """An error message that quotes the secret defeats the point of having one."""
+    response = client.post(
+        "/arms/register",
+        json={"arm_id": "planner"},
+        headers={"authorization": "Bearer wrong-token"},
+    )
+
+    assert TOKEN not in response.text
+
+
+def test_listing_arms_needs_no_token(client: TestClient):
+    """
+    The read path stays open. It exposes the roster, which is public information --
+    it is in the README, the specs and both SDKs -- and gating it would break the
+    health dashboards without protecting anything.
+    """
+    assert client.get("/arms").status_code == 200
 
 
 # ---------------------------------------------------------------------------

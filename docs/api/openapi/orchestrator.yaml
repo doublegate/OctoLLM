@@ -379,13 +379,28 @@ paths:
         `arm_id` gets 403 naming Stage 5, which adds token-gated dynamic
         registration -- not a silent accept.
 
-        An omitted field is left alone rather than cleared. `port`, `endpoint` and
-        `cost_tier` cannot be set at all: they are roster facts, and an arm able to
-        restate them could redirect its own traffic.
+        It also **cannot move an arm**. `base_url`, `port`, `endpoint` and `cost_tier`
+        are not accepted at all: they are roster facts, and a caller able to restate
+        where an arm listens could redirect that arm's traffic to a host it
+        controls -- every task step routed there, carrying task content and, from
+        Stage 5, a capability token. Refusing an unknown `arm_id` while accepting a
+        `base_url` on a known one would have been no protection at all.
+
+        An omitted field is left alone rather than cleared.
+
+        **Authentication.** This endpoint requires a bearer token matching
+        `ORCHESTRATOR_ARM_REGISTRATION_TOKEN`, and is **disabled with 503 when no
+        token is configured** — which is the default. The service has no other
+        authentication until Stage 5 issues capability tokens, and an unauthenticated
+        caller able to restate an arm's details controls where the orchestrator sends
+        work, so it fails closed. The read path (`GET /arms`) stays open: the roster
+        is public information.
 
       tags:
         - registry
       operationId: register_arm
+      security:
+        - armRegistrationToken: []
       requestBody:
         required: true
         content:
@@ -400,6 +415,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RegisterArmResponse'
+        '401':
+          description: The bearer token is absent or does not match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Registration is not enabled on this deployment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: The arm id is not in the roster
           content:
@@ -1094,9 +1121,6 @@ components:
           type: string
           description: Must already be in the roster
           example: "planner"
-        base_url:
-          type: string
-          description: Override where this arm listens
         capabilities:
           type: array
           items:
@@ -1245,6 +1269,22 @@ components:
   # ==============================================================================
 
   securitySchemes:
+    armRegistrationToken:
+      type: http
+      scheme: bearer
+      description: |
+        The shared secret required by `POST /arms/register`, configured as
+        `ORCHESTRATOR_ARM_REGISTRATION_TOKEN`. When it is unset — the default — the
+        endpoint refuses every write with 503.
+
+        This is a deliberate stopgap with a known replacement. Stage 5 makes the
+        orchestrator the signing authority for per-arm capability tokens, and this
+        secret goes away with it. It exists because shipping the one mutating
+        endpoint on the registry ungated would put the hole in `main` before the
+        traffic that makes it exploitable arrives.
+
+        No other endpoint is authenticated yet.
+
     BearerAuth:
       type: http
       scheme: bearer

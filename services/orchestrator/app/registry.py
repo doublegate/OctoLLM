@@ -147,12 +147,22 @@ class ListArmsResponse(BaseModel):
 
 
 class RegisterArmRequest(BaseModel):
-    """What `POST /arms/register` accepts. Matches the shape both SDKs already send."""
+    """
+    What `POST /arms/register` accepts.
+
+    Note what is **absent**: `base_url`, `port`, `endpoint` and `cost_tier`. Those are
+    roster facts, derived from configuration the orchestrator owns. A caller able to
+    restate where an arm listens could redirect that arm's traffic to a host it
+    controls -- every task step routed there, carrying task content and, from Stage 5,
+    a capability token. That is the same escalation the unknown-`arm_id` 403 prevents,
+    and refusing one while permitting the other would have been no protection at all.
+
+    An arm moves when its configuration moves, not when it says so.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
     arm_id: str = Field(..., min_length=1)
-    base_url: str | None = Field(None, description="Override where this arm listens")
     capabilities: list[str] | None = Field(None, description="Replaces the routing tags")
     implemented: bool | None = Field(None, description="Whether the endpoint works yet")
     publishes: list[str] | None = None

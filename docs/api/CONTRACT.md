@@ -180,12 +180,27 @@ stage. An arm that is down reports `status: "unavailable"` rather than disappear
 that can tell them apart. `?refresh=true` probes each arm's `/capabilities` first; it
 is off by default because this endpoint is polled.
 
-`POST /arms/register` **updates** an arm in the roster and refuses an unknown `arm_id`
-with **403**. The orchestrator is the sole signing authority for capability tokens, so
-an endpoint that could add an arm to the routing table is a privilege escalation with
-extra steps. `port`, `endpoint` and `cost_tier` cannot be registered at all — they are
-roster facts, and an arm able to restate them could redirect its own traffic. Dynamic
-registration arrives in Stage 5, gated on an orchestrator-issued token.
+`POST /arms/register` **updates** an arm in the roster. Three refusals, and each one
+is the same principle applied at a different layer:
+
+- **503 when no token is configured**, which is the default. The service has no
+  authentication at all until Stage 5 issues capability tokens, and an unauthenticated
+  caller able to restate an arm's details controls where the orchestrator sends work.
+  It fails closed. `ORCHESTRATOR_ARM_REGISTRATION_TOKEN` enables it; the token is
+  compared in constant time. This is a stopgap that Stage 5 removes.
+- **403 for an unknown `arm_id`.** The orchestrator is the sole signing authority for
+  capability tokens, so an endpoint that could add an arm to the routing table is a
+  privilege escalation with extra steps.
+- **422 for `base_url`, `port`, `endpoint` or `cost_tier`**, which are not accepted
+  fields. A caller able to restate where an arm listens could redirect that arm's
+  traffic to a host it controls — every task step routed there, carrying task content
+  and, from Stage 5, a capability token. Refusing an unknown `arm_id` while accepting
+  a `base_url` on a known one would have been no protection at all. An arm moves when
+  its configuration moves, not when it says so.
+
+The read path (`GET /arms`) stays open: the roster is public information — it is in the
+README, the specs and both SDKs — and gating it would break health dashboards without
+protecting anything.
 
 The roster itself is `octollm_common.roster`, read by each arm's service module, by the
 registry, and by `scripts/ci/check_port_map.py`. There is no second list.

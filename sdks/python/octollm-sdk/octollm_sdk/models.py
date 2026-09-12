@@ -175,12 +175,16 @@ class RegisterArmRequest(BaseModel):
     than cleared -- the difference between PATCH and PUT semantics is not academic
     when the cleared field is what routing matches on.
 
-    `port`, `endpoint` and `cost_tier` are absent on purpose: they are roster facts,
-    and an arm able to restate them could redirect its own traffic.
+    `base_url`, `port`, `endpoint` and `cost_tier` are absent on purpose: they are
+    roster facts, and a caller able to restate where an arm listens could redirect
+    that arm's traffic to a host it controls.
+
+    The endpoint also requires a bearer token and is **disabled** unless the
+    orchestrator has one configured, so construct the client with
+    `bearer_token=...` to use it.
     """
 
     arm_id: str = Field(..., min_length=1, description="Must already be in the roster")
-    base_url: str | None = Field(None, description="Override where this arm listens")
     capabilities: list[str] | None = Field(None, description="Replaces the routing tags")
     implemented: bool | None = Field(None, description="Whether the endpoint works yet")
     publishes: list[str] | None = Field(None, description="Ring artifact types produced")

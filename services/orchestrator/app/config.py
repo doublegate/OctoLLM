@@ -76,6 +76,18 @@ class Settings(BaseSettings):
         default=60, ge=10, le=600, description="Circuit breaker reset timeout"
     )
 
+    # Arm registry
+    arm_registration_token: str | None = Field(
+        None,
+        description=(
+            "Shared secret required by POST /arms/register. Unset by default, and "
+            "the endpoint then refuses every write: an unauthenticated caller able "
+            "to restate an arm's details is a routing-control primitive, and this "
+            "service has no other authentication until Stage 5 issues capability "
+            "tokens. Fail closed, not open."
+        ),
+    )
+
     # Task Configuration
     task_default_timeout: int = Field(
         default=300, ge=1, le=3600, description="Default task timeout"

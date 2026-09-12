@@ -213,14 +213,16 @@ export interface ListArmsResponse {
  * cleared -- the difference between PATCH and PUT semantics is not academic when the
  * cleared field is what routing matches on.
  *
- * `port`, `endpoint` and `cost_tier` are absent on purpose. They are roster facts, and
- * an arm able to restate them could redirect its own traffic.
+ * `base_url`, `port`, `endpoint` and `cost_tier` are absent on purpose. They are roster
+ * facts, and a caller able to restate where an arm listens could redirect that arm's
+ * traffic to a host it controls.
+ *
+ * The endpoint requires a bearer token and is **disabled** unless the orchestrator has
+ * one configured, so construct the client with `bearerToken`.
  */
 export interface RegisterArmRequest {
   /** Unique arm identifier; must already be in the roster */
   arm_id: string;
-  /** Override where this arm listens */
-  base_url?: string;
   /** Replaces the routing tags */
   capabilities?: string[];
   /** Whether the endpoint works yet */

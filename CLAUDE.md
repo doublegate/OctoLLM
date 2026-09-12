@@ -393,3 +393,10 @@ failure by adding a PENDING entry for a path that is simply wrong.
   `pyproject.toml`, which does not. The two manifests need reconciling before that image
   can serve traced traffic.
 - The six Python arms answer their own endpoint with 501. Stage 8 implements them.
+- **The orchestrator has no authentication.** `POST /submit` and `GET /tasks/{id}` are
+  open. The one mutating registry endpoint is gated on a shared secret that is unset by
+  default (`ORCHESTRATOR_ARM_REGISTRATION_TOKEN`), which makes it fail closed; that is a
+  stopgap, and Stage 5's capability tokens replace it. Do not add another mutating
+  endpoint without a gate, and do not accept a field that says where a service lives --
+  `base_url`, `port` and `endpoint` are configuration the orchestrator owns, and a
+  caller able to restate them redirects that service's traffic.

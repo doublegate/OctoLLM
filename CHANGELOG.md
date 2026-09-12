@@ -34,10 +34,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   degrading to the fake.
 - **`GET /arms` and `POST /arms/register`** on the orchestrator. Both SDKs have shipped
   a `listArms()` call since Phase 0 against an endpoint that did not exist — and
-  against two different paths. Registration **updates** an arm in the roster and
-  refuses an unknown `arm_id` with 403: the orchestrator is the sole signing authority
-  for capability tokens, so an endpoint that could add an arm to the routing table
-  would be a privilege escalation with extra steps.
+  against two different paths.
+
+  Registration is **disabled unless `ORCHESTRATOR_ARM_REGISTRATION_TOKEN` is set**, and
+  then requires a matching bearer token compared in constant time. It refuses an
+  unknown `arm_id` with 403, and does not accept `base_url`, `port`, `endpoint` or
+  `cost_tier` at all. Each refusal is the same principle: this service has no
+  authentication until Stage 5, and a caller able to restate an arm's details — where
+  it listens most of all — controls where the orchestrator sends work. It fails closed.
+  `GET /arms` stays open, because the roster is public information.
 - **`scripts/ci/check_sdk_parity.py`** (`make sdk-parity-check`) — asserts that both
   SDKs call the same `(method, path)` set, that every call resolves to a route derived
   from the code that serves it, that each framework arm's OpenAPI spec documents

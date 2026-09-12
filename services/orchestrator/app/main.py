@@ -15,6 +15,7 @@ Usage:
     uvicorn app.main:app --reload --port 8000
 """
 
+import hmac
 import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -425,20 +426,89 @@ async def list_arms(refresh: bool = False) -> ListArmsResponse:
     return ListArmsResponse(arms=arms)
 
 
+def _authorize_registration(http_request: Request) -> None:
+    """
+    Gate the one mutating endpoint on the registry.
+
+    This service has **no authentication at all** until Stage 5 issues capability
+    tokens, and an unauthenticated caller able to restate an arm's details is a
+    routing-control primitive: mark a stub `implemented` and the dispatcher will send
+    work to something that cannot do it; blank an arm's `capabilities` and it stops
+    being selected at all.
+
+    So the endpoint fails **closed**. With no `ORCHESTRATOR_ARM_REGISTRATION_TOKEN`
+    configured it refuses every write with 503, which is the correct default for a
+    deployment that has not thought about this yet. With one configured it requires a
+    matching bearer token, compared in constant time.
+
+    This is a stopgap with a known replacement: Stage 5 makes the orchestrator the
+    signing authority for per-arm capability tokens, and this shared secret goes away
+    with it. It is here because shipping the endpoint ungated would put the hole in
+    `main` before the traffic that makes it exploitable arrives.
+
+    Raises:
+        503: No token is configured, so registration is disabled.
+        401: The bearer token is absent or does not match.
+    """
+    settings = get_settings()
+    configured = settings.arm_registration_token
+
+    if not configured:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=error_body(
+                code="unavailable",
+                message=(
+                    "Arm registration is disabled. Set ORCHESTRATOR_ARM_REGISTRATION_TOKEN "
+                    "to enable it. It is off by default because this service has no "
+                    "authentication until Stage 5 of the v1.0.0 plan, and an "
+                    "unauthenticated caller able to restate an arm's details can "
+                    "control where the orchestrator sends work."
+                ),
+                request_id=getattr(http_request.state, "request_id", "unknown"),
+            ),
+        )
+
+    header = http_request.headers.get("authorization", "")
+    scheme, _, presented = header.partition(" ")
+    # `compare_digest` rather than `==`: the comparison is against a secret, and a
+    # short-circuiting compare leaks its prefix through timing.
+    if scheme.lower() != "bearer" or not hmac.compare_digest(presented, configured):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=error_body(
+                code="unauthenticated",
+                message="Arm registration requires a valid bearer token.",
+                request_id=getattr(http_request.state, "request_id", "unknown"),
+            ),
+        )
+
+
 @app.post("/arms/register", response_model=RegisterArmResponse, tags=["registry"])
-async def register_arm(request: RegisterArmRequest) -> RegisterArmResponse:
+async def register_arm(request: RegisterArmRequest, http_request: Request) -> RegisterArmResponse:
     """
     Update what the orchestrator knows about an arm.
 
-    This deliberately **cannot introduce an arm**. An endpoint that lets a caller add
-    an arm to the routing table is a privilege escalation with extra steps: the
-    orchestrator is the sole signing authority for capability tokens, so an arm it can
-    be told about is an arm it can be told to trust. An unknown `arm_id` gets 403
-    naming Stage 5, which adds token-gated dynamic registration -- not a silent accept.
+    Two things this deliberately cannot do, for the same reason:
+
+    - **It cannot introduce an arm.** The orchestrator is the sole signing authority
+      for capability tokens, so an arm it can be told about is an arm it can be told
+      to trust. An unknown `arm_id` gets 403 naming Stage 5.
+    - **It cannot move an arm.** `base_url`, `port` and `endpoint` are not accepted at
+      all. A caller able to restate where an arm listens could redirect that arm's
+      traffic to a host it controls -- every task step routed there, carrying task
+      content and, from Stage 5, a capability token.
+
+    And it requires a bearer token, refusing every write when none is configured. See
+    `_authorize_registration`.
 
     Raises:
+        503: Registration is not enabled on this deployment.
+        401: The bearer token is absent or wrong.
         403: The `arm_id` is not in the roster.
     """
+    _authorize_registration(http_request)
+
     try:
         arm = get_registry().register(request)
     except UnknownArm as exc:

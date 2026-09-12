@@ -145,13 +145,38 @@ assert arms['red-team']['implemented_in_stage'] == 11
 " || fail "GET /arms did not describe the running stack"
 pass "registry lists 8 arms; the 5 running ones probe healthy"
 
-# Registration must not be able to introduce an arm: the orchestrator is the sole
-# signing authority for capability tokens, so an arm it can be told about is an arm
-# it can be told to trust.
+# An unauthenticated caller must not be able to mutate the registry at all. Which
+# refusal arrives depends on deployment: 503 when no registration token is configured
+# (the default, and the reason the endpoint fails closed), 401 when one is configured
+# and the caller has not presented it. Asserting the PROPERTY rather than one status
+# keeps this true in both, and 200 or 403 here would each mean the write was reached.
 status="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${ORCHESTRATOR}/arms/register" \
-  -H 'content-type: application/json' -d '{"arm_id":"smoke-test-attacker"}' || true)"
-[ "${status}" = "403" ] || fail "registering an unknown arm returned ${status}, expected 403"
-pass "registering an unknown arm is refused (403)"
+  -H 'content-type: application/json' \
+  -d '{"arm_id":"planner","implemented":true}' || true)"
+case "${status}" in
+  401|503) pass "unauthenticated registration is refused (${status})" ;;
+  *) fail "unauthenticated registration returned ${status}; expected 401 or 503" ;;
+esac
+
+# And the refusal must have changed nothing. A check that only reads the status code
+# would pass against a service that answered 401 after applying the write.
+curl -fsS "${ORCHESTRATOR}/arms" | python3 -c "
+import json, sys
+planner = json.load(sys.stdin)['arms'][0]
+assert planner['implemented'] is False, 'the refused write was applied anyway'
+assert planner['base_url'] == 'http://planner-arm:8001', 'the arm moved'
+" || fail "an unauthenticated registration mutated the registry"
+pass "the refused registration changed nothing"
+
+# Where an arm listens is not a registrable field at all: a caller able to restate it
+# could redirect that arm's traffic to a host it controls.
+status="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${ORCHESTRATOR}/arms/register" \
+  -H 'content-type: application/json' \
+  -d '{"arm_id":"planner","base_url":"http://smoke-test-attacker.invalid"}' || true)"
+case "${status}" in
+  401|422|503) pass "base_url is not a registrable field (${status})" ;;
+  *) fail "registering a base_url returned ${status}; it must never be accepted" ;;
+esac
 
 # An unimplemented arm must answer 501 naming its stage -- never a plausible fake,
 # which would make an unimplemented arm indistinguishable from a working one.

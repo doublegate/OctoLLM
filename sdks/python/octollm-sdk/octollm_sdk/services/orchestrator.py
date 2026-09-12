@@ -224,9 +224,14 @@ class OrchestratorClient(BaseClient):
         an arm it can be told to trust. Dynamic registration arrives in Stage 5, gated
         on an orchestrator-issued token.
 
-        An omitted field is left alone rather than cleared, and `port`, `endpoint` and
-        `cost_tier` cannot be set at all: they are roster facts, and an arm able to
-        restate them could redirect its own traffic.
+        An omitted field is left alone rather than cleared, and `base_url`, `port`,
+        `endpoint` and `cost_tier` cannot be set at all: they are roster facts, and a
+        caller able to restate where an arm listens could redirect that arm's traffic
+        to a host it controls.
+
+        Requires a bearer token, and the endpoint is **disabled** unless the
+        orchestrator has one configured -- construct this client with
+        `bearer_token=...`.
 
         Args:
             request: The arm id and the fields to update.
@@ -236,6 +241,8 @@ class OrchestratorClient(BaseClient):
             RegisterArmResponse with the arm as the registry now holds it
 
         Raises:
+            ServiceUnavailableError: Registration is not enabled on this deployment.
+            AuthenticationError: The bearer token is absent or wrong.
             AuthorizationError: The arm id is not in the roster.
 
         Example:
