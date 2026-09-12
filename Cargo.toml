@@ -22,28 +22,34 @@ categories = ["web-programming", "development-tools"]
 
 [workspace.dependencies]
 # Async runtime
-tokio = { version = "1.48", features = ["full"] }
+tokio = { version = "1.53", features = ["full"] }
 tokio-util = "0.7"
 
 # Web framework
-axum = { version = "0.8.6", features = ["ws", "macros"] }
-tower = { version = "0.5", features = ["full"] }
-tower-http = { version = "0.6", features = ["fs", "trace", "cors", "compression-full"] }
-hyper = { version = "1.5", features = ["full"] }
+axum = { version = "0.8.9", features = ["ws", "macros"] }
+tower = { version = "0.5.3", features = ["full"] }
+tower-http = { version = "0.7", features = ["fs", "trace", "cors", "compression-full"] }
+hyper = { version = "1.11", features = ["full"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+# NOTE: serde_yaml is deprecated upstream — 0.9.34+deprecated (Mar 2024) is its final
+# release and there is nothing newer to move to. No workspace member inherits it today,
+# so it does not appear in Cargo.lock and ships in nothing. Pick a maintained successor
+# (serde_norway / serde_yaml_ng) before wiring YAML support up, rather than inheriting this.
 serde_yaml = "0.9"
-toml = "0.8"
+toml = "1.1"
 
 # HTTP client
-reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+# reqwest 0.13 renamed the `rustls-tls` feature to `rustls`; 0.13 also makes rustls
+# (with the platform certificate verifier) the default TLS backend.
+reqwest = { version = "0.13", features = ["json", "rustls"], default-features = false }
 
 # Redis
-redis = { version = "0.27", features = ["tokio-comp", "connection-manager"] }
-deadpool = "0.12"
-deadpool-redis = "0.18"
+redis = { version = "1.7", features = ["tokio-comp", "connection-manager"] }
+deadpool = "0.13"
+deadpool-redis = "0.23"
 
 # Error handling
 anyhow = "1.0"
@@ -52,7 +58,7 @@ thiserror = "2.0"
 # Logging and tracing
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-tracing-opentelemetry = "0.28"
+tracing-opentelemetry = "0.33"
 
 # Metrics
 prometheus = { version = "0.14", features = ["process"] }
@@ -61,30 +67,33 @@ prometheus = { version = "0.14", features = ["process"] }
 chrono = { version = "0.4", features = ["serde"] }
 
 # Regex
-regex = "1.11"
-fancy-regex = "0.14"
+regex = "1.13"
+fancy-regex = "0.19"
 
 # UUID
-uuid = { version = "1.11", features = ["v4", "serde"] }
+uuid = { version = "1.26", features = ["v4", "serde"] }
 
 # Environment
-dotenv = "0.15"
-config = "0.14"
-num_cpus = "1.16"
+# dotenvy, not dotenv: the original is unmaintained (RUSTSEC-2021-0141) and is the
+# only advisory cargo-audit reports against this lockfile. dotenvy is the
+# API-compatible maintained fork.
+dotenvy = "0.15.7"
+config = "0.15"
+num_cpus = "1.17"
 
 # Security
-jsonwebtoken = "9.3"
-argon2 = "0.5"
-sha2 = "0.10"
+jsonwebtoken = "11.0"
+argon2 = "0.6"
+sha2 = "0.11"
 
 # Static initialization
-lazy_static = "1.4"
+lazy_static = "1.5"
 
 # Testing
-mockall = "0.13"
-criterion = { version = "0.5", features = ["html_reports"] }
-proptest = "1.6"
-fake = "2.10"
+mockall = "0.15"
+criterion = { version = "0.8", features = ["html_reports"] }
+proptest = "1.11"
+fake = "5.1"
 
 [profile.dev]
 opt-level = 0

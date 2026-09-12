@@ -39,7 +39,7 @@ tracing-subscriber = { workspace = true }
 prometheus = { workspace = true }
 
 # Environment
-dotenv = { workspace = true }
+dotenvy = { workspace = true }
 
 # Security
 jsonwebtoken = { workspace = true }

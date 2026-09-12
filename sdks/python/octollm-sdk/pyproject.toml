@@ -7,7 +7,7 @@ name = "octollm-sdk"
 version = "0.4.0"
 description = "Python SDK for OctoLLM distributed AI architecture"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 license = {text = "Apache-2.0"}
 authors = [
     {name = "OctoLLM Core Team", email = "octollm@example.com"}
@@ -17,32 +17,31 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 dependencies = [
     "httpx>=0.28.1",
-    "pydantic>=2.12.0",
-    "python-dateutil>=2.9.0",
+    "pydantic>=2.13.5",
+    "python-dateutil>=2.9.0.post0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.3.4",
-    "pytest-asyncio>=0.24.0",
-    "pytest-cov>=6.0.0",
-    "black>=25.11.0",
-    "ruff>=0.14.4",
-    "mypy>=1.14.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+    "black>=26.5.1",
+    "ruff>=0.16.7",
+    "mypy>=2.3.1",
 ]
 
 [project.urls]
-Homepage = "https://github.com/octollm/octollm"
-Documentation = "https://docs.octollm.example.com"
-Repository = "https://github.com/octollm/octollm"
-Issues = "https://github.com/octollm/octollm/issues"
+Homepage = "https://github.com/doublegate/OctoLLM"
+Documentation = "https://github.com/doublegate/OctoLLM/tree/main/docs"
+Repository = "https://github.com/doublegate/OctoLLM"
+Issues = "https://github.com/doublegate/OctoLLM/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -50,7 +49,7 @@ include = ["octollm_sdk*"]
 
 [tool.black]
 line-length = 100
-target-version = ['py311']
+target-version = ['py314']
 
 [tool.isort]
 profile = "black"
@@ -59,10 +58,21 @@ known_first_party = ["octollm_sdk"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py314"
+
+# NOTE: this section declares no `select`, so ruff applies its own default rule set
+# (413 rules as of 0.16.7) rather than the narrower selection in the root pyproject.toml.
+# That is why SDK files are linted more strictly than services/. It is worth deciding
+# deliberately — either declare a `select` here, or keep the broad set knowing it grows
+# with each ruff release. The CI ruff version is pinned in .github/workflows/lint.yml so
+# a new release cannot turn a green main red on its own.
+[tool.ruff.lint.per-file-ignores]
+# The example scripts exist to demonstrate failure handling to a reader; a catch-all in
+# the driver is the illustrated behaviour, not an oversight.
+"examples/**/*.py" = ["BLE001"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.14"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
