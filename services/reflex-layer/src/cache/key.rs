@@ -4,6 +4,7 @@
 //! Keys are namespace-prefixed to avoid collisions between different cache categories.
 
 use crate::cache::types::CacheError;
+use crate::hex::encode_lower;
 use sha2::{Digest, Sha256};
 
 /// Default namespace for cache keys
@@ -55,7 +56,7 @@ pub fn generate_cache_key(namespace: &str, data: &str) -> Result<String, CacheEr
     // Hash using SHA-256
     let mut hasher = Sha256::new();
     hasher.update(normalized.as_bytes());
-    let hash = format!("{:x}", hasher.finalize());
+    let hash = encode_lower(&hasher.finalize());
 
     // Take first 32 characters for reasonable key length
     Ok(format!("{}:cache:{}", namespace, &hash[..32]))

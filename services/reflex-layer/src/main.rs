@@ -102,7 +102,7 @@ async fn main() -> ReflexResult<()> {
     // Create Redis client (wrapped in Arc for sharing)
     let redis_client = Arc::new(RedisClient::new(config.redis.clone()).map_err(|e| {
         ReflexError::Redis(redis::RedisError::from((
-            redis::ErrorKind::IoError,
+            redis::ErrorKind::Io,
             "Failed to create Redis client",
             e.to_string(),
         )))

@@ -2,6 +2,7 @@
 //
 // This module provides various strategies for redacting detected PII.
 
+use crate::hex::encode_lower;
 use crate::pii::types::PIIMatch;
 use sha2::{Digest, Sha256};
 
@@ -82,7 +83,7 @@ fn hash_replacement(pii_match: &PIIMatch) -> String {
     let mut hasher = Sha256::new();
     hasher.update(pii_match.matched_text.as_bytes());
     let hash_result = hasher.finalize();
-    format!("{:x}", hash_result)[..16].to_string()
+    encode_lower(&hash_result)[..16].to_string()
 }
 
 /// Keep last 4 characters, replace rest with 'X'
