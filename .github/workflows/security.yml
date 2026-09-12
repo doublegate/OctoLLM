@@ -58,12 +58,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      # python-3.12, not 3.14, while the rest of this file is on 3.14: snyk/actions
-      # publishes no 3.13 or 3.14 image (python-3.12 is the newest variant in the repo).
-      # Harmless here -- Snyk reads pyproject.toml and poetry.lock, not the interpreter.
-      # Bump when snyk ships a newer image.
+      # Pinned to a commit SHA, not @master: a floating ref on a third-party action lets
+      # its behaviour change with no diff in this repository. snyk/actions publishes no
+      # release tags, so a SHA is the only pin available.
+      #
+      # python-3.12, while the rest of this file is on 3.14: snyk/actions publishes no
+      # 3.13 or 3.14 image (python-3.12 is the newest variant in that repo). Harmless
+      # here -- Snyk reads pyproject.toml and poetry.lock, not the interpreter.
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/python-3.12@master
+        uses: snyk/actions/python-3.12@12140f4059e244892ae643824a95459a102120dd  # master as of 2026-08-03
         continue-on-error: true  # Don't fail build on vulnerabilities yet
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

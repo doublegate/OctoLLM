@@ -1,5 +1,7 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+# setuptools >=83: everything below it is covered by a GitHub advisory, and a
+# build-system floor is what Dependabot reads as the installed version.
+requires = ["setuptools>=83.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
