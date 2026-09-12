@@ -72,23 +72,26 @@ graph TB
     RING ==> RESP([Response<br/>screened by Safety Guardian])
     REF -. "cache hit — answered<br/>without cognition" .-> RESP
 
+    style RING fill:#e3f2fd,stroke:#64b5f6,stroke-width:2px,color:#0d47a1
+
     classDef live fill:#c8e6c9,stroke:#66bb6a,stroke-width:2px,color:#1b5e20
-    classDef partial fill:#ffe0b2,stroke:#ffa726,stroke-width:2px,color:#e65100
+    classDef head fill:#ffcdd2,stroke:#e57373,stroke-width:3px,color:#b71c1c
     classDef stub fill:#d7ccc8,stroke:#a1887f,stroke-width:2px,color:#4e342e
-    classDef todo fill:#eceff1,stroke:#b0bec5,stroke-width:1px,color:#37474f
+    classDef todo fill:#ffffff,stroke:#90a4ae,stroke-width:1px,color:#37474f
     classDef io fill:#fafafa,stroke:#9e9e9e,stroke-width:2px,color:#212121
 
     class REF live
-    class BRAIN partial
+    class BRAIN head
     class EXEC stub
     class MEM,PLAN,RETR,CODE,JUDGE,SAFE,RED todo
     class REQ,RESP io
 ```
 
-<sub>**Green** implemented · **amber** partial · **brown** a 21-line stub · **grey** not started.
-Seven of the eight arms do not exist yet, and the diagram says so rather than drawing an
-aspiration. The dotted lines are the head's delegation; the solid ring between the arms is
-the path that does **not** go through it.</sub>
+<sub>**Red** is the head · **green** implemented · **brown** a 21-line stub · **white** not
+started. Seven of the eight arms in the blue field do not exist yet, and the diagram says
+so rather than drawing an aspiration. Solid edges are paths that run today; dotted ones are
+the head's delegation and the two reflex bypasses. The ring between the arms is the path
+that does **not** go through the head at all.</sub>
 
 ### The reflex arc: it should not take the whole head to make an arm react
 
