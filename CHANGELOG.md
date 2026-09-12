@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **`Makefile` — the commands `README.md` has told people to run since Phase 0.** There
+  was no Makefile; `make lint`, `make test` and `make help` were documented and absent.
+  Every check is now a target, **and every CI job invokes that target** rather than
+  keeping its own copy of the commands, so a local pass and a CI pass mean the same
+  thing by construction. `make verify` is the whole gate in one command. Targets for
+  things that do not work yet (`up`, `smoke`, `eval`, `release-gate`) are deliberately
+  absent rather than stubbed; they arrive with the stages that make them true.
+- **`VERSION` + `scripts/version_sync.py`.** Twenty-two places stated a version, holding six
+  different answers at once — `0.1.0` (root, orchestrator, and the settings and
+  `HealthResponse` defaults), `0.3.0` (six OpenAPI specs), `0.4.0` (both SDKs), `0.9.0`
+  (both telemetry fallbacks, so every emitted span would have carried it), `1.0.0` and
+  `1.1.0` (two more specs), `1.2.0` (the README badge). Three are reachable at runtime:
+  `GET /health` reported `0.1.0` while spans reported `0.9.0` while the README
+  advertised `1.2.0`, for the same process. `make version-check` now fails on any
+  disagreement. Each site must match its pattern **exactly once** — zero or two matches
+  is a hard error naming the site, since a pattern that stopped matching would report
+  success having changed nothing.
+- **ADR-008** recording the versioning decision and the Makefile rule. The ADR index had
+  also been missing **ADR-006 and ADR-007** since they were written; both are now listed.
 - **`ci.yml`: a CI gate that can actually fail.** Replaces `lint.yml` and `test.yml`,
   which between them could not: every test step was `|| echo "No tests found yet
   (Phase 0)"` *and* `continue-on-error: true`, and the summary job announced "Phase 0:
@@ -64,6 +83,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   requires a bundler plugin, and the TypeScript SDK builds with plain `tsc`.
 
 ### Changed
+- **The version is `0.5.0` everywhere.** Not `1.2.0`: the repository has zero git tags,
+  and neither `octollm-sdk` on PyPI nor `octollm-sdk` on npm exists, so every number in
+  the tree was a claim about an artifact that was never built. `0.5.0` is one past
+  `0.4.0` — the highest number attached to anything resembling a real artifact — and the
+  first version here that is true in every place it appears. `1.0.0` is cut at Stage 12.
+- Three orchestrator tests asserted `"0.1.0"` as a literal and broke on the first sync.
+  They now assert against `app.__version__`, which stays in step with `VERSION`. A
+  literal makes every release a test edit, which teaches a suite to be edited rather
+  than trusted.
 - Migrated the orchestrator's ORM models to SQLAlchemy 2.0 `DeclarativeBase` /
   `Mapped` / `mapped_column`, replacing the deprecated
   `sqlalchemy.ext.declarative.declarative_base` and dropping two
@@ -212,6 +240,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Live mdBook site: https://doublegate.github.io/OctoLLM/
 - Phase 0 historical record: docs/phases/PHASE-0-README-ARCHIVE.md
 - 100% documentation coverage of all project content
+
+### Removed
+- `services/orchestrator/setup.py` — duplicated PEP 621 metadata `pyproject.toml`
+  already carried, was referenced by nothing, and declared `python_requires=">=3.11"`
+  against a project requiring `>=3.14,<3.15`.
 
 ## [1.2.0] - 2025-11-15 - Sprint 1.2: Orchestrator Integration (Phase 2 Complete) ✅
 

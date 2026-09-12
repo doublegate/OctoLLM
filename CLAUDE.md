@@ -208,21 +208,44 @@ Implementation is underway. This is no longer a documentation-only repository.
 
 ### Commands
 
+**Use the Makefile.** Every check is a make target and **every CI job invokes that
+target**, so a local pass and a CI pass mean the same thing by construction. Running the
+underlying commands by hand is fine for a tight loop, but the target is the contract.
+
 ```bash
-# Rust
-cargo clippy --workspace --all-targets --all-features -- -D warnings
-cargo test --workspace
-cargo fmt --all -- --check
+make help              # every target, self-documenting
+make install           # both Python packages (editable) + the TypeScript SDK
+make verify            # everything ci-gate runs: version-check, lint, typecheck, all suites
+make format            # rewrite Python and Rust in place (the only target that MODIFIES)
 
-# Python (root: ruff + black are the blocking CI gates)
-ruff check .
-black --check .
-cd services/orchestrator && pytest tests/          # 150 tests
-cd sdks/python/octollm-sdk && pytest tests/        # 28 tests
+# Individual gates
+make lint-python lint-rust lint-typescript lint-config
+make typecheck
+make test              # 240 Rust + 150 orchestrator + 28 Python SDK + 28 TypeScript SDK
 
-# TypeScript SDK
-cd sdks/typescript/octollm-sdk && npm ci && npm run build && npm test && npm run lint
+# The one suite `make verify` leaves out (needs Redis on :6379)
+make redis && make test-rust-redis && make redis-stop
 ```
+
+Targets for things that do not work yet (`up`, `smoke`, `eval`, `release-gate`) are
+**deliberately absent rather than stubbed** — they arrive with the stages that make them
+true (compose in Stage 3, evals in Stage 10, release in Stage 12). Do not add a target
+that does not work; that is the failure this repository is being dug out of.
+
+### Versioning
+
+`VERSION` at the repository root is the single source of truth, propagated to **22 sites**
+by `scripts/version_sync.py` and enforced by `make version-check`. Before it existed those
+22 sites held six different answers at once, three of them reachable at runtime: `/health`
+reported `0.1.0` while spans reported `0.9.0` while the README badge said `1.2.0`.
+
+Current version is **0.5.0**, and it is the first number here that is true everywhere.
+The repository has **zero git tags** and neither SDK exists on PyPI or npm, so every
+earlier number — including the 13 releases in `CHANGELOG.md` — was a claim about an
+artifact that was never built. `1.0.0` is cut at Stage 12. Rationale: `docs/adr/008`.
+
+To bump: `echo X.Y.Z > VERSION && make version-sync`, then commit. Never write a version
+literal into a test — assert against `__version__`.
 
 ### What CI does and does not cover
 
