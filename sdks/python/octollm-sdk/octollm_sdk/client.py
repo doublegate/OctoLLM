@@ -4,7 +4,7 @@ Base HTTP client with retry logic for OctoLLM SDK.
 
 import asyncio
 import uuid
-from typing import Any, Dict, Optional
+from typing import Any
 
 import httpx
 
@@ -36,8 +36,8 @@ class BaseClient:
     def __init__(
         self,
         base_url: str,
-        api_key: Optional[str] = None,
-        bearer_token: Optional[str] = None,
+        api_key: str | None = None,
+        bearer_token: str | None = None,
         timeout: float = 30.0,
         max_retries: int = 3,
         verify_ssl: bool = True,
@@ -61,7 +61,7 @@ class BaseClient:
         self.verify_ssl = verify_ssl
 
     @classmethod
-    def from_config(cls, config: OctoLLMConfig, base_url: str) -> "BaseClient":
+    def from_config(cls, config: OctoLLMConfig, base_url: str) -> BaseClient:
         """
         Create client from configuration object.
 
@@ -85,7 +85,7 @@ class BaseClient:
         """Generate unique request ID for tracing."""
         return f"req_{uuid.uuid4().hex[:16]}"
 
-    def _get_headers(self, additional_headers: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+    def _get_headers(self, additional_headers: dict[str, str] | None = None) -> dict[str, str]:
         """
         Build request headers with authentication and tracing.
 
@@ -122,13 +122,20 @@ class BaseClient:
         Raises:
             Appropriate OctoLLM exception based on status code
         """
+        # Only a non-JSON body is exceptional. A body that parses but is not an object
+        # (a bare list or string) is checked with isinstance rather than by catching the
+        # AttributeError that .get() would raise, so a genuine AttributeError raised from
+        # somewhere else is not silently swallowed.
         try:
             error_data = response.json()
-            message = error_data.get("message", response.text)
+        except ValueError:  # json.JSONDecodeError subclasses ValueError
+            error_data = None
+
+        message = response.text or f"HTTP {response.status_code}"
+        details = None
+        if isinstance(error_data, dict):
+            message = error_data.get("message") or message
             details = error_data.get("details")
-        except Exception:
-            message = response.text or f"HTTP {response.status_code}"
-            details = None
 
         # Map status codes to exceptions
         if response.status_code == 401:
@@ -187,9 +194,9 @@ class BaseClient:
         self,
         method: str,
         path: str,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         **kwargs: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Make HTTP request with retry logic.
 
@@ -243,7 +250,7 @@ class BaseClient:
             except httpx.RequestError as e:
                 # Network errors, connection errors, etc.
                 last_exception = APIError(
-                    message=f"Request failed: {str(e)}",
+                    message=f"Request failed: {e!s}",
                     request_id=request_id,
                 )
                 if attempt < self.max_retries - 1:
@@ -273,26 +280,20 @@ class BaseClient:
             raise last_exception
         raise APIError("Request failed after retries", request_id=request_id)
 
-    async def get(
-        self, path: str, timeout: Optional[float] = None, **kwargs: Any
-    ) -> Dict[str, Any]:
+    async def get(self, path: str, timeout: float | None = None, **kwargs: Any) -> dict[str, Any]:
         """Make GET request."""
         return await self._request("GET", path, timeout=timeout, **kwargs)
 
-    async def post(
-        self, path: str, timeout: Optional[float] = None, **kwargs: Any
-    ) -> Dict[str, Any]:
+    async def post(self, path: str, timeout: float | None = None, **kwargs: Any) -> dict[str, Any]:
         """Make POST request."""
         return await self._request("POST", path, timeout=timeout, **kwargs)
 
-    async def put(
-        self, path: str, timeout: Optional[float] = None, **kwargs: Any
-    ) -> Dict[str, Any]:
+    async def put(self, path: str, timeout: float | None = None, **kwargs: Any) -> dict[str, Any]:
         """Make PUT request."""
         return await self._request("PUT", path, timeout=timeout, **kwargs)
 
     async def delete(
-        self, path: str, timeout: Optional[float] = None, **kwargs: Any
-    ) -> Dict[str, Any]:
+        self, path: str, timeout: float | None = None, **kwargs: Any
+    ) -> dict[str, Any]:
         """Make DELETE request."""
         return await self._request("DELETE", path, timeout=timeout, **kwargs)

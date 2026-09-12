@@ -210,7 +210,7 @@ mod tests {
     fn test_error_severity() {
         assert!(ReflexError::Config("test".to_string()).is_severe());
         assert!(ReflexError::Redis(redis::RedisError::from((
-            redis::ErrorKind::IoError,
+            redis::ErrorKind::Io,
             "connection failed"
         )))
         .is_severe());

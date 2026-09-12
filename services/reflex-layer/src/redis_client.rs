@@ -76,7 +76,7 @@ impl RedisClient {
                             max_retries, e
                         );
                         return Err(ReflexError::Redis(redis::RedisError::from((
-                            redis::ErrorKind::IoError,
+                            redis::ErrorKind::Io,
                             "Connection pool exhausted",
                         ))));
                     }
@@ -111,7 +111,7 @@ impl RedisClient {
             Ok(response) => {
                 error!("Unexpected ping response: {}", response);
                 Err(ReflexError::Redis(redis::RedisError::from((
-                    redis::ErrorKind::ResponseError,
+                    redis::ErrorKind::Client,
                     "Unexpected ping response",
                 ))))
             }

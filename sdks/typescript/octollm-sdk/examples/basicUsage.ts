@@ -4,7 +4,7 @@
  * Demonstrates submitting a task and polling for completion.
  */
 
-import { OrchestratorClient, TaskRequest } from '../src';
+import { OrchestratorClient, TaskRequest, OctoLLMError } from '../src';
 
 async function main() {
   // Initialize client with API key
@@ -92,7 +92,12 @@ async function main() {
       console.log('\nTimeout: Task did not complete in time');
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (!(error instanceof OctoLLMError)) {
+      console.error('Error:', error instanceof Error ? error.message : String(error));
+      return;
+    }
+
     console.error('Error:', error.message);
     if (error.statusCode) {
       console.error(`Status Code: ${error.statusCode}`);

@@ -25,12 +25,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v7
         with:
-          python-version: '3.11'
+          python-version: '3.14'
 
       - name: Install Bandit
         run: pip install bandit[toml]
@@ -43,7 +43,7 @@ jobs:
         continue-on-error: false
 
       - name: Upload Bandit report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: bandit-report
@@ -56,10 +56,14 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
+      # python-3.12, not 3.14, while the rest of this file is on 3.14: snyk/actions
+      # publishes no 3.13 or 3.14 image (python-3.12 is the newest variant in the repo).
+      # Harmless here -- Snyk reads pyproject.toml and poetry.lock, not the interpreter.
+      # Bump when snyk ships a newer image.
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/python-3.11@master
+        uses: snyk/actions/python-3.12@master
         continue-on-error: true  # Don't fail build on vulnerabilities yet
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -67,7 +71,7 @@ jobs:
           args: --severity-threshold=high --all-projects --sarif-file-output=snyk.sarif
 
       - name: Upload Snyk results to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: snyk.sarif
@@ -79,13 +83,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
+      # actions-rs/* was archived in 2023 and no longer receives Node-runtime or
+      # security updates; setup-rust-toolchain is the maintained replacement and is
+      # what the lint/test workflows already use.
       - name: Set up Rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: actions-rust-lang/setup-rust-toolchain@v2
         with:
           toolchain: stable
-          override: true
 
       - name: Install cargo-audit
         run: cargo install cargo-audit
@@ -107,7 +113,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload audit reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: cargo-audit-reports
@@ -119,14 +125,16 @@ jobs:
   container-scan:
     name: Container Scan - Trivy
     runs-on: ubuntu-latest
-    if: false  # Disabled in Phase 0 - no Dockerfiles exist yet (will enable in Phase 1)
+    # The Dockerfiles referenced below all exist. This stays disabled only because it
+    # builds four images on every push; enable it when the CI budget allows.
+    if: false  # Not enabled yet - see note above
     strategy:
       matrix:
         service: [orchestrator, reflex-layer, planner, executor]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Build Docker image
         run: |
@@ -142,7 +150,7 @@ jobs:
           fi
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.36.0
         with:
           image-ref: octollm/${{ matrix.service }}:latest
           format: 'sarif'
@@ -150,7 +158,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: 'trivy-${{ matrix.service }}.sarif'
@@ -161,12 +169,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0  # Full history for gitleaks
 
       - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
@@ -188,7 +196,7 @@ jobs:
           echo "- ✅ Snyk: Checking Python dependencies for vulnerabilities"
           echo "- ✅ cargo-audit: Auditing Rust dependencies"
           echo "- ✅ gitleaks: Scanning for exposed secrets"
-          echo "- ⏸️  Trivy (Container): Disabled until Phase 1 (no Dockerfiles yet)"
+          echo "- ⏸️  Trivy (Container): Disabled (build cost), not missing Dockerfiles"
           echo ""
           echo "Expected Results:"
           echo "- Bandit: Clean (minimal code in Phase 0)"

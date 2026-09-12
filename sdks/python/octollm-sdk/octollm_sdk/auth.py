@@ -6,12 +6,8 @@ Supports two authentication methods:
 2. Bearer token authentication (Authorization header) - for inter-service communication
 """
 
-from typing import Dict, Optional
 
-
-def get_auth_headers(
-    api_key: Optional[str] = None, bearer_token: Optional[str] = None
-) -> Dict[str, str]:
+def get_auth_headers(api_key: str | None = None, bearer_token: str | None = None) -> dict[str, str]:
     """
     Generate authentication headers for API requests.
 
@@ -32,7 +28,7 @@ def get_auth_headers(
     Note:
         If both api_key and bearer_token are provided, bearer_token takes precedence.
     """
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
 
     if bearer_token:
         headers["Authorization"] = f"Bearer {bearer_token}"
@@ -63,10 +59,7 @@ def validate_api_key(api_key: str) -> bool:
     if not api_key.startswith("sk-"):
         return False
 
-    if len(api_key) < 20:
-        return False
-
-    return True
+    return len(api_key) >= 20
 
 
 def validate_bearer_token(token: str) -> bool:
@@ -92,7 +85,4 @@ def validate_bearer_token(token: str) -> bool:
         return False
 
     # Each part should be non-empty base64
-    if not all(parts):
-        return False
-
-    return True
+    return all(parts)

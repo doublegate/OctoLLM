@@ -7,6 +7,7 @@
 pub mod cache;
 pub mod config;
 pub mod error;
+pub mod hex;
 pub mod injection;
 pub mod pii;
 pub mod ratelimit;

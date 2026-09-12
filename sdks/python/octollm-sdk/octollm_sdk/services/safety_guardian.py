@@ -4,8 +4,6 @@ Safety Guardian Arm service client.
 The Safety Guardian specializes in PII detection and content filtering.
 """
 
-from typing import Optional
-
 from ..client import BaseClient
 from ..models import HealthResponse, SafetyRequest, SafetyResult
 
@@ -20,8 +18,8 @@ class SafetyGuardianClient(BaseClient):
     def __init__(
         self,
         base_url: str = "http://localhost:8007",
-        api_key: Optional[str] = None,
-        bearer_token: Optional[str] = None,
+        api_key: str | None = None,
+        bearer_token: str | None = None,
         **kwargs,
     ):
         """
@@ -40,7 +38,7 @@ class SafetyGuardianClient(BaseClient):
             **kwargs,
         )
 
-    async def health(self, timeout: Optional[float] = None) -> HealthResponse:
+    async def health(self, timeout: float | None = None) -> HealthResponse:
         """Check service health."""
         response = await self.get("/health", timeout=timeout)
         return HealthResponse(**response)
@@ -48,7 +46,7 @@ class SafetyGuardianClient(BaseClient):
     async def check_safety(
         self,
         request: SafetyRequest,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> SafetyResult:
         """
         Perform safety checks on content.
@@ -86,7 +84,7 @@ class SafetyGuardianClient(BaseClient):
         )
         return SafetyResult(**response)
 
-    async def get_capabilities(self, timeout: Optional[float] = None) -> dict:
+    async def get_capabilities(self, timeout: float | None = None) -> dict:
         """Get safety guardian capabilities."""
         response = await self.get("/capabilities", timeout=timeout)
         return response

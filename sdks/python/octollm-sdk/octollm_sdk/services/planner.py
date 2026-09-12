@@ -4,8 +4,6 @@ Planner Arm service client.
 The Planner specializes in task decomposition and execution planning.
 """
 
-from typing import Optional
-
 from ..client import BaseClient
 from ..models import HealthResponse, PlanRequest, PlanResponse
 
@@ -20,8 +18,8 @@ class PlannerClient(BaseClient):
     def __init__(
         self,
         base_url: str = "http://localhost:8002",
-        api_key: Optional[str] = None,
-        bearer_token: Optional[str] = None,
+        api_key: str | None = None,
+        bearer_token: str | None = None,
         **kwargs,
     ):
         """
@@ -40,7 +38,7 @@ class PlannerClient(BaseClient):
             **kwargs,
         )
 
-    async def health(self, timeout: Optional[float] = None) -> HealthResponse:
+    async def health(self, timeout: float | None = None) -> HealthResponse:
         """Check service health."""
         response = await self.get("/health", timeout=timeout)
         return HealthResponse(**response)
@@ -48,7 +46,7 @@ class PlannerClient(BaseClient):
     async def create_plan(
         self,
         request: PlanRequest,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> PlanResponse:
         """
         Create an execution plan for a task.
@@ -83,7 +81,7 @@ class PlannerClient(BaseClient):
         )
         return PlanResponse(**response)
 
-    async def get_capabilities(self, timeout: Optional[float] = None) -> dict:
+    async def get_capabilities(self, timeout: float | None = None) -> dict:
         """Get planner capabilities."""
         response = await self.get("/capabilities", timeout=timeout)
         return response

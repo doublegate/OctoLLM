@@ -2,8 +2,10 @@
 //
 // This benchmark suite validates that PII detection meets the <5ms P95 latency target.
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+// criterion 0.8 deprecates its own `black_box` re-export in favour of the std one.
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use reflex_layer::{redact, PIIConfig, PIIDetector, PatternSet, RedactionStrategy};
+use std::hint::black_box;
 
 /// Benchmark individual pattern detection
 fn bench_individual_patterns(c: &mut Criterion) {

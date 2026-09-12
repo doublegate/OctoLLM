@@ -4,8 +4,6 @@ Coder Arm service client.
 The Coder specializes in code generation, debugging, and refactoring.
 """
 
-from typing import Optional
-
 from ..client import BaseClient
 from ..models import CodeRequest, CodeResponse, HealthResponse
 
@@ -20,8 +18,8 @@ class CoderClient(BaseClient):
     def __init__(
         self,
         base_url: str = "http://localhost:8005",
-        api_key: Optional[str] = None,
-        bearer_token: Optional[str] = None,
+        api_key: str | None = None,
+        bearer_token: str | None = None,
         **kwargs,
     ):
         """
@@ -40,7 +38,7 @@ class CoderClient(BaseClient):
             **kwargs,
         )
 
-    async def health(self, timeout: Optional[float] = None) -> HealthResponse:
+    async def health(self, timeout: float | None = None) -> HealthResponse:
         """Check service health."""
         response = await self.get("/health", timeout=timeout)
         return HealthResponse(**response)
@@ -48,7 +46,7 @@ class CoderClient(BaseClient):
     async def generate_code(
         self,
         request: CodeRequest,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> CodeResponse:
         """
         Generate, debug, or refactor code.
@@ -85,7 +83,7 @@ class CoderClient(BaseClient):
         )
         return CodeResponse(**response)
 
-    async def get_capabilities(self, timeout: Optional[float] = None) -> dict:
+    async def get_capabilities(self, timeout: float | None = None) -> dict:
         """Get coder capabilities."""
         response = await self.get("/capabilities", timeout=timeout)
         return response

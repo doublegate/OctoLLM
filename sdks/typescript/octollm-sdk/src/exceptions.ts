@@ -6,7 +6,7 @@ export interface ErrorResponse {
   error: {
     code: string;
     message: string;
-    details?: Record<string, any>;
+    details?: Record<string, unknown>;
   };
   request_id?: string;
 }
@@ -17,7 +17,7 @@ export interface ErrorResponse {
 export class OctoLLMError extends Error {
   public readonly statusCode?: number;
   public readonly errorCode?: string;
-  public readonly details?: Record<string, any>;
+  public readonly details?: Record<string, unknown>;
   public readonly requestId?: string;
 
   constructor(message: string, errorData?: ErrorResponse, statusCode?: number) {

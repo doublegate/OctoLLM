@@ -6,7 +6,6 @@ Supports configuration from environment variables and direct parameters.
 
 import os
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -24,8 +23,8 @@ class OctoLLMConfig:
     """
 
     base_url: str = "http://localhost:8000"
-    api_key: Optional[str] = None
-    bearer_token: Optional[str] = None
+    api_key: str | None = None
+    bearer_token: str | None = None
     timeout: float = 30.0
     max_retries: int = 3
     verify_ssl: bool = True
@@ -48,7 +47,7 @@ class OctoLLMConfig:
             self.base_url = self.base_url.rstrip("/")
 
     @classmethod
-    def from_env(cls) -> "OctoLLMConfig":
+    def from_env(cls) -> OctoLLMConfig:
         """
         Create configuration from environment variables.
 

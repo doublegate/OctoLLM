@@ -6,7 +6,7 @@ for database persistence.
 """
 
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 from uuid import uuid4
 
@@ -25,7 +25,7 @@ Base = declarative_base()
 # ==============================================================================
 
 
-class TaskStatus(str, Enum):
+class TaskStatus(StrEnum):
     """Status of a task in the orchestration pipeline."""
 
     PENDING = "pending"
@@ -35,7 +35,7 @@ class TaskStatus(str, Enum):
     CANCELLED = "cancelled"
 
 
-class Priority(str, Enum):
+class Priority(StrEnum):
     """Task priority levels."""
 
     LOW = "low"

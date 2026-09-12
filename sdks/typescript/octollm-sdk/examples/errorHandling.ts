@@ -4,14 +4,7 @@
  * Demonstrates proper error handling and retry logic.
  */
 
-import {
-  OrchestratorClient,
-  AuthenticationError,
-  ValidationError,
-  RateLimitError,
-  TimeoutError,
-  NotFoundError
-} from '../src';
+import { OrchestratorClient, AuthenticationError, ValidationError, RateLimitError, TimeoutError, NotFoundError, OctoLLMError } from '../src';
 
 async function main() {
   const client = new OrchestratorClient({
@@ -120,7 +113,13 @@ async function main() {
       goal: 'Analyze code security with detailed analysis',
       budget: { max_tokens: 10000 }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (!(error instanceof OctoLLMError)) {
+      console.error('An unexpected error occurred:');
+      console.error(error instanceof Error ? error.message : String(error));
+      return;
+    }
+
     console.error('An error occurred:');
     console.error(`Type: ${error.constructor.name}`);
     console.error(`Message: ${error.message}`);

@@ -5,7 +5,7 @@ All request and response models match the OpenAPI 3.0 specifications.
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -40,18 +40,16 @@ class TaskRequest(BaseModel):
         max_length=2000,
         description="Natural language description of the task objective",
     )
-    constraints: Optional[List[str]] = Field(
+    constraints: list[str] | None = Field(
         default=None, description="Hard constraints that must be satisfied"
     )
-    acceptance_criteria: Optional[List[str]] = Field(
+    acceptance_criteria: list[str] | None = Field(
         default=None, description="Success conditions for validation"
     )
-    context: Optional[Dict[str, Any]] = Field(
+    context: dict[str, Any] | None = Field(
         default=None, description="Additional context and metadata"
     )
-    budget: Optional[ResourceBudget] = Field(
-        default=None, description="Resource budget constraints"
-    )
+    budget: ResourceBudget | None = Field(default=None, description="Resource budget constraints")
 
 
 class TaskResponse(BaseModel):
@@ -64,7 +62,7 @@ class TaskResponse(BaseModel):
         ..., description="Current task status"
     )
     created_at: datetime = Field(..., description="Task creation timestamp")
-    estimated_completion: Optional[datetime] = Field(
+    estimated_completion: datetime | None = Field(
         default=None, description="Estimated completion time"
     )
 
@@ -93,13 +91,13 @@ class TaskError(BaseModel):
 
     type: str = Field(..., description="Error type")
     message: str = Field(..., description="Human-readable error message")
-    details: Optional[str] = Field(default=None, description="Additional error details")
+    details: str | None = Field(default=None, description="Additional error details")
 
 
 class TaskMetadata(BaseModel):
     """Task execution metadata."""
 
-    arms_used: List[str] = Field(..., description="Arms used in task execution")
+    arms_used: list[str] = Field(..., description="Arms used in task execution")
     tokens_used: int = Field(..., description="Total tokens consumed")
     cost_dollars: float = Field(..., description="Total cost in USD")
     duration_seconds: float = Field(..., description="Execution duration")
@@ -110,14 +108,14 @@ class TaskStatusResponse(BaseModel):
 
     task_id: str = Field(..., pattern=r"^task_[a-zA-Z0-9]{16}$")
     status: Literal["queued", "processing", "completed", "failed", "cancelled"]
-    progress: Optional[TaskProgress] = None
-    result: Optional[TaskResult] = None
-    error: Optional[TaskError] = None
-    metadata: Optional[TaskMetadata] = None
+    progress: TaskProgress | None = None
+    result: TaskResult | None = None
+    error: TaskError | None = None
+    metadata: TaskMetadata | None = None
     created_at: datetime
-    updated_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    failed_at: Optional[datetime] = None
+    updated_at: datetime | None = None
+    completed_at: datetime | None = None
+    failed_at: datetime | None = None
 
 
 # ============================================================================
@@ -131,7 +129,7 @@ class ArmCapability(BaseModel):
     arm_id: str = Field(..., description="Unique arm identifier")
     name: str = Field(..., description="Human-readable arm name")
     description: str = Field(..., description="Arm purpose and capabilities")
-    capabilities: List[str] = Field(..., description="List of capabilities")
+    capabilities: list[str] = Field(..., description="List of capabilities")
     cost_tier: int = Field(..., ge=1, le=5, description="Cost tier (1=cheap, 5=expensive)")
     endpoint: str = Field(..., description="Service endpoint URL")
     status: Literal["healthy", "degraded", "unavailable"] = Field(
@@ -161,11 +159,11 @@ class PreprocessResponse(BaseModel):
     """Preprocessing result."""
 
     cache_hit: bool = Field(..., description="Whether cache hit occurred")
-    cached_result: Optional[Dict[str, Any]] = Field(
+    cached_result: dict[str, Any] | None = Field(
         default=None, description="Cached result if cache hit"
     )
     pii_detected: bool = Field(..., description="Whether PII was detected")
-    pii_types: List[str] = Field(default_factory=list, description="Types of PII detected")
+    pii_types: list[str] = Field(default_factory=list, description="Types of PII detected")
     injection_detected: bool = Field(..., description="Whether prompt injection was detected")
     risk_score: float = Field(..., ge=0.0, le=1.0, description="Risk score (0=safe, 1=high risk)")
     sanitized_input: str = Field(..., description="Sanitized input text")
@@ -192,29 +190,27 @@ class PlanStep(BaseModel):
     step_id: str = Field(..., description="Unique step identifier")
     description: str = Field(..., description="Step description")
     arm_id: str = Field(..., description="Target arm for execution")
-    dependencies: List[str] = Field(default_factory=list, description="IDs of prerequisite steps")
-    input_mapping: Dict[str, str] = Field(
+    dependencies: list[str] = Field(default_factory=list, description="IDs of prerequisite steps")
+    input_mapping: dict[str, str] = Field(
         default_factory=dict, description="Input parameter mappings"
     )
-    expected_output: Optional[str] = Field(
-        default=None, description="Description of expected output"
-    )
+    expected_output: str | None = Field(default=None, description="Description of expected output")
 
 
 class PlanRequest(BaseModel):
     """Request to create an execution plan."""
 
     goal: str = Field(..., min_length=10, max_length=2000, description="Task goal to plan for")
-    constraints: Optional[List[str]] = Field(default=None, description="Task constraints")
-    acceptance_criteria: Optional[List[str]] = Field(default=None, description="Success criteria")
-    context: Optional[Dict[str, Any]] = Field(default=None, description="Additional context")
+    constraints: list[str] | None = Field(default=None, description="Task constraints")
+    acceptance_criteria: list[str] | None = Field(default=None, description="Success criteria")
+    context: dict[str, Any] | None = Field(default=None, description="Additional context")
 
 
 class PlanResponse(BaseModel):
     """Execution plan result."""
 
     plan_id: str = Field(..., description="Unique plan identifier")
-    steps: List[PlanStep] = Field(..., description="Ordered execution steps")
+    steps: list[PlanStep] = Field(..., description="Ordered execution steps")
     estimated_duration_seconds: int = Field(..., description="Estimated execution duration")
     estimated_cost_dollars: float = Field(..., description="Estimated cost")
     complexity_score: float = Field(
@@ -235,8 +231,8 @@ class ExecutionRequest(BaseModel):
     command_type: Literal["shell", "python", "http", "tool"] = Field(
         ..., description="Type of command"
     )
-    args: Optional[List[str]] = Field(default=None, description="Command arguments")
-    env: Optional[Dict[str, str]] = Field(default=None, description="Environment variables")
+    args: list[str] | None = Field(default=None, description="Command arguments")
+    env: dict[str, str] | None = Field(default=None, description="Environment variables")
     timeout_seconds: int = Field(default=30, ge=1, le=300, description="Execution timeout")
     allow_network: bool = Field(default=False, description="Whether to allow network access")
 
@@ -249,7 +245,7 @@ class ExecutionResult(BaseModel):
     stdout: str = Field(..., description="Standard output")
     stderr: str = Field(..., description="Standard error")
     duration_seconds: float = Field(..., description="Execution duration")
-    sandbox_info: Dict[str, Any] = Field(..., description="Sandbox container information")
+    sandbox_info: dict[str, Any] = Field(..., description="Sandbox container information")
 
 
 # ============================================================================
@@ -266,7 +262,7 @@ class SearchRequest(BaseModel):
     )
     max_results: int = Field(default=10, ge=1, le=100, description="Maximum results")
     min_score: float = Field(default=0.5, ge=0.0, le=1.0, description="Minimum relevance score")
-    filters: Optional[Dict[str, Any]] = Field(default=None, description="Additional filters")
+    filters: dict[str, Any] | None = Field(default=None, description="Additional filters")
 
 
 class SearchResult(BaseModel):
@@ -276,20 +272,20 @@ class SearchResult(BaseModel):
     content: str = Field(..., description="Result content")
     score: float = Field(..., ge=0.0, le=1.0, description="Relevance score")
     source: str = Field(..., description="Source identifier")
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
 
 
 class SearchResponse(BaseModel):
     """Search results."""
 
-    results: List[SearchResult] = Field(..., description="Search results")
+    results: list[SearchResult] = Field(..., description="Search results")
     query: str = Field(..., description="Original query")
     method_used: Literal["vector", "keyword", "hybrid"] = Field(
         ..., description="Search method used"
     )
     total_results: int = Field(..., description="Total matching results")
-    synthesis: Optional[str] = Field(default=None, description="Synthesized summary of results")
-    citations: List[str] = Field(default_factory=list, description="Source citations")
+    synthesis: str | None = Field(default=None, description="Synthesized summary of results")
+    citations: list[str] = Field(default_factory=list, description="Source citations")
 
 
 # ============================================================================
@@ -305,10 +301,10 @@ class CodeRequest(BaseModel):
     )
     prompt: str = Field(..., min_length=10, max_length=5000, description="Code generation prompt")
     language: str = Field(..., description="Programming language")
-    existing_code: Optional[str] = Field(
+    existing_code: str | None = Field(
         default=None, description="Existing code (for debug/refactor)"
     )
-    style_guide: Optional[str] = Field(default=None, description="Code style guidelines")
+    style_guide: str | None = Field(default=None, description="Code style guidelines")
     include_tests: bool = Field(default=False, description="Whether to generate tests")
     include_docstrings: bool = Field(default=True, description="Whether to include docstrings")
 
@@ -320,9 +316,9 @@ class CodeResponse(BaseModel):
     code: str = Field(..., description="Generated/modified code")
     explanation: str = Field(..., description="Explanation of code/changes")
     language: str = Field(..., description="Programming language")
-    tests: Optional[str] = Field(default=None, description="Generated tests")
+    tests: str | None = Field(default=None, description="Generated tests")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence in code quality")
-    warnings: List[str] = Field(default_factory=list, description="Warnings or caveats")
+    warnings: list[str] = Field(default_factory=list, description="Warnings or caveats")
 
 
 # ============================================================================
@@ -338,19 +334,19 @@ class ValidationIssue(BaseModel):
     )
     category: str = Field(..., description="Issue category")
     message: str = Field(..., description="Issue description")
-    location: Optional[str] = Field(default=None, description="Location in output")
-    suggestion: Optional[str] = Field(default=None, description="Suggested fix")
+    location: str | None = Field(default=None, description="Location in output")
+    suggestion: str | None = Field(default=None, description="Suggested fix")
 
 
 class ValidationRequest(BaseModel):
     """Request to validate task output."""
 
     output: str = Field(..., description="Output to validate")
-    acceptance_criteria: Optional[List[str]] = Field(
+    acceptance_criteria: list[str] | None = Field(
         default=None, description="Criteria to check against"
     )
-    output_type: Optional[str] = Field(default=None, description="Expected output type")
-    context: Optional[Dict[str, Any]] = Field(default=None, description="Validation context")
+    output_type: str | None = Field(default=None, description="Expected output type")
+    context: dict[str, Any] | None = Field(default=None, description="Validation context")
 
 
 class ValidationResult(BaseModel):
@@ -358,13 +354,13 @@ class ValidationResult(BaseModel):
 
     valid: bool = Field(..., description="Whether output is valid")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence in validation")
-    issues: List[ValidationIssue] = Field(
+    issues: list[ValidationIssue] = Field(
         default_factory=list, description="Validation issues found"
     )
-    passed_criteria: List[str] = Field(default_factory=list, description="Criteria that passed")
-    failed_criteria: List[str] = Field(default_factory=list, description="Criteria that failed")
+    passed_criteria: list[str] = Field(default_factory=list, description="Criteria that passed")
+    failed_criteria: list[str] = Field(default_factory=list, description="Criteria that failed")
     quality_score: float = Field(..., ge=0.0, le=1.0, description="Overall quality score")
-    suggestions: List[str] = Field(default_factory=list, description="Improvement suggestions")
+    suggestions: list[str] = Field(default_factory=list, description="Improvement suggestions")
 
 
 # ============================================================================
@@ -382,8 +378,8 @@ class SafetyIssue(BaseModel):
         ..., description="Issue severity"
     )
     description: str = Field(..., description="Issue description")
-    location: Optional[str] = Field(default=None, description="Location in text")
-    detected_value: Optional[str] = Field(
+    location: str | None = Field(default=None, description="Location in text")
+    detected_value: str | None = Field(
         default=None, description="Detected sensitive value (redacted)"
     )
 
@@ -392,7 +388,7 @@ class SafetyRequest(BaseModel):
     """Request for safety check."""
 
     content: str = Field(..., description="Content to check")
-    check_types: List[Literal["pii", "injection", "harmful_content", "policy_violation"]] = Field(
+    check_types: list[Literal["pii", "injection", "harmful_content", "policy_violation"]] = Field(
         default=["pii", "injection", "harmful_content"],
         description="Types of checks to perform",
     )
@@ -403,11 +399,9 @@ class SafetyResult(BaseModel):
     """Safety check result."""
 
     safe: bool = Field(..., description="Whether content is safe")
-    issues: List[SafetyIssue] = Field(default_factory=list, description="Detected safety issues")
+    issues: list[SafetyIssue] = Field(default_factory=list, description="Detected safety issues")
     risk_score: float = Field(..., ge=0.0, le=1.0, description="Overall risk score")
-    sanitized_content: Optional[str] = Field(
-        default=None, description="Sanitized version of content"
-    )
+    sanitized_content: str | None = Field(default=None, description="Sanitized version of content")
     should_proceed: bool = Field(..., description="Whether processing should proceed")
 
 
@@ -422,9 +416,7 @@ class HealthResponse(BaseModel):
     status: Literal["healthy", "degraded", "unhealthy"] = Field(..., description="Service status")
     version: str = Field(..., description="Service version")
     uptime_seconds: int = Field(..., description="Service uptime in seconds")
-    components: Optional[Dict[str, str]] = Field(
-        default=None, description="Component health status"
-    )
+    components: dict[str, str] | None = Field(default=None, description="Component health status")
 
 
 class ErrorResponse(BaseModel):
@@ -432,11 +424,11 @@ class ErrorResponse(BaseModel):
 
     error: str = Field(..., description="Error type")
     message: str = Field(..., description="Human-readable error message")
-    details: Optional[Dict[str, Any]] = Field(default=None, description="Additional error details")
-    retry_after: Optional[int] = Field(
+    details: dict[str, Any] | None = Field(default=None, description="Additional error details")
+    retry_after: int | None = Field(
         default=None, description="Retry after seconds (for rate limits)"
     )
-    request_id: Optional[str] = Field(default=None, description="Request ID for debugging")
+    request_id: str | None = Field(default=None, description="Request ID for debugging")
 
 
 class ProvenanceMetadata(BaseModel):
@@ -445,8 +437,8 @@ class ProvenanceMetadata(BaseModel):
     arm_id: str = Field(..., description="Arm that produced output")
     timestamp: datetime = Field(..., description="Output generation timestamp")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score")
-    command_hash: Optional[str] = Field(
+    command_hash: str | None = Field(
         default=None, description="Hash of executed command (for reproducibility)"
     )
-    model_name: Optional[str] = Field(default=None, description="LLM model name (if applicable)")
-    model_version: Optional[str] = Field(default=None, description="LLM model version")
+    model_name: str | None = Field(default=None, description="LLM model name (if applicable)")
+    model_version: str | None = Field(default=None, description="LLM model version")

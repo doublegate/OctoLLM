@@ -4,8 +4,6 @@ Executor Arm service client.
 The Executor specializes in sandboxed command execution.
 """
 
-from typing import Optional
-
 from ..client import BaseClient
 from ..models import ExecutionRequest, ExecutionResult, HealthResponse
 
@@ -20,8 +18,8 @@ class ExecutorClient(BaseClient):
     def __init__(
         self,
         base_url: str = "http://localhost:8003",
-        api_key: Optional[str] = None,
-        bearer_token: Optional[str] = None,
+        api_key: str | None = None,
+        bearer_token: str | None = None,
         **kwargs,
     ):
         """
@@ -40,7 +38,7 @@ class ExecutorClient(BaseClient):
             **kwargs,
         )
 
-    async def health(self, timeout: Optional[float] = None) -> HealthResponse:
+    async def health(self, timeout: float | None = None) -> HealthResponse:
         """Check service health."""
         response = await self.get("/health", timeout=timeout)
         return HealthResponse(**response)
@@ -48,7 +46,7 @@ class ExecutorClient(BaseClient):
     async def execute(
         self,
         request: ExecutionRequest,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> ExecutionResult:
         """
         Execute a command in a sandboxed environment.
@@ -81,7 +79,7 @@ class ExecutorClient(BaseClient):
         )
         return ExecutionResult(**response)
 
-    async def get_capabilities(self, timeout: Optional[float] = None) -> dict:
+    async def get_capabilities(self, timeout: float | None = None) -> dict:
         """Get executor capabilities."""
         response = await self.get("/capabilities", timeout=timeout)
         return response

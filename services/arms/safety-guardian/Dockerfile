@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Safety Guardian Arm Dockerfile - Multi-stage build for Python service
-FROM python:3.13.7-slim as builder
+FROM python:3.14.7-slim AS builder
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -23,7 +23,7 @@ RUN poetry config virtualenvs.create false && \
     poetry install --only main --no-interaction --no-ansi
 
 # Runtime stage
-FROM python:3.13.7-slim
+FROM python:3.14.7-slim
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
@@ -31,25 +31,30 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN useradd -m -u 1000 octollm && \
+RUN groupadd -g 1000 octollm && \
+    useradd -m -u 1000 -g 1000 octollm && \
     mkdir -p /app && \
     chown -R octollm:octollm /app
 
 WORKDIR /app
 
-# Copy installed packages from builder
-COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+# Copy installed packages from builder.
+# Copy all of /usr/local/lib rather than a hardcoded python3.X/site-packages path:
+# builder and runtime share the same base image, so the rest of the tree is identical,
+# and a future base-image bump cannot silently break the COPY.
+COPY --from=builder /usr/local/lib /usr/local/lib
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
 COPY --chown=octollm:octollm services/arms/safety-guardian ./services/arms/safety-guardian
 COPY --chown=octollm:octollm shared/python ./shared/python
 
-USER octollm
+# Numeric, per hadolint DL3066: a name need not resolve on the host.
+USER 1000:1000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8005/health || exit 1
+    CMD ["curl", "-f", "http://localhost:8005/health"]
 
 # Expose port
 EXPOSE 8005

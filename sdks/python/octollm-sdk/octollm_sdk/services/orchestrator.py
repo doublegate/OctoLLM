@@ -5,8 +5,6 @@ The Orchestrator is the central brain that coordinates task planning,
 arm delegation, and result integration.
 """
 
-from typing import List, Optional
-
 from ..client import BaseClient
 from ..models import ArmCapability, HealthResponse, TaskRequest, TaskResponse, TaskStatusResponse
 
@@ -22,8 +20,8 @@ class OrchestratorClient(BaseClient):
     def __init__(
         self,
         base_url: str = "http://localhost:8000",
-        api_key: Optional[str] = None,
-        bearer_token: Optional[str] = None,
+        api_key: str | None = None,
+        bearer_token: str | None = None,
         **kwargs,
     ):
         """
@@ -42,7 +40,7 @@ class OrchestratorClient(BaseClient):
             **kwargs,
         )
 
-    async def health(self, timeout: Optional[float] = None) -> HealthResponse:
+    async def health(self, timeout: float | None = None) -> HealthResponse:
         """
         Check service health.
 
@@ -61,7 +59,7 @@ class OrchestratorClient(BaseClient):
         response = await self.get("/health", timeout=timeout)
         return HealthResponse(**response)
 
-    async def get_metrics(self, timeout: Optional[float] = None) -> str:
+    async def get_metrics(self, timeout: float | None = None) -> str:
         """
         Get Prometheus metrics.
 
@@ -82,7 +80,7 @@ class OrchestratorClient(BaseClient):
         async with self._make_plain_text_request("GET", "/metrics", timeout) as response:
             return response
 
-    async def list_arms(self, timeout: Optional[float] = None) -> List[ArmCapability]:
+    async def list_arms(self, timeout: float | None = None) -> list[ArmCapability]:
         """
         List registered arms and their capabilities.
 
@@ -105,7 +103,7 @@ class OrchestratorClient(BaseClient):
     async def submit_task(
         self,
         task: TaskRequest,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> TaskResponse:
         """
         Submit a new task to the orchestrator.
@@ -143,7 +141,7 @@ class OrchestratorClient(BaseClient):
     async def get_task(
         self,
         task_id: str,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> TaskStatusResponse:
         """
         Get task status and results.
@@ -171,7 +169,7 @@ class OrchestratorClient(BaseClient):
     async def cancel_task(
         self,
         task_id: str,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> TaskStatusResponse:
         """
         Cancel a running task.
@@ -194,9 +192,7 @@ class OrchestratorClient(BaseClient):
         response = await self.delete(f"/tasks/{task_id}", timeout=timeout)
         return TaskStatusResponse(**response)
 
-    async def _make_plain_text_request(
-        self, method: str, path: str, timeout: Optional[float]
-    ) -> str:
+    async def _make_plain_text_request(self, method: str, path: str, timeout: float | None) -> str:
         """Helper for plain text responses (metrics endpoint)."""
         import httpx
 

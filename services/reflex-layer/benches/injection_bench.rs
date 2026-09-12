@@ -1,7 +1,9 @@
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+// criterion 0.8 deprecates its own `black_box` re-export in favour of the std one.
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use reflex_layer::injection::analyzer::{analyze_context, calculate_entropy};
 use reflex_layer::injection::types::{DetectionMode, InjectionConfig, Severity};
 use reflex_layer::injection::InjectionDetector;
+use std::hint::black_box;
 
 fn benchmark_detection(c: &mut Criterion) {
     let detector = InjectionDetector::new(InjectionConfig::default());

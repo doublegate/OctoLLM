@@ -48,7 +48,7 @@ prometheus = { workspace = true }
 chrono = { workspace = true }
 
 # Environment
-dotenv = { workspace = true }
+dotenvy = { workspace = true }
 config = { workspace = true }
 num_cpus = { workspace = true }
 

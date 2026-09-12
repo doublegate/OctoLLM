@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Reflex Layer Dockerfile - Multi-stage build for Rust service
-FROM rust:1.91.1-slim as builder
+FROM rust:1.98.1-slim AS builder
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -21,7 +21,7 @@ COPY services/arms/executor ./services/arms/executor
 RUN cargo build --release --package reflex-layer
 
 # Runtime stage
-FROM debian:13.1-slim
+FROM debian:13.6-slim
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
@@ -31,7 +31,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN useradd -m -u 1000 octollm && \
+RUN groupadd -g 1000 octollm && \
+    useradd -m -u 1000 -g 1000 octollm && \
     mkdir -p /app && \
     chown -R octollm:octollm /app
 
@@ -43,11 +44,12 @@ COPY --from=builder /app/target/release/reflex-layer ./reflex-layer
 # Set ownership
 RUN chown octollm:octollm reflex-layer
 
-USER octollm
+# Numeric, per hadolint DL3066: a name need not resolve on the host.
+USER 1000:1000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
+    CMD ["curl", "-f", "http://localhost:8080/health"]
 
 # Expose port
 EXPOSE 8080
