@@ -7,6 +7,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **The stack comes up.** `make up` brings all eleven services to a **healthy** state
+  and `make smoke` round-trips a task — submitted, screened by the reflex layer,
+  persisted, read back by id. Neither had happened before. `compose.yaml` at the
+  repository root is the canonical stack; every published host port is overridable
+  (`REFLEX_PORT=18080 make up`) and **no API keys are required**.
+- New make targets: `up`, `down`, `ps`, `logs`, `smoke`, `port-map-check`,
+  `compose-env-check`.
+- **`scripts/ci/check_compose_env.py`** — fails the build on any compose variable the
+  service does not read, reading both schemas from the code rather than restating them.
+- **`scripts/ci/check_port_map.py`** — one canonical port map checked against every
+  Dockerfile, compose file and OpenAPI `servers:` block.
+- **`scripts/smoke.sh`** — asserts health, that `POST /process` detects PII, and that a
+  task round-trips.
+- **`docs/api/CONTRACT.md`** — the frozen contract: ports, snake_case wire format,
+  spans rather than offsets, bare UUIDv4 task ids, the error envelope, env prefixes.
+- **Arm stubs** for the five Python arms, plus `shared/python/octollm_stub`. `/execute`
+  returns **501 naming the stage that implements it** rather than a plausible fake,
+  because a convincing stub makes an unimplemented arm indistinguishable from a working
+  one.
+- Golden reflex fixtures in `services/orchestrator/tests/fixtures/`, **captured from a
+  running service** by `scripts/capture_reflex_fixtures.py`.
+
+### Fixed
+- **`POST /process` returned 500 on every request, for the entire life of the service.**
+  The handler extracts `ConnectInfo<SocketAddr>` for per-IP rate limiting, but the router
+  was served with `axum::serve(listener, app)`, which inserts no connection info — so the
+  extractor was rejected before any handler logic ran. The only endpoint in the reflex
+  layer with business logic, behind a door that could not open, with 240 tests passing
+  throughout because none built the real router or bound a socket.
+- **All 23 compose environment variables were silently ignored.** The orchestrator
+  declares `env_prefix="ORCHESTRATOR_"` and compose passed bare names; the reflex layer's
+  `separator("_")` could not distinguish a section boundary from a word boundary, leaving
+  the **entire `rate_limit` section** and every multi-word field unreachable — 5 of 24
+  fields settable. The stack had never once been configured by its own compose file.
+- **The reflex client could not parse any response**, clean ones included: `"success"`
+  against a required `"Success"`, `start`/`end`/`matched_text` against required
+  `position`/`value`/`context`, and a mandatory `context_analysis` object the service has
+  never sent. All 39 of its tests passed, each mocking `httpx` with the client's own
+  shapes.
+- **Five arm containers crash-looped** on a `CMD` naming a module that was never written —
+  and for the guardian could never have worked, since `safety-guardian` is not a legal
+  Python identifier. Directory renamed to `safety_guardian`.
+- **`DATABASE_URL` contained a space**, built with a YAML folded scalar (`>-`) which joins
+  lines with one. The validator checked only the scheme prefix and passed it to the driver;
+  it now parses the URL and rejects whitespace, a missing host and a missing database name.
+- **`store_task_result` always `INSERT`ed** against a `unique=True` column, so a resumed
+  graph would have converted a recoverable task into a permanently stuck one.
+- **`GET /tasks/{id}` returned 500** with `DetachedInstanceError` — `to_response()` reads
+  `task.result` after the session closes, and async SQLAlchemy cannot lazy-load at all.
+  All 166 orchestrator tests passed while that endpoint was broken; `make smoke` caught it.
+- **Every arm's OpenAPI spec named the wrong port**, each shifted a whole slot into its
+  neighbour's: planner→8002, retriever→8004, coder→8005, judge→8006, guardian→8007,
+  executor→8003.
+- Reflex enum serialisation: `ProcessStatus` used `rename_all = "lowercase"` (flattening
+  `RateLimited` to `ratelimited`), and `PIIType`/`InjectionType`/`Severity` had no rename
+  at all. Now snake_case, with `ssn`, `ipv4`, `ipv6`, `itin` and `dan_variant` pinned
+  explicitly — serde inserts a separator before every capital, so `SSN` would otherwise
+  serialise as `s_s_n`.
+
+### Removed
+- The `POST /{arm_id}/execute` / `ArmRequest` section of `docs/api/component-contracts.md`
+  — 219 lines describing the fourth of four mutually incompatible descriptions of the same
+  API, which nothing had ever implemented. Its rationale is retained, pointing at where the
+  arm interface is actually defined.
+
 ### Security
 - **`.gitleaks.toml` rewritten; it had been scanning almost nothing.** Two independent
   defects, and the second hid the first:

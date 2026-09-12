@@ -232,6 +232,32 @@ Targets for things that do not work yet (`up`, `smoke`, `eval`, `release-gate`) 
 true (compose in Stage 3, evals in Stage 10, release in Stage 12). Do not add a target
 that does not work; that is the failure this repository is being dug out of.
 
+### Running the stack
+
+```bash
+make up      # all 11 services, waits for HEALTHY (not merely "started")
+make smoke   # asserts health + that a task round-trips
+make down
+```
+
+**No API keys needed.** Host ports are overridable if one is taken: `REFLEX_PORT=18080 make up`.
+
+Three invariants the gates enforce, each of which was violated before Stage 3:
+
+- **Every compose variable must be one the service reads.** All 23 were silently ignored —
+  the orchestrator needs the `ORCHESTRATOR_` prefix, the reflex layer needs
+  `REFLEX_<SECTION>__<FIELD>` with a *double* underscore. `make compose-env-check`.
+- **One canonical port map.** `scripts/ci/check_port_map.py` is authoritative, and the
+  Dockerfile plus compose file win over any spec, because they are what binds a socket.
+  Every arm's OpenAPI spec previously named its neighbour's port. `make port-map-check`.
+- **`make smoke` asserts the task stays `pending`.** That is correct until Stage 7 builds
+  the execution engine; do not "fix" it to `completed` before the engine exists.
+
+Contract: `docs/api/CONTRACT.md`. Wire format is snake_case including enum values, with
+acronyms pinned (`ssn`, not `s_s_n`). Reflex fixtures are **captured from the running
+service** by `scripts/capture_reflex_fixtures.py` — never hand-written, which is how a
+client that could not parse a single real response kept 39 tests green.
+
 ### Secret scanning
 
 `.gitleaks.toml` runs with `[extend] useDefault = true` — **do not remove that line**.
