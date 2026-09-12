@@ -43,6 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `pip install ruff` meant a newly-stabilised rule could turn a green `main` red with no
   commit to blame, which is what had happened (169 `UP045`/`UP006`/`UP035` violations).
 - Migrated the TypeScript SDK from `.eslintrc.js` to flat `eslint.config.mjs`.
+- Avoided multi-exception `except` clauses in Python source. black 26.5.1 applies PEP 758
+  at `target-version = py314` and strips the parentheses from `except (A, B):`, producing
+  source that parses on 3.14 and is a `SyntaxError` on every earlier version. No file in
+  the repository is now a syntax error on 3.13.
 
 ### Fixed
 - **The orchestrator rejected every task submission that omitted `budget`.**
@@ -56,6 +60,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `app.state.reflex_client` is seeded at application construction. It was only assigned
   by the lifespan handler, so any ASGI runner that does not emit lifespan events turned
   every handler that reads it into an `AttributeError` at request time.
+- **Every 400 and 422 response from the Python SDK raised `TypeError` instead of
+  `ValidationError`.** `ValidationError.__init__` passed `status_code=422` positionally
+  into `super().__init__` while `BaseClient._handle_error_response` also passed
+  `status_code=response.status_code`, so the base constructor got the argument twice.
+  The status-bearing exception subclasses now use `kwargs.setdefault`, which keeps each
+  default while letting the caller supply the real status (a 400 reports 400, not 422).
+- **The orchestrator container could never serve a request.** Its `CMD` ran
+  `uvicorn services.orchestrator.src.api.main:app`, and no such module exists --
+  `services/orchestrator/src/` holds only `.gitkeep` placeholders. The image now runs
+  `app.main:app` from `services/orchestrator`. Verified by running it against a postgres
+  container: `/health` 200, `/ready` reports the database healthy, and `POST /submit`
+  without a `budget` returns 202.
 - **`services/arms/coder/Dockerfile` could not build.** Its base image had been bumped to
   Python 3.14 while the `COPY --from=builder` line still referenced
   `/usr/local/lib/python3.13/site-packages`. All six Python service Dockerfiles now copy
