@@ -508,26 +508,76 @@ autoscaling, cost optimization). A fresh roadmap is minted after the release.
 
 ## Performance Targets
 
-**None of these is measured.** `ARCHITECTURE.md` records all six system performance
-targets as TBD, there is no benchmark corpus, and no baseline exists to compare
-against. They are stated here as design goals so that the evaluation harness built in
-Stage 10 has something falsifiable to report against.
+These replace the original seven, which could not be met, measured, or in one case
+meant anything. The reasoning is in [ADR-009](docs/adr/009-performance-targets.md);
+the short version is that a single latency percentile was applied to every task shape
+at once, and the headline cache-hit target assumed a workload this project does not
+have.
 
-| Metric | Target | How it will be measured | Measured today |
-|---|---|---|---|
-| Reflex cache hit rate | > 60% | `octollm_cache_hits_total / octollm_tasks_total` | not measured |
-| P50 latency | < 2s | `histogram_quantile(0.5, octollm_task_duration_seconds)` | not measured |
-| P95 latency | < 10s | `histogram_quantile(0.95, octollm_task_duration_seconds)` | not measured |
-| P99 latency | < 30s | `histogram_quantile(0.99, octollm_task_duration_seconds)` | not measured |
-| Task success rate | > 95% | `octollm_tasks_total{status="success"} / octollm_tasks_total` | not measured |
-| Cost per task | < 50% of baseline | token usage vs a single-shot LLM baseline | not measured |
-| PII leakage rate | < 0.1% | evaluation corpus plus automated scanning | not measured |
+Three of these are measured today. The rest are falsifiable statements that Stage 10's
+evaluation harness will report against, and **whatever number comes out is what ships**.
 
-The charter sets a concrete bar — 70% of 50 synthetic security tasks completed
-correctly, at under 3x the latency of a single-shot baseline. Stage 10 builds that
-corpus, that baseline, and the runner, and **publishes whatever number comes out**. A
-v1.0.0 with an honest 58% and a reproducible harness is worth more than a badge over an
-unmeasured repository.
+### Reflex layer — implemented, measured
+
+| Metric | Target | Measured today |
+|---|---|---|
+| PII + injection screening, in process, ≤1 KB input | P95 < 100 µs | **~12 µs** (6.3 µs PII + 6.2 µs injection, 919-byte text) |
+| PII screening, 8.6 KB input | P95 < 500 µs | **47 µs** |
+| Redaction (mask) | P95 < 5 µs | **0.12 µs** |
+| `POST /process` end to end, including Redis | P95 < 10 ms | not measured — needs the Stage 3 repair |
+
+The old target was "Reflex Layer Latency < 10ms P95", which the detector beats by a
+factor of roughly 800. A target with that much slack cannot detect a regression: the
+pattern corpus could grow fiftyfold and still pass. These are set against measurement,
+with enough headroom to absorb the pattern growth Stage 8 will bring and no more.
+
+### Cost avoidance — the reflex arc
+
+The original "> 60% reflex cache hit rate" is the target that most needed replacing. It
+presumes requests repeat. **This system's workload is novel by construction** — a new
+target to probe, a new codebase to assess, a new diff to review — so a 60% whole-request
+hit rate is not a stretch goal, it is a description of a different product. Worse, the
+metric was stated as cost efficiency while the cache holds *detection verdicts*: at a
+100% hit rate every request would still have paid for the head.
+
+So it is split into the three things it was conflating:
+
+| Metric | Target | Why this number |
+|---|---|---|
+| **Verdict** cache hit rate — screening results | ≥ 35% | System prompts, tool descriptions and boilerplate recur constantly even when tasks do not. This is the part that genuinely repeats. |
+| **Answer** cache hit rate — the reflex arc answering outright | ≥ 10% | Deliberately low. A high number here would mean the eval corpus does not resemble offensive-security work. |
+| **Head-bypass rate** — requests never reaching the planning LLM | ≥ 25% | The actual cost lever: cached answers, routine dispatch straight to an arm, and reflex rejections combined. |
+| Cost per task vs baseline | ≤ 50% | Charter. Baseline is one frontier-model call given the same task and context. |
+
+### Task latency, by shape
+
+One percentile across every task shape was the original mistake: `P50 < 2s` is
+unachievable for anything involving a frontier model, which alone takes 2-5s, while
+`P99 < 30s` is enormously loose for a cache hit. Four classes, four targets:
+
+| Task shape | Target P95 |
+|---|---|
+| Reflex-only — cache hit or rejected | < 50 ms |
+| Single arm, one model call | < 8 s |
+| Multi-arm — plan → 3+ arms → judge → synthesize | < 45 s |
+| Any shape, relative to a single-shot baseline | ≤ 3× (charter) |
+
+### Quality and safety — Stage 10 corpus
+
+| Metric | Target | Note |
+|---|---|---|
+| Task success on the 50-task corpus | ≥ 70% | Charter. The README previously claimed "> 95%", which contradicted it. |
+| PII detector recall, labelled corpus | ≥ 95% | |
+| PII false positives, benign corpus | ≤ 2% | Over-redaction is a real cost, not a free win |
+| PII leaks in evaluated output | **0** | Not "< 0.1%". A percentage invites tolerating a detector bug, and 0.1% of outputs is unmeasurable without the corpus that makes it 0-or-not anyway |
+| Injection detector recall | ≥ 95% | Replaces "> 99% detection", which had no corpus behind it |
+| Injection false positives, benign corpus | ≤ 1% | |
+
+### Sandbox — binary, no percentage
+
+18 of 18 escape attempts contained, **and** a negative control run proving the same 18
+succeed against an unhardened container. A sandbox suite that has never been shown to
+fail is not evidence of a sandbox.
 
 ## Documentation
 
