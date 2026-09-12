@@ -1,82 +1,62 @@
-# Codecov Configuration for OctoLLM
-# Documentation: https://docs.codecov.com/docs/codecov-yaml
+# Codecov configuration for OctoLLM.
+# Reference: https://docs.codecov.com/docs/codecov-yaml
+#
+# This file previously declared ten flags. Six of them -- planner-arm, coder-arm,
+# judge-arm, retriever-arm, executor-arm and guardian-arm -- pointed at directories
+# holding no source files at all, and `guardian-arm` pointed at `services/arms/guardian/`,
+# which has never existed under that name (the directory is `safety-guardian`). A flag
+# with `carryforward: true` that never receives an upload is not neutral: it reports the
+# last value it saw forever, and one that never saw a value at all is a component the
+# dashboard simply omits, silently.
+#
+# The rule for this file: a flag exists only when some CI job actually uploads coverage
+# under it. Add the flag in the same change as the upload, not before.
+#
+# Uploading today (see .github/workflows/ci.yml):
+#   orchestrator  -- services/orchestrator, pytest-cov, enforced at 85% by its own
+#                    pytest config (`--cov-fail-under=85`); currently 91%.
+#
+# Not uploading yet, deliberately, each with the work that unblocks it:
+#   reflex-layer  -- 240 Rust tests run in CI but produce no coverage report;
+#                    needs cargo-llvm-cov wired into the test-rust job.
+#   python-sdk    -- 28 tests run; its pytest config carries no --cov.
+#   typescript-sdk-- 28 tests run; jest is invoked without --coverage.
+#   the six arms  -- no source code exists to cover (Workstream D, stages 6-11).
 
-# Coverage Analytics Configuration
 coverage:
   precision: 2
   round: down
   range: "70...100"
 
   status:
-    # Project-level coverage (entire repository)
+    # Scoped to the one component that reports. A repository-wide target computed from
+    # a single uploading component is a number about the orchestrator wearing the name
+    # of the whole repository; widen this as components start reporting.
     project:
       default:
-        target: 80%
-        threshold: 5%
+        target: 85%
+        threshold: 2%
         informational: false
         if_ci_failed: error
+        flags:
+          - orchestrator
 
-    # Patch-level coverage (new code in PRs)
     patch:
       default:
         target: 85%
         threshold: 5%
         informational: false
         if_ci_failed: error
+        flags:
+          - orchestrator
 
-# Coverage flags for different components
 flags:
   orchestrator:
     paths:
       - services/orchestrator/
     carryforward: true
 
-  reflex-layer:
-    paths:
-      - services/reflex-layer/
-    carryforward: true
-
-  planner-arm:
-    paths:
-      - services/arms/planner/
-    carryforward: true
-
-  executor-arm:
-    paths:
-      - services/arms/executor/
-    carryforward: true
-
-  coder-arm:
-    paths:
-      - services/arms/coder/
-    carryforward: true
-
-  judge-arm:
-    paths:
-      - services/arms/judge/
-    carryforward: true
-
-  retriever-arm:
-    paths:
-      - services/arms/retriever/
-    carryforward: true
-
-  guardian-arm:
-    paths:
-      - services/arms/guardian/
-    carryforward: true
-
-  python-sdk:
-    paths:
-      - sdks/python/
-    carryforward: true
-
-  typescript-sdk:
-    paths:
-      - sdks/typescript/
-    carryforward: true
-
-# Ignore patterns (exclude from coverage calculations)
+# Excluded from coverage calculations.
 ignore:
   - "**/*.md"
   - "**/tests/**"
@@ -91,48 +71,27 @@ ignore:
   - "**/node_modules/**"
   - "**/dist/**"
   - "**/build/**"
+  - "**/htmlcov/**"
   - "**/*.test.ts"
   - "**/*.test.js"
   - "**/*.spec.ts"
   - "**/*.spec.js"
 
-# Test Analytics Configuration
-# Enabled automatically when JUnit XML files are uploaded with report_type: test_results
-# See: https://docs.codecov.com/docs/test-analytics
-# Features:
-#   - Test metrics across main and feature branches (run times, failure rates)
-#   - PR-level debugging with failed test lists and stack traces
-#   - Flaky test identification
-# Requirements:
-#   - JUnit XML output from test runners (pytest --junitxml=junit.xml)
-#   - Upload via codecov-action with report_type: test_results
-# Retention: 60 days
+# Test Analytics. Enabled by uploading JUnit XML with `report_type: test_results`;
+# the orchestrator's pytest config already emits junit.xml. Retention is 60 days.
+# https://docs.codecov.com/docs/test-analytics
 
-# Bundle Analysis Configuration (for TypeScript SDK)
-# See: https://docs.codecov.com/docs/javascript-bundle-analysis
-# Features:
-#   - Bundle size tracking and regression detection
-#   - Module exploration and size attribution
-#   - Performance impact analysis
-# Requirements:
-#   - Bundler plugin (Vite/Webpack/Rollup) installed as dev dependency
-#   - Plugin configured in bundler setup
-#   - Build after code commit
-bundle_analysis:
-  warning_threshold: 5%
+# Bundle analysis is NOT configured. It requires a Vite/Webpack/Rollup plugin as a dev
+# dependency, and the TypeScript SDK builds with plain `tsc` and ships no bundler. The
+# previous `bundle_analysis` block and the two `require_bundle_changes` /
+# `bundle_change_threshold` comment keys could therefore never fire.
 
-# Comment Configuration (PR comments)
 comment:
   layout: "header, diff, flags, components, footer"
   behavior: default
   require_changes: false
   require_base: false
   require_head: true
-  # Only post bundle comments if bundle size changes
-  require_bundle_changes: "bundle_increase"
-  # Minimum bundle size change to trigger comment (1KB)
-  bundle_change_threshold: 1KB
 
-# GitHub status checks configuration
 github_checks:
   annotations: true

@@ -262,6 +262,10 @@ async def update_task_status(
     if task is None:
         return None
 
+    # Captured before the assignment; reading it afterwards reported the new status as
+    # the old one, making every transition look like a no-op in the logs.
+    old_status = task.status
+
     task.status = status
     task.updated_at = datetime.now(UTC)
 
@@ -271,7 +275,7 @@ async def update_task_status(
     logger.info(
         "database.task_status_updated",
         task_id=task_id,
-        old_status=task.status.value,
+        old_status=old_status.value,
         new_status=status.value,
     )
 

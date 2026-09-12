@@ -4,6 +4,8 @@ Executor Arm service client.
 The Executor specializes in sandboxed command execution.
 """
 
+from typing import Any
+
 from ..client import BaseClient
 from ..models import ExecutionRequest, ExecutionResult, HealthResponse
 
@@ -20,7 +22,7 @@ class ExecutorClient(BaseClient):
         base_url: str = "http://localhost:8003",
         api_key: str | None = None,
         bearer_token: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         """
         Initialize Executor client.

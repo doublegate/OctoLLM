@@ -7,7 +7,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **`ci.yml`: a CI gate that can actually fail.** Replaces `lint.yml` and `test.yml`,
+  which between them could not: every test step was `|| echo "No tests found yet
+  (Phase 0)"` *and* `continue-on-error: true`, and the summary job announced "Phase 0:
+  No tests exist yet" over 240 Rust and 178 Python tests that CI never ran. Nine
+  blocking jobs aggregated by a single `ci-gate` check:
+  - `typecheck-python` — mypy is now **blocking** (it was `continue-on-error: true`,
+    "Don't fail on type errors initially"), and runs against real installed
+    dependencies rather than `--ignore-missing-imports`.
+  - `lint-rust` — `cargo fmt`/`clippy` widened from two crates to the whole workspace,
+    covering the three `shared/rust` crates CI had never linted.
+  - `test-rust` — the 240 workspace tests, plus the **17 Redis-backed tests** that were
+    marked `#[ignore]` and had therefore never run anywhere. This executes
+    `ratelimit/token_bucket.lua` — the script that decides whether a request is
+    rate-limited — for the first time.
+  - `test-orchestrator`, `test-sdk-python`, `test-sdk-typescript` — the 150 + 28 + 28
+    tests CI had never run. The TypeScript SDK previously had no CI job at all.
+  - `lint-config` — yamllint, OpenAPI spec validity, shellcheck and actionlint.
+  - Every suite asserts a **collection floor** (150/28/28/17), because a suite that
+    silently collects zero tests reports the same green check as one that ran them all.
+- **`scripts/ci/check_gate_complete.py`** — fails if a job is added to `ci.yml` without
+  being added to `ci-gate.needs`. Branch protection can only require named checks, so
+  an unwired job is advisory by omission: it can fail while the gate goes green.
+- **`.github/dependabot.yml`** — did not exist, so only GitHub's default security
+  updates ran and routine version drift went unwatched. Covers all four Python
+  manifests (including `sdks/python/octollm-sdk/uv.lock`, which the September
+  consolidation missed), the Cargo workspace, the npm SDK, GitHub Actions, and the
+  pinned container base images. Minor and patch updates are grouped per ecosystem;
+  majors stay separate.
+
+### Fixed
+- **`OrchestratorClient.get_metrics()` raised `AttributeError` on every call.** It used
+  `async with` on `_make_plain_text_request`, which is a coroutine returning `str`, not
+  an async context manager.
+- **`init_telemetry()` could never run.** It imported `ParentBasedTraceIdRatioBased`,
+  which does not exist in the OpenTelemetry SDK; imported `Psycopg2Instrumentor` while
+  the project depends on psycopg 3 (psycopg2 is not installed at all); and called
+  `FastAPIInstrumentor.instrument()` / `HTTPXClientInstrumentor.instrument()` unbound,
+  raising `TypeError: BaseInstrumentor.instrument() missing 1 required positional
+  argument: 'self'`. `services/orchestrator/pyproject.toml` declared
+  `opentelemetry-instrumentation-psycopg2` to match; it is now `-psycopg`.
+- **`update_task_status` logged the new status as the old one.** `old_status` was read
+  from `task.status` *after* the assignment, so every transition looked like a no-op in
+  the logs.
+- **The SDK retry loop could `raise` a non-exception.** `last_exception = None` inferred
+  `TimeoutError | None` from its first assignment, conflicting with the `APIError`
+  assigned on the network-error path.
+- **`build.yml` passed an empty `BUILD_DATE` into every image.** `steps.meta.outputs.created`
+  is not an output of `docker/metadata-action`; the timestamp is only exposed through the
+  OCI label in its `json` output.
+- `codecov.yml` declared ten flags, six of which pointed at directories holding no source
+  files, and `guardian-arm` pointed at `services/arms/guardian/` — a path that has never
+  existed under that name (the directory is `safety-guardian`). Flags now exist only for
+  components that actually upload coverage. The `bundle_analysis` block is removed: it
+  requires a bundler plugin, and the TypeScript SDK builds with plain `tsc`.
+
 ### Changed
+- Migrated the orchestrator's ORM models to SQLAlchemy 2.0 `DeclarativeBase` /
+  `Mapped` / `mapped_column`, replacing the deprecated
+  `sqlalchemy.ext.declarative.declarative_base` and dropping two
+  `# type: ignore[valid-type,misc]` suppressions. The columns now carry real types
+  rather than `Column[Any]`.
+- `if: false` on the image-publish and container-scan jobs became
+  `vars.ENABLE_IMAGE_PUBLISH == 'true'` / `vars.ENABLE_CONTAINER_SCAN == 'true'`.
+  Behaviour is identical while the variables are unset, but enabling them is now a
+  repository-settings change rather than a workflow edit.
 - **Python 3.14 is now the project's target runtime.** `requires-python` on the root
   project, the orchestrator and the Python SDK is `>=3.14`; the service images are
   `python:3.14.7-slim`; `black`/`ruff` `target-version` and `mypy` `python_version` are

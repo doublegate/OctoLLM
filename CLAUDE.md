@@ -194,8 +194,8 @@ Implementation is underway. This is no longer a documentation-only repository.
 | Rust workspace | `Cargo.toml` (5 members) | `reflex-layer`, `arms/executor`, `shared/rust/{common,types,clients}`; 240 tests passing |
 | Orchestrator | `services/orchestrator/` | FastAPI app, SQLAlchemy models, Reflex client with circuit breaker; 150 tests passing |
 | Arm images | `services/arms/{coder,judge,planner,retriever,safety-guardian}/` | Dockerfiles only; no service code yet |
-| Python SDK | `sdks/python/octollm-sdk/` | 8 service clients; 17 tests passing |
-| TypeScript SDK | `sdks/typescript/octollm-sdk/` | 8 service clients; 22 tests passing |
+| Python SDK | `sdks/python/octollm-sdk/` | 8 service clients; 28 tests passing |
+| TypeScript SDK | `sdks/typescript/octollm-sdk/` | 8 service clients; 28 tests passing |
 
 ### Toolchain
 
@@ -218,7 +218,7 @@ cargo fmt --all -- --check
 ruff check .
 black --check .
 cd services/orchestrator && pytest tests/          # 150 tests
-cd sdks/python/octollm-sdk && pytest tests/        # 17 tests
+cd sdks/python/octollm-sdk && pytest tests/        # 28 tests
 
 # TypeScript SDK
 cd sdks/typescript/octollm-sdk && npm ci && npm run build && npm test && npm run lint
@@ -226,15 +226,51 @@ cd sdks/typescript/octollm-sdk && npm ci && npm run build && npm test && npm run
 
 ### What CI does and does not cover
 
-`lint.yml` (ruff, black, rustfmt, clippy) and `security.yml` (bandit, gitleaks) are the
-only blocking gates. Note the gaps before trusting a green check:
+`ci.yml` is the blocking gate. It replaced `lint.yml` and `test.yml`, which between them
+could not fail: every test step was `|| echo "No tests found yet (Phase 0)"` *and*
+`continue-on-error: true`, and the summary job announced "Phase 0: No tests exist yet"
+over 240 Rust and 178 Python tests that CI never ran.
 
-- `test.yml` runs `pytest tests/unit/` from the repository root, which contains only a
-  placeholder. **The orchestrator and SDK suites are not run by CI.** The Rust test steps
-  are `continue-on-error: true`.
-- The TypeScript SDK has no CI job at all.
-- Container builds in `build.yml` and the Trivy scan in `security.yml` are `if: false`,
-  so Dockerfile changes are not validated by CI. Build them locally before merging one.
+Nine jobs, all blocking, all aggregated by `ci-gate` — **make `ci-gate` the only required
+check in branch protection**:
+
+| Job | Covers |
+|---|---|
+| `lint-python` | ruff, black |
+| `typecheck-python` | mypy, against real installed dependencies (**blocking**) |
+| `lint-rust` | `cargo fmt`/`clippy` at **workspace** scope, including the three `shared/rust` crates |
+| `lint-typescript` | eslint, tsc |
+| `lint-config` | yamllint, OpenAPI validity, shellcheck, actionlint |
+| `test-rust` | 240 workspace tests + the 17 Redis-backed ones against a `redis:8-alpine` service |
+| `test-orchestrator` | 150 tests, coverage floored at 85% by its own pytest config |
+| `test-sdk-python` | 28 tests |
+| `test-sdk-typescript` | 28 tests |
+
+Three invariants hold and are enforced rather than remembered:
+
+- **No `continue-on-error`, no `|| echo`.** A gate that cannot fail is indistinguishable
+  from one that passed.
+- **Every suite asserts a collection floor** (150 / 28 / 28 / 17). A suite that silently
+  collects zero tests produces the same green check as one that ran them all. Raise a
+  floor when you add tests; never lower one.
+- **`scripts/ci/check_gate_complete.py` fails if a job is added to `ci.yml` without being
+  added to `ci-gate.needs`.** Otherwise a new job is advisory by omission — it can fail
+  while the gate goes green.
+
+Still outside the gate, deliberately:
+
+- **Container builds** (`build.yml`) and the Trivy container scan (`security.yml`) are
+  gated on the `ENABLE_IMAGE_PUBLISH` / `ENABLE_CONTAINER_SCAN` repository variables,
+  which are unset. Five service Dockerfiles still `CMD` into modules that do not exist,
+  so those images cannot pass a smoke test yet. Build locally before merging a Dockerfile
+  change. They join `ci-gate` once the services they build are real.
+- **CodeQL** runs through GitHub's **default setup**, not a workflow in this repository.
+  Default setup is already configured for actions, javascript/typescript, python and rust
+  on a weekly schedule, and an advanced-setup workflow cannot coexist with it — GitHub
+  refuses SARIF from an advanced configuration while default setup is enabled. Its query
+  suite is `default`; raising it to `extended` (the equivalent of `security-and-quality`)
+  is a repository-settings change, not a code change.
+- **Snyk** stays advisory; it is skipped entirely without `SNYK_TOKEN`.
 
 ### Known gaps
 

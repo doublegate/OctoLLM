@@ -15,6 +15,7 @@ from .exceptions import (
     AuthenticationError,
     AuthorizationError,
     NotFoundError,
+    OctoLLMError,
     RateLimitError,
     ServiceUnavailableError,
     TimeoutError,
@@ -217,7 +218,9 @@ class BaseClient:
         request_timeout = timeout or self.timeout
         request_id = headers["X-Request-ID"]
 
-        last_exception = None
+        # Annotated explicitly: the loop assigns both TimeoutError and APIError to this,
+        # and the bare `= None` inferred the first of those and made the other an error.
+        last_exception: OctoLLMError | None = None
 
         for attempt in range(self.max_retries):
             try:
@@ -235,7 +238,8 @@ class BaseClient:
                         self._handle_error_response(response, request_id)
 
                     # Return successful response
-                    return response.json()
+                    payload: dict[str, Any] = response.json()
+                    return payload
 
             except httpx.TimeoutException:
                 last_exception = TimeoutError(

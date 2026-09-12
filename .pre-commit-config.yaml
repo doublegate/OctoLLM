@@ -50,18 +50,23 @@ repos:
         args: ['--fix', '--exit-non-zero-on-fix']
         files: '^(services|shared|tests)/.*\.py$'
 
-  # Python: MyPy (type checking)
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.3.1
-    hooks:
-      - id: mypy
-        additional_dependencies:
-          - types-redis
-          - types-requests
-          - pydantic
-        args: ['--ignore-missing-imports', '--no-implicit-optional']
-        files: '^(services|shared)/.*\.py$'
-        exclude: '(tests/|migrations/)'
+  # Python: MyPy (type checking) -- intentionally absent, see below.
+  # mypy is NOT a pre-commit hook. It used to run through mirrors-mypy, which installs
+  # mypy into an isolated venv holding three stub packages and passes
+  # --ignore-missing-imports, then type-checks one staged file at a time against a
+  # project it cannot import. That disagreed with CI in both directions: it missed every
+  # finding that needed a real dependency to see -- a telemetry module that could not be
+  # imported, an SDK method that raised AttributeError on every call -- and it reported
+  # no-any-return on a correct line because the callee resolved to Any.
+  #
+  # Reproducing CI's invocation here would require the project installed in whatever
+  # environment pre-commit happens to run in, which is not something a hook can assume.
+  # A weaker check that contradicts the authoritative one is worse than no local check,
+  # so mypy is owned by ci.yml's typecheck-python job, where it is blocking. To run it
+  # locally, mirror CI exactly:
+  #
+  #     pip install -e "services/orchestrator[dev]" -e "sdks/python/octollm-sdk"
+  #     mypy services/orchestrator/app sdks/python/octollm-sdk/octollm_sdk
 
   # Rust: Rustfmt (code formatting) - TEMPORARILY DISABLED (repo not found)
   # - repo: https://github.com/doubleodd/pre-commit-rust

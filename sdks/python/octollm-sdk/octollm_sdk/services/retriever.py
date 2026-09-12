@@ -4,6 +4,8 @@ Retriever Arm service client.
 The Retriever specializes in knowledge base search and document retrieval.
 """
 
+from typing import Any
+
 from ..client import BaseClient
 from ..models import HealthResponse, SearchRequest, SearchResponse
 
@@ -20,7 +22,7 @@ class RetrieverClient(BaseClient):
         base_url: str = "http://localhost:8004",
         api_key: str | None = None,
         bearer_token: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         """
         Initialize Retriever client.

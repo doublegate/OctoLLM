@@ -5,6 +5,8 @@ The Reflex Layer provides fast preprocessing including cache checks,
 PII detection, and prompt injection detection.
 """
 
+from typing import Any
+
 from ..client import BaseClient
 from ..models import CacheStats, HealthResponse, PreprocessRequest, PreprocessResponse
 
@@ -22,7 +24,7 @@ class ReflexClient(BaseClient):
         base_url: str = "http://localhost:8001",
         api_key: str | None = None,
         bearer_token: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         """
         Initialize Reflex Layer client.

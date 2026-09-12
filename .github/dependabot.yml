@@ -1,0 +1,136 @@
+# Dependabot configuration.
+#
+# Until now this file did not exist, so only GitHub's default security updates ran --
+# which open one pull request per advisory and nothing for routine version drift. The
+# result was 18 open pull requests and 127 open alerts before the September 2026 sweep.
+#
+# Two choices here are deliberate and worth keeping:
+#
+#   Grouping. Ungrouped minor/patch bumps across four Python manifests, a Cargo
+#   workspace, two npm packages and the Actions themselves produce dozens of pull
+#   requests a week, each burning a full CI run. Every ecosystem groups its minor and
+#   patch updates into a single pull request; majors stay separate, because a major is
+#   a change you want to read on its own.
+#
+#   Every manifest is listed. The sweep missed `sdks/python/octollm-sdk/uv.lock` --
+#   one of four Python lockfiles -- and Dependabot opened PR #31 for it the day after
+#   the consolidation merged. An ecosystem entry per manifest directory is what stops
+#   a lockfile going unwatched.
+
+version: 2
+
+updates:
+  # --- Python -------------------------------------------------------------------
+  # Four manifests, four entries. Root (poetry.lock), orchestrator (no lockfile),
+  # and the Python SDK (uv.lock).
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      python-minor-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    labels: [dependencies, python]
+
+  - package-ecosystem: pip
+    directory: "/services/orchestrator"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      orchestrator-minor-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    labels: [dependencies, python, orchestrator]
+
+  - package-ecosystem: uv
+    directory: "/sdks/python/octollm-sdk"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      python-sdk-minor-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    labels: [dependencies, python, sdk]
+
+  # --- Rust ---------------------------------------------------------------------
+  # One entry covers the whole workspace: the five members share Cargo.lock.
+  - package-ecosystem: cargo
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      cargo-minor-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "chore(deps)"
+    labels: [dependencies, rust]
+
+  # --- JavaScript / TypeScript --------------------------------------------------
+  - package-ecosystem: npm
+    directory: "/sdks/typescript/octollm-sdk"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      typescript-sdk-minor-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    labels: [dependencies, typescript, sdk]
+
+  # --- GitHub Actions -----------------------------------------------------------
+  # Actions drift silently: a workflow pinned to a deprecated major keeps running until
+  # the runner image drops it, and then fails on an unrelated pull request.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      actions-minor-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "ci(deps)"
+    labels: [dependencies, github-actions]
+
+  # --- Container images ---------------------------------------------------------
+  # The eight service Dockerfiles pin python:3.14.7-slim, rust:1.98.1-slim and
+  # debian:13.6-slim. A pinned base image is a dependency that no other ecosystem here
+  # watches.
+  - package-ecosystem: docker
+    directory: "/services/orchestrator"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore(deps)"
+    labels: [dependencies, docker]
+
+  - package-ecosystem: docker
+    directory: "/services/reflex-layer"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore(deps)"
+    labels: [dependencies, docker]

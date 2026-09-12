@@ -4,6 +4,8 @@ Coder Arm service client.
 The Coder specializes in code generation, debugging, and refactoring.
 """
 
+from typing import Any
+
 from ..client import BaseClient
 from ..models import CodeRequest, CodeResponse, HealthResponse
 
@@ -20,7 +22,7 @@ class CoderClient(BaseClient):
         base_url: str = "http://localhost:8005",
         api_key: str | None = None,
         bearer_token: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         """
         Initialize Coder client.
