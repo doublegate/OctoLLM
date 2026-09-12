@@ -38,40 +38,55 @@ OctoLLM applies these principles to build a distributed AI system that is **more
 
 ```mermaid
 graph TB
-    subgraph "Ingress Layer"
-        API[API Gateway]
-        REF[Reflex Layer<br/>Rust - implemented]
+    CLIENT([Client request]) --> REF
+
+    REF["<b>REFLEX LAYER</b> · 8080<br/><i>fast reflexes — no LLM in the path</i><br/>PII · injection · cache · rate limit"]
+    REF --> BRAIN
+
+    BRAIN["<b>ORCHESTRATOR — THE BRAIN</b> · 8000<br/><i>~40M neurons · plans and delegates, never executes</i>"]
+    GMEM[("Global semantic<br/>memory")]
+    BRAIN <--> GMEM
+    BRAIN -.->|"delegates · scoped capability tokens"| RING
+
+    subgraph RING["THE EIGHT ARMS · ~350M neurons · autonomous, and wired directly to each other"]
+        direction LR
+        A1["1 · Planner<br/>8001"] --- A2["2 · Retriever<br/>8002"] --- A3["3 · Coder<br/>8003"] --- A4["4 · Judge<br/>8004"]
+        A8["8 · Red Team<br/>8008"] --- A7["7 · Memory / Curator<br/>8007"] --- A6["6 · Executor<br/>8006"] --- A5["5 · Safety Guardian<br/>8005"]
+        A4 --- A5
+        A8 --- A1
     end
 
-    subgraph "Orchestration Layer"
-        ORCH[Orchestrator Brain<br/>Python - partial]
-        GMEM[(Global Memory<br/>PostgreSQL)]
-    end
+    classDef live fill:#1b5e20,stroke:#66bb6a,stroke-width:2px,color:#fff
+    classDef partial fill:#e65100,stroke:#ffb74d,stroke-width:2px,color:#fff
+    classDef stub fill:#4e342e,stroke:#a1887f,stroke-width:2px,color:#fff
+    classDef todo fill:#263238,stroke:#78909c,stroke-width:1px,color:#cfd8dc
+    classDef store fill:#1a237e,stroke:#7986cb,stroke-width:2px,color:#fff
 
-    subgraph "Execution Layer - Eight Arms"
-        PLAN[Planner<br/>8001]
-        RETR[Retriever<br/>8002]
-        CODE[Coder<br/>8003]
-        JUDG[Judge<br/>8004]
-        SAFE[Safety Guardian<br/>8005]
-        EXEC[Executor<br/>8006]
-        MEM[Memory / Curator<br/>8007]
-        RED[Red Team<br/>8008]
-    end
-
-    API --> REF
-    REF --> ORCH
-    ORCH --> PLAN & RETR & CODE & JUDG & SAFE & EXEC & MEM & RED
-    ORCH <--> GMEM
-    CODE <-. Neural Ring .-> JUDG
+    class REF live
+    class BRAIN partial
+    class A6 stub
+    class A1,A2,A3,A4,A5,A7,A8 todo
+    class GMEM store
 ```
 
-The eight-arm roster is biomimicry, not decoration: an octopus has roughly 40M neurons
-in its brain and 350M in its arms. **Arms are designed to talk to each other directly**
-(the "Neural Ring": Redis Streams plus capability-token-gated peer HTTP) rather than
-routing every exchange through the orchestrator.
+**Green** is implemented, **orange** partial, **brown** a stub, **grey** not started yet.
 
-Only the reflex layer and part of the orchestrator are implemented today. See
+**The closed loop is the point.** A biological octopus carries roughly 40M neurons in
+its brain and 350M in its arms, and its arms act — and coordinate with each other —
+without asking the brain first. So the eight arms here are joined in a ring, not fanned
+out as leaves under the orchestrator: **an arm can call its neighbour directly**, over
+Redis Streams and capability-token-gated peer HTTP, with no hop through the brain. The
+tight loops the design leans on (Coder to Judge, Planner to Executor, Retriever to
+Coder) are all arm-to-arm edges.
+
+The brain still governs — it is the sole signing authority for capability tokens, an arm
+can only be issued a token for an edge that appears in the declared topology, and every
+artifact carries provenance back to it — but it is not in the path of every exchange.
+That is the bottleneck the architecture exists to remove.
+
+Today only the reflex layer is complete and the orchestrator is partial; the ring itself
+lands in Stage 5, deliberately **before** any arm is built, because retrofitting seven
+arms onto a ring they were not designed for is strictly worse. See
 [Current Status](#current-status) for what exists, arm by arm.
 
 ## Key Features
