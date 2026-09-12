@@ -1,0 +1,31 @@
+{
+  "cache_hit": false,
+  "injection_detected": true,
+  "injection_matches": [
+    {
+      "confidence": 0.6,
+      "end": 28,
+      "indicators": [
+        "disregard",
+        "instructions"
+      ],
+      "injection_type": "ignore_previous_instructions",
+      "matched_text": "disregard prior instructions",
+      "severity": "high",
+      "start": 0
+    }
+  ],
+  "pii_detected": true,
+  "pii_matches": [
+    {
+      "confidence": 0.9,
+      "end": 58,
+      "matched_text": "alice@example.com",
+      "pii_type": "email",
+      "start": 41
+    }
+  ],
+  "processing_time_ms": 1.0,
+  "request_id": "00000000-0000-0000-0000-000000000000",
+  "status": "success"
+}

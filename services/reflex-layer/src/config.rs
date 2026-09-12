@@ -152,8 +152,24 @@ impl Config {
             // Logging defaults
             .set_default("logging.level", "info")?
             .set_default("logging.format", "json")?
-            // Override with environment variables (prefix: REFLEX_)
-            .add_source(config::Environment::with_prefix("REFLEX").separator("_"))
+            // Override with environment variables, prefix REFLEX_, section separator `__`.
+            //
+            // The separator was `_`, which made most of this struct unreachable. With a
+            // single underscore the crate cannot tell a section boundary from a word
+            // boundary, so `REFLEX_REDIS_POOL_SIZE` resolved to `redis.pool.size` rather
+            // than `redis.pool_size`, and `REFLEX_RATE_LIMIT_ENABLED` to
+            // `rate.limit.enabled` -- meaning the ENTIRE rate_limit section, every
+            // security field, and every multi-word field elsewhere could not be set by
+            // any environment variable at all. Five of twenty-four fields were reachable.
+            //
+            // With `__` the section is explicit: REFLEX_RATE_LIMIT__FREE_TIER_RPM.
+            // `prefix_separator` is set independently: without it the crate reuses
+            // `separator` for the prefix too and expects REFLEX__SERVER__PORT.
+            .add_source(
+                config::Environment::with_prefix("REFLEX")
+                    .prefix_separator("_")
+                    .separator("__"),
+            )
             .build()?;
 
         config.try_deserialize()
@@ -191,10 +207,61 @@ impl RedisConfig {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Mutex;
+
+    /// Serialises the tests that mutate process-global environment variables.
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
+
     use super::*;
+
+    /// Guards the separator. This is the test that would have caught the original
+    /// `_` separator: with it, every assertion below fails because the variable
+    /// resolves to a nested key that does not exist and the default survives.
+    #[test]
+    fn env_vars_reach_multi_word_and_sectioned_fields() {
+        // Env is process-global; keep the mutating tests serialised against each other.
+        let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+
+        let vars = [
+            ("REFLEX_SERVER__PORT", "9191"),
+            ("REFLEX_SERVER__MAX_BODY_SIZE", "2048"),
+            ("REFLEX_REDIS__POOL_SIZE", "42"),
+            ("REFLEX_REDIS__CACHE_TTL_SECS", "77"),
+            ("REFLEX_SECURITY__ENABLE_PII_DETECTION", "false"),
+            ("REFLEX_SECURITY__MAX_QUERY_LENGTH", "1234"),
+            ("REFLEX_RATE_LIMIT__ENABLED", "false"),
+            ("REFLEX_RATE_LIMIT__FREE_TIER_RPM", "7"),
+        ];
+        for (k, v) in vars {
+            std::env::set_var(k, v);
+        }
+
+        let config = Config::from_env().expect("config should load");
+
+        for (k, _) in vars {
+            std::env::remove_var(k);
+        }
+
+        assert_eq!(config.server.port, 9191, "single-word field in a section");
+        assert_eq!(config.server.max_body_size, 2048, "multi-word field");
+        assert_eq!(config.redis.pool_size, 42, "multi-word field");
+        assert_eq!(config.redis.cache_ttl_secs, 77, "multi-word field");
+        assert!(!config.security.enable_pii_detection, "security section");
+        assert_eq!(config.security.max_query_length, 1234, "security section");
+        assert!(!config.rate_limit.enabled, "multi-word SECTION name");
+        assert_eq!(
+            config.rate_limit.free_tier_rpm, 7,
+            "multi-word section AND field"
+        );
+    }
 
     #[test]
     fn test_default_config() {
+        // Takes the same lock as the env-mutating test. Without it the two race:
+        // cargo runs them on threads of one process, so REFLEX_SERVER__PORT set by
+        // the other test leaks in here and this one fails asserting the default.
+        let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+
         // Test that default configuration loads
         let config = Config::from_env();
         assert!(

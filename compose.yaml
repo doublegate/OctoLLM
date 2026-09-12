@@ -1,0 +1,177 @@
+# OctoLLM development stack.
+#
+# The canonical entry point: `make up`. It lives at the repository root because that
+# is where `docker compose` looks by default, and because the stack it describes is
+# the thing this project ships -- not an artefact of the infrastructure directory.
+#
+# Two rules hold here:
+#
+#   Every service must reach a HEALTHY state. Not "started": healthy. Five arm
+#   containers used to crash-loop on a CMD pointing at a module that was never
+#   written, and `compose up` reported that as a successful start.
+#
+#   Every environment variable must be one the service actually reads.
+#   `scripts/ci/check_compose_env.py` fails the build otherwise. All 23 variables the
+#   previous compose file set were silently ignored -- unprefixed against Pydantic's
+#   env_prefix, or using a separator the Rust config crate could not parse -- so the
+#   whole stack ran on compiled-in defaults pointing at localhost.
+#
+# The stack runs with NO API KEYS. Nothing here requires OpenAI or Anthropic
+# credentials; the arms are stubs until Stage 8 and the LLM provider defaults to a
+# local one in Stage 4.
+
+# Every published host port is overridable, because a developer machine that already
+# has something on 8080 should not make the whole stack unusable. Only the HOST side
+# moves; the container ports are the canonical map and never change.
+#
+#   REFLEX_PORT=18080 make up
+name: octollm
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 10s
+  timeout: 5s
+  retries: 5
+  start_period: 10s
+
+x-arm-defaults: &arm-defaults
+  restart: unless-stopped
+  depends_on:
+    redis:
+      condition: service_healthy
+  networks: [octollm]
+
+services:
+  # ---------------------------------------------------------------- persistence --
+  postgres:
+    image: postgres:17.7-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-octollm}
+      POSTGRES_USER: ${POSTGRES_USER:-octollm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-octollm_dev_password}
+      POSTGRES_INITDB_ARGS: -E UTF8
+    ports: ["${POSTGRES_PORT:-15432}:5432"]
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-octollm}"]
+    networks: [octollm]
+
+  redis:
+    image: redis:8-alpine
+    command: redis-server --appendonly yes
+    ports: ["${REDIS_PORT:-6379}:6379"]
+    volumes: [redis_data:/data]
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "redis-cli", "ping"]
+    networks: [octollm]
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.5
+    ports: ["${QDRANT_PORT:-6333}:6333", "${QDRANT_GRPC_PORT:-6334}:6334"]
+    volumes: [qdrant_data:/qdrant/storage]
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "timeout 1 sh -c 'pidof qdrant' || exit 1"]
+    networks: [octollm]
+
+  # -------------------------------------------------------------------- ingress --
+  reflex-layer:
+    build:
+      context: .
+      dockerfile: services/reflex-layer/Dockerfile
+    environment:
+      # REFLEX_<SECTION>__<FIELD>. The double underscore is the section separator;
+      # a single one cannot be told apart from a word boundary, which made the
+      # entire rate_limit section unreachable by any variable.
+      REFLEX_SERVER__HOST: 0.0.0.0
+      REFLEX_SERVER__PORT: 8080
+      REFLEX_REDIS__URL: redis://redis:6379
+      REFLEX_REDIS__CACHE_TTL_SECS: ${REFLEX_CACHE_TTL:-3600}
+      REFLEX_LOGGING__LEVEL: ${LOG_LEVEL:-info}
+      REFLEX_RATE_LIMIT__FREE_TIER_RPM: ${REFLEX_RATE_LIMIT_PER_MINUTE:-100}
+      REFLEX_SECURITY__ENABLE_PII_DETECTION: ${PII_DETECTION_ENABLED:-true}
+      REFLEX_SECURITY__ENABLE_INJECTION_DETECTION: ${INJECTION_DETECTION_ENABLED:-true}
+      RUST_LOG: ${RUST_LOG:-info}
+    ports: ["${REFLEX_PORT:-8080}:8080"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [octollm]
+
+  # --------------------------------------------------------------- orchestration --
+  orchestrator:
+    build:
+      context: .
+      dockerfile: services/orchestrator/Dockerfile
+    environment:
+      # A double-quoted scalar with a trailing backslash: the backslash escapes the
+      # line break so the value is joined with NOTHING. A folded scalar (`>-`) joins
+      # with a SPACE, which previously put one inside this URL.
+      ORCHESTRATOR_DATABASE_URL: "postgresql://${POSTGRES_USER:-octollm}:\
+        ${POSTGRES_PASSWORD:-octollm_dev_password}@postgres:5432/${POSTGRES_DB:-octollm}"
+      ORCHESTRATOR_REDIS_URL: redis://redis:6379
+      ORCHESTRATOR_REFLEX_LAYER_URL: http://reflex-layer:8080
+      ORCHESTRATOR_LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ORCHESTRATOR_ENVIRONMENT: ${ENVIRONMENT:-development}
+      ORCHESTRATOR_TASK_DEFAULT_TIMEOUT: ${TASK_TIMEOUT:-300}
+      # Optional. The stack must come up without either.
+      ORCHESTRATOR_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ORCHESTRATOR_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    ports: ["${ORCHESTRATOR_PORT:-8000}:8000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      reflex-layer:
+        condition: service_started
+    restart: unless-stopped
+    networks: [octollm]
+
+  # ----------------------------------------------------------------------- arms --
+  # Stubs until Stage 8. Each serves /health, /ready, /capabilities and /metrics,
+  # and returns 501 from /execute naming the stage that implements it -- rather than
+  # a plausible fake, which would make an unimplemented arm indistinguishable from a
+  # working one.
+  planner-arm:
+    <<: *arm-defaults
+    build: {context: ., dockerfile: services/arms/planner/Dockerfile}
+    ports: ["${PLANNER_PORT:-8001}:8001"]
+
+  retriever-arm:
+    <<: *arm-defaults
+    build: {context: ., dockerfile: services/arms/retriever/Dockerfile}
+    ports: ["${RETRIEVER_PORT:-8002}:8002"]
+
+  coder-arm:
+    <<: *arm-defaults
+    build: {context: ., dockerfile: services/arms/coder/Dockerfile}
+    ports: ["${CODER_PORT:-8003}:8003"]
+
+  judge-arm:
+    <<: *arm-defaults
+    build: {context: ., dockerfile: services/arms/judge/Dockerfile}
+    ports: ["${JUDGE_PORT:-8004}:8004"]
+
+  safety-guardian-arm:
+    <<: *arm-defaults
+    build: {context: ., dockerfile: services/arms/safety_guardian/Dockerfile}
+    ports: ["${SAFETY_GUARDIAN_PORT:-8005}:8005"]
+
+  executor-arm:
+    <<: *arm-defaults
+    build: {context: ., dockerfile: services/arms/executor/Dockerfile}
+    # Host 18006 deliberately: 8006 is the CONTAINER port, and the canonical port map
+    # records both. The README claimed localhost:8006 for years.
+    ports: ["${EXECUTOR_PORT:-18006}:8006"]
+
+volumes:
+  postgres_data:
+  redis_data:
+  qdrant_data:
+
+networks:
+  octollm:
+    driver: bridge

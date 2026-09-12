@@ -156,8 +156,30 @@ async fn main() -> ReflexResult<()> {
         start_time: std::time::Instant::now(),
     });
 
-    // Build router with middleware
-    let app = Router::new()
+    let app = build_router(state.clone());
+
+    // Create TCP listener
+    let addr = format!("{}:{}", config.server.host, config.server.port);
+    let listener = tokio::net::TcpListener::bind(&addr)
+        .await
+        .map_err(|e| ReflexError::Internal(format!("Failed to bind to {}: {}", addr, e)))?;
+
+    tracing::info!("Reflex layer listening on {}", addr);
+    tracing::info!("Configuration loaded: {:?}", config);
+
+    serve(listener, app, shutdown_signal()).await?;
+
+    tracing::info!("Reflex layer shutdown complete");
+    Ok(())
+}
+
+/// Build the application router.
+///
+/// Extracted so that `main` and the tests construct the SAME router. A test that
+/// assembles its own `Router` cannot catch a defect in how the real one is wired,
+/// which is precisely what happened with `/process`.
+pub fn build_router(state: Arc<AppState>) -> Router {
+    Router::new()
         // Main processing endpoint
         .route("/process", post(handlers::process_text))
         // Health and readiness endpoints
@@ -175,25 +197,30 @@ async fn main() -> ReflexResult<()> {
                 .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
                 .on_response(DefaultOnResponse::new().level(Level::INFO)),
         )
-        .layer(CorsLayer::permissive()); // TODO(#2): Configure CORS properly for production
+        .layer(CorsLayer::permissive()) // TODO(#2): Configure CORS properly for production
+}
 
-    // Create TCP listener
-    let addr = format!("{}:{}", config.server.host, config.server.port);
-    let listener = tokio::net::TcpListener::bind(&addr)
-        .await
-        .map_err(|e| ReflexError::Internal(format!("Failed to bind to {}: {}", addr, e)))?;
-
-    tracing::info!("Reflex layer listening on {}", addr);
-    tracing::info!("Configuration loaded: {:?}", config);
-
-    // Start server with graceful shutdown
-    axum::serve(listener, app)
-        .with_graceful_shutdown(shutdown_signal())
-        .await
-        .map_err(|e| ReflexError::Internal(format!("Server error: {}", e)))?;
-
-    tracing::info!("Reflex layer shutdown complete");
-    Ok(())
+/// Serve the router.
+///
+/// `into_make_service_with_connect_info` is load-bearing, not boilerplate.
+/// `handlers::process_text` extracts `ConnectInfo<SocketAddr>` to get the client
+/// address for per-IP rate limiting. `axum::serve(listener, router)` accepts a bare
+/// `Router` and inserts no connection info, so that extractor failed on EVERY request
+/// and `POST /process` -- the only endpoint with business logic -- returned 500 for
+/// the entire life of the service. Nothing caught it because no test built the real
+/// router or bound a real socket.
+pub async fn serve(
+    listener: tokio::net::TcpListener,
+    app: Router,
+    shutdown: impl std::future::Future<Output = ()> + Send + 'static,
+) -> ReflexResult<()> {
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+    )
+    .with_graceful_shutdown(shutdown)
+    .await
+    .map_err(|e| ReflexError::Internal(format!("Server error: {}", e)))
 }
 
 /// Health check endpoint
@@ -311,6 +338,82 @@ async fn shutdown_signal() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Regression test for the `/process` routing defect.
+    ///
+    /// This binds a REAL socket and drives the request through the same `serve()`
+    /// the binary uses, because the defect lived in `serve()` and nowhere else.
+    /// A `Router::oneshot` test could not have caught it: oneshot never establishes
+    /// a connection, so `ConnectInfo` is absent there too, and such a test either
+    /// fails for the wrong reason or -- if it hand-builds its own router -- passes
+    /// while production returns 500 on every request.
+    ///
+    /// Before the fix this asserted 500 with an extractor-rejection body. After it,
+    /// any status other than 500 proves `ConnectInfo` was inserted, since that is the
+    /// only thing that failed before the handler's own logic ran.
+    #[tokio::test]
+    #[ignore = "requires Redis on localhost:6379"]
+    async fn process_endpoint_receives_connect_info() {
+        let config = Config::from_env().expect("default config should load");
+        let redis_client = Arc::new(RedisClient::new(config.redis.clone()).expect("redis client"));
+
+        let state = Arc::new(AppState {
+            config: Arc::new(config),
+            redis: (*redis_client).clone(),
+            pii_detector: Arc::new(PIIDetector::new(PIIConfig {
+                pattern_set: PatternSet::Standard,
+                enable_validation: true,
+                enable_context: false,
+            })),
+            injection_detector: Arc::new(InjectionDetector::new(InjectionConfig {
+                detection_mode: DetectionMode::Standard,
+                enable_context_analysis: true,
+                enable_entropy_check: true,
+                severity_threshold: Severity::Low,
+            })),
+            cache: Arc::new(RedisCache::new(redis_client.clone())),
+            rate_limiter: Arc::new(RedisRateLimiter::new(redis_client.clone())),
+            start_time: std::time::Instant::now(),
+        });
+
+        // Port 0 lets the OS choose, so the test never collides with a running service.
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("bind ephemeral port");
+        let addr = listener.local_addr().expect("local addr");
+
+        let (tx, rx) = tokio::sync::oneshot::channel::<()>();
+        let server = tokio::spawn(async move {
+            serve(listener, build_router(state), async {
+                let _ = rx.await;
+            })
+            .await
+        });
+
+        let response = reqwest::Client::new()
+            .post(format!("http://{addr}/process"))
+            .json(&serde_json::json!({
+                "text": "a benign request with no PII and no injection",
+                "use_cache": false
+            }))
+            .send()
+            .await
+            .expect("request should reach the server");
+
+        let status = response.status();
+        let body = response.text().await.unwrap_or_default();
+
+        let _ = tx.send(());
+        let _ = server.await;
+
+        assert_ne!(
+            status.as_u16(),
+            500,
+            "POST /process returned 500. If the body mentions ConnectInfo or a missing \
+             extension, `serve()` has stopped calling into_make_service_with_connect_info \
+             and every request is failing again. Body: {body}"
+        );
+    }
 
     #[test]
     fn test_parse_log_level() {

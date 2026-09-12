@@ -72,13 +72,17 @@ services:
       dockerfile: services/reflex-layer/Dockerfile
     container_name: octollm-reflex
     environment:
-      REDIS_URL: redis://redis:6379
-      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      # REFLEX_<SECTION>__<FIELD>. The double underscore is the section separator;
+      # with the single underscore this file used, REFLEX_RATE_LIMIT_PER_MINUTE
+      # resolved to `rate.limit.per.minute` and the entire rate_limit section -- along
+      # with every multi-word field in the struct -- was unreachable by any variable.
+      REFLEX_REDIS__URL: redis://redis:6379
+      REFLEX_REDIS__CACHE_TTL_SECS: ${REFLEX_CACHE_TTL:-3600}
+      REFLEX_LOGGING__LEVEL: ${LOG_LEVEL:-info}
+      REFLEX_RATE_LIMIT__FREE_TIER_RPM: ${REFLEX_RATE_LIMIT_PER_MINUTE:-100}
+      REFLEX_SECURITY__ENABLE_PII_DETECTION: ${PII_DETECTION_ENABLED:-true}
+      REFLEX_SECURITY__ENABLE_INJECTION_DETECTION: ${INJECTION_DETECTION_ENABLED:-true}
       RUST_LOG: ${RUST_LOG:-info}
-      REFLEX_CACHE_TTL: ${REFLEX_CACHE_TTL:-3600}
-      REFLEX_RATE_LIMIT_PER_MINUTE: ${REFLEX_RATE_LIMIT_PER_MINUTE:-100}
-      PII_DETECTION_ENABLED: ${PII_DETECTION_ENABLED:-true}
-      PII_AUTO_REDACT: ${PII_AUTO_REDACT:-true}
     ports:
       - "8080:8080"
     depends_on:
@@ -94,32 +98,35 @@ services:
       dockerfile: services/orchestrator/Dockerfile
     container_name: octollm-orchestrator
     environment:
-      # Database connections
-      DATABASE_URL: >-
-        postgresql://${POSTGRES_USER:-octollm}:${POSTGRES_PASSWORD:-octollm_dev_password}
-        @postgres:5432/${POSTGRES_DB:-octollm}
-      REDIS_URL: redis://redis:6379
-      QDRANT_URL: http://qdrant:6333
+      # Every name here is ORCHESTRATOR_-prefixed because app/config.py declares
+      # env_prefix="ORCHESTRATOR_". Unprefixed names are silently ignored by Pydantic
+      # Settings, which is how this whole block came to have no effect at all.
+      # scripts/ci/check_compose_env.py fails the build if a name drifts again.
 
-      # LLM API keys
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # Database. NOT a folded scalar: `>-` joins its lines with a SPACE, which put
+      # one inside the URL -- "...password @postgres:5432/..." -- and made it invalid.
+      # A double-quoted scalar with a trailing backslash: the backslash escapes the
+      # line break, so the value is joined with NOTHING. A folded scalar (`>-`) joins
+      # with a SPACE, which is what previously put one inside this URL.
+      ORCHESTRATOR_DATABASE_URL: "postgresql://${POSTGRES_USER:-octollm}:\
+        ${POSTGRES_PASSWORD:-octollm_dev_password}@postgres:5432/${POSTGRES_DB:-octollm}"
+      ORCHESTRATOR_REDIS_URL: redis://redis:6379
+
+      # LLM API keys. Both optional: the stack must come up without them.
+      ORCHESTRATOR_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ORCHESTRATOR_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
 
       # Service configuration
-      LOG_LEVEL: ${LOG_LEVEL:-INFO}
-      ENVIRONMENT: ${ENVIRONMENT:-development}
-      MAX_PARALLEL_ARMS: ${MAX_PARALLEL_ARMS:-5}
-      TASK_TIMEOUT: ${TASK_TIMEOUT:-300}
-      CACHE_TTL: ${CACHE_TTL:-3600}
+      ORCHESTRATOR_LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ORCHESTRATOR_ENVIRONMENT: ${ENVIRONMENT:-development}
+      ORCHESTRATOR_TASK_DEFAULT_TIMEOUT: ${TASK_TIMEOUT:-300}
 
-      # Service URLs
-      REFLEX_URL: http://reflex-layer:8080
-      PLANNER_URL: http://planner-arm:8001
-      RETRIEVER_URL: http://retriever-arm:8002
-      CODER_URL: http://coder-arm:8003
-      JUDGE_URL: http://judge-arm:8004
-      SAFETY_GUARDIAN_URL: http://safety-guardian-arm:8005
-      EXECUTOR_URL: http://executor-arm:8006
+      # Reflex layer
+      ORCHESTRATOR_REFLEX_LAYER_URL: http://reflex-layer:8080
+
+      # QDRANT_URL, MAX_PARALLEL_ARMS, CACHE_TTL and the six per-arm URLs were set here
+      # and read nowhere. They return when something reads them: the arm URLs with the
+      # arm registry in Stage 4, Qdrant with the Memory arm in Stage 6.
     ports:
       - "8000:8000"
     depends_on:
@@ -216,7 +223,7 @@ services:
   safety-guardian-arm:
     build:
       context: ../..
-      dockerfile: services/arms/safety-guardian/Dockerfile
+      dockerfile: services/arms/safety_guardian/Dockerfile
     container_name: octollm-safety-guardian
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
@@ -225,7 +232,7 @@ services:
     ports:
       - "8005:8005"
     volumes:
-      - ../../services/arms/safety-guardian:/app/services/arms/safety-guardian:cached
+      - ../../services/arms/safety_guardian:/app/services/arms/safety_guardian:cached
     restart: unless-stopped
     networks:
       - octollm-network

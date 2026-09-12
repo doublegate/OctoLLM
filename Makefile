@@ -32,10 +32,11 @@ SDK_TS       := sdks/typescript/octollm-sdk
 # Collection floors. A suite that silently collects zero tests reports exactly what a
 # suite that ran them all reports; these are what separate the two. Raise one when you
 # add tests. Never lower one to make a red build green -- that is the bug, not the fix.
-FLOOR_ORCHESTRATOR := 150
+FLOOR_ORCHESTRATOR := 168
 FLOOR_SDK_PY       := 28
 FLOOR_SDK_TS_FILES := 3
-FLOOR_RUST_IGNORED := 17
+# 17 Redis-backed, plus the /process connect-info regression, which also needs Redis.
+FLOOR_RUST_IGNORED := 18
 
 .PHONY: help
 help: ## Show this help
@@ -202,9 +203,42 @@ secrets-selftest: ## Prove the scanner works: 4 planted secrets found, old confi
 gate-check: ## Fail if a CI job is not wired into ci-gate
 	$(PYTHON) scripts/ci/check_gate_complete.py .github/workflows/ci.yml
 
+.PHONY: compose-env-check
+compose-env-check: ## Fail if a compose env var is not one the service actually reads
+	$(PYTHON) scripts/ci/check_compose_env.py
+
+.PHONY: port-map-check
+port-map-check: ## Fail if any Dockerfile, compose file or OpenAPI spec disagrees on a port
+	$(PYTHON) scripts/ci/check_port_map.py
+
 .PHONY: verify
-verify: version-check diagram-check gate-check lint typecheck secrets-scan secrets-selftest test ## Everything CI runs, minus the Redis suite
+verify: version-check diagram-check gate-check compose-env-check port-map-check lint typecheck secrets-scan secrets-selftest test ## Everything CI runs, minus the Redis suite
 	@printf '\n\033[32mverify: OK\033[0m  (for the Redis-backed Rust tests: make redis test-rust-redis)\n'
+
+# =============================================================================
+# The stack
+# =============================================================================
+
+.PHONY: up
+up: ## Build and start the whole stack; waits for every service to be HEALTHY
+	docker compose up -d --build --wait
+	@$(MAKE) --no-print-directory ps
+
+.PHONY: down
+down: ## Stop the stack and remove its volumes
+	docker compose down -v
+
+.PHONY: ps
+ps: ## Show each service and its health
+	@docker compose ps --format 'table {{.Service}}\t{{.Status}}'
+
+.PHONY: logs
+logs: ## Follow the logs of every service
+	docker compose logs -f
+
+.PHONY: smoke
+smoke: ## Assert the running stack is healthy and a task round-trips
+	./scripts/smoke.sh
 
 # =============================================================================
 # Local services

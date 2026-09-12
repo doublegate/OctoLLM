@@ -316,19 +316,21 @@ make redis && make test-rust-redis && make redis-stop
 ### Development Environment
 
 ```bash
-# Start the development stack (databases, monitoring, and service containers)
-cd infrastructure/docker-compose
-docker compose -f docker-compose.dev.yml up -d
-docker compose -f docker-compose.dev.yml ps
-docker compose -f docker-compose.dev.yml logs -f orchestrator
-docker compose -f docker-compose.dev.yml down
+make up      # build and start everything; waits for every service to be HEALTHY
+make ps      # each service and its health
+make smoke   # assert the stack works and a task round-trips
+make logs    # follow every service
+make down    # stop and remove volumes
 ```
 
-> **The stack does not come up healthy yet.** Five of the eight service Dockerfiles
-> `CMD` into Python modules that do not exist, so those containers crash-loop, and the
-> compose environment variables do not currently reach either real service. Both are
-> fixed in Stage 3, whose exit criterion is `docker compose up -d` reaching all-healthy
-> with a task round-tripping end to end. The databases and monitoring services do work.
+All eleven services reach a healthy state, and a task round-trips: submitted through
+the orchestrator, screened by the reflex layer, persisted, and read back by id. It
+**stays `pending`** — the orchestrator does not call an arm yet, and `make smoke`
+asserts `pending` on purpose rather than pretending otherwise. Stage 7's execution
+engine is what makes `completed` reachable, and that assertion changes with it.
+
+The stack needs **no API keys**. Every published host port is overridable if one is
+taken on your machine — `REFLEX_PORT=18080 make up`.
 
 ### Service Access
 

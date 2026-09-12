@@ -30,42 +30,55 @@ logger = structlog.get_logger(__name__)
 
 
 class ProcessStatus(StrEnum):
-    """Status of text processing by Reflex Layer."""
+    """
+    Status of text processing by the Reflex Layer.
 
-    SUCCESS = "Success"
-    BLOCKED = "Blocked"
-    ERROR = "Error"
+    These are the values the Rust service actually emits. They were "Success",
+    "Blocked" and "Error" -- capitalised, and with no rate-limited variant at all --
+    against a service emitting lowercase, so EVERY response failed validation here,
+    not only ones carrying detections. The integration had never worked for any input.
+    """
+
+    SUCCESS = "success"
+    BLOCKED = "blocked"
+    RATE_LIMITED = "rate_limited"
+    ERROR = "error"
 
 
 class PIIMatch(BaseModel):
-    """Details of a detected PII match."""
+    """
+    One PII detection, in the shape the Reflex Layer sends.
 
-    pii_type: str = Field(..., description="Type of PII (Email, SSN, CreditCard, etc.)")
-    value: str = Field(..., description="Matched PII value")
-    position: int = Field(..., description="Character position in text")
+    Was `value` / `position` / `context`; the service sends `matched_text` and a
+    `start`/`end` span. A span is strictly more information than a single offset --
+    the orchestrator needs both ends to redact -- and `context` was required here
+    while never being sent at all.
+    """
+
+    pii_type: str = Field(..., description="Type of PII: email, ssn, credit_card, ...")
+    start: int = Field(..., ge=0, description="Start offset of the match, inclusive")
+    end: int = Field(..., ge=0, description="End offset of the match, exclusive")
+    matched_text: str = Field(..., description="The matched substring")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Detection confidence")
-    context: str = Field(..., description="Surrounding context")
-
-
-class ContextAnalysis(BaseModel):
-    """Context analysis for injection detection."""
-
-    is_quoted: bool = Field(False, description="Pattern appears in quotes")
-    is_academic: bool = Field(False, description="Pattern in academic/discussion context")
-    is_testing: bool = Field(False, description="Pattern in testing context")
-    is_negation: bool = Field(False, description="Pattern used in negation")
 
 
 class InjectionMatch(BaseModel):
-    """Details of a detected injection attempt."""
+    """
+    One prompt-injection detection, in the shape the Reflex Layer sends.
 
-    injection_type: str = Field(..., description="Type of injection detected")
-    severity: str = Field(..., description="Severity level (Critical, High, Medium, Low)")
-    matched_text: str = Field(..., description="Text that matched the pattern")
-    position: int = Field(..., description="Character position in text")
+    `ContextAnalysis` is gone: the service has never sent a `context_analysis`
+    object, and requiring one guaranteed a validation failure on every detection.
+    It sends `indicators` -- the tokens that triggered the match -- instead.
+    """
+
+    injection_type: str = Field(..., description="Type: ignore_previous_instructions, ...")
+    severity: str = Field(..., description="Severity: low, medium, high, critical")
+    matched_text: str = Field(..., description="The matched substring")
+    start: int = Field(..., ge=0, description="Start offset of the match, inclusive")
+    end: int = Field(..., ge=0, description="End offset of the match, exclusive")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Detection confidence")
-    context_analysis: ContextAnalysis = Field(
-        default_factory=lambda: ContextAnalysis(), description="Contextual analysis"
+    indicators: list[str] = Field(
+        default_factory=list, description="Tokens that triggered the match"
     )
 
 

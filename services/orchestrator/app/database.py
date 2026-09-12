@@ -12,6 +12,7 @@ from uuid import UUID
 import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import selectinload
 from sqlalchemy.pool import AsyncAdaptedQueuePool
 
 from app.config import get_settings
@@ -209,7 +210,15 @@ async def get_task(session: AsyncSession, task_id: str) -> Task | None:
         logger.warning("database.invalid_task_id", task_id=task_id)
         return None
 
-    result = await session.execute(select(Task).where(Task.id == task_uuid))
+    # selectinload, not lazy loading. `Task.to_response()` reads `task.result`, and
+    # callers use the task after the session context has exited -- so the lazy load
+    # raised DetachedInstanceError on GET /tasks/{id} against a real database. Async
+    # SQLAlchemy cannot lazy-load at all in any case: outside a session it detaches,
+    # and inside one it raises MissingGreenlet. The relationship is always needed
+    # here, so it is always fetched.
+    result = await session.execute(
+        select(Task).where(Task.id == task_uuid).options(selectinload(Task.result))
+    )
     task: Task | None = result.scalar_one_or_none()
 
     if task:
@@ -307,15 +316,26 @@ async def store_task_result(
         logger.warning("database.task_not_found_for_result", task_id=task_id)
         return None
 
-    # Create or update result
-    task_result = TaskResult(
-        task_id=UUID(task_id),
-        result=result,
-        error=error,
-        processing_time_ms=processing_time_ms,
-    )
+    # A genuine upsert, which the docstring has always claimed and the code never did.
+    # TaskResult.task_id is unique=True and this function unconditionally INSERTed, so
+    # the second call for a task raised IntegrityError. That is not a hypothetical: the
+    # execution engine checkpoints and resumes, and a resumed graph re-runs its final
+    # node, which converts a recoverable task into a permanently stuck one.
+    existing = await session.execute(select(TaskResult).where(TaskResult.task_id == UUID(task_id)))
+    task_result = existing.scalar_one_or_none()
 
-    session.add(task_result)
+    if task_result is None:
+        task_result = TaskResult(
+            task_id=UUID(task_id),
+            result=result,
+            error=error,
+            processing_time_ms=processing_time_ms,
+        )
+        session.add(task_result)
+    else:
+        task_result.result = result
+        task_result.error = error
+        task_result.processing_time_ms = processing_time_ms
 
     # Update task status based on result
     if error:

@@ -101,11 +101,11 @@ def sample_reflex_response_pii():
         processing_time_ms=5,
         pii_matches=[
             PIIMatch(
-                pii_type="Email",
-                value="user@example.com",
-                position=15,
+                pii_type="email",
+                matched_text="user@example.com",
+                start=15,
+                end=31,
                 confidence=0.99,
-                context="My email is user@example.com and ...",
             )
         ],
         injection_matches=[],
@@ -127,11 +127,13 @@ def sample_reflex_response_injection():
         pii_matches=[],
         injection_matches=[
             InjectionMatch(
-                injection_type="IgnorePreviousInstructions",
-                severity="Critical",
+                injection_type="ignore_previous_instructions",
+                severity="critical",
                 matched_text="Ignore all previous instructions",
-                position=0,
+                start=0,
+                end=32,
                 confidence=0.95,
+                indicators=["ignore", "instructions"],
             )
         ],
     )

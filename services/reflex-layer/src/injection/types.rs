@@ -10,6 +10,7 @@ use std::fmt;
 /// `Ord` is derived (variant declaration order) purely so detection results can be
 /// given a deterministic tiebreak; it carries no severity or priority meaning.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum InjectionType {
     /// Ignore/Disregard previous instructions
     IgnorePreviousInstructions,
@@ -24,6 +25,7 @@ pub enum InjectionType {
     /// Role-playing jailbreak (let's play a game where)
     RolePlayingJailbreak,
     /// DAN (Do Anything Now) variants
+    #[serde(rename = "dan_variant")]
     DANVariant,
     /// Delimiter injection (</system>, <!-- end prompt -->)
     DelimiterInjection,
@@ -67,6 +69,7 @@ impl fmt::Display for InjectionType {
 
 /// Severity level for different injection types
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Severity {
     /// Low severity (score 1-3) - Suspicious but might be legitimate
     Low,

@@ -1432,222 +1432,28 @@ octollm_arms_active{arm_id="executor-001"} 1
 
 ## Arm Interface Contract
 
-All arms must implement a standard interface for interoperability with the orchestrator.
-
-### Standard Arm Endpoints
-
-Every arm MUST expose these endpoints:
-
-#### POST /{arm_id}/execute
-
-Execute a task.
-
-**Request**:
-```json
-{
-  "task_contract": {
-    "task_id": "task-550e8400-e29b-41d4-a716-446655440000",
-    "goal": "Generate Python function for JSON parsing",
-    "context": {"language": "python"},
-    "budget": {"max_tokens": 2000}
-  },
-  "capability_token": "eyJ0eXAiOiJKV1QiLCJhbGc..."
-}
-```
-
-**Response**:
-```json
-{
-  "task_id": "task-550e8400-e29b-41d4-a716-446655440000",
-  "success": true,
-  "result": {
-    "code": "def parse_json(data: str) -> dict: ...",
-    "language": "python",
-    "explanation": "Function includes error handling..."
-  },
-  "provenance": {
-    "arm_id": "coder-001",
-    "processing_time_ms": 1450,
-    "confidence": 0.92
-  }
-}
-```
-
-#### GET /{arm_id}/health
-
-Health check.
-
-**Response**:
-```json
-{
-  "status": "healthy",
-  "arm_id": "coder-001",
-  "version": "1.2.3",
-  "capabilities": ["code_generation", "code_analysis"],
-  "active_tasks": 3,
-  "max_concurrent_tasks": 20
-}
-```
-
-#### GET /{arm_id}/capabilities
-
-Get arm capabilities.
-
-**Response**:
-```json
-{
-  "arm_id": "coder-001",
-  "name": "Coder Arm",
-  "capabilities": ["code_generation", "code_analysis", "refactoring"],
-  "input_schema": {...},
-  "output_schema": {...},
-  "cost_tier": 3,
-  "average_latency_ms": 1500.0
-}
-```
-
-### Request Format
-
-Standard request to arm:
-
-```python
-class ArmRequest(BaseModel):
-    """Standard request format for arm execution."""
-    task_contract: TaskContract
-    capability_token: str
-    request_id: str = Field(default_factory=lambda: f"req-{uuid.uuid4()}")
-    timeout_seconds: int = Field(default=30, ge=1, le=300)
-
-# Example
-request = ArmRequest(
-    task_contract=TaskContract(
-        task_id="task-550e8400-e29b-41d4-a716-446655440000",
-        goal="Generate code",
-        budget={"max_tokens": 2000}
-    ),
-    capability_token="eyJ0eXAiOiJKV1QiLCJhbGc...",
-    timeout_seconds=30
-)
-```
-
-### Response Format
-
-Standard response from arm:
-
-```python
-class ArmResponse(BaseModel):
-    """Standard response format from arm execution."""
-    task_id: str
-    success: bool
-    result: Optional[Dict[str, Any]] = None
-    error: Optional[ErrorResponse] = None
-    provenance: ProvenanceMetadata
-
-# Example - Success
-response = ArmResponse(
-    task_id="task-550e8400-e29b-41d4-a716-446655440000",
-    success=True,
-    result={
-        "code": "def parse_json(data): ...",
-        "language": "python"
-    },
-    provenance=ProvenanceMetadata(
-        arm_id="coder-001",
-        processing_time_ms=1450,
-        confidence=0.92
-    )
-)
-
-# Example - Error
-response = ArmResponse(
-    task_id="task-550e8400-e29b-41d4-a716-446655440000",
-    success=False,
-    error=ErrorResponse(
-        error_code="EXECUTION_TIMEOUT",
-        category="timeout",
-        message="Task execution exceeded timeout",
-        retryable=True,
-        retry_after_seconds=60
-    ),
-    provenance=ProvenanceMetadata(
-        arm_id="coder-001",
-        processing_time_ms=30000,
-        confidence=0.0
-    )
-)
-```
-
-### Error Handling
-
-Arms must handle errors gracefully and return structured error responses:
-
-```python
-async def execute_task(request: ArmRequest) -> ArmResponse:
-    """Execute task with comprehensive error handling."""
-    try:
-        # Validate capability token
-        if not verify_capability_token(request.capability_token):
-            return ArmResponse(
-                task_id=request.task_contract.task_id,
-                success=False,
-                error=ErrorResponse(
-                    error_code="INVALID_CAPABILITY_TOKEN",
-                    category="authentication",
-                    message="Capability token is invalid or expired",
-                    retryable=False
-                ),
-                provenance=ProvenanceMetadata(
-                    arm_id=ARM_ID,
-                    processing_time_ms=0,
-                    confidence=0.0
-                )
-            )
-
-        # Execute task with timeout
-        result = await asyncio.wait_for(
-            _execute_task_internal(request.task_contract),
-            timeout=request.timeout_seconds
-        )
-
-        return ArmResponse(
-            task_id=request.task_contract.task_id,
-            success=True,
-            result=result,
-            provenance=ProvenanceMetadata(...)
-        )
-
-    except asyncio.TimeoutError:
-        return ArmResponse(
-            task_id=request.task_contract.task_id,
-            success=False,
-            error=ErrorResponse(
-                error_code="EXECUTION_TIMEOUT",
-                category="timeout",
-                message=f"Task execution exceeded {request.timeout_seconds}s",
-                retryable=True,
-                retry_after_seconds=60
-            ),
-            provenance=ProvenanceMetadata(...)
-        )
-
-    except Exception as e:
-        logger.exception("Unexpected error during task execution")
-        return ArmResponse(
-            task_id=request.task_contract.task_id,
-            success=False,
-            error=ErrorResponse(
-                error_code="INTERNAL_ERROR",
-                category="internal",
-                message="An unexpected error occurred",
-                details={"error_type": type(e).__name__},
-                retryable=True,
-                retry_after_seconds=30
-            ),
-            provenance=ProvenanceMetadata(...)
-        )
-```
-
----
+> **This section was deleted in Stage 3 of the v1.0.0 plan (2026-09-12).**
+>
+> It described a `POST /{arm_id}/execute` endpoint and an `ArmRequest` model that
+> conflicted with **every** other source: the eight OpenAPI specifications, both
+> SDKs, and the two implementations that exist. It was the fourth of four mutually
+> incompatible descriptions of the same API, and nothing had ever implemented it.
+>
+> Four descriptions could not all be built on, so the contract freeze picked one and
+> deleted the rest. The rule it settled on: **the implementation wins, and the
+> specification is generated from it**; for arms that do not exist yet, the
+> hand-written OpenAPI spec is the contract until there is code to generate from.
+>
+> The canonical contract now lives in [`docs/api/CONTRACT.md`](./CONTRACT.md), and
+> the per-arm interfaces in `docs/api/openapi/*.yaml`. The stub arms in
+> `services/arms/*/src/main.py` serve `/health`, `/ready`, `/capabilities`,
+> `/metrics` and a `/execute` that returns **501** naming the stage that implements
+> it.
+>
+> The rationale is kept rather than the specification: an arm interface *is* needed,
+> and the shared framework in Stage 4 defines it in `octollm_common/models/contracts.py`
+> — imported by the arms as their FastAPI models and by the orchestrator as its client
+> models, so the two cannot drift by construction.
 
 ## Reflex Layer API
 

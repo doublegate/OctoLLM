@@ -79,7 +79,11 @@ pub struct ProcessResponse {
 
 /// Processing status enum
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(rename_all = "lowercase")]
+// snake_case, not lowercase: `lowercase` flattens RateLimited to "ratelimited",
+// which no consumer can split back into words. The orchestrator's client also
+// expected "Success"/"Blocked"/"Error" capitalised and had no RateLimited variant
+// at all, so EVERY response failed its validation -- not only ones with detections.
+#[serde(rename_all = "snake_case")]
 pub enum ProcessStatus {
     /// Request processed successfully
     Success,

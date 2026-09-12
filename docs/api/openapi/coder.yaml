@@ -12,9 +12,9 @@ info:
   version: 0.5.0
 
 servers:
-  - url: http://localhost:8005
+  - url: http://localhost:8003
     description: Local development
-  - url: http://coder:8005
+  - url: http://coder:8003
     description: Docker Compose / Kubernetes internal
 
 tags:

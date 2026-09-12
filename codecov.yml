@@ -4,7 +4,7 @@
 # This file previously declared ten flags. Six of them -- planner-arm, coder-arm,
 # judge-arm, retriever-arm, executor-arm and guardian-arm -- pointed at directories
 # holding no source files at all, and `guardian-arm` pointed at `services/arms/guardian/`,
-# which has never existed under that name (the directory is `safety-guardian`). A flag
+# which has never existed under that name (the directory was `safety-guardian`, renamed to `safety_guardian` in Stage 3). A flag
 # with `carryforward: true` that never receives an upload is not neutral: it reports the
 # last value it saw forever, and one that never saw a value at all is a component the
 # dashboard simply omits, silently.

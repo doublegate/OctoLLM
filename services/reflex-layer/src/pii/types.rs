@@ -7,8 +7,10 @@ use std::fmt;
 
 /// Enumeration of all PII types detected by the system
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum PIIType {
     /// US Social Security Number (XXX-XX-XXXX)
+    #[serde(rename = "ssn")]
     SSN,
     /// Credit card number (Visa, MasterCard, Amex, Discover)
     CreditCard,
@@ -17,8 +19,10 @@ pub enum PIIType {
     /// Phone number (US/International)
     Phone,
     /// IPv4 address
+    #[serde(rename = "ipv4")]
     IPv4,
     /// IPv6 address
+    #[serde(rename = "ipv6")]
     IPv6,
     /// API keys (AWS, GitHub, Stripe, etc.)
     ApiKey,
@@ -39,6 +43,7 @@ pub enum PIIType {
     /// US routing number (9 digits)
     RoutingNumber,
     /// Individual Taxpayer Identification Number (9XX-XX-XXXX)
+    #[serde(rename = "itin")]
     ITIN,
     /// Date of birth
     DateOfBirth,
