@@ -187,10 +187,39 @@ mod tests {
 
     #[test]
     fn test_metrics_registration() {
-        // Just ensure all metrics are properly registered
-        assert_eq!(REQUEST_COUNT.with_label_values(&["GET", "/"]).get(), 0);
-        assert_eq!(CACHE_HITS.get(), 0);
-        assert_eq!(RATE_LIMIT_ALLOWED.get(), 0);
+        // Asserts registration, which is what this test is named for.
+        //
+        // It previously asserted that CACHE_HITS, RATE_LIMIT_ALLOWED and one
+        // REQUEST_COUNT series were all 0. Those are process-global counters in the
+        // default Prometheus registry, and `test_record_functions` in this same binary
+        // increments exactly those three. Cargo runs both on threads of one process, so
+        // the assertion held only when this test happened to be scheduled first -- it
+        // passed on the pull request and failed on main within the hour, the first time
+        // the order came out the other way. Counter values are shared mutable state and
+        // cannot be asserted from a parallel test; presence in the registry is what
+        // "registered" means, and does not depend on execution order.
+        //
+        // Deref each one first: lazy_static registers on first use, so a metric no test
+        // has touched is absent from the registry rather than present at zero.
+        let _ = REQUEST_COUNT.with_label_values(&["GET", "/"]);
+        let _ = CACHE_HITS.get();
+        let _ = RATE_LIMIT_ALLOWED.get();
+
+        let registered: Vec<String> = prometheus::gather()
+            .iter()
+            .map(|family| family.name().to_string())
+            .collect();
+
+        for expected in [
+            "reflex_http_requests_total",
+            "reflex_cache_hits_total",
+            "reflex_rate_limit_allowed_total",
+        ] {
+            assert!(
+                registered.iter().any(|name| name == expected),
+                "{expected} is not in the default registry; registered: {registered:?}"
+            );
+        }
     }
 
     #[test]
