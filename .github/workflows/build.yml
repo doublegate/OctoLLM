@@ -25,7 +25,12 @@ jobs:
   build-python-services:
     name: Build Python Service - ${{ matrix.service }}
     runs-on: ubuntu-latest
-    if: false  # Disabled in Phase 0 - no Dockerfiles exist yet (will enable in Phase 1)
+    # NOTE: the eight service Dockerfiles DO exist (they were added after this comment
+    # was written). This stays disabled because enabling it starts publishing images to
+    # GHCR on every push to main, which is a deliberate call for the repository owner.
+    # The Dockerfile paths and the multi-arch matrix below are correct as written, so
+    # flipping this to `true` is all that is required.
+    if: false  # Image publishing not enabled yet - see note above
     permissions:
       contents: read
       packages: write
@@ -41,14 +46,14 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to GitHub Container Registry
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -56,7 +61,7 @@ jobs:
 
       - name: Extract metadata (tags, labels)
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
           tags: |
@@ -67,10 +72,13 @@ jobs:
             type=sha
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
-          file: services/${{ matrix.service }}/Dockerfile
+          # Only the orchestrator lives at services/<name>/; every arm is at
+          # services/arms/<name>/. The previous unconditional path was wrong for five
+          # of the six services in this matrix.
+          file: services/${{ matrix.service == 'orchestrator' && 'orchestrator' || format('arms/{0}', matrix.service) }}/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -83,7 +91,7 @@ jobs:
             VERSION=${{ steps.meta.outputs.version }}
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.36.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ steps.meta.outputs.version }}
           format: 'sarif'
@@ -93,7 +101,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: github.event_name != 'pull_request'
         with:
           sarif_file: 'trivy-${{ matrix.service }}.sarif'
@@ -102,7 +110,12 @@ jobs:
   build-rust-services:
     name: Build Rust Service - ${{ matrix.service }}
     runs-on: ubuntu-latest
-    if: false  # Disabled in Phase 0 - no Dockerfiles exist yet (will enable in Phase 1)
+    # NOTE: the eight service Dockerfiles DO exist (they were added after this comment
+    # was written). This stays disabled because enabling it starts publishing images to
+    # GHCR on every push to main, which is a deliberate call for the repository owner.
+    # The Dockerfile paths and the multi-arch matrix below are correct as written, so
+    # flipping this to `true` is all that is required.
+    if: false  # Image publishing not enabled yet - see note above
     permissions:
       contents: read
       packages: write
@@ -114,14 +127,14 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to GitHub Container Registry
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -129,7 +142,7 @@ jobs:
 
       - name: Extract metadata (tags, labels)
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
           tags: |
@@ -140,7 +153,7 @@ jobs:
             type=sha
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: services/${{ matrix.service == 'executor' && 'arms/executor' || matrix.service }}/Dockerfile
@@ -156,7 +169,7 @@ jobs:
             VERSION=${{ steps.meta.outputs.version }}
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.36.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ steps.meta.outputs.version }}
           format: 'sarif'
@@ -166,7 +179,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: github.event_name != 'pull_request'
         with:
           sarif_file: 'trivy-${{ matrix.service }}.sarif'
@@ -180,17 +193,17 @@ jobs:
     steps:
       - name: Check build status
         run: |
-          echo "📦 Build Workflow - Phase 0 Status"
+          echo "📦 Build Workflow Status"
           echo ""
-          echo "⏸️  Container builds are DISABLED in Phase 0"
+          echo "⏸️  Container builds are DISABLED"
           echo ""
-          echo "Reason: No Dockerfiles exist yet in this architecture/design phase"
+          echo "Reason: publishing to GHCR is not switched on yet; the Dockerfiles exist."
           echo ""
-          echo "Planned for Phase 1 (Proof of Concept):"
+          echo "Configured and ready to enable:"
           echo "- Python services: orchestrator, planner, coder, judge, retriever, safety-guardian"
           echo "- Rust services: reflex-layer, executor"
           echo "- Multi-architecture: linux/amd64, linux/arm64"
           echo "- Registry: ghcr.io/${{ github.repository_owner }}/octollm-*"
           echo "- Auto-tagging: branch, PR, semver, SHA"
           echo ""
-          echo "To enable: Change 'if: false' to 'if: true' in build jobs after Phase 1"
+          echo "To enable: change 'if: false' to 'if: true' in the two build jobs"

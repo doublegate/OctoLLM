@@ -21,14 +21,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.12', '3.13']
+        python-version: ['3.14']
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
@@ -47,8 +47,8 @@ jobs:
         continue-on-error: true  # Don't fail if no tests exist
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        if: matrix.python-version == '3.13'  # Only upload once
+        uses: codecov/codecov-action@v7
+        if: matrix.python-version == '3.14'  # Only upload once
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
@@ -58,8 +58,8 @@ jobs:
           verbose: true
 
       - name: Upload test results to Codecov
-        uses: codecov/codecov-action@v5
-        if: ${{ !cancelled() && matrix.python-version == '3.13' }}
+        uses: codecov/codecov-action@v7
+        if: ${{ !cancelled() && matrix.python-version == '3.14' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./junit.xml
@@ -76,15 +76,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up Rust toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: actions-rust-lang/setup-rust-toolchain@v2
         with:
           toolchain: stable
 
       - name: Cache Rust dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry
@@ -140,12 +140,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
-      - name: Set up Python 3.13
-        uses: actions/setup-python@v5
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v7
         with:
-          python-version: '3.13'
+          python-version: '3.14'
           cache: 'pip'
 
       - name: Install dependencies
