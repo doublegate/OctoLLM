@@ -39,8 +39,11 @@ OctoLLM applies these principles to build a distributed AI system that is **more
 ```mermaid
 graph TB
     REQ([Client request]) ==> REF
-    REF["<b>REFLEX LAYER</b> · :8080 · Rust<br/><i>ingress gate — no LLM in the path</i><br/>PII · prompt injection · cache · rate limit"]
-    REF ==> BRAIN
+
+    REF["<b>REFLEX LAYER</b> · :8080 · Rust<br/><i>the reflex arc — no LLM in the path</i><br/>PII · prompt injection · cache · rate limit"]
+
+    REF ==> |"novel or complex<br/>— escalate"| BRAIN
+    REF -. "cached / routine —<br/>the arms react without the head" .-> RING
 
     BRAIN["<b>ORCHESTRATOR — THE HEAD</b> · :8000<br/><i>~40M neurons · plans and delegates, never executes</i><br/>sole signer of capability tokens"]
 
@@ -67,6 +70,7 @@ graph TB
     end
 
     RING ==> RESP([Response<br/>screened by Safety Guardian])
+    REF -. "cache hit — answered<br/>without cognition" .-> RESP
 
     classDef live fill:#c8e6c9,stroke:#66bb6a,stroke-width:2px,color:#1b5e20
     classDef partial fill:#ffe0b2,stroke:#ffa726,stroke-width:2px,color:#e65100
@@ -85,6 +89,30 @@ graph TB
 Seven of the eight arms do not exist yet, and the diagram says so rather than drawing an
 aspiration. The dotted lines are the head's delegation; the solid ring between the arms is
 the path that does **not** go through it.</sub>
+
+### The reflex arc: it should not take the whole head to make an arm react
+
+A biological reflex does not route through the brain. A stimulus reaches a ganglion and
+the limb responds; the brain finds out afterwards, if at all. That is the entire reason
+a reflex is fast.
+
+So the reflex layer is not merely a filter in front of the orchestrator — it is a
+**decision point with three exits**:
+
+| Exit | When | Cost |
+|---|---|---|
+| **Answer directly** | the request is a cache hit | microseconds, no cognition |
+| **Straight to an arm** | routine and already understood — the arms react without the head | no planning, no frontier model |
+| **Escalate to the head** | novel or complex | the expensive path, used deliberately |
+
+> **Only the third exit exists today.** The implemented `POST /process` returns a
+> *screening verdict* — `pii_detected`, `injection_matches`, a sanitised string — and
+> never an answer, so its cache stores detection results rather than responses. A "cache
+> hit" currently saves a few milliseconds of regex and nothing else, which means the
+> charter's **">60% reflex cache hit rate"** target has no cost meaning yet: every
+> request still pays for the head. The two bypass paths above are drawn dotted because
+> they are design intent, not current behaviour. Closing that gap is tracked as a
+> finding against the execution-engine work.
 
 ### Why the arms are a ring and not a fan
 
