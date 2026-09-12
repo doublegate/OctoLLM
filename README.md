@@ -38,8 +38,8 @@ OctoLLM applies these principles to build a distributed AI system that is **more
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/architecture-dark.svg">
-    <img src="docs/images/architecture-light.svg" width="100%"
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/architecture-light.svg">
+    <img src="docs/images/architecture-dark.svg" width="100%"
          alt="A client request enters the reflex layer, which either answers it from cache, hands routine work straight to the arms, or escalates a novel one to the orchestrator head. The head delegates by dashed tentacles to eight arms placed on a single continuous ring, and the answer leaves the ring screened by the Safety Guardian.">
   </picture>
 </p>
