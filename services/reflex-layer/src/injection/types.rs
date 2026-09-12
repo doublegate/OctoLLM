@@ -6,7 +6,10 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// Enumeration of all injection attack types detected by the system
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+///
+/// `Ord` is derived (variant declaration order) purely so detection results can be
+/// given a deterministic tiebreak; it carries no severity or priority meaning.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum InjectionType {
     /// Ignore/Disregard previous instructions
     IgnorePreviousInstructions,
