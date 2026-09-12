@@ -129,6 +129,12 @@ ignore = [
     "S101",  # assert allowed in tests
     "T20",   # print allowed in tests
 ]
+# CI helper scripts are command-line tools whose output IS stdout. Routing them
+# through logging would put the diagnostics on stderr at a level GitHub's log
+# viewer renders identically, at the cost of the ::error:: annotations.
+"scripts/**/*.py" = [
+    "T20",   # print is the interface
+]
 
 [tool.mypy]
 python_version = "3.14"

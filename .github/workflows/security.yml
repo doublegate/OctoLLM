@@ -130,7 +130,8 @@ jobs:
     runs-on: ubuntu-latest
     # The Dockerfiles referenced below all exist. This stays disabled only because it
     # builds four images on every push; enable it when the CI budget allows.
-    if: false  # Not enabled yet - see note above
+    # Undefined by default, so this is off until the repository variable is set.
+    if: vars.ENABLE_CONTAINER_SCAN == 'true'
     strategy:
       matrix:
         service: [orchestrator, reflex-layer, planner, executor]

@@ -50,6 +50,8 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+# pytest --junitxml output; the orchestrator's pytest config emits this on every run
+junit.xml
 *.cover
 *.py,cover
 .hypothesis/

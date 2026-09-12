@@ -12,3 +12,7 @@ rules:
   document-start: disable
   truthy:
     allowed-values: ['true', 'false', 'yes', 'no']
+    # GitHub Actions requires the key `on:`, which YAML 1.1 reads as the boolean true.
+    # Without this, every workflow in the repository reports a warning it can never fix,
+    # and a gate whose output is always non-empty is a gate people learn to skim.
+    check-keys: false

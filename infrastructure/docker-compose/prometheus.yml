@@ -1,4 +1,11 @@
-# Prometheus configuration for OctoLLM services
+# Prometheus configuration for OctoLLM services.
+#
+# Not scraped yet, because neither exporter is in the compose stack:
+#   postgres  -- add postgres-exporter, then a job targeting postgres-exporter:9187
+#   redis     -- add redis-exporter, then a job targeting redis-exporter:9121
+# These were carried here as commented-out job entries; a trailing comment block can
+# never satisfy yamllint's comments-indentation rule, and a note is more useful in the
+# header than as pseudo-config nobody can enable by uncommenting alone.
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
@@ -70,13 +77,3 @@ scrape_configs:
         labels:
           service: 'executor-arm'
           component: 'arm'
-
-  # PostgreSQL metrics (if postgres_exporter is added)
-  # - job_name: 'postgres'
-  #   static_configs:
-  #     - targets: ['postgres-exporter:9187']
-
-  # Redis metrics (if redis_exporter is added)
-  # - job_name: 'redis'
-  #   static_configs:
-  #     - targets: ['redis-exporter:9121']

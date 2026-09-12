@@ -30,7 +30,8 @@ jobs:
     # GHCR on every push to main, which is a deliberate call for the repository owner.
     # The Dockerfile paths and the multi-arch matrix below are correct as written, so
     # flipping this to `true` is all that is required.
-    if: false  # Image publishing not enabled yet - see note above
+    # Undefined by default, so this is off until the repository variable is set.
+    if: vars.ENABLE_IMAGE_PUBLISH == 'true'
     permissions:
       contents: read
       packages: write
@@ -78,7 +79,9 @@ jobs:
           # Only the orchestrator lives at services/<name>/; every arm is at
           # services/arms/<name>/. The previous unconditional path was wrong for five
           # of the six services in this matrix.
-          file: services/${{ matrix.service == 'orchestrator' && 'orchestrator' || format('arms/{0}', matrix.service) }}/Dockerfile
+          file: >-
+            services/${{ matrix.service == 'orchestrator' && 'orchestrator'
+            || format('arms/{0}', matrix.service) }}/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -86,7 +89,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            BUILD_DATE=${{ steps.meta.outputs.created }}
+            BUILD_DATE=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             VCS_REF=${{ github.sha }}
             VERSION=${{ steps.meta.outputs.version }}
 
@@ -115,7 +118,8 @@ jobs:
     # GHCR on every push to main, which is a deliberate call for the repository owner.
     # The Dockerfile paths and the multi-arch matrix below are correct as written, so
     # flipping this to `true` is all that is required.
-    if: false  # Image publishing not enabled yet - see note above
+    # Undefined by default, so this is off until the repository variable is set.
+    if: vars.ENABLE_IMAGE_PUBLISH == 'true'
     permissions:
       contents: read
       packages: write
@@ -164,7 +168,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            BUILD_DATE=${{ steps.meta.outputs.created }}
+            BUILD_DATE=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             VCS_REF=${{ github.sha }}
             VERSION=${{ steps.meta.outputs.version }}
 

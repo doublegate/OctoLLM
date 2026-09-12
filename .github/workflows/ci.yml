@@ -1,0 +1,386 @@
+# Continuous integration: the single blocking gate for this repository.
+#
+# This workflow replaces lint.yml and test.yml, which between them could not fail.
+# Every test step in test.yml was `|| echo "No tests found yet (Phase 0)"` *and*
+# `continue-on-error: true`, and its summary job printed "Phase 0: No tests exist yet"
+# while 240 Rust, 150 orchestrator and 56 SDK tests were sitting in the tree unrun.
+#
+# Three rules hold here and are enforced, not merely stated:
+#
+#   1. No step is `continue-on-error`, and no step swallows a failure with `|| echo`.
+#      A gate that cannot fail is indistinguishable from one that passed.
+#   2. Every suite asserts a collection floor. A suite that silently collects zero
+#      tests reports the same green check as one that ran them all; the floor is what
+#      separates the two. Raise a floor when you add tests -- never lower one.
+#   3. `ci-gate` is the only required check, and `scripts/ci/check_gate_complete.py`
+#      fails if a job is added to this file without also being added to `ci-gate.needs`.
+#      Without that, a new job is advisory by omission.
+#
+# Image builds stay in build.yml (still `if: false`): five service Dockerfiles target
+# modules that do not exist, so those images cannot pass a smoke test yet. They join
+# this gate when the services they build are real.
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Pinned deliberately. An unpinned install silently adopts every new release, so a
+  # newly-stabilised rule can turn a green `main` red with no commit to blame -- which
+  # is what happened here between 2025-12 and 2026-09 (ruff UP045/UP006). Keep these in
+  # step with [tool.poetry.group.dev] in pyproject.toml when bumping.
+  RUFF_VERSION: 0.16.7
+  BLACK_VERSION: 26.5.1
+  MYPY_VERSION: 2.3.1
+  PYTHON_VERSION: '3.14'
+
+jobs:
+  # ===========================================================================
+  # Lint
+  # ===========================================================================
+
+  lint-python:
+    name: Lint Python (ruff, black)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install linters
+        run: pip install "ruff==${RUFF_VERSION}" "black==${BLACK_VERSION}"
+
+      - name: ruff
+        run: ruff check . --output-format=github
+
+      - name: black
+        run: black --check --diff .
+
+  typecheck-python:
+    name: Typecheck Python (mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      # mypy is blocking here. It was `continue-on-error: true` in lint.yml ("Don't fail
+      # on type errors initially"), which hid 22 findings -- among them a metrics client
+      # that raised AttributeError on every call, an SDK retry loop that could `raise`
+      # a non-exception, and a telemetry module that could not be imported at all.
+      #
+      # The real dependencies are installed rather than `--ignore-missing-imports`d:
+      # with the imports stubbed out, none of those three would have been visible.
+      - name: Install project and type stubs
+        run: |
+          pip install "mypy==${MYPY_VERSION}"
+          pip install -e "services/orchestrator[dev]"
+          pip install -e "sdks/python/octollm-sdk"
+
+      - name: mypy
+        run: mypy services/orchestrator/app sdks/python/octollm-sdk/octollm_sdk
+
+  lint-rust:
+    name: Lint Rust (fmt, clippy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+          cache-workspaces: . -> target
+
+      # Workspace scope, not the two-crate scope lint.yml used. The three shared/rust
+      # crates (common, types, clients) were never linted by CI; both gates pass over
+      # them today, so widening costs nothing and stops them drifting.
+      - name: cargo fmt
+        run: cargo fmt --all -- --check
+
+      - name: cargo clippy
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+  lint-typescript:
+    name: Lint TypeScript SDK (eslint, tsc)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sdks/typescript/octollm-sdk
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: sdks/typescript/octollm-sdk/package-lock.json
+
+      - name: npm ci
+        run: npm ci
+
+      - name: eslint
+        run: npm run lint
+
+      - name: tsc
+        run: npm run build
+
+  lint-config:
+    name: Lint config (yaml, OpenAPI, shell, actions)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install checkers
+        run: pip install yamllint openapi-spec-validator
+
+      - name: yamllint
+        run: yamllint -c .yamllint.yaml .github/ infrastructure/ codecov.yml
+
+      # The eight specs are the contract four different sources currently disagree
+      # about (see docs/api/CONTRACT.md, Workstream A). Well-formedness is the floor,
+      # not the ceiling -- generate-and-diff lands with the contract freeze.
+      - name: OpenAPI specs are valid
+        run: openapi-spec-validator docs/api/openapi/*.yaml
+
+      - name: shellcheck
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          # Tracked scripts only; vendored or generated shell is out of scope.
+          mapfile -t scripts < <(git ls-files '*.sh')
+          printf 'checking %d scripts\n' "${#scripts[@]}"
+          test "${#scripts[@]}" -gt 0
+          shellcheck "${scripts[@]}"
+
+      - name: actionlint
+        run: |
+          bash <(curl -sSf https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint -color
+
+  # ===========================================================================
+  # Test
+  # ===========================================================================
+
+  test-rust:
+    name: Test Rust (workspace, incl. Redis-backed)
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:8-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          toolchain: stable
+          cache-workspaces: . -> target
+
+      - name: cargo test (workspace)
+        run: cargo test --workspace --all-features
+
+      # These 17 were marked #[ignore] and had therefore never run anywhere, which
+      # means ratelimit/token_bucket.lua had never once been executed -- the script
+      # that decides whether a request is rate-limited. The Redis service container
+      # was already being started by test.yml for a job that ran nothing.
+      - name: cargo test (Redis-backed, previously ignored)
+        run: |
+          output=$(cargo test --workspace --all-features -- --ignored 2>&1)
+          echo "$output"
+          # Assert they ran. `-- --ignored` on a suite where every #[ignore] was
+          # removed or renamed reports "0 passed" and exits 0, which is the failure
+          # mode this floor exists to catch.
+          ran=$(echo "$output" | grep -oE '^test result: ok\. [0-9]+ passed' \
+                | grep -oE '[0-9]+' | awk '{s+=$1} END {print s+0}')
+          echo "Redis-backed tests that ran: $ran"
+          if [ "$ran" -lt 17 ]; then
+            echo "::error::expected at least 17 Redis-backed tests, $ran ran"
+            exit 1
+          fi
+
+  test-orchestrator:
+    name: Test orchestrator (floor 150)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/orchestrator
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install orchestrator
+        run: pip install -e ".[dev]"
+
+      # The root pyproject sets `testpaths = ["tests"]`, which is why these 150 tests
+      # were unreachable from the repository root and CI ran only a placeholder. Each
+      # suite is run from its own directory against its own config instead.
+      - name: Assert collection floor
+        run: |
+          collected=$(python -m pytest tests/ --collect-only -q -p no:cacheprovider --no-cov 2>&1 \
+            | grep -oE '[0-9]+ tests? collected' | grep -oE '^[0-9]+' | tail -1)
+          echo "collected=${collected:-0}"
+          if [ "${collected:-0}" -lt 150 ]; then
+            echo "::error::orchestrator collected ${collected:-0} tests, floor is 150"
+            exit 1
+          fi
+
+      # Coverage is enforced by --cov-fail-under=85 in the orchestrator's own pytest
+      # config; the suite sits at 91%.
+      - name: pytest
+        run: python -m pytest tests/
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: services/orchestrator/coverage.xml
+          flags: orchestrator
+          name: orchestrator
+          fail_ci_if_error: false
+
+  test-sdk-python:
+    name: Test Python SDK (floor 28)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sdks/python/octollm-sdk
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install SDK
+        run: pip install -e ".[dev]"
+
+      - name: Assert collection floor
+        run: |
+          collected=$(python -m pytest tests/ --collect-only -q -p no:cacheprovider 2>&1 \
+            | grep -oE '[0-9]+ tests? collected' | grep -oE '^[0-9]+' | tail -1)
+          echo "collected=${collected:-0}"
+          if [ "${collected:-0}" -lt 28 ]; then
+            echo "::error::Python SDK collected ${collected:-0} tests, floor is 28"
+            exit 1
+          fi
+
+      - name: pytest
+        run: python -m pytest tests/ -v
+
+  test-sdk-typescript:
+    name: Test TypeScript SDK (floor 28)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sdks/typescript/octollm-sdk
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: sdks/typescript/octollm-sdk/package-lock.json
+
+      - name: npm ci
+        run: npm ci
+
+      # The TypeScript SDK had no CI job at all; its 28 tests have never been run by CI.
+      - name: jest
+        run: npx jest --ci --passWithNoTests=false
+
+      - name: Assert test floor
+        run: |
+          ran=$(npx jest --ci --listTests 2>/dev/null | grep -c 'test\.ts$' || true)
+          echo "test files=${ran:-0}"
+          if [ "${ran:-0}" -lt 3 ]; then
+            echo "::error::expected at least 3 TypeScript test files, found ${ran:-0}"
+            exit 1
+          fi
+
+  # ===========================================================================
+  # Gate
+  # ===========================================================================
+
+  ci-gate:
+    name: CI gate
+    runs-on: ubuntu-latest
+    # Every job above must be listed here. check_gate_complete.py enforces that.
+    needs:
+      - lint-python
+      - typecheck-python
+      - lint-rust
+      - lint-typescript
+      - lint-config
+      - test-rust
+      - test-orchestrator
+      - test-sdk-python
+      - test-sdk-typescript
+    if: always()
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Every job in ci.yml is wired into this gate
+        run: |
+          pip install pyyaml
+          python scripts/ci/check_gate_complete.py .github/workflows/ci.yml
+
+      # `needs` alone does not fail the gate when a dependency is skipped or
+      # cancelled -- only when it fails. Treat anything but "success" as a red gate.
+      - name: All required jobs succeeded
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          python - <<'PY'
+          import json, os, sys
+          results = json.loads(os.environ["RESULTS"])
+          width = max(len(name) for name in results)
+          bad = []
+          for name, job in sorted(results.items()):
+              result = job["result"]
+              print(f"{name:<{width}}  {result}")
+              if result != "success":
+                  bad.append(f"{name} ({result})")
+          if bad:
+              print("::error::CI gate failed: " + ", ".join(bad))
+              sys.exit(1)
+          print(f"\nAll {len(results)} required jobs succeeded.")
+          PY
