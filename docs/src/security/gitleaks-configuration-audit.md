@@ -1,10 +1,40 @@
 # Gitleaks Configuration Audit Report
 
+> **SUPERSEDED 2026-09-12. The configuration this report validated could not have
+> detected most secrets, and this report did not catch that.**
+>
+> Two defects, neither visible in the scan output it reviewed:
+>
+> 1. **The config discarded all ~170 of gitleaks' built-in rules.** Gitleaks replaces
+>    its default ruleset when a config declares `[[rules]]` unless
+>    `[extend] useDefault = true` is set. Version 2.0 — the "Enhanced Version" this
+>    report recommended — added about thirty custom rules and no `[extend]` block, so
+>    **adding rules removed rules**. Measured afterwards: a GitLab PAT planted in a
+>    source file produced zero findings under that config and one under the same
+>    config with `[extend] useDefault = true` added.
+> 2. **The path allowlist exempted most of the repository** — every markdown file
+>    anywhere, all of `docs/`, all of `ref-docs/`, all of `tests/`,
+>    `infrastructure/*.{yml,yaml,sh}`, `.github/workflows/*.yml`, and
+>    `services/reflex-layer/src/**/patterns.rs`. The table below reading
+>    "✅ Detected in docs, properly allowlisted" is describing this: the scanner was
+>    not detecting those and deciding they were fine, it was not looking.
+>
+> The verdict "✅ PASSED — No secrets detected" was therefore true and uninformative.
+> A scan that inspects nothing reports exactly what a clean scan reports, and nothing
+> in the output distinguishes them.
+>
+> `scripts/gitleaks-selftest.sh` now plants four secrets in four of the locations
+> this config exempted and asserts the current config finds all four **and that this
+> config finds none**. Run it with `make secrets-selftest`; CI runs it on every pull
+> request as part of `ci-gate`.
+>
+> Retained unedited below as a record of what was believed at the time.
+
 **Date**: 2025-11-13
 **Auditor**: Claude Code (Anthropic)
 **Gitleaks Version**: 8.24.3
 **Repository**: OctoLLM
-**Status**: ✅ **PASSED** - No secrets detected, ready to commit
+**Status**: SUPERSEDED — see the correction above
 
 ---
 

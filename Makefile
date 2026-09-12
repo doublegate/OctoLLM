@@ -171,6 +171,18 @@ version-sync: ## Rewrite every version site from VERSION (MODIFIES files)
 	$(PYTHON) scripts/version_sync.py
 
 # =============================================================================
+# Secrets
+# =============================================================================
+
+.PHONY: secrets-scan
+secrets-scan: ## Scan tracked history for secrets (gitleaks, full built-in ruleset)
+	gitleaks detect --source . --config .gitleaks.toml --redact --verbose
+
+.PHONY: secrets-selftest
+secrets-selftest: ## Prove the scanner works: 4 planted secrets found, old config finds 0
+	./scripts/gitleaks-selftest.sh
+
+# =============================================================================
 # Aggregates
 # =============================================================================
 
@@ -179,7 +191,7 @@ gate-check: ## Fail if a CI job is not wired into ci-gate
 	$(PYTHON) scripts/ci/check_gate_complete.py .github/workflows/ci.yml
 
 .PHONY: verify
-verify: version-check gate-check lint typecheck test ## Everything CI runs, minus the Redis suite
+verify: version-check gate-check lint typecheck secrets-scan secrets-selftest test ## Everything CI runs, minus the Redis suite
 	@printf '\n\033[32mverify: OK\033[0m  (for the Redis-backed Rust tests: make redis test-rust-redis)\n'
 
 # =============================================================================

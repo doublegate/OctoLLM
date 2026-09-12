@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- **`.gitleaks.toml` rewritten; it had been scanning almost nothing.** Two independent
+  defects, and the second hid the first:
+  - **It discarded all ~170 built-in rules.** Gitleaks replaces its default ruleset
+    when a config declares `[[rules]]` unless `[extend] useDefault = true` is set. The
+    file declared about thirty custom rules and no `[extend]` block, so **adding rules
+    removed rules**. Measured: a GitLab PAT planted in a source file produced zero
+    findings under the old config and one under the same config plus that one line.
+  - **The path allowlist exempted most of the repository** — every markdown file
+    anywhere, all of `docs/`, `ref-docs/` and `tests/`, `infrastructure/*.{yml,yaml,sh}`,
+    `.github/workflows/*.yml`, and `services/reflex-layer/src/**/patterns.rs`. A real
+    credential committed to a workflow, a test fixture or an infra script was invisible
+    by construction. `patterns.rs` is the sharpest case: it is the PII pattern corpus,
+    making it the file most likely to receive a genuinely pasted key, and it was
+    blanket-exempted because it contains fake ones.
+
+  The replacement exempts **no path except generated and vendored trees**, and exempts
+  known-fake values individually, **anchored with `^…$`** so an exemption cannot
+  substring-match a real secret. (The old allowlist contained a bare `admin`, which
+  suppressed any finding whose secret merely contained that word.) Scanning now runs
+  with the full built-in ruleset and reports zero findings.
+- **`scripts/gitleaks-selftest.sh` — proof the scanner works.** It plants four secrets
+  (AWS key, GitLab PAT, Slack bot token, RSA private key) in four locations the old
+  config exempted, and asserts the current config finds **all four** and that the old
+  config finds **none**. The second assertion is the point: without it, a passing scan
+  is indistinguishable from a scanner that inspects nothing. Runs via
+  `make secrets-selftest`, on pre-push, and in CI's new blocking `secrets` job.
+- The advisory `secret-scan` job in `security.yml` is removed. It ran outside
+  `ci-gate`, so two scanners covered the same config with only one able to block.
+- **`docs/security/gitleaks-configuration-audit.md` is marked superseded.** Its
+  2025-11-13 verdict — "✅ PASSED — No secrets detected" — validated the broken config;
+  its table entries reading "Detected in docs, properly allowlisted" describe a scanner
+  that was not looking. Retained unedited beneath the correction.
+
+### Fixed
+- **Rust pre-commit hooks restored.** They were disabled with the note "repo not
+  found", which was literally true: they pointed at `github.com/doubleodd/pre-commit-rust`,
+  a typo for `doublify`. Restored as **local** hooks calling the same commands CI
+  calls, rather than by fixing the typo — a third-party mirror pins its own cargo
+  invocation and drifts from the gate. `cargo fmt` runs on commit; `cargo clippy` and
+  the gitleaks self-test run on push.
+
 ### Added
 - **`Makefile` — the commands `README.md` has told people to run since Phase 0.** There
   was no Makefile; `make lint`, `make test` and `make help` were documented and absent.

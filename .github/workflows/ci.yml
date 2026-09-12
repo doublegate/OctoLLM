@@ -281,6 +281,36 @@ jobs:
         working-directory: .
         run: make test-sdk-typescript
 
+  secrets:
+    name: Secret scan (gitleaks + self-test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # gitleaks scans history, not just the tip
+
+      - name: Install gitleaks
+        env:
+          GITLEAKS_VERSION: 8.24.3
+        run: |
+          base=https://github.com/gitleaks/gitleaks/releases/download
+          asset="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL "${base}/v${GITLEAKS_VERSION}/${asset}" | tar -xz gitleaks
+          install -m 0755 gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      # The scan and the proof that the scan works. The self-test plants four secrets
+      # in locations the previous config exempted and asserts this config finds all
+      # four AND that the previous config finds none -- without that second assertion
+      # a passing scan is indistinguishable from a scanner that inspects nothing,
+      # which is what this repository had.
+      - name: make secrets-selftest
+        run: make secrets-selftest
+
+      - name: make secrets-scan
+        run: make secrets-scan
+
+
   # ===========================================================================
   # Gate
   # ===========================================================================
@@ -299,6 +329,7 @@ jobs:
       - test-orchestrator
       - test-sdk-python
       - test-sdk-typescript
+      - secrets
     if: always()
     steps:
       - uses: actions/checkout@v7
