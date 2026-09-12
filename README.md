@@ -38,56 +38,112 @@ OctoLLM applies these principles to build a distributed AI system that is **more
 
 ```mermaid
 graph TB
-    CLIENT([Client request]) --> REF
+    REQ([Client request]) ==> REF
+    REF["<b>REFLEX LAYER</b> · :8080 · Rust<br/><i>ingress gate — no LLM in the path</i><br/>PII · prompt injection · cache · rate limit"]
+    REF ==> BRAIN
 
-    REF["<b>REFLEX LAYER</b> · 8080<br/><i>fast reflexes — no LLM in the path</i><br/>PII · injection · cache · rate limit"]
-    REF --> BRAIN
+    BRAIN["<b>ORCHESTRATOR — THE HEAD</b> · :8000<br/><i>~40M neurons · plans and delegates, never executes</i><br/>sole signer of capability tokens"]
 
-    BRAIN["<b>ORCHESTRATOR — THE BRAIN</b> · 8000<br/><i>~40M neurons · plans and delegates, never executes</i>"]
-    GMEM[("Global semantic<br/>memory")]
-    BRAIN <--> GMEM
-    BRAIN -.->|"delegates · scoped capability tokens"| RING
+    BRAIN -. "delegates · scoped tokens" .-> MEM
+    BRAIN -.-> RETR & CODE & JUDGE
+    BRAIN -.-> PLAN & EXEC & RED & SAFE
 
-    subgraph RING["THE EIGHT ARMS · ~350M neurons · autonomous, and wired directly to each other"]
+    subgraph RING["<b>THE EIGHT ARMS</b> · ~350M neurons · joined to each other, not only to the head"]
         direction LR
-        A1["1 · Planner<br/>8001"] --- A2["2 · Retriever<br/>8002"] --- A3["3 · Coder<br/>8003"] --- A4["4 · Judge<br/>8004"]
-        A8["8 · Red Team<br/>8008"] --- A7["7 · Memory / Curator<br/>8007"] --- A6["6 · Executor<br/>8006"] --- A5["5 · Safety Guardian<br/>8005"]
-        A4 --- A5
-        A8 --- A1
+        MEM["<b>Memory / Curator</b><br/>:8007<br/>episodic + semantic"]
+        RETR["<b>Retriever</b><br/>:8002<br/>rank + fuse"]
+        CODE["<b>Coder</b><br/>:8003<br/>generate · refactor"]
+        JUDGE["<b>Judge</b><br/>:8004<br/>validate · score"]
+        SAFE["<b>Safety Guardian</b><br/>:8005<br/>egress gate"]
+        RED["<b>Red Team</b><br/>:8008<br/>external targets"]
+        EXEC["<b>Executor</b><br/>:8006<br/>sandboxed"]
+        PLAN["<b>Planner</b><br/>:8001<br/>decomposition"]
+
+        MEM === PLAN === EXEC === RED
+        MEM === RETR === CODE
+        CODE == "validation loop" === JUDGE
+        JUDGE === SAFE
+        RED === SAFE
     end
 
-    classDef live fill:#1b5e20,stroke:#66bb6a,stroke-width:2px,color:#fff
-    classDef partial fill:#e65100,stroke:#ffb74d,stroke-width:2px,color:#fff
-    classDef stub fill:#4e342e,stroke:#a1887f,stroke-width:2px,color:#fff
-    classDef todo fill:#263238,stroke:#78909c,stroke-width:1px,color:#cfd8dc
-    classDef store fill:#1a237e,stroke:#7986cb,stroke-width:2px,color:#fff
+    RING ==> RESP([Response<br/>screened by Safety Guardian])
+
+    classDef live fill:#c8e6c9,stroke:#66bb6a,stroke-width:2px,color:#1b5e20
+    classDef partial fill:#ffe0b2,stroke:#ffa726,stroke-width:2px,color:#e65100
+    classDef stub fill:#d7ccc8,stroke:#a1887f,stroke-width:2px,color:#4e342e
+    classDef todo fill:#eceff1,stroke:#b0bec5,stroke-width:1px,color:#37474f
+    classDef io fill:#fafafa,stroke:#9e9e9e,stroke-width:2px,color:#212121
 
     class REF live
     class BRAIN partial
-    class A6 stub
-    class A1,A2,A3,A4,A5,A7,A8 todo
-    class GMEM store
+    class EXEC stub
+    class MEM,PLAN,RETR,CODE,JUDGE,SAFE,RED todo
+    class REQ,RESP io
 ```
 
-**Green** is implemented, **orange** partial, **brown** a stub, **grey** not started yet.
+<sub>**Green** implemented · **amber** partial · **brown** a 21-line stub · **grey** not started.
+Seven of the eight arms do not exist yet, and the diagram says so rather than drawing an
+aspiration. The dotted lines are the head's delegation; the solid ring between the arms is
+the path that does **not** go through it.</sub>
 
-**The closed loop is the point.** A biological octopus carries roughly 40M neurons in
-its brain and 350M in its arms, and its arms act — and coordinate with each other —
-without asking the brain first. So the eight arms here are joined in a ring, not fanned
-out as leaves under the orchestrator: **an arm can call its neighbour directly**, over
-Redis Streams and capability-token-gated peer HTTP, with no hop through the brain. The
-tight loops the design leans on (Coder to Judge, Planner to Executor, Retriever to
-Coder) are all arm-to-arm edges.
+### Why the arms are a ring and not a fan
 
-The brain still governs — it is the sole signing authority for capability tokens, an arm
-can only be issued a token for an edge that appears in the declared topology, and every
-artifact carries provenance back to it — but it is not in the path of every exchange.
-That is the bottleneck the architecture exists to remove.
+A biological octopus carries roughly **40M neurons in its brain and 350M in its arms**,
+and those arms act — and coordinate with one another — without waiting on the brain. A
+hub-and-spoke design where every exchange passes through a central orchestrator throws
+that away and reintroduces the bottleneck the biology solved.
 
-Today only the reflex layer is complete and the orchestrator is partial; the ring itself
-lands in Stage 5, deliberately **before** any arm is built, because retrofitting seven
-arms onto a ring they were not designed for is strictly worse. See
-[Current Status](#current-status) for what exists, arm by arm.
+So the eight arms are joined in a **ring**: an arm calls its neighbour directly, over
+Redis Streams for broadcast artifacts and capability-token-gated HTTP for tight pairs.
+The adjacencies in the diagram are the real ones from the design — **Coder to Judge** is
+the validation loop and the thick edge, Retriever feeds Coder, Memory is the Retriever's
+corpus, Planner drives the Executor, Red Team delegates its probing to the Executor's
+sandbox rather than opening sockets of its own, and its tool output goes to the Safety
+Guardian before any of it reaches a model again.
+
+The brain still governs, and the governance is what makes direct calls safe rather than
+anarchic:
+
+- it is the **sole signing authority** for capability tokens — no arm mints its own;
+- an arm can only be issued a token for an **edge that already appears in the declared
+  topology**, so an undeclared peer call is unreachable rather than merely discouraged;
+- tokens are scoped to one task, expire in minutes, and their call budget is counted
+  **server-side by the callee**, so the bound holds without the caller's cooperation;
+- every artifact carries provenance back to the task that produced it.
+
+What the brain is *not* is a hop in the middle of a Coder-to-Judge revision loop.
+
+### Two gates, facing opposite directions
+
+The reflex layer and the Safety Guardian are often mistaken for duplicates. They are
+split by **traffic direction**, which is why both exist:
+
+| | Reflex layer (:8080) | Safety Guardian (:8005) |
+|---|---|---|
+| Direction | **Ingress** — untrusted input arriving | **Egress** — output leaving |
+| Sees | the raw client request | arm output, synthesized answers, generated code |
+| Budget | sub-10ms, cached, no LLM | may call a model; owns the policy engine |
+| On failure | rejects the request | **fails closed** |
+
+The reflex layer never sees an arm's output; the Guardian never sees the raw request.
+The Guardian delegates PII detection back to the reflex layer rather than shipping a
+second regex corpus that would drift from the first.
+
+### Where state lives
+
+| Store | Holds | Owner |
+|---|---|---|
+| **PostgreSQL** | global semantic memory, task rows, execution checkpoints | Orchestrator + Memory arm |
+| **Qdrant** | per-arm episodic vectors | Memory arm (nothing reads or writes it today) |
+| **Redis** | reflex cache, rate-limit buckets, and the ring's streams | Reflex layer + every arm |
+
+The ring is deliberately **advisory**: losing Redis degrades observability and memory,
+never correctness. A Memory outage must never fail a task, and there is a test asserting
+exactly that.
+
+The ring itself lands in Stage 5 — **before any arm is built**, because retrofitting
+seven arms onto a ring they were not designed for is strictly worse than building on it
+from the start. See [Current Status](#current-status) for what exists today, arm by arm.
 
 ## Key Features
 
