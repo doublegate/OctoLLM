@@ -68,21 +68,47 @@ repos:
   #     pip install -e "services/orchestrator[dev]" -e "sdks/python/octollm-sdk"
   #     mypy services/orchestrator/app sdks/python/octollm-sdk/octollm_sdk
 
-  # Rust: Rustfmt (code formatting) - TEMPORARILY DISABLED (repo not found)
-  # - repo: https://github.com/doubleodd/pre-commit-rust
-  #   rev: v1.0
-  #   hooks:
-  #     - id: fmt
-  #       args: ['--manifest-path', 'Cargo.toml', '--']
-  #       files: '^(services|shared)/.*\.rs$'
+  # Rust: rustfmt and clippy.
+  #
+  # These were disabled with the note "repo not found", which was literally true:
+  # they pointed at github.com/doubleodd/pre-commit-rust, a typo for `doublify`.
+  # They are restored as LOCAL hooks calling the same make targets CI calls, rather
+  # than by fixing the typo -- a third-party mirror pins its own cargo invocation and
+  # drifts from the gate, which is exactly how the mypy hook ended up contradicting
+  # CI in both directions (see the note above).
+  #
+  # fmt runs on commit because it is nearly free. clippy runs on push because a
+  # workspace-wide lint is too slow to sit in front of every commit, and pushing is
+  # the point where it stops being only your problem.
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: cargo fmt (same invocation as ci.yml)
+        entry: cargo fmt --all -- --check
+        language: system
+        files: '\.rs$'
+        pass_filenames: false
 
-  # Rust: Clippy (linting) - TEMPORARILY DISABLED (repo not found)
-  # - repo: https://github.com/doubleodd/pre-commit-rust
-  #   rev: v1.0
-  #   hooks:
-  #     - id: clippy
-  #       args: ['--manifest-path', 'Cargo.toml', '--', '-D', 'warnings']
-  #       files: '^(services|shared)/.*\.rs$'
+      - id: cargo-clippy
+        name: cargo clippy -D warnings (same invocation as ci.yml)
+        entry: cargo clippy --workspace --all-targets --all-features -- -D warnings
+        language: system
+        files: '\.rs$'
+        pass_filenames: false
+        stages: [pre-push]
+
+  # Secret-scanner self-test: asserts .gitleaks.toml actually detects planted secrets
+  # and that the config it replaced detected none of them. Runs on push rather than
+  # on commit because it builds a scratch repository and runs gitleaks twice.
+  - repo: local
+    hooks:
+      - id: gitleaks-selftest
+        name: gitleaks self-test (4 planted secrets)
+        entry: scripts/gitleaks-selftest.sh
+        language: system
+        files: '^(\.gitleaks\.toml|scripts/gitleaks-selftest\.sh)$'
+        pass_filenames: false
+        stages: [pre-push]
 
   # Secrets detection (GitLeaks)
   - repo: https://github.com/gitleaks/gitleaks

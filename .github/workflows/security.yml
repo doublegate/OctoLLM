@@ -167,26 +167,16 @@ jobs:
         with:
           sarif_file: 'trivy-${{ matrix.service }}.sarif'
 
-  secret-scan:
-    name: Secret Scan - gitleaks
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0  # Full history for gitleaks
-
-      - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+  # Secret scanning moved to ci.yml's `secrets` job, which is inside ci-gate and
+  # therefore blocking. This job ran gitleaks-action outside the gate, so it was
+  # advisory -- and running two scanners over the same config, one blocking and one
+  # not, means a disagreement between them changes nothing. ci.yml also runs the
+  # self-test that proves the scanner detects planted secrets, which this did not.
 
   security-summary:
     name: Security Summary
     runs-on: ubuntu-latest
-    needs: [sast-bandit, dependency-scan-python, dependency-scan-rust, secret-scan]
+    needs: [sast-bandit, dependency-scan-python, dependency-scan-rust]
     if: always()
 
     steps:
@@ -199,7 +189,7 @@ jobs:
           echo "- ✅ Bandit (SAST): Scanning Python code for security issues"
           echo "- ✅ Snyk: Checking Python dependencies for vulnerabilities"
           echo "- ✅ cargo-audit: Auditing Rust dependencies"
-          echo "- ✅ gitleaks: Scanning for exposed secrets"
+          echo "- gitleaks: see the blocking 'secrets' job in ci.yml"
           echo "- ⏸️  Trivy (Container): Disabled (build cost), not missing Dockerfiles"
           echo ""
           echo "Expected Results:"

@@ -1,313 +1,125 @@
-# Gitleaks Configuration for OctoLLM
-# Prevents false positives in documentation while catching real secrets in source code
-# Last Updated: 2025-11-13
-# Version: 2.0
+# Gitleaks configuration for OctoLLM.
+#
+# The previous version of this file had two independent defects, and the second hid
+# the first.
+#
+# 1. IT DISCARDED EVERY BUILT-IN RULE. Gitleaks replaces its default ruleset when a
+#    config defines `[[rules]]` unless `[extend] useDefault = true` is set. That file
+#    defined about thirty custom rules and no `[extend]` block, so gitleaks' ~170
+#    built-ins were silently dropped. Measured: a GitLab PAT (`glpat-…`) planted in a
+#    source file produced zero findings under the old config and one under the same
+#    config with `[extend] useDefault = true` added. Nothing about the scan output
+#    indicated that 170 rules were missing -- it reported success.
+#
+# 2. THE PATH ALLOWLIST EXEMPTED MOST OF THE REPOSITORY. `.*\.md$` (every markdown
+#    file anywhere), all of `docs/`, all of `ref-docs/`, all of `tests/`,
+#    `infrastructure/.*\.(yml|yaml|sh)$`, `.github/workflows/.*\.yml$`, and
+#    `services/reflex-layer/src/.*/patterns\.rs$`. A real credential committed into a
+#    workflow file, a test fixture, an infrastructure shell script or any markdown
+#    file was invisible to this scanner by construction.
+#
+#    `patterns.rs` is the sharpest example: it is the PII pattern corpus, which makes
+#    it the file in this repository most likely to receive a genuine pasted key, and
+#    it was blanket-exempted because it contains fake ones.
+#
+# The replacement rule for this file:
+#
+#   NO PATH IS EXEMPT EXCEPT GENERATED AND VENDORED TREES. Known-fake values are
+#   exempted individually, by value, ANCHORED WITH ^...$ so an exemption cannot
+#   substring-match a real secret. An unanchored `admin` in the old allowlist would
+#   have suppressed any finding whose secret merely contained "admin".
+#
+# Adding a documentation example? Use one of the sanctioned placeholder forms below
+# (`YOUR_…`, `…EXAMPLE…`, `CHANGE_ME_…`, or an elided `…abc…`), or add an anchored
+# literal here with a comment saying where it appears. Do not add a path.
+#
+# `scripts/gitleaks-selftest.sh` plants four secrets in locations the OLD config
+# exempted and asserts this config finds all four AND that the old config finds none.
+# `make secrets-selftest` runs it; CI runs it on every pull request.
 
-title = "OctoLLM Gitleaks Config"
+title = "OctoLLM"
 
-# ============================================================================
-# Allowlist Configuration
-# ============================================================================
+# Keep gitleaks' ~170 built-in rules. Without this line the custom rules below
+# REPLACE them rather than adding to them.
+[extend]
+useDefault = true
 
 [allowlist]
-  description = "Allowlist for documentation examples and test fixtures"
+description = "Generated and vendored trees, plus individually-anchored known-fake values."
 
-  # Documentation directories with example tokens/keys
-  paths = [
-    '''docs/.*''',                                  # All documentation
-    '''ref-docs/.*''',                              # Reference documentation
-    '''tests/.*''',                                 # Test files
-    '''services/reflex-layer/src/.*/tests\.rs$''',  # Rust test modules with example patterns
-    '''services/reflex-layer/src/.*/patterns\.rs$''', # Rust pattern files with test data
-    '''examples/.*''',                              # Example code with sample tokens
-    '''.*\.example$''',                             # Example configuration files
-    '''.*\.template$''',                            # Template files
-    '''.*\.md$''',                                  # Markdown documentation (all locations)
-    '''infrastructure/.*\.yml$''',                  # Infrastructure YAML files (use env vars)
-    '''infrastructure/.*\.yaml$''',                 # Infrastructure YAML files (use env vars)
-    '''infrastructure/.*\.sh$''',                   # Infrastructure shell scripts (generate passwords)
-    '''infra/.*\.tf$''',                            # Terraform files (use variables)
-    '''\.github/workflows/.*\.yml$''',              # GitHub Actions (use secrets)
-    '''infrastructure/databases/.*\.yaml$''',       # Database config files (use env vars)
-    '''node_modules/.*''',                          # Node modules (third-party code)
-    '''sdks/.*/node_modules/.*''',                  # SDK node modules
-    '''.*\.lock$''',                                # Lock files (package-lock.json, Cargo.lock)
-    '''venv/.*''',                                  # Python virtual environments
-    '''\.venv/.*''',                                # Python virtual environments
-    '''target/.*''',                                # Rust build artifacts
-    '''.*\.egg-info/.*''',                          # Python package metadata
-  ]
+# Generated output and third-party code only. Every one of these is either produced
+# by a build or vendored from elsewhere, and none is a place a human commits a
+# credential. Source, docs, tests, workflows and infrastructure are all scanned.
+paths = [
+  '''(^|/)node_modules/''',
+  '''(^|/)target/''',          # cargo build output
+  '''(^|/)\.venv/''',
+  '''(^|/)venv/''',
+  '''\.egg-info/''',
+  '''(^|/)htmlcov/''',         # coverage HTML
+  '''(^|/)dist/''',            # tsc output
+  '''(^|/)docs/book/''',       # generated mdBook output; docs/src/ IS scanned
+]
 
-  # Allowlist specific patterns that are clearly fake/example secrets
-  regexes = [
-    '''tok_abc123xyz''',                           # Example capability tokens
-    '''sk-abc123xyz''',                            # Example OpenAI-style keys
-    '''sk-test1234abcd5678efgh''',                 # Example API keys in threat model
-    '''sk-1234567890abcdef1234567890abcdef1234567890abcdef''',  # Example 48-char API key
-    '''sk-proj-.*EXAMPLE''',                       # Example OpenAI project keys
-    '''sk-ant-.*EXAMPLE''',                        # Example Anthropic keys
-    '''Bearer tok_[a-z0-9]{8}''',                  # Example bearer tokens (short)
-    '''cap_[a-zA-Z0-9]{16}''',                     # Example capability tokens
-    '''example\.com''',                            # Example domains
-    '''localhost:[0-9]+''',                        # Localhost URLs
-    '''127\.0\.0\.1:[0-9]+''',                     # Localhost IPs
-    '''192\.168\.\d+\.\d+''',                      # Local network IPs
-    '''password123''',                             # Obvious fake passwords
-    '''user:password''',                           # Generic user/password examples
-    '''AKIAIOSFODNN7EXAMPLE''',                    # AWS example key from documentation
-    '''ghp_abc\.\.\.xyz''',                        # GitHub token with ellipsis (documentation)
-    '''CHANGE_ME_.*''',                            # Template placeholders
-    '''your-.*-here''',                            # Template placeholders
-    '''XXXXXXXX''',                                # Redacted secrets
-    '''\[.*-REDACTED\]''',                         # PII redaction markers
-    '''\$\{[A-Z_]+\}''',                           # Environment variable references ${VAR}
-    '''\$\{[A-Z_]+:-[^}]+\}''',                    # Environment variable with default ${VAR:-default}
-    '''\$\([^)]+\)''',                             # Command substitution $(command)
-    '''var\.[a-z_]+''',                            # Terraform variables
-    '''random_[a-z]+\.[a-z_]+\.result''',          # Terraform random resources
-    '''octollm_dev_password''',                    # Development password placeholder
-    '''octollm_dev_pass''',                        # Development password placeholder
-    '''admin''',                                   # Default admin password (too short to be real)
-  ]
+# Sanctioned placeholder forms. These are the shapes documentation examples should
+# use, and each is chosen so that a real credential cannot match it.
+regexes = [
+  # An elided value. A secret containing a literal three-dot run is unusable as a
+  # credential -- real tokens are base64/hex/alphanumeric throughout.
+  '''\.\.\.''',
+  # Explicit placeholder markers, anchored so they must BE the whole secret.
+  '''^YOUR_[A-Z0-9_]+$''',
+  '''^your-[a-z0-9-]+-here$''',
+  '''^CHANGE_ME[A-Za-z0-9_]*$''',
+  '''(?i)EXAMPLE''',           # e.g. AKIAIOSFODNN7EXAMPLE, sk_test_EXAMPLE0000…
 
-  # Allowlist commits (if needed for historical false positives)
-  commits = []
+  # ------------------------------------------------------------------------------
+  # Known-fake values already present in the tree, one anchored literal each.
+  # Generated from an actual scan, then reviewed individually. Adding to this list
+  # is a deliberate act; a real secret cannot match an anchored literal by accident.
+  # ------------------------------------------------------------------------------
+  '''^YOUR_JWT_TOKEN$''',                                          # docs/operations/kubernetes-deployment.md
+  '''^c8d9e0f1\-a2b3\-4c5d\-6e7f\-8a9b0c1d2e3f$''',                # docs/security/capability-isolation.md (example token id)
+  '''^cD0eF3gH6iJ9kL2mN5oP8qR1sT4uV7wX$''',                        # docs/operations/unraid-deployment-guide.md
+  '''^fG1hI4jK7lM0nP3qR6sT9uV2wX5yZ8aB$''',                        # docs/operations/unraid-deployment-guide.md
+  '''^gH4jK1lM7nP9qR2sT8vW5xY0zA3bC6dE$''',                        # docs/operations/unraid-deployment-guide.md
+  '''^xK9fL2mN8vP4qR7sT1wU6yZ3aB5cD0eF$''',                        # docs/operations/unraid-deployment-guide.md
+  '''^ghp_1234567890abcdefghijklmnopqrstuvwxyz$''',                # services/reflex-layer/src/pii/patterns.rs fixture
+  '''^sk_test_1234567890abcdefghijklm$''',                         # services/reflex-layer/src/pii/patterns.rs fixture
+  '''^octollm_live_1234567890abcdef$''',                           # docs/api/API-OVERVIEW.md
+  '''^sk\-1234567890abcdef1234567890abcdef1234567890abcdef$''',    # docs/api/services/safety-guardian.md
+  '''^sk\-12345abcdef67890$''',                                    # sdks/python/octollm-sdk/README.md
+  '''^sk\-abc123def456ghi789jkl012mno345pqr678stu901$''',          # docs/security/gitleaks-configuration-audit.md
+  '''^sk\-your\-key\-here$''',                                     # docs/development/local-setup.md
+  '''^tok_abc123xyz$''',                                           # docs/api/openapi/executor.yaml
+  # Documentation JWTs. Anchored on header plus enough payload to identify the fake
+  # subject -- the HS256 header alone is identical for every JWT ever issued.
+  '''^eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9\.eyJzdWIiOiIxMjM0NTY3ODkwIn0\.abc''',   # sdks/python/.../tests/test_auth.py
+  '''^eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJzdWIiOiJleGVjdXRvci1hcm0iLCJpYXQ''', # docs/security/capability-isolation.md
+]
 
-# ============================================================================
-# Custom Rules (Enhanced Detection)
-# ============================================================================
+commits = []
 
-# OpenAI API Keys (various formats)
-[[rules]]
-  id = "openai-api-key"
-  description = "OpenAI API Key"
-  regex = '''(?i)(openai[_-]?api[_-]?key|OPENAI_API_KEY)\s*[:=]\s*['"]?(sk-[a-zA-Z0-9]{48}|sk-proj-[a-zA-Z0-9_-]{100,})['"]?'''
-  tags = ["key", "openai", "api"]
+# ==============================================================================
+# Project-specific rules
+#
+# These ADD to the built-ins rather than replacing them. Only formats gitleaks
+# cannot know about belong here -- rules duplicating a built-in (GitHub PATs, AWS
+# keys, Stripe keys, Slack tokens, JWTs, private keys, database URLs) were removed,
+# because with `useDefault = true` they produced two findings for one secret.
+# ==============================================================================
 
 [[rules]]
-  id = "openai-api-key-raw"
-  description = "OpenAI API Key (raw format)"
-  regex = '''sk-proj-[a-zA-Z0-9_-]{100,}'''
-  tags = ["key", "openai", "api"]
-
-# Anthropic API Keys
-[[rules]]
-  id = "anthropic-api-key"
-  description = "Anthropic API Key"
-  regex = '''(?i)(anthropic[_-]?api[_-]?key|ANTHROPIC_API_KEY)\s*[:=]\s*['"]?sk-ant-[a-zA-Z0-9-]{95}['"]?'''
-  tags = ["key", "anthropic", "api"]
+  id = "octollm-api-key"
+  description = "OctoLLM API key"
+  # Non-capturing: gitleaks reports capture group 1 as "the secret" when a rule has
+  # one, so `(live|test)` made every finding's secret the word "live" -- which no
+  # anchored allowlist entry could ever match, and which tells a reader nothing.
+  regex = '''octollm_(?:live|test)_[a-zA-Z0-9]{16,}'''
+  tags = ["key", "octollm"]
 
 [[rules]]
-  id = "anthropic-api-key-raw"
-  description = "Anthropic API Key (raw format)"
-  regex = '''sk-ant-api[0-9]{2}-[a-zA-Z0-9-]{95}'''
-  tags = ["key", "anthropic", "api"]
-
-# GitHub Personal Access Tokens
-[[rules]]
-  id = "github-pat"
-  description = "GitHub Personal Access Token"
-  regex = '''ghp_[a-zA-Z0-9]{36}'''
-  tags = ["key", "github", "token"]
-
-[[rules]]
-  id = "github-oauth"
-  description = "GitHub OAuth Token"
-  regex = '''gho_[a-zA-Z0-9]{36}'''
-  tags = ["key", "github", "token"]
-
-[[rules]]
-  id = "github-app-token"
-  description = "GitHub App Token"
-  regex = '''(ghu|ghs)_[a-zA-Z0-9]{36}'''
-  tags = ["key", "github", "token"]
-
-# AWS Access Keys
-[[rules]]
-  id = "aws-access-key-id"
-  description = "AWS Access Key ID"
-  regex = '''(?i)(aws[_-]?access[_-]?key[_-]?id|AWS_ACCESS_KEY_ID)\s*[:=]\s*['"]?(AKIA[0-9A-Z]{16})['"]?'''
-  tags = ["key", "aws", "access"]
-
-[[rules]]
-  id = "aws-secret-access-key"
-  description = "AWS Secret Access Key"
-  regex = '''(?i)(aws[_-]?secret[_-]?access[_-]?key|AWS_SECRET_ACCESS_KEY)\s*[:=]\s*['"]?([A-Za-z0-9/+=]{40})['"]?'''
-  tags = ["key", "aws", "secret"]
-
-# GCP Service Account Keys
-[[rules]]
-  id = "gcp-service-account"
-  description = "GCP Service Account Key"
-  regex = '''"type":\s*"service_account"'''
-  tags = ["key", "gcp", "service-account"]
-
-[[rules]]
-  id = "gcp-api-key"
-  description = "GCP API Key"
-  regex = '''AIza[0-9A-Za-z\\-_]{35}'''
-  tags = ["key", "gcp", "api"]
-
-# Azure Keys
-[[rules]]
-  id = "azure-client-secret"
-  description = "Azure Client Secret"
-  regex = '''(?i)(azure[_-]?client[_-]?secret|AZURE_CLIENT_SECRET)\s*[:=]\s*['"]?([a-zA-Z0-9~._-]{34,})['"]?'''
-  tags = ["key", "azure", "secret"]
-
-# Private Keys
-[[rules]]
-  id = "rsa-private-key"
-  description = "RSA Private Key"
-  regex = '''-----BEGIN RSA PRIVATE KEY-----'''
-  tags = ["key", "private", "rsa"]
-
-[[rules]]
-  id = "openssh-private-key"
-  description = "OpenSSH Private Key"
-  regex = '''-----BEGIN OPENSSH PRIVATE KEY-----'''
-  tags = ["key", "private", "ssh"]
-
-[[rules]]
-  id = "ec-private-key"
-  description = "EC Private Key"
-  regex = '''-----BEGIN EC PRIVATE KEY-----'''
-  tags = ["key", "private", "ec"]
-
-[[rules]]
-  id = "private-key-generic"
-  description = "Generic Private Key"
-  regex = '''-----BEGIN PRIVATE KEY-----'''
-  tags = ["key", "private"]
-
-# Database Connection Strings
-[[rules]]
-  id = "postgres-connection-string"
-  description = "PostgreSQL Connection String"
-  regex = '''postgres(?:ql)?://[^:\s]+:[^@\s]+@[^\s]+'''
-  tags = ["database", "postgres", "connection-string"]
-
-[[rules]]
-  id = "mysql-connection-string"
-  description = "MySQL Connection String"
-  regex = '''mysql://[^:\s]+:[^@\s]+@[^\s]+'''
-  tags = ["database", "mysql", "connection-string"]
-
-[[rules]]
-  id = "mongodb-connection-string"
-  description = "MongoDB Connection String"
-  regex = '''mongodb(\+srv)?://[^:\s]+:[^@\s]+@[^\s]+'''
-  tags = ["database", "mongodb", "connection-string"]
-
-# Generic Passwords
-[[rules]]
-  id = "generic-password"
-  description = "Generic Password"
-  regex = '''(?i)(password|passwd|pwd)\s*[:=]\s*['"]?([^\s'",]{12,})['"]?'''
-  tags = ["password", "generic"]
-
-  [rules.allowlist]
-    regexes = [
-      '''password.*CHANGE_ME''',
-      '''password.*example''',
-      '''password.*placeholder''',
-    ]
-
-# API Keys (Generic)
-[[rules]]
-  id = "generic-api-key"
-  description = "Generic API Key"
-  regex = '''(?i)(api[_-]?key|apikey)\s*[:=]\s*['"]?([a-zA-Z0-9_\-]{32,})['"]?'''
-  tags = ["key", "api", "generic"]
-
-  [rules.allowlist]
-    regexes = [
-      '''api[_-]?key.*CHANGE_ME''',
-      '''api[_-]?key.*example''',
-      '''api[_-]?key.*your-.*-here''',
-    ]
-
-# JWT Tokens
-[[rules]]
-  id = "jwt-token"
-  description = "JWT Token"
-  regex = '''eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'''
-  tags = ["token", "jwt"]
-
-# Slack Tokens
-[[rules]]
-  id = "slack-token"
-  description = "Slack Token"
-  regex = '''xox[baprs]-[0-9a-zA-Z]{10,72}'''
-  tags = ["key", "slack", "token"]
-
-# Stripe Keys
-[[rules]]
-  id = "stripe-api-key"
-  description = "Stripe API Key"
-  regex = '''(?i)(sk|pk)_(live|test)_[0-9a-zA-Z]{24,99}'''
-  tags = ["key", "stripe", "api"]
-
-# SendGrid API Keys
-[[rules]]
-  id = "sendgrid-api-key"
-  description = "SendGrid API Key"
-  regex = '''SG\.[a-zA-Z0-9_-]{22}\.[a-zA-Z0-9_-]{43}'''
-  tags = ["key", "sendgrid", "api"]
-
-# MailChimp API Keys
-[[rules]]
-  id = "mailchimp-api-key"
-  description = "MailChimp API Key"
-  regex = '''[a-f0-9]{32}-us[0-9]{1,2}'''
-  tags = ["key", "mailchimp", "api"]
-
-# Twilio API Keys
-[[rules]]
-  id = "twilio-api-key"
-  description = "Twilio API Key"
-  regex = '''SK[a-z0-9]{32}'''
-  tags = ["key", "twilio", "api"]
-
-# Docker Registry Auth
-[[rules]]
-  id = "docker-registry-auth"
-  description = "Docker Registry Auth"
-  regex = '''(?i)(docker[_-]?registry[_-]?auth|DOCKER_AUTH)\s*[:=]\s*['"]?([a-zA-Z0-9+/]{40,}={0,2})['"]?'''
-  tags = ["docker", "auth", "registry"]
-
-# NPM Tokens
-[[rules]]
-  id = "npm-token"
-  description = "NPM Access Token"
-  regex = '''npm_[a-zA-Z0-9]{36}'''
-  tags = ["key", "npm", "token"]
-
-# PyPI Tokens
-[[rules]]
-  id = "pypi-token"
-  description = "PyPI Access Token"
-  regex = '''pypi-[a-zA-Z0-9_-]{100,}'''
-  tags = ["key", "pypi", "token"]
-
-# Terraform Cloud Tokens
-[[rules]]
-  id = "terraform-token"
-  description = "Terraform Cloud Token"
-  regex = '''[a-zA-Z0-9]{14}\.atlasv1\.[a-zA-Z0-9_-]{60,}'''
-  tags = ["key", "terraform", "token"]
-
-# Generic Secrets
-[[rules]]
-  id = "generic-secret"
-  description = "Generic Secret"
-  regex = '''(?i)(secret|token)\s*[:=]\s*['"]?([a-zA-Z0-9_\-]{32,})['"]?'''
-  tags = ["secret", "generic"]
-
-  [rules.allowlist]
-    regexes = [
-      '''secret.*CHANGE_ME''',
-      '''secret.*example''',
-      '''secret.*your-.*-here''',
-      '''your-jwt-secret-here''',
-    ]
+  id = "octollm-capability-token"
+  description = "OctoLLM capability token"
+  regex = '''\b(?:cap|tok)_[a-zA-Z0-9]{24,}'''
+  tags = ["token", "octollm", "capability"]

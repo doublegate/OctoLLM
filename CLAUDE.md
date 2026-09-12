@@ -232,6 +232,29 @@ Targets for things that do not work yet (`up`, `smoke`, `eval`, `release-gate`) 
 true (compose in Stage 3, evals in Stage 10, release in Stage 12). Do not add a target
 that does not work; that is the failure this repository is being dug out of.
 
+### Secret scanning
+
+`.gitleaks.toml` runs with `[extend] useDefault = true` — **do not remove that line**.
+Gitleaks replaces its ~170 built-in rules when a config declares `[[rules]]`, so
+without it, adding a custom rule silently removes 170.
+
+**No path is exempt except generated and vendored trees.** Known-fake values are
+exempted individually, by value, anchored `^…$`. If a documentation example trips the
+scanner, use a sanctioned placeholder (`YOUR_…`, `…EXAMPLE…`, `CHANGE_ME_…`, or an
+elided `…abc…`) or add one anchored literal with a comment — **never add a path**.
+The previous config exempted every `.md` file, all of `docs/`/`tests/`,
+`.github/workflows/*.yml` and `infrastructure/*.sh`, and had been reporting clean for
+months while inspecting almost nothing.
+
+```bash
+make secrets-scan        # gitleaks over tracked history
+make secrets-selftest    # plants 4 secrets; asserts this config finds all 4
+                         # AND that the old config finds 0
+```
+
+That second assertion is why the self-test means anything: a scan of nothing reports
+exactly what a clean scan reports.
+
 ### Versioning
 
 `VERSION` at the repository root is the single source of truth, propagated to **22 sites**
