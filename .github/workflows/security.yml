@@ -66,7 +66,7 @@ jobs:
       # 3.13 or 3.14 image (python-3.12 is the newest variant in that repo). Harmless
       # here -- Snyk reads pyproject.toml and poetry.lock, not the interpreter.
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/python-3.12@12140f4059e244892ae643824a95459a102120dd  # master as of 2026-08-03
+        uses: snyk/actions/python-3.12@b075801f26076be9bb50521154cafab73f44da0c  # master as of 2026-09-21
         continue-on-error: true  # Don't fail build on vulnerabilities yet
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
