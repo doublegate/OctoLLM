@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Executor Arm Dockerfile - Multi-stage build for Rust service (security-critical)
-FROM rust:1.98.1-slim AS builder
+FROM rust:1.99.0-slim AS builder
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -21,7 +21,7 @@ COPY services/reflex-layer ./services/reflex-layer
 RUN cargo build --release --package executor-arm
 
 # Runtime stage
-FROM debian:13.6-slim
+FROM debian:13.7-slim
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \

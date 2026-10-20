@@ -22,14 +22,14 @@ categories = ["web-programming", "development-tools"]
 
 [workspace.dependencies]
 # Async runtime
-tokio = { version = "1.53", features = ["full"] }
+tokio = { version = "1.54", features = ["full"] }
 tokio-util = "0.7"
 
 # Web framework
 axum = { version = "0.8.9", features = ["ws", "macros"] }
 tower = { version = "0.5.3", features = ["full"] }
 tower-http = { version = "0.7", features = ["fs", "trace", "cors", "compression-full"] }
-hyper = { version = "1.11", features = ["full"] }
+hyper = { version = "1.12", features = ["full"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -71,7 +71,7 @@ regex = "1.13"
 fancy-regex = "0.19"
 
 # UUID
-uuid = { version = "1.26", features = ["v4", "serde"] }
+uuid = { version = "1.28", features = ["v4", "serde"] }
 
 # Environment
 # dotenvy, not dotenv: the original is unmaintained (RUSTSEC-2021-0141) and is the
@@ -92,7 +92,7 @@ lazy_static = "1.5"
 # Testing
 mockall = "0.15"
 criterion = { version = "0.8", features = ["html_reports"] }
-proptest = "1.11"
+proptest = "1.12"
 fake = "5.1"
 
 [profile.dev]

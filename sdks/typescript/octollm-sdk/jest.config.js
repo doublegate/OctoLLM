@@ -1,5 +1,17 @@
 module.exports = {
-  preset: 'ts-jest',
+  transform: {
+    '^.+\\.tsx?$': [
+      '@swc/jest',
+      {
+        jsc: {
+          parser: {
+            syntax: 'typescript',
+            tsx: true
+          }
+        }
+      }
+    ]
+  },
   testEnvironment: 'node',
   roots: ['<rootDir>/tests'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],

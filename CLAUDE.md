@@ -217,9 +217,9 @@ Implementation is underway. This is no longer a documentation-only repository.
 ### Toolchain
 
 - **Python 3.14** (`>=3.14,<3.15` at the root; the `<3.15` bound comes from presidio).
-  Service images are `python:3.14.7-slim`.
-- **Rust** edition 2021, MSRV 1.91.1; builder images are `rust:1.98.1-slim`, runtime
-  `debian:13.6-slim`.
+  Service images are `python:3.14.8-slim`.
+- **Rust** edition 2021, MSRV 1.91.1; builder images are `rust:1.99.0-slim`, runtime
+  `debian:13.7-slim`.
 - Poetry for the root Python environment; `services/orchestrator/` and each SDK carry
   their own manifest.
 
