@@ -154,10 +154,6 @@ app = FastAPI(
     lifespan=lifespan,
     docs_url="/docs" if settings.debug else None,
     redoc_url="/redoc" if settings.debug else None,
-    telemetry={
-        "auto_configure": settings.enable_tracing,
-        "tracing": settings.enable_tracing,
-    },
 )
 
 # `app.state.reflex_client` is assigned by the lifespan handler, but several request

@@ -1,6 +1,16 @@
 module.exports = {
   transform: {
-    '^.+\\.tsx?$': '@swc/jest'
+    '^.+\\.tsx?$': [
+      '@swc/jest',
+      {
+        jsc: {
+          parser: {
+            syntax: 'typescript',
+            tsx: true
+          }
+        }
+      }
+    ]
   },
   testEnvironment: 'node',
   roots: ['<rootDir>/tests'],
