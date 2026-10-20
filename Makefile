@@ -99,7 +99,7 @@ format: ## Rewrite Python and Rust in place (the only targets that MODIFY files)
 
 .PHONY: typecheck
 typecheck: ## mypy over the shared framework, the orchestrator and the Python SDK
-	mypy $(SHARED_PY)/octollm_common $(ORCHESTRATOR)/app $(SDK_PY)/octollm_sdk
+	$(PYTHON) -m mypy $(SHARED_PY)/octollm_common $(ORCHESTRATOR)/app $(SDK_PY)/octollm_sdk
 
 # =============================================================================
 # Test

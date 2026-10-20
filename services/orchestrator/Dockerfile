@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Orchestrator Service Dockerfile - Multi-stage build for production
-FROM python:3.14.7-slim AS builder
+FROM python:3.14.8-slim AS builder
 
 # Install system dependencies for building
 RUN apt-get update && apt-get install -y \
@@ -24,7 +24,7 @@ RUN poetry config virtualenvs.create false && \
     poetry install --only main --no-interaction --no-ansi
 
 # Runtime stage
-FROM python:3.14.7-slim
+FROM python:3.14.8-slim
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
