@@ -110,6 +110,10 @@ class EpisodicStore:
     def embedding_model(self) -> str:
         return self._provider.embedding_model
 
+    async def ping(self) -> None:
+        """Probe Qdrant connectivity for readiness checks."""
+        await self._client.get_collections()
+
     def collection_for(self, arm_id: str) -> str:
         return collection_name(arm_id, self._provider.embedding_model)
 

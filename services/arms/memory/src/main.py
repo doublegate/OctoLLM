@@ -24,8 +24,9 @@ misconfigured.
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from typing import Any
 
 import structlog
@@ -45,7 +46,7 @@ from octollm_common.roster import spec_for
 from octollm_common.security import CapabilityPolicy, RequireCapability, clearance_from
 
 from .config import get_settings
-from .service import ARM_ID, ConflictingArtifactError, MemoryService
+from .service import ARM_ID, ConflictingArtifactError, MemoryService, UnsupportedScopeError
 
 logger = structlog.get_logger(__name__)
 
@@ -64,6 +65,7 @@ class Runtime:
     def __init__(self) -> None:
         self.service: MemoryService | None = None
         self.consumer: Any = None
+        self.ring_retry_task: asyncio.Task[None] | None = None
         self.engine: Any = None
         self.qdrant: Any = None
         self.provider: Any = None
@@ -71,6 +73,7 @@ class Runtime:
 
 
 RUNTIME = Runtime()
+_CALL_COUNTER = InMemoryCallCounter()
 
 
 def _verifier() -> CapabilityVerifier:
@@ -85,7 +88,7 @@ def _verifier() -> CapabilityVerifier:
     return CapabilityVerifier(
         {settings.capability_kid: settings.capability_secret or ""},
         audience=ARM_ID,
-        counter=InMemoryCallCounter(),
+        counter=_CALL_COUNTER,
     )
 
 
@@ -116,10 +119,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     if settings.ring_enabled:
         await _start_ring(settings)
+        if RUNTIME.consumer is None:
+            RUNTIME.ring_retry_task = asyncio.create_task(
+                _retry_ring_until_attached(settings),
+                name="memory-ring-reconnect",
+            )
 
     try:
         yield
     finally:
+        if RUNTIME.ring_retry_task is not None:
+            RUNTIME.ring_retry_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await RUNTIME.ring_retry_task
+            RUNTIME.ring_retry_task = None
         if RUNTIME.consumer is not None:
             await RUNTIME.consumer.stop()
         if RUNTIME.redis is not None:
@@ -163,6 +176,13 @@ async def _start_ring(settings: Any) -> None:
         RUNTIME.consumer = None
 
 
+async def _retry_ring_until_attached(settings: Any) -> None:
+    """Keep retrying ring attachment in the background if Redis was unavailable at boot."""
+    while RUNTIME.consumer is None:
+        await asyncio.sleep(2.0)
+        await _start_ring(settings)
+
+
 def _service() -> MemoryService:
     if RUNTIME.service is None:  # pragma: no cover - lifespan always sets it
         raise RuntimeError("Memory service is not initialised; lifespan did not run.")
@@ -191,12 +211,23 @@ async def recall(
     caller that states its own clearance is the same escalation as an arm that states
     its own peers, and `RecallRequest` deliberately has no field for either.
     """
-    return await _service().recall(
-        body,
-        request_id=getattr(request.state, "request_id", "unknown"),
-        caller=claims.sub,
-        clearance=Sensitivity(clearance_from(claims)),
-    )
+    request_id = getattr(request.state, "request_id", "unknown")
+    try:
+        return await _service().recall(
+            body,
+            request_id=request_id,
+            caller=claims.sub,
+            clearance=Sensitivity(clearance_from(claims)),
+        )
+    except UnsupportedScopeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail=error_body(
+                code="not_implemented",
+                message=str(exc),
+                request_id=request_id,
+            ),
+        ) from exc
 
 
 async def remember(
@@ -206,10 +237,15 @@ async def remember(
 ) -> RememberResponse:
     """Commit one artifact. Idempotent: a redelivery is reported, not rejected."""
     request_id = getattr(request.state, "request_id", "unknown")
-    if body.artifact.provenance.task_id != claims.task_id:
+    if (
+        body.artifact.provenance.task_id != claims.task_id
+        or body.artifact.provenance.created_by != claims.sub
+    ):
         logger.warning(
             "capability_denied",
-            reason="artifact_task_mismatch",
+            reason="artifact_provenance_mismatch",
+            token_sub=claims.sub,
+            artifact_created_by=body.artifact.provenance.created_by,
             token_task_id=claims.task_id,
             artifact_task_id=body.artifact.provenance.task_id,
             path=request.url.path,

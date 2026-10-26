@@ -218,15 +218,13 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """
-    Drop the tables, and the schema with them.
+    Drop the tables created by this revision.
 
-    A downgrade here destroys every remembered artifact. That is what a downgrade of
-    the migration that created the store means, and writing it as a no-op to seem safe
-    would be worse: it would leave a database that reports itself at revision base
-    while still holding the tables.
+    The `memory` schema itself is retained because `memory.alembic_version` lives in it
+    (`version_table_schema="memory"` in `env.py`), and Alembic updates that table after
+    `downgrade()` returns.
     """
     op.drop_table("action_log", schema=SCHEMA)
     op.drop_table("task_history", schema=SCHEMA)
     op.drop_table("relationships", schema=SCHEMA)
     op.drop_table("entities", schema=SCHEMA)
-    op.execute(f"DROP SCHEMA IF EXISTS {SCHEMA} CASCADE")

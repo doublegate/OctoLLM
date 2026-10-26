@@ -48,13 +48,17 @@ from .vectors import EpisodicStore, VectorStoreError
 
 logger = structlog.get_logger(__name__)
 
-__all__ = ["ConflictingArtifactError", "MemoryService"]
+__all__ = ["ConflictingArtifactError", "MemoryService", "UnsupportedScopeError"]
 
 ARM_ID = "memory"
 
 
 class ConflictingArtifactError(Exception):
     """An existing artifact_id was re-submitted with altered content or provenance."""
+
+
+class UnsupportedScopeError(Exception):
+    """Recall requested a memory scope whose query path is not implemented yet."""
 
 
 def _matches_stored_provenance(artifact: Artifact, existing: Any) -> bool:
@@ -144,6 +148,10 @@ class MemoryService:
                 making it the default means the usual request names no arm at all.
             clearance: Read from the token. See `octollm_common.security.clearance_from`.
         """
+        if request.scope != MemoryScope.EPISODIC:
+            raise UnsupportedScopeError(
+                f"Memory recall for scope={request.scope.value!r} is not implemented yet."
+            )
         target = request.arm_id or caller
         payloads, withheld = await self._episodic.search(
             arm_id=target,
@@ -190,6 +198,7 @@ class MemoryService:
             checks["postgres"] = False
             checks["postgres_error"] = str(exc)
         try:
+            await self._episodic.ping()
             checks["embedding_model"] = self._episodic.embedding_model
             checks["qdrant"] = True
         except Exception as exc:  # noqa: BLE001

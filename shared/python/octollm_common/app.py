@@ -135,6 +135,7 @@ def create_arm_app(
             try:
                 checks.update(await readiness())
             except Exception as exc:  # noqa: BLE001 - /ready must always answer
+                checks["readiness"] = False
                 checks["error"] = str(exc)
         ok = all(value is not False for value in checks.values())
         return {
