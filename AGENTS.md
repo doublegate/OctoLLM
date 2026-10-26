@@ -1,252 +1,560 @@
-# AGENTS.md
+<!-- Managed by Master-Claude. Universal rules come from the imported/inlined core.
+     Edit only inside the MC-PROJECT block; mc-sync overwrites everything else. -->
+<!-- mc-core: 0.2.0 | mode=import | lang=rust -->
+# AGENTS.md — OctoLLM
 
-**Forge coding surface for AI agents working in doublegate/OctoLLM.**
+@/home/parobek/.claude/master-core/AGENTS.base.md
+@/home/parobek/.claude/master-core/lang/rust.md
+@/home/parobek/.claude/master-core/modules/10-commits-and-versioning.md
+@/home/parobek/.claude/master-core/modules/20-testing-and-accuracy.md
+@/home/parobek/.claude/master-core/modules/30-quality-gates.md
+@/home/parobek/.claude/master-core/modules/40-docs-and-adrs.md
+@/home/parobek/.claude/master-core/modules/50-architecture-patterns.md
+@/home/parobek/.claude/master-core/modules/60-security.md
+@/home/parobek/.claude/master-core/modules/70-release-ceremony.md
+@/home/parobek/.claude/master-core/modules/80-phase-sprint-workflow.md
+@/home/parobek/.claude/master-core/modules/90-multi-language-integration.md
+@/home/parobek/.claude/master-core/modules/91-agent-system-architecture.md
+@/home/parobek/.claude/master-core/modules/95-named-pattern-library.md
 
-This file tells coding agents (CloudAgents, smiths, Artificers) how to work in this repository. Read `CLAUDE.md` and `docs/PROJECT-STATUS.md` for deeper context — this is the distillation.
+<<< MC-PROJECT-START >>>
+## Project: OctoLLM
 
----
+> ## Read `docs/PROJECT-STATUS.md` first
+>
+> This file is **how to work here** — commands, conventions, and invariants.
+> [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md) is **where the project is** — what
+> runs today, what is deliberately not true yet, which stage is next, and which
+> decisions are waiting on a human.
+>
+> Both matter, and the status file changes far more often. Read it at the start of every
+> session, and update it in the same change as anything that makes one of its numbers
+> wrong.
+>
+> **The governing rule of this repository: every claim in it is either made true or
+> deleted.** It spent its first phase describing a system that had not been built, with
+> nothing in CI able to contradict it. Do not add a make target that does not run, a
+> document that states an intention as a fact, or a test that cannot fail.
 
-## Job
+## Project Overview
 
-Build a distributed AI architecture for offensive security and developer tooling, inspired by octopus neurobiology. Keep every claim in the repository either true or deleted — implementation over documentation debt.
+**OctoLLM** is a distributed AI architecture for offensive security and developer tooling, inspired by octopus neurobiology. Implementation is underway: a Rust workspace (reflex layer, executor arm, three shared crates), a Python FastAPI orchestrator, six arm service images, and Python + TypeScript SDKs all exist alongside the architectural documentation.
 
-**Current stage:** Stage 4 complete (shared arm framework), Stage 5 next (Neural Ring and capability tokens). See twelve-stage roadmap to v1.0.0 in `CLAUDE.md`.
+### Core Concept
 
----
+The system mirrors the octopus's distributed nervous system where:
+- **Central Brain (Orchestrator)**: Strategic planning and coordination using frontier LLMs (GPT-4, Claude Opus)
+- **Autonomous Arms (Specialized Modules)**: Domain-specific execution with local decision-making
+- **Reflex Layer**: Fast preprocessing for common patterns without LLM involvement
+- **Distributed Memory**: Global semantic memory + local episodic stores per arm
 
-## Stack
+### Key Architectural Principles
 
-- **Languages:** Python 3.14 (Poetry), Rust 1.91.1+ (workspace with 5 members), TypeScript (SDK only)
-- **Python services:** FastAPI, SQLAlchemy 2.0, Pydantic, structlog
-- **Rust services:** Axum (reflex layer), tokio, serde
-- **Persistence:** PostgreSQL 17 (global memory), Redis 8 (cache + ring streams), Qdrant 1.12 (vector store)
-- **Deployment:** Docker Compose (`compose.yaml`) for local dev; Kubernetes planned for production (Stage 12)
-- **Observability:** Prometheus, Grafana, Loki, Jaeger (scaffolded, not yet wired end-to-end)
-- **LLM providers:** OpenAI, Anthropic (optional), Ollama (local), FakeProvider (default — **stack runs with NO API KEYS**)
+1. **Modular Specialization**: Each component excels at one thing
+2. **Distributed Autonomy with Centralized Governance**: Arms decide locally, brain coordinates globally
+3. **Defense in Depth**: Multiple security layers (reflex preprocessing, capability isolation, PII sanitization)
+4. **Hierarchical Processing**: Expensive resources reserved for complex problems
+5. **Active Inference**: System proactively reduces uncertainty rather than waiting for instructions
 
-**What exists today:**
-- Rust reflex layer (8,500 lines, 241 tests passing, PII/injection detection live)
-- FastAPI orchestrator (197 tests, 93% coverage, no execution engine yet — tasks stay `pending`)
-- Shared Python framework (`octollm_common`) imported by all 8 arms + orchestrator (103 tests, 95% coverage)
-- Six Python arm stubs (each serves `/health`, `/ready`, `/capabilities`, `/metrics`; main endpoint returns 501 naming Stage 8)
-- Rust executor arm stub (21 lines; sandbox lands Stage 9)
-- Python SDK (28 tests) and TypeScript SDK (28 tests) — both unpublished
-- 11-service compose stack that reaches HEALTHY (`make up`)
+## Documentation Structure
 
----
+The repository carries 341 tracked markdown files, **most written ahead of the code**.
+Reconciling them is Stage 12. Until then only six are authoritative:
 
-## Commands
+| File | Holds |
+|---|---|
+| `docs/PROJECT-STATUS.md` | current state — read first |
+| `AGENTS.md` (this file) | how to work here: commands, conventions, invariants |
+| `docs/api/CONTRACT.md` | the frozen API contract |
+| `CHANGELOG.md` | user-visible change, under `[Unreleased]` |
+| `docs/adr/` | decisions, in Nygard format |
+| `README.md` | the public front door |
 
-**Prefer the Makefile as source of truth.** Every CI job invokes these targets, so local pass = CI pass by construction.
+**If a document and the code disagree, the code wins and the document is the bug.**
 
-### Install and setup
-```bash
-make install       # every Python package (editable) + TypeScript SDK
-make help          # list all targets
+Known stale — do not act on these without checking the code: `docs/src/project-tracking/status.md`
+("22% complete", "v1.2.0", dated 2025-11-15), `to-dos/status/` (32 files, three reporting on
+the same sprint), `to-dos/MASTER-TODO.md` (the earlier seven-phase roadmap — history, not a
+plan), and anything under `docs/book/` (a committed build artifact).
+
+### Design references (pre-code intent, not current state)
+
+- `ref-docs/OctoLLM-Project-Overview.md` - Strategic vision, biological inspiration, use cases, success metrics, roadmap
+- `ref-docs/OctoLLM-Architecture-Implementation.md` - Technical blueprint, component specs, deployment patterns, code examples
+- `ref-docs/OctoLLM-Concept_Idea.md` - Quick-start patterns and concrete design decisions
+
+### Understanding the Architecture
+
+**Layer 1: Ingress** (API Gateway + Reflex)
+- Technology: NGINX/Traefik + Python/Rust for reflex logic
+- Latency Target: <10ms for cache hits, <50ms for reflex decisions
+
+**Layer 2: Orchestration** (The Brain)
+- Technology: Python + FastAPI, LangChain/LlamaIndex
+- Main Loop: Cache check → Plan generation → Step execution → Result integration → Validation
+
+**Layer 3: Execution** (The Arms)
+- **Planner Arm**: Task decomposition (Python, uses a small, cost-efficient model)
+- **Tool Executor Arm**: External actions in sandboxed environments (Rust for safety)
+- **Retriever Arm**: Knowledge base search
+- **Coder Arm**: Code generation, debugging, refactoring
+- **Judge Arm**: Output validation and quality assurance
+- **Safety Guardian Arm**: PII detection, content filtering
+
+**Layer 4: Persistence**
+- PostgreSQL (global memory), Redis (caching), Qdrant/Weaviate (vector stores)
+
+**Layer 5: Observability**
+- Prometheus (metrics), Loki (logs), Jaeger (tracing)
+
+## Key Data Structures
+
+**TaskContract** (core orchestration object):
+- `task_id`: Unique identifier
+- `goal`: Natural language description
+- `constraints`: Hard constraints (time, cost, safety)
+- `context`: Background information
+- `acceptance_criteria`: Success conditions
+- `budget`: Resource limits (tokens, time)
+- `assigned_arm`: Target arm identifier
+
+**ArmCapability** (arm registry):
+- `arm_id`, `name`, `description`
+- `input_schema`, `output_schema`: JSON schemas
+- `capabilities`: Tags for routing (e.g., "code", "security")
+- `cost_tier`: 1 (cheap) to 5 (expensive)
+- `endpoint`: Kubernetes service URL
+
+## Development Roadmap
+
+This is the long-horizon capability plan. The **executing** plan is the 12-stage map in
+`docs/PROJECT-STATUS.md`, which is the single source of truth for what is done; never
+restate a stage's status here.
+
+**Phase 1: Proof of Concept** (Months 1-2)
+- Reflex preprocessing layer
+- Orchestrator (basic planning/delegation)
+- Two arms: Planner + Tool Executor
+- Docker Compose deployment
+
+**Phase 2: Core Capabilities** (Months 3-5)
+- Additional arms: Retriever, Coder, Judge, Safety Guardian
+- Kubernetes deployment
+- Distributed memory system
+- Swarm decision-making
+
+**Phase 3: Optimization** (Months 6-9)
+- Rust reimplementation of performance-critical arms
+- Fine-tuned specialist models
+- Skill distillation
+
+**Phase 4: Production Hardening** (Months 10-12)
+- Comprehensive observability
+- SOC 2 / ISO 27001 compliance
+- Public API and documentation
+
+## When Implementing Components
+
+### Technology Choices
+
+Versions live in **### Toolchain** below — do not restate them here.
+
+**Orchestrator (Brain)**:
+```python
+# FastAPI, Pydantic
+# LLM: a frontier provider, through the provider layer in `octollm_common/llm/`
+# Dependencies: langchain, redis, psycopg, prometheus-client, structlog
 ```
 
-### Lint and format
-```bash
-make lint          # ruff, black, clippy, rustfmt, eslint, tsc, yamllint, shellcheck, actionlint
-make format        # MODIFIES files: rewrite Python and Rust in place
-make typecheck     # mypy over shared framework, orchestrator, Python SDK
+**Reflex Layer (Performance-Critical)**:
+```rust
+// actix-web
+// Redis for caching, regex for PII/injection detection
 ```
 
-### Test
-```bash
-make test          # all suites: 241 Rust + 103 shared + 197 orchestrator + 28 Python SDK + 28 TS SDK
-make test-rust     # Rust workspace tests
-make test-shared   # shared arm framework, 90% coverage floor
-make test-orchestrator  # orchestrator, 85% coverage floor
-make test-sdk-python    # Python SDK
-make test-sdk-typescript # TypeScript SDK
+**Arms (Mixed)**:
+- Python for AI-heavy arms (Planner, Coder, Judge)
+- Rust for security-critical arms (Tool Executor)
+- Small, cost-efficient models where the task allows
 
-# Redis-backed Rust tests (needs Redis on :6379)
-make redis && make test-rust-redis && make redis-stop
+### Security Patterns
+
+1. **Capability-Based Access**: Each arm gets time-limited tokens for specific permissions
+2. **Sandboxing**: Tool Executor runs in isolated containers (Docker/gVisor)
+3. **PII Protection**: Input sanitization, output filtering, differential privacy
+4. **Allowlisting**: Commands and hosts explicitly permitted
+5. **Provenance Tracking**: Every artifact tagged with source, timestamp, confidence
+
+### Deployment
+
+- **Local Dev**: `compose.yaml` with all services
+- **Production**: Kubernetes with namespace `octollm`
+- **Monitoring**: Prometheus + Grafana dashboards
+- **Scaling**: HorizontalPodAutoscaler based on CPU/memory
+
+## Key Metrics to Track
+
+| Metric | Target |
+|--------|--------|
+| Task Success Rate | >95% vs baseline |
+| P99 Latency | <30s for critical tasks |
+| Cost per Task | <50% of monolithic LLM |
+| Reflex Cache Hit Rate | >60% over time |
+| PII Leakage Rate | <0.1% of outputs |
+| Prompt Injection Blocks | >99% detection |
+
+## Important Conventions
+
+1. **JSON Schemas**: All arm inputs/outputs validated with Pydantic schemas
+2. **Provenance Metadata**: Always include `arm_id`, `timestamp`, `confidence`, `command_hash`
+3. **Error Handling**: Retry logic with exponential backoff, graceful degradation
+4. **Resource Limits**: Enforce timeouts (default 30s max) and token budgets
+5. **Logging**: Structured logging with `structlog` (JSON format for aggregation)
+
+## Design Patterns in Use
+
+1. **Mixture of Experts (MoE)**: Multiple specialists with gating function
+2. **Swarm Decision-Making**: N parallel proposals → aggregation → conflict resolution
+3. **Hierarchical Planning**: Recursive task decomposition with acceptance criteria
+4. **Active Inference Loops**: Observe → Hypothesize → Predict → Act → Update
+5. **Skill Distillation**: Fine-tune smaller models from decision traces
+
+## Future Implementation Notes
+
+- Use LangGraph or custom state machine for workflow orchestration
+- Abstract LLM calls behind provider-agnostic interface (support OpenAI, Anthropic, local models via vLLM/Ollama)
+- Implement uncertainty-based routing (ML classifier predicts best arm from task features)
+- Add distributed tracing with OpenTelemetry for debugging complex flows
+- Consider speculative execution (predict next arm in parallel)
+
+## Current Status
+
+### What exists
+
+Stage progress lives in `docs/PROJECT-STATUS.md` and nowhere else. This table is
+orientation — which tree holds what — not a status report.
+
+| Area | Location | State |
+|---|---|---|
+| Rust workspace | `Cargo.toml` (5 members) | `reflex-layer`, `arms/executor`, `shared/rust/{common,types,clients}`; 241 tests + 18 `#[ignore]`d Redis-backed |
+| Reflex layer | `reflex-layer/` (`:8080`) | Implemented. PII + prompt-injection detection, Redis cache, token-bucket rate limiting; `POST /process` works |
+| Orchestrator | `services/orchestrator/` (`:8000`) | FastAPI app, SQLAlchemy models, Reflex client with circuit breaker, arm registry, capability signing authority; 226 tests. **It does not call any arm** — Stage 7 |
+| Shared framework | `shared/python/octollm_common/` | App factory, error envelope, contract models, arm roster, LLM providers, **capability tokens, the Neural Ring, peer clients**; 210 tests |
+| Python arms | `services/arms/{planner,retriever,coder,judge,safety_guardian}/` (`:8001`–`:8005`) | Scaffolded on the shared framework; serve `/health`, `/ready`, `/capabilities`, `/metrics`. Each arm's own endpoint returns 501 naming Stage 8 |
+| Executor arm | `services/arms/executor/` (`:8006`, host `:18006`) | Rust stub, `/health` only. Sandbox is Stage 9 |
+| Memory / Curator | `services/arms/memory/` (`:8007`) | **Implemented.** `POST /recall` + `POST /remember`, both capability-gated; consumes `artifact` from the ring. Episodic vectors in Qdrant, semantic provenance in the `memory` Postgres schema |
+| Red Team | `:8008` | Not built (Stage 11). The roster declares all eight arms |
+| Python SDK | `sdks/python/octollm-sdk/` | 8 service clients; 28 tests passing |
+| TypeScript SDK | `sdks/typescript/octollm-sdk/` | 8 service clients; 28 tests passing |
+
+PostgreSQL, Redis and Qdrant are all read and written — Qdrant by
+Memory as of Stage 6, so it is no longer a container nothing touches.
+
+### Toolchain
+
+- **Python 3.14** (`>=3.14,<3.15` at the root; the `<3.15` bound comes from presidio).
+  Service images are `python:3.14.7-slim`.
+- **Rust** edition 2021, MSRV 1.91.1; builder images are `rust:1.98.1-slim`, runtime
+  `debian:13.6-slim`.
+- Poetry for the root Python environment; `services/orchestrator/` and each SDK carry
+  their own manifest.
+
+### Commands
+
+**Use the Makefile.** Every check is a make target and **every CI job invokes that
+target**, so a local pass and a CI pass mean the same thing by construction. Running the
+underlying commands by hand is fine for a tight loop, but the target is the contract.
+
+```bash
+make help              # every target, self-documenting
+make install           # every Python package (editable) + the TypeScript SDK
+make verify            # everything ci-gate runs: version-check, diagram-check, gate-check,
+                       # compose-env-check, port-map-check, sdk-parity-check, lint,
+                       # typecheck, secrets-scan, secrets-selftest, every suite
+make format            # rewrite Python and Rust in place (the only target that MODIFIES)
+
+# Individual gates
+make lint-python lint-rust lint-typescript lint-config
+make typecheck
+make gate-check        # every ci.yml job is wired into ci-gate.needs
+make sdk-parity-check  # both SDKs agree, and call only routes that exist
+make test              # 241 Rust + 210 shared + 226 orchestrator + 63 memory + 28 + 28 SDK
+
+# The suites assert against real engines. `make data-services` starts Postgres,
+# Redis and Qdrant and migrates -- no image builds -- which is everything
+# `make verify` needs beyond the Redis-backed Rust suite it omits.
+make data-services && make verify && make test-rust-redis
+
+# Memory's schema
+make migrate         # apply the `memory` schema migrations
+make migrate-check   # fail if the ORM and the migrations describe different schemas
 ```
 
-### Aggregates
+`make test-shared` **refuses to run** without Redis rather than letting the ring tests
+skip. A skipped suite reports exactly what a passing one reports, which is the defect
+this repository is being dug out of.
+
+`eval` and `release-gate` do not exist yet and are **deliberately absent rather than
+stubbed** — they arrive with the stages that make them true (evals in Stage 10, release in
+Stage 12). Do not add a target that does not work; that is the failure this repository is
+being dug out of.
+
+### Running the stack
+
 ```bash
-make verify        # everything ci-gate runs: version-check, lint, typecheck, all suites (minus Redis suite)
-make version-check # fail if any of 24 version sites disagrees with VERSION file
-make version-sync  # MODIFIES: rewrite every version site from VERSION
-make secrets-scan  # gitleaks over tracked history
-make secrets-selftest  # prove scanner works: 4 planted secrets found, old config finds 0
+make up      # all 12 services, waits for HEALTHY (not merely "started")
+make smoke   # health, a task round-trip, and an artifact through Memory
+make down
 ```
 
-### The stack
+`make up` generates a per-run capability secret and passes it to compose **in the
+environment, never to a file**, so the gated routes work out of the box with nothing
+committed or left on disk. `make smoke` reads it back from the running container rather
+than being told it, so the two cannot disagree about what the stack is using.
+
+**No API keys needed.** Host ports are overridable if one is taken: `REFLEX_PORT=18080 make up`.
+
+Three invariants the gates enforce, each of which was violated before Stage 3:
+
+- **Every compose variable must be one the service reads.** All 23 were silently ignored —
+  the orchestrator needs the `ORCHESTRATOR_` prefix, the reflex layer needs
+  `REFLEX_<SECTION>__<FIELD>` with a *double* underscore. `make compose-env-check`.
+- **One canonical port map.** `scripts/ci/check_port_map.py` is authoritative, and the
+  Dockerfile plus compose file win over any spec, because they are what binds a socket.
+  Every arm's OpenAPI spec previously named its neighbour's port. `make port-map-check`.
+- **`make smoke` asserts the task stays `pending`.** That is correct until Stage 7 builds
+  the execution engine; do not "fix" it to `completed` before the engine exists.
+
+Contract: `docs/api/CONTRACT.md`. Wire format is snake_case including enum values, with
+acronyms pinned (`ssn`, not `s_s_n`). Reflex fixtures are **captured from the running
+service** by `scripts/capture_reflex_fixtures.py` — never hand-written, which is how a
+client that could not parse a single real response kept 39 tests green.
+
+### Secret scanning
+
+`.gitleaks.toml` runs with `[extend] useDefault = true` — **do not remove that line**.
+Gitleaks replaces its ~170 built-in rules when a config declares `[[rules]]`, so
+without it, adding a custom rule silently removes 170.
+
+**No path is exempt except generated and vendored trees.** Known-fake values are
+exempted individually, by value, anchored `^…$`. If a documentation example trips the
+scanner, use a sanctioned placeholder (`YOUR_…`, `…EXAMPLE…`, `CHANGE_ME_…`, or an
+elided `…abc…`) or add one anchored literal with a comment — **never add a path**.
+The previous config exempted every `.md` file, all of `docs/`/`tests/`,
+`.github/workflows/*.yml` and `infrastructure/*.sh`, and had been reporting clean for
+months while inspecting almost nothing.
+
 ```bash
-make up            # build and start all 11 services; waits for HEALTHY (not just "started")
-make smoke         # assert stack is healthy and a task round-trips (stays `pending` — correct until Stage 7)
-make ps            # show each service and its health
-make logs          # follow logs of every service
-make down          # stop and remove volumes
+make secrets-scan        # gitleaks over tracked history
+make secrets-selftest    # plants 4 secrets; asserts this config finds all 4
+                         # AND that the old config finds 0
 ```
 
-**No API keys needed.** Host ports overridable: `REFLEX_PORT=18080 make up`.
+That second assertion is why the self-test means anything: a scan of nothing reports
+exactly what a clean scan reports.
 
-### Versioning and diagrams
-```bash
-make version       # print the version (from VERSION file: currently 0.5.0)
-make diagram       # MODIFIES: regenerate architecture SVGs (light + dark)
-make diagram-check # fail if committed SVGs are stale
-```
+### Versioning
 
----
+`VERSION` at the repository root is the single source of truth, propagated to **24 sites**
+by `scripts/version_sync.py` and enforced by `make version-check`. Before it existed those
+those sites held six different answers at once, three of them reachable at runtime: `/health`
+reported `0.1.0` while spans reported `0.9.0` while the README badge said `1.2.0`.
 
-## Test how-to
+Current version is **0.5.0**, and it is the first number here that is true everywhere.
+The repository has **zero git tags** and neither SDK exists on PyPI or npm, so every
+earlier number — including the 13 releases in `CHANGELOG.md` — was a claim about an
+artifact that was never built. `1.0.0` is cut at Stage 12. Rationale: `docs/adr/008`.
 
-See `.github/workflows/ci.yml` — it invokes Makefile targets, and those targets enforce collection floors.
+To bump: `echo X.Y.Z > VERSION && make version-sync`, then commit. Never write a version
+literal into a test — assert against `__version__`.
 
-**Rust:** `cargo test --workspace --all-features` (241 tests). Redis-backed tests: `cargo test -- --ignored` (18 tests, need Redis on :6379).
+### What CI does and does not cover
 
-**Python:** pytest with coverage floors enforced by each suite's `pytest.ini` or `pyproject.toml`:
-- Shared framework: 90% coverage floor, 103 tests minimum
-- Orchestrator: 85% coverage floor, 197 tests minimum
-- Python SDK: 28 tests minimum
+`ci.yml` is the blocking gate. It replaced `lint.yml` and `test.yml`, which between them
+could not fail: every test step was `|| echo "No tests found yet (Phase 0)"` *and*
+`continue-on-error: true`, and the summary job announced "Phase 0: No tests exist yet"
+over the 240 Rust and 178 Python tests that existed at the time and CI never ran.
 
-**TypeScript SDK:** `npx jest --ci --passWithNoTests=false`, 3 test files minimum.
+Twelve jobs, all blocking, all aggregated by `ci-gate` — **make `ci-gate` the only required
+check in branch protection**:
 
-Every suite asserts a collection floor because a suite silently collecting zero tests produces the same green check as one that ran them all.
+| Job | Covers |
+|---|---|
+| `lint-python` | ruff, black |
+| `typecheck-python` | mypy, against real installed dependencies (**blocking**) |
+| `lint-rust` | `cargo fmt`/`clippy` at **workspace** scope, including the three `shared/rust` crates |
+| `lint-typescript` | eslint, tsc |
+| `lint-config` | yamllint, OpenAPI validity, shellcheck, actionlint |
+| `test-rust` | 241 workspace tests + the 18 Redis-backed ones against a `redis:8-alpine` service |
+| `test-shared` | 210 tests, coverage floored at 90%, against a `redis:8-alpine` service; provider extras deliberately NOT installed |
+| `test-orchestrator` | 226 tests, coverage floored at 85% by its own pytest config |
+| `test-memory` | 63 tests, coverage floored at 80%, against real Postgres, Qdrant and Redis; runs `make migrate` and `make migrate-check` first |
+| `test-sdk-python` | 28 tests |
+| `test-sdk-typescript` | 28 tests |
+| `secrets` | `make secrets-scan` + `make secrets-selftest` over tracked history |
 
----
+Three invariants hold and are enforced rather than remembered:
 
-## PR norms
+- **No `continue-on-error`, no `|| echo`.** A gate that cannot fail is indistinguishable
+  from one that passed.
+- **Every suite asserts a collection floor** (210 / 226 / 63 / 28 / 28 / 18). A suite that silently
+  collects zero tests produces the same green check as one that ran them all. Raise a
+  floor when you add tests; never lower one.
+- **`scripts/ci/check_gate_complete.py` fails if a job is added to `ci.yml` without being
+  added to `ci-gate.needs`.** Otherwise a new job is advisory by omission — it can fail
+  while the gate goes green.
 
-### Branch naming
-All agent branches: `cursor/<descriptive-name>-953d`
+Still outside the gate, deliberately:
 
-Examples:
-- `cursor/fix-reflex-cache-race-953d`
-- `cursor/add-capability-tokens-953d`
-- `cursor/stage-8-python-arms-953d`
+- **Container builds** (`build.yml`) and the Trivy container scan (`security.yml`) are
+  gated on the `ENABLE_IMAGE_PUBLISH` / `ENABLE_CONTAINER_SCAN` repository variables,
+  which are unset — there is no release to publish until Stage 12. The images themselves
+  build and run (`make up` reaches HEALTHY on every long-lived service), but nothing in
+  `ci-gate` builds them, so **build locally before merging a Dockerfile change**.
+- **CodeQL** runs through GitHub's **default setup**, not a workflow in this repository.
+  Default setup is already configured for actions, javascript/typescript, python and rust
+  on a weekly schedule, and an advanced-setup workflow cannot coexist with it — GitHub
+  refuses SARIF from an advanced configuration while default setup is enabled. Its query
+  suite is `default`; raising it to `extended` (the equivalent of `security-and-quality`)
+  is a repository-settings change, not a code change.
+- **Snyk** stays advisory; it is skipped entirely without `SNYK_TOKEN`.
 
-### Draft PR → Artificer verify → Luke merges only
+### The shared arm framework
 
-1. **Open as draft PR by default** unless user explicitly requests otherwise
-2. **Run `make verify` locally** before pushing (or let CI catch it)
-3. **Commit and push incrementally** as you implement → test → fix
-4. **Create/update PR at end of turn** if you made changes this turn
-5. **Mark ready for review** only when implementation complete, tests passing, `make verify` green
-6. **Luke merges** — bots/CloudAgents/smiths open PRs only; never self-merge, never push `--auto` flag
+`shared/python/octollm_common` is imported by all eight arms **and** the orchestrator, so
+a change here is a change to nine services. It is installed by `make install`; the
+container images reach it through `PYTHONPATH=/app/shared/python`.
 
-### PR requirements
-- All CI checks passing (eleven jobs aggregated by `ci-gate`)
-- Tests included for new code (coverage floors enforced)
-- Documentation updated if functionality changes
-- Conventional commits: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `perf:`, `ci:`, `build:`, `chore:`
-- No secrets committed (gitleaks scans full history)
+Four seams live there, and each exists because its absence produced a real defect:
 
-**Do NOT merge** unless Luke explicitly approves. **Do NOT DM Luke from smiths** — use PR comments or the task thread.
+- **`models/contracts.py`** — every arm's request and response models, defined once. The
+  arms use them as FastAPI models and the orchestrator imports the same classes. Do not
+  add a second definition: the reflex client and the reflex layer kept separate
+  definitions of one payload, disagreed on four fields, and the client could not parse a
+  single real response while 39 of its tests passed against mocks built from its own
+  models.
+- **`roster.py`** — the eight arms, declared once. Each arm's `main.py` reads its spec
+  from here, the orchestrator's registry reads the whole roster, and
+  `check_port_map.py` checks it against what actually binds.
+- **`errors.py`** — one envelope for all nine services, `RequestValidationError`
+  included. Never return a bare `{"detail": ...}`.
+- **`capability.py` + `security.py`** — capability tokens and `RequireCapability`,
+  the callee-side gate. The orchestrator is the **sole signing authority**; no arm mints
+  a token. A grant names one callee (`aud`), one task, one scope, and a call budget the
+  **callee counts** — a bound the caller is trusted to respect is a request, not a bound.
+  TTL is capped at 120s. Never widen a grant to make a test pass; add the edge to the
+  roster, where it is reviewed.
+- **`ring.py` + `peer.py`** — the Neural Ring. Artifacts go on Redis Streams within the
+  types an arm declares in `publishes`/`subscribes`; the tight loops (Coder↔Judge) go
+  over capability-gated HTTP. **Ring handlers must be idempotent**: delivery is
+  at-least-once and redelivery is normal operation, not an incident. An arm that calls a
+  peer returns **cumulative** `usage`, because the orchestrator cannot see that call any
+  other way.
+- **`llm/`** — `create_provider()` returns `FakeProvider` unless a provider is
+  explicitly configured, and **`OCTOLLM_FORCE_FAKE_LLM=1` overrides configuration
+  entirely**, which is what makes it impossible for a test to reach a model. A missing
+  key raises rather than falling back to the fake: a deployment that believes it is
+  calling a real model and is not would be far worse than one that refuses to start.
+  The provider SDKs are optional extras, so CI installs none of them and the adapter
+  tests substitute fake modules in `sys.modules`.
 
----
+### The Memory arm: three rules
 
-## Secrets hygiene
+- **Clearance comes from the capability token, never the request.** `RecallRequest` has
+  no field for it and rejects one outright. This is the roster-not-registry rule one
+  layer out: a caller that states its own clearance is the same escalation as an arm that
+  states its own peers.
+- **Writes are idempotent, and must stay so.** Ring delivery is at-least-once, so a
+  redelivery is normal operation. `action_log.artifact_id` is unique and the insert is
+  `ON CONFLICT DO NOTHING` -- *not* `DO UPDATE*, so a replayed artifact cannot rewrite the
+  audit trail of the original.
+- **The episodic collection name carries the embedding model.** Changing between two
+  models of the same dimension fails silently and meaninglessly; a new model gets a new,
+  empty collection. Never strip the model from the name to "reuse" existing vectors.
 
-### Stack runs with NO API KEYS
-`compose.yaml` environment variables for `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` are empty by default. The LLM provider defaults to `FakeProvider` (deterministic, never calls a model). This is what makes the entire test suite run without credentials.
+Schema changes go through Alembic (`make migrate`), and `make migrate-check` fails when
+the ORM and the migration disagree. A failure there is a question about which of the two
+is right, not an instruction to autogenerate over it. Rationale: `docs/adr/011`.
 
-### Never commit secrets
-- `.env` files with real credentials are gitignored — never commit them
-- Use placeholders in examples: `YOUR_API_KEY`, `EXAMPLE_KEY_abc123xyz`, `CHANGE_ME_...`
-- Known-fake values exempted in `.gitleaks.toml` individually, by value, anchored `^...$`
-- **Never add path exemptions** to `.gitleaks.toml` — the old config exempted all `.md` files and `docs/`/`tests/` dirs, scanning almost nothing
+### Capability tokens: the one rule that is easy to get wrong
 
-### Scrub secrets from prompts and logs
-- PII detection at reflex layer screens SSN, credit cards, API keys in patterns
-- Safety Guardian arm screens egress (output leaving the system)
-- Never log raw user input without sanitization
-- `structlog` JSON format for aggregation, but redact before shipping
+**Authorization reads the static roster (`octollm_common.roster.SPECS`), never the live
+registry.** `ArmRegistry` accepts `peers` from an arm's own `/capabilities` response --
+it has to, since its job is to report what each arm says about itself -- which makes that
+field arm-controlled data. An arm that has been compromised could answer its next probe
+with `peers: ["executor"]` and, if the issuer trusted the registry, mint itself a path to
+the sandbox.
 
-### Pre-commit and CI enforcement
-```bash
-pre-commit install          # runs gitleaks, ruff, black, mypy on every commit
-make secrets-scan           # gitleaks over tracked history
-make secrets-selftest       # prove scanner finds 4 planted secrets; old config finds 0
-```
+The registry answers *"is the Judge healthy"*. It never answers *"may the Coder call the
+Judge"*. A test performs the attack and asserts the refusal; do not "fix" it by reading
+`registry.get(arm).peers`.
 
-`.gitleaks.toml` runs with `[extend] useDefault = true` — **do not remove that line**. Without it, adding a custom `[[rules]]` block silently discards all ~170 built-in rules.
+Two more that follow from the same reasoning:
 
----
+- **There is no endpoint that issues a capability token.** One that mints authority for
+  whoever asks is an endpoint an attacker asks nicely. Operators use
+  `scripts/mint_capability.py`, which needs the signing secret.
+- **The secret is validated at construction**, so a service with a placeholder secret
+  fails to start. One that starts and fails on the first real request has already
+  reported itself healthy.
 
-## Luke-merge rule
+`ORCHESTRATOR_CAPABILITY_SECRET` is unset by default and every capability-gated endpoint
+then answers 503. That is the correct default, not a gap. Rationale: `docs/adr/010`.
 
-**Bots and CloudAgents open PRs only. Luke merges (or explicitly delegates).**
+### Both SDKs are checked against reality
 
-This repository is under active correctness work — Stages 0-4 fixed CI that could not fail, a Makefile that didn't exist, secret scanning that exempted everything, and 23 compose variables silently ignored. That history means:
+`make sdk-parity-check` derives what each service serves from the code that serves it
+(the orchestrator's route table, the roster plus the framework paths, the Rust
+`.route(...)` calls) and asserts both SDKs call the same set, that every call resolves
+or is listed with the stage that will build it, and that each framework arm's OpenAPI
+spec documents exactly what it serves.
 
-- **Do not self-merge** even if you have write access
-- **Do not enable auto-merge** (`gh pr merge --auto` or UI toggle)
-- **Do not force-push** or amend commits unless explicitly instructed
-- **Do not leave `main` branch** unless user explicitly asks
+Every SDK test mocks the transport, which is why four broken calls survived 56 green
+tests — a mock is built from the same wrong belief as the client. Do not "fix" a parity
+failure by adding a PENDING entry for a path that is simply wrong.
 
-If Luke says "ship it" or "LGTM, merge when green," that is explicit approval to merge. Otherwise, PRs stay open for human review.
+### Do not "fix" these
 
-**Smiths (Kingdom forge bots):** Do not DM Luke. Use PR comments or the task thread. Luke reviews the queue; pinging outside the forge flow creates out-of-band state.
+They are correct for the current stage and a test asserts each one. The full table, with
+the stage that changes each, is in `docs/PROJECT-STATUS.md`.
 
----
+- A submitted task stays `pending` forever — no execution engine until Stage 7, and
+  `make smoke` asserts `pending` on purpose.
+- Every arm's own endpoint returns 501 — a convincing stub would make an unimplemented
+  arm indistinguishable from a working one. Stage 8.
+- `POST /arms/register` returns 503 by default — no `ORCHESTRATOR_CAPABILITY_SECRET` is
+  configured, so it fails closed. Set one and it takes a capability token. Configured,
+  not staged.
+- Recall ranking is **not semantic** with the default `FakeProvider`: it embeds by
+  hash, so identical text matches exactly and nothing else ranks meaningfully. Configure
+  a real embedding provider before reading meaning into the ordering.
+- Six performance targets read "not measured" — there is no eval harness. Stage 10.
+- Both SDKs call some routes that 404 — each is listed with its stage in
+  `scripts/ci/check_sdk_parity.py`, and an entry that outlives its stage fails the check.
 
-## Verification
+### Known gaps
 
-### Require real evidence
-- **Tests passing** (see collection floors above)
-- **CI green** (eleven jobs in `ci-gate`, no `continue-on-error` anywhere)
-- **Compose health** (`make up && make smoke` — all services HEALTHY, task round-trips)
-- **Not "it should work"** — show the test output, the CI link, the service logs
+- `services/orchestrator/pyproject.toml` declares the OpenTelemetry dependencies that
+  `app/telemetry.py` imports, but the orchestrator image installs the **root**
+  `pyproject.toml`, which does not. The two manifests need reconciling before that image
+  can serve traced traffic.
+- The five remaining Python arms answer their own endpoint with 501. Stage 8 implements
+  them. Memory is the exception as of Stage 6.
+- **Only the `memory` schema is under Alembic.** The orchestrator's `public` tables still
+  come from `Base.metadata.create_all`. Two DDL paths is a drift risk; the orchestrator
+  joins the migration story when something needs it to.
+- **`POST /submit` and `GET /tasks/{id}` are still open.** The one mutating registry
+  endpoint now requires a capability token (Stage 5). Do not add another mutating
+  endpoint without a gate, and do not accept a field that says where a service lives --
+  `base_url`, `port` and `endpoint` are configuration the orchestrator owns, and a
+  caller able to restate them redirects that service's traffic.
+- **`RequireCapability` is deliberately NOT enforced on the six Python arms**, which
+  still answer 501 naming Stage 8. Turning it on for an unimplemented endpoint would
+  replace an honest 501 with a 401 and make an unbuilt arm look like a permissions
+  problem. The arms adopt it in the stage that builds them.
+- **`InMemoryCallCounter` is correct for one replica only.** Two replicas each keep
+  their own count, so the bound degrades to `max_calls x replicas`. Use
+  `RedisCallCounter` for anything scaled.
 
-### Implementer ≠ reviewer
-Agent that writes code ≠ agent that merges. This is defense-in-depth for the forge:
-- Outer agent (you) implements and verifies locally
-- Inner agent (Artificer, if invoked) reviews against spec
-- Luke merges after human review
+<<< MC-PROJECT-END >>>
 
-### Kingdom forge patterns
-If you are a Kingdom forge bot (Cursor CloudAgent, smith, Artificer):
-
-- **sand-workflow:forge-verification-exit** — require CI green + smoke test + tests added before marking PR ready
-- **sand-workflow:outer-inner-cloud-agent** — outer agent implements, inner agent (Artificer) reviews code diffs and correctness against requirements
-- Both patterns documented in Kingdom skills; use them when the task scale justifies the overhead
-
-For small fixes (typo, version bump, doc clarification), full outer-inner overhead is not needed — just verify `make verify` passes and open the PR.
-
----
-
-## Skill diet
-
-### Coding bots: minimal, targeted skill set
-
-When working in this repository, prefer **built-in tools + these skills**:
-
-1. **Code changes** — the tools you have (Read, Write, StrReplace, Shell, Grep, Glob)
-2. **verification-before-completion** — always verify (tests, CI, compose health) before marking done
-3. **Context7 MCP** — when you need current library docs (FastAPI, SQLAlchemy, Pydantic, Axum, tokio, etc.)
-
-**Do NOT flood with marketplace skills.** No pstack dump, no superpowers grab-bag, no 15-skill import for a 3-line change. Marketplace skills are for vertical workflows (e.g., Sentry for error triage, Linear for issue handoff, Slack for thread sync). This is a coding repo; you already have coding tools.
-
-### AGENTS.md is the always-on framework
-
-This file (`AGENTS.md`) **is always applied** to agents working here. It is not a skill you fetch; it is the base truth for this repository. Skills are additive when a workflow (e.g., release pipeline, compliance audit, customer handoff) needs domain-specific context beyond "write and verify code."
-
-### When to reach for a skill
-
-- **Sentry-debug-issue** — if user links a Sentry error and asks you to fix root cause
-- **Linear integration** — if user asks you to create/update a Linear issue with findings
-- **Notion knowledge-capture** — if user asks to persist analysis as a Notion page
-- **Verification patterns** (outer-inner, forge-verification-exit) — when task is multi-stage with explicit verification gates
-
-For a PR that adds a feature, fixes a bug, or updates docs? You do not need a skill. `make verify` and this file are enough.
-
----
-
-## Summary
-
-- **Job:** Build OctoLLM (distributed AI, octopus-inspired). Make claims true or delete them.
-- **Stack:** Python 3.14 + Poetry, Rust workspace, TypeScript SDK, FastAPI, Docker Compose, **no API keys needed**.
-- **Commands:** `make install`, `make verify`, `make test`, `make up` (see Makefile for full list).
-- **Tests:** CI enforces collection floors; suites are Rust (241), shared (103), orchestrator (197), SDKs (28+28).
-- **PRs:** Branch `cursor/*-953d`, draft by default, Artificer verify if needed, **Luke merges only**.
-- **Secrets:** Stack runs keyless; gitleaks scans history; never commit `.env` with real creds; no path exemptions.
-- **Verification:** Real evidence required (tests green, CI green, `make smoke` passes). Implementer ≠ merger.
-- **Skills:** Code-changes + verification-before-completion + Context7 when needed. No marketplace flood.
-
-**Questions?** Read `CLAUDE.md` (how to work here) and `docs/PROJECT-STATUS.md` (where the project is). Both are more detailed than this file and stay current with stage progress.

@@ -56,12 +56,16 @@ def test_every_endpoint_is_a_rooted_path_not_a_url():
         assert "://" not in spec.endpoint, spec.arm_id
 
 
-def test_no_arm_claims_to_be_implemented_yet():
+def test_only_the_arms_whose_stage_has_shipped_claim_to_be_implemented():
     """
-    Stage 4 builds the framework, not the arms. When Stage 8 flips one of these, this
-    assertion is what forces the change to be deliberate.
+    An explicit list, so flipping `implemented` is always a deliberate edit.
+
+    Stage 4 built the framework and no arms; Stage 6 built Memory. When Stage 8 builds
+    the remaining five and Stage 9 the executor, each one has to come through here --
+    which is the point. An arm that marks itself implemented is an arm the orchestrator
+    will route work to, and that must never happen as a side effect.
     """
-    assert [spec.arm_id for spec in ROSTER if spec.implemented] == []
+    assert sorted(spec.arm_id for spec in ROSTER if spec.implemented) == ["memory"]
 
 
 def test_every_arm_names_the_stage_that_builds_it():

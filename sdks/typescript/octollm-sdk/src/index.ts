@@ -26,6 +26,7 @@ export { ExecutorClient } from './services/executor';
 export { RetrieverClient } from './services/retriever';
 export { CoderClient } from './services/coder';
 export { JudgeClient } from './services/judge';
+export { MemoryClient } from './services/memory';
 export { SafetyClient } from './services/safety';
 
 // Base client and config

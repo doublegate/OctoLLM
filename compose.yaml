@@ -116,10 +116,15 @@ services:
       ORCHESTRATOR_LOG_LEVEL: ${LOG_LEVEL:-INFO}
       ORCHESTRATOR_ENVIRONMENT: ${ENVIRONMENT:-development}
       ORCHESTRATOR_TASK_DEFAULT_TIMEOUT: ${TASK_TIMEOUT:-300}
-      # Empty by default, which DISABLES POST /arms/register. The endpoint
-      # mutates routing state and this service has no authentication until
-      # Stage 5, so it fails closed rather than shipping open.
-      ORCHESTRATOR_ARM_REGISTRATION_TOKEN: ${ARM_REGISTRATION_TOKEN:-}
+      # Empty by default, which DISABLES every capability-gated endpoint --
+      # POST /arms/register today, peer token issuance from Stage 7. A
+      # deployment that has not configured authorization should refuse, not
+      # allow, so the endpoints answer 503 rather than shipping open.
+      # Generate with `openssl rand -hex 32`; shorter or placeholder values are
+      # refused at startup rather than on first use.
+      ORCHESTRATOR_CAPABILITY_SECRET: ${CAPABILITY_SECRET:-}
+      ORCHESTRATOR_CAPABILITY_KID: ${CAPABILITY_KID:-k1}
+      ORCHESTRATOR_CAPABILITY_TTL_SECONDS: ${CAPABILITY_TTL_SECONDS:-60}
       # Optional. The stack must come up without either.
       ORCHESTRATOR_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ORCHESTRATOR_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
@@ -170,6 +175,51 @@ services:
     # Host 18006 deliberately: 8006 is the CONTAINER port, and the canonical port map
     # records both. The README claimed localhost:8006 for years.
     ports: ["${EXECUTOR_PORT:-18006}:8006"]
+
+  # The Memory arm's schema migration, as a one-shot. It runs to completion before the
+  # arm starts, and the arm waits on `service_completed_successfully` -- so a container
+  # can never come up against a database that has not been migrated.
+  #
+  # It shares the arm's image, which is what stops the migration and the service being
+  # built from different revisions of the schema.
+  memory-migrate:
+    build: {context: ., dockerfile: services/arms/memory/Dockerfile}
+    environment:
+      MEMORY_DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-octollm}:\
+        ${POSTGRES_PASSWORD:-octollm_dev_password}@postgres:5432/${POSTGRES_DB:-octollm}"
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [octollm]
+
+  memory-arm:
+    <<: *arm-defaults
+    build: {context: ., dockerfile: services/arms/memory/Dockerfile}
+    environment:
+      # A double-quoted scalar with a trailing backslash joins with NOTHING. A folded
+      # scalar (`>-`) joins with a SPACE, which previously put one inside a URL here.
+      MEMORY_DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-octollm}:\
+        ${POSTGRES_PASSWORD:-octollm_dev_password}@postgres:5432/${POSTGRES_DB:-octollm}"
+      MEMORY_QDRANT_URL: http://qdrant:6333
+      MEMORY_REDIS_URL: redis://redis:6379
+      MEMORY_LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      # Verification key for the capability tokens the orchestrator signs. Unset by
+      # default, and /recall and /remember then answer 503. Memory holds every arm's
+      # output, so an open recall endpoint is a read of the whole system's work.
+      MEMORY_CAPABILITY_SECRET: ${CAPABILITY_SECRET:-}
+      MEMORY_CAPABILITY_KID: ${CAPABILITY_KID:-k1}
+    ports: ["${MEMORY_PORT:-8007}:8007"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      memory-migrate:
+        condition: service_completed_successfully
 
 volumes:
   postgres_data:

@@ -76,15 +76,36 @@ class Settings(BaseSettings):
         default=60, ge=10, le=600, description="Circuit breaker reset timeout"
     )
 
-    # Arm registry
-    arm_registration_token: str | None = Field(
+    # Capability tokens (Stage 5). The orchestrator is the sole signing authority for
+    # the Neural Ring, and this is the key it signs with.
+    capability_secret: str | None = Field(
         None,
         description=(
-            "Shared secret required by POST /arms/register. Unset by default, and "
-            "the endpoint then refuses every write: an unauthenticated caller able "
-            "to restate an arm's details is a routing-control primitive, and this "
-            "service has no other authentication until Stage 5 issues capability "
-            "tokens. Fail closed, not open."
+            "HS256 signing secret for capability tokens. Unset by default, and every "
+            "capability-gated endpoint then fails CLOSED with 503 -- a deployment "
+            "that has not configured this has not thought about authorization, and "
+            "the safe reading of that is 'refuse', not 'allow'. Must be at least 32 "
+            "characters and must not be a recognisable placeholder; both are checked "
+            "at startup rather than on first use, so a misconfigured service does not "
+            "report itself healthy. Generate with `openssl rand -hex 32`."
+        ),
+    )
+    capability_kid: str = Field(
+        "k1",
+        description=(
+            "Key id stamped into every token header. Present from day one so that a "
+            "key rotation, and the eventual move to asymmetric signing, is a "
+            "configuration change rather than a protocol change."
+        ),
+    )
+    capability_ttl_seconds: int = Field(
+        60,
+        ge=1,
+        le=120,
+        description=(
+            "Default token lifetime. Capped at 120s by the issuer: a peer loop is a "
+            "bounded sub-transaction inside one graph node, so a longer-lived grant "
+            "outlives its purpose."
         ),
     )
 

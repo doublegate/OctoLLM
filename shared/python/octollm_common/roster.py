@@ -11,11 +11,13 @@ the whole roster from here, and `scripts/ci/check_port_map.py` checks this again
 Dockerfiles and the compose file -- which are what actually bind a socket, and
 therefore win over anything written down.
 
-Two of the eight do not exist yet as services: **Memory** (Stage 6) and **Red Team**
-(Stage 11). They are listed anyway, with `implemented: False` and the stage that
-builds them, because a roster that silently omits the unbuilt arms is how a system
-comes to be described by its aspirations. `GET /arms` reports them as `unavailable`,
-which is the truth.
+**Red Team** (Stage 11) does not exist yet as a service. It is listed anyway, with
+`implemented: False` and the stage that builds it, because a roster that silently
+omits the unbuilt arms is how a system comes to be described by its aspirations.
+`GET /arms` reports it as `unavailable`, which is the truth.
+
+Memory was the other one until Stage 6 built it. Its entry changed in exactly one
+field -- `implemented` -- which is what this file existing is for.
 """
 
 from __future__ import annotations
@@ -123,7 +125,7 @@ ROSTER: tuple[ArmSpec, ...] = (
         endpoint="/recall",
         capabilities=["episodic_memory", "semantic_memory", "provenance"],
         cost_tier=1,
-        implemented=False,
+        implemented=True,
         implemented_in_stage=6,
         publishes=["memory_write_ack"],
         subscribes=["artifact"],

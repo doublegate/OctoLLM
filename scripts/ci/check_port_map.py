@@ -135,15 +135,16 @@ CANONICAL: dict[str, Service] = {
         sdk_python="executor",
         sdk_typescript="executor",
     ),
-    # Not built yet; listed so the ports are reserved and the map is the whole map.
     "memory": Service(
         container_port=8007,
         host_port=8007,
         compose_service="memory-arm",
         directory="services/arms/memory",
-        openapi=None,
-        built=False,
+        openapi="memory",
+        sdk_python="memory",
+        sdk_typescript="memory",
     ),
+    # Not built yet; listed so the port is reserved and the map is the whole map.
     "red-team": Service(
         container_port=8008,
         host_port=8008,

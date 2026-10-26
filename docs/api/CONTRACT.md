@@ -183,11 +183,17 @@ is off by default because this endpoint is polled.
 `POST /arms/register` **updates** an arm in the roster. Three refusals, and each one
 is the same principle applied at a different layer:
 
-- **503 when no token is configured**, which is the default. The service has no
-  authentication at all until Stage 5 issues capability tokens, and an unauthenticated
-  caller able to restate an arm's details controls where the orchestrator sends work.
-  It fails closed. `ORCHESTRATOR_ARM_REGISTRATION_TOKEN` enables it; the token is
-  compared in constant time. This is a stopgap that Stage 5 removes.
+- **503 when no capability secret is configured**, which is the default. An
+  unauthenticated caller able to restate an arm's details controls where the
+  orchestrator sends work, so it fails closed. `ORCHESTRATOR_CAPABILITY_SECRET`
+  enables it.
+- **401 with no token, 403 with a token that does not authorize.** Since Stage 5 this
+  is a real capability token, not a shared secret: signed by the orchestrator,
+  `aud=orchestrator`, carrying `registry:write`, expiring within 120 seconds, and
+  spendable once by default — the count is kept by the orchestrator, not trusted to
+  the caller. Mint one with `scripts/mint_capability.py --scope registry:write`. The
+  denial reason is logged and never returned: "expired" versus "bad signature" tells a
+  forger which half to work on.
 - **403 for an unknown `arm_id`.** The orchestrator is the sole signing authority for
   capability tokens, so an endpoint that could add an arm to the routing table is a
   privilege escalation with extra steps.

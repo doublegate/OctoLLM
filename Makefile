@@ -29,12 +29,20 @@ ORCHESTRATOR := services/orchestrator
 SHARED_PY    := shared/python
 SDK_PY       := sdks/python/octollm-sdk
 SDK_TS       := sdks/typescript/octollm-sdk
+MEMORY       := services/arms/memory
+
+# Where the Memory arm's migrations run. `?=` so an environment variable wins, which is
+# how CI points this at its own service container. The default is the HOST port the dev
+# stack publishes Postgres on, not the in-container 5432.
+MEMORY_DATABASE_URL ?= postgresql+psycopg://octollm:octollm_dev_password@localhost:15432/octollm
+export MEMORY_DATABASE_URL
 
 # Collection floors. A suite that silently collects zero tests reports exactly what a
 # suite that ran them all reports; these are what separate the two. Raise one when you
 # add tests. Never lower one to make a red build green -- that is the bug, not the fix.
-FLOOR_ORCHESTRATOR := 197
-FLOOR_SHARED       := 103
+FLOOR_ORCHESTRATOR := 226
+FLOOR_SHARED       := 210
+FLOOR_MEMORY       := 63
 FLOOR_SDK_PY       := 28
 FLOOR_SDK_TS_FILES := 3
 # 17 Redis-backed, plus the /process connect-info regression, which also needs Redis.
@@ -98,15 +106,15 @@ format: ## Rewrite Python and Rust in place (the only targets that MODIFY files)
 	cd $(SDK_TS) && npm run format
 
 .PHONY: typecheck
-typecheck: ## mypy over the shared framework, the orchestrator and the Python SDK
-	$(PYTHON) -m mypy $(SHARED_PY)/octollm_common $(ORCHESTRATOR)/app $(SDK_PY)/octollm_sdk
+typecheck: ## mypy over the shared framework, the orchestrator, the Memory arm and the Python SDK
+	$(PYTHON) -m mypy $(SHARED_PY)/octollm_common $(ORCHESTRATOR)/app $(SDK_PY)/octollm_sdk $(MEMORY)/src
 
 # =============================================================================
 # Test
 # =============================================================================
 
 .PHONY: test
-test: test-rust test-shared test-orchestrator test-sdk-python test-sdk-typescript ## Run every suite
+test: test-rust test-shared test-orchestrator test-memory test-sdk-python test-sdk-typescript ## Run every suite
 
 .PHONY: test-rust
 test-rust: ## Rust workspace tests (Redis-backed ones need `make redis`)
@@ -125,7 +133,50 @@ test-rust-redis: ## The Redis-backed Rust tests; needs Redis on localhost:6379
 	  fi
 
 .PHONY: test-shared
-test-shared: ## Shared arm framework suite, coverage enforced at 90% by its pytest config
+test-memory: ## Memory arm suite (needs Postgres, Qdrant and Redis), coverage at 80%
+	@cd $(MEMORY) && collected=$$(PYTHONPATH=$(CURDIR)/$(SHARED_PY):$(CURDIR)/$(MEMORY) \
+	    $(PYTHON) -m pytest tests/ --collect-only -p no:cacheprovider --no-cov 2>&1 \
+	    | grep -oE '[0-9]+ tests? collected' | grep -oE '^[0-9]+' | tail -1); \
+	  echo "collected=$${collected:-0} (floor $(FLOOR_MEMORY))"; \
+	  if [ "$${collected:-0}" -lt $(FLOOR_MEMORY) ]; then \
+	    echo "::error::memory arm collected $${collected:-0} tests, floor is $(FLOOR_MEMORY)"; \
+	    exit 1; \
+	  fi
+	@# Every meaningful assertion in this suite is a property of a real engine --
+	@# ON CONFLICT against a unique constraint, a payload filter combined with a vector
+	@# search, at-least-once redelivery. They SKIP when the services are absent, and a
+	@# skipped suite reports exactly what a passing one reports.
+	@$(PYTHON) -c "import psycopg, os; \
+	  dsn = os.environ.get('MEMORY_PG_DSN') or os.environ.get('MEMORY_DATABASE_URL', \
+	    'postgresql://octollm:octollm_dev_password@localhost:15432/octollm').replace('+psycopg', ''); \
+	  psycopg.connect(dsn).close()" >/dev/null 2>&1 \
+	  || { echo "::error::No Postgres. Run: make data-services   (or point MEMORY_DATABASE_URL at one)"; exit 1; }
+	@curl -sf $${MEMORY_QDRANT_URL:-http://localhost:6333}/readyz >/dev/null 2>&1 \
+	  || { echo "::error::No Qdrant at $${MEMORY_QDRANT_URL:-http://localhost:6333}. Run: make data-services"; exit 1; }
+	cd $(MEMORY) && PYTHONPATH=$(CURDIR)/$(SHARED_PY):$(CURDIR)/$(MEMORY) $(PYTHON) -m pytest tests/
+
+.PHONY: data-services
+data-services: ## Start only Postgres, Redis and Qdrant, and migrate -- what the suites need
+	@# `make verify` runs suites that assert against real engines, so it needs these
+	@# three. This is the cheap path: no image builds, just the datastores and the
+	@# schema the Memory suite asserts against.
+	docker compose up -d --wait postgres redis qdrant
+	@$(MAKE) --no-print-directory migrate
+
+.PHONY: migrate
+migrate: ## Apply the Memory arm's schema migrations
+	cd $(MEMORY) && PYTHONPATH=$(CURDIR)/$(SHARED_PY) alembic upgrade head
+
+.PHONY: migrate-check
+migrate-check: ## Fail if the ORM and the migrations describe different schemas
+	@# `alembic check` compares src/models.py against the live migrated database. It
+	@# caught four real disagreements the first time it ran: two DESC indexes declared
+	@# without their ordering, and two GIN indexes written as raw SQL in the migration
+	@# and therefore invisible to the comparison.
+	cd $(MEMORY) && PYTHONPATH=$(CURDIR)/$(SHARED_PY) alembic check
+
+.PHONY: test-shared
+test-shared: ## Shared arm framework suite (needs Redis on :6379), coverage at 90%
 	@cd $(SHARED_PY) && collected=$$($(PYTHON) -m pytest tests/ --collect-only \
 	    -p no:cacheprovider --no-cov 2>&1 \
 	    | grep -oE '[0-9]+ tests? collected' | grep -oE '^[0-9]+' | tail -1); \
@@ -134,6 +185,18 @@ test-shared: ## Shared arm framework suite, coverage enforced at 90% by its pyte
 	    echo "::error::shared framework collected $${collected:-0} tests, floor is $(FLOOR_SHARED)"; \
 	    exit 1; \
 	  fi
+	@# The Neural Ring tests run against a REAL Redis and SKIP when none is reachable.
+	@# A skipped suite reports exactly what a passing one reports, which is the single
+	@# defect this repository is being dug out of -- so refuse to run rather than
+	@# quietly cover less. CI provides a redis:8-alpine service; locally, `make redis`.
+	@$(PYTHON) -c "import redis, os; \
+	  redis.from_url(os.environ.get('REDIS_URL', 'redis://localhost:6379/0')).ping()" \
+	  >/dev/null 2>&1 || { \
+	    echo "::error::No Redis on :6379. The Neural Ring tests would SKIP, and a"; \
+	    echo "           skipped suite is indistinguishable from a passing one."; \
+	    echo "           Run: make redis && make test-shared && make redis-stop"; \
+	    exit 1; \
+	  }
 	cd $(SHARED_PY) && $(PYTHON) -m pytest tests/
 
 .PHONY: test-orchestrator
@@ -240,7 +303,19 @@ verify: version-check diagram-check gate-check compose-env-check port-map-check 
 
 .PHONY: up
 up: ## Build and start the whole stack; waits for every service to be HEALTHY
-	docker compose up -d --build --wait
+	@# A per-run capability secret, generated here and passed to compose in the
+	@# environment. It is never written to a file.
+	@#
+	@# That keeps two things true at once: the stack is fully usable out of the box,
+	@# including the capability-gated routes Memory's whole surface sits behind, and
+	@# no secret is committed or left on disk. A hardcoded development default would
+	@# be the third option and the wrong one -- it is exactly the placeholder the
+	@# issuer refuses at startup.
+	@#
+	@# `make smoke` reads it back out of the running container rather than being told
+	@# it, so the two commands cannot disagree about what the stack is using.
+	CAPABILITY_SECRET="$${CAPABILITY_SECRET:-$$(openssl rand -hex 32)}" \
+	  docker compose up -d --build --wait
 	@$(MAKE) --no-print-directory ps
 
 .PHONY: down
@@ -257,7 +332,7 @@ logs: ## Follow the logs of every service
 
 .PHONY: smoke
 smoke: ## Assert the running stack is healthy and a task round-trips
-	./scripts/smoke.sh
+	PYTHON=$(PYTHON) ./scripts/smoke.sh
 
 # =============================================================================
 # Local services

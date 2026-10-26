@@ -1,0 +1,454 @@
+openapi: 3.1.0
+
+info:
+  title: OctoLLM Memory / Curator Arm
+  version: 0.5.0
+  description: |
+    Episodic and semantic memory for the whole system.
+
+    Memory owns **storage**, which is what resolves the Retriever's design: the
+    Retriever is a pure ranker over this corpus, not a second store.
+
+    Two halves, split by the kind of question each answers:
+
+    * **Semantic** — PostgreSQL, in a dedicated `memory` schema. Entities, the
+      relationships between them, task history, and the provenance of every artifact
+      the system has produced. "Which arm produced this, under what task, and how
+      sensitive was it" has an exact answer and belongs in a relational store.
+    * **Episodic** — Qdrant, one collection per (arm, embedding model). "What else is
+      like this" has no exact answer and belongs in a vector store.
+
+    ## Two write paths
+
+    `POST /remember` is the synchronous one, for a caller holding an artifact. The
+    other is the **Neural Ring**: Memory subscribes to `artifact` and ingests what
+    other arms publish without anyone calling it. Both are idempotent, because ring
+    delivery is at-least-once and a redelivery is normal operation rather than an
+    incident.
+
+    ## The data diode
+
+    Every artifact carries a `sensitivity` set by its producer. A recall returns only
+    what the caller's clearance permits, and that clearance is read from the
+    **capability token**, never from the request — `RecallRequest` deliberately has no
+    field for it. `withheld` reports how many matches were suppressed, because
+    silently returning fewer results makes a clearance boundary look like an empty
+    index.
+
+    ## Ranking is only meaningful with a real embedding provider
+
+    With the default `FakeProvider`, `embed()` returns hash-derived unit vectors:
+    identical text scores 1.0, and two different texts score near zero. Recall works,
+    is deterministic, and is **not semantic**. Configure a real provider before
+    reading anything into the ordering.
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: http://memory-arm:8007
+    description: Compose network
+  - url: http://localhost:8007
+    description: Host
+
+tags:
+  - name: memory
+    description: Recall and remember
+  - name: health
+    description: Liveness and readiness
+  - name: registry
+    description: What this arm declares about itself
+  - name: metrics
+    description: Prometheus exposition
+
+security:
+  - capabilityToken: []
+
+paths:
+  /recall:
+    post:
+      operationId: recall
+      summary: Search episodic memory
+      description: |
+        Similarity search over one arm's episodic collection, bounded by the caller's
+        clearance.
+
+        `arm_id` defaults to the **token's** `sub`, because an arm recalling its own
+        experience is the common case and a caller must not be able to name another
+        arm's store by asserting an identity.
+      tags: [memory]
+      security:
+        - capabilityToken: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecallRequest'
+      responses:
+        '200':
+          description: Matches the caller is permitted to see
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecallResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/Unconfigured'
+
+  /remember:
+    post:
+      operationId: remember
+      summary: Commit one artifact to memory
+      description: |
+        Writes provenance to the semantic store and, when `index_episodic` is true and
+        the artifact has content, an embedding to the episodic store.
+
+        **Idempotent.** A second write of the same `artifact_id` returns 200 with
+        `duplicate: true`, not a conflict — a redelivery is expected, and the caller
+        needs the fact rather than an error.
+
+        The semantic write is authoritative and happens first. If the vector write then
+        fails, `episodic_written` is reported `false` and the artifact is remembered but
+        not yet findable; the reverse order would lose the audit trail while leaving a
+        searchable copy, which is the worse half to lose.
+      tags: [memory]
+      security:
+        - capabilityToken: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RememberRequest'
+      responses:
+        '200':
+          description: Stored, or already present
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RememberResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/Unconfigured'
+
+  /health:
+    get:
+      operationId: health
+      summary: Liveness
+      description: |
+        Open, deliberately. A health check that needs a credential reports "down"
+        whenever authorization is misconfigured, which is a different problem wearing
+        the same signal.
+      tags: [health]
+      security: []
+      responses:
+        '200':
+          description: The process is up
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: {type: string, examples: [healthy]}
+                  arm_id: {type: string, examples: [memory]}
+                  version: {type: string, examples: ['0.5.0']}
+
+  /ready:
+    get:
+      operationId: ready
+      summary: Readiness, including both stores and the ring
+      description: |
+        `ready` is false when either store is unreachable. An arm that reported ready
+        while its database was down would be the same failure as a green check over a
+        suite that never ran.
+      tags: [health]
+      security: []
+      responses:
+        '200':
+          description: Readiness detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ready: {type: boolean}
+                  arm_id: {type: string}
+                  implemented: {type: boolean}
+                  checks:
+                    type: object
+                    properties:
+                      postgres: {type: boolean}
+                      qdrant: {type: boolean}
+                      artifacts:
+                        type: integer
+                        description: How many artifacts memory holds
+                      ring_attached: {type: boolean}
+                      ring_stored: {type: integer}
+                      ring_duplicates: {type: integer}
+                      ring_failed: {type: integer}
+                      embedding_model: {type: string}
+
+  /capabilities:
+    get:
+      operationId: capabilities
+      summary: This arm's declaration, as the orchestrator's registry reads it
+      description: |
+        Includes the ring topology: `publishes`, `subscribes` and `peers`. The
+        orchestrator issues a capability token only for an edge the **static roster**
+        declares, so what an arm reports here is descriptive, never authorizing.
+      tags: [registry]
+      security: []
+      responses:
+        '200':
+          description: The ArmSpec
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  arm_id: {type: string}
+                  name: {type: string}
+                  description: {type: string}
+                  port: {type: integer}
+                  endpoint: {type: string}
+                  capabilities: {type: array, items: {type: string}}
+                  cost_tier: {type: integer}
+                  implemented: {type: boolean}
+                  implemented_in_stage: {type: integer}
+                  publishes: {type: array, items: {type: string}}
+                  subscribes: {type: array, items: {type: string}}
+                  peers: {type: array, items: {type: string}}
+
+  /metrics:
+    get:
+      operationId: metrics
+      summary: Prometheus exposition
+      tags: [metrics]
+      security: []
+      responses:
+        '200':
+          description: Metrics
+          content:
+            text/plain:
+              schema: {type: string}
+
+components:
+  securitySchemes:
+    capabilityToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        A capability token signed by the orchestrator, which is the sole signing
+        authority. `aud` must be `memory`; `scope` must contain `call:recall` for
+        `/recall` or `memory:write` for `/remember`.
+
+        Separate scopes on purpose: a single scope covering both would make every
+        reader an editor of the record it reads from.
+
+        A `clearance:<level>` scope grants a data-diode clearance. Absent one, the
+        caller is `internal` — a token that says nothing about clearance must not
+        thereby receive the highest one.
+
+        Every capability-gated route answers **503** when no signing secret is
+        configured. That is the correct default for a deployment that has not thought
+        about authorization, not a gap.
+
+  parameters:
+    TaskId:
+      name: X-Task-Id
+      in: header
+      required: true
+      schema: {type: string}
+      description: |
+        Must match the token's `task_id`. A live token for one task presented against
+        another is lateral movement or a bug, and both want the same answer.
+
+  responses:
+    Unauthenticated:
+      description: No capability token was presented
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ErrorEnvelope'}
+    Forbidden:
+      description: |
+        A token was presented and does not authorize this. Retrying with the same token
+        will not help. The specific reason is logged and never returned — "expired"
+        versus "bad signature" tells a forger which half to work on.
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ErrorEnvelope'}
+    ValidationError:
+      description: The request body does not match the schema
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ErrorEnvelope'}
+    Unconfigured:
+      description: Capability tokens are not configured, so this endpoint is disabled
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ErrorEnvelope'}
+
+  schemas:
+    Sensitivity:
+      type: string
+      enum: [public, internal, confidential, restricted]
+      description: |
+        How far an artifact may travel. Ordered: data flows to a destination cleared
+        for at least its own level, never below it. Defaults to `internal` — an
+        artifact nobody labelled is one nobody thought about.
+
+    Provenance:
+      type: object
+      required: [created_by, task_id]
+      properties:
+        created_by: {type: string, description: arm_id of the producer}
+        created_at: {type: string, format: date-time}
+        task_id: {type: string}
+        parent_task_id: {type: [string, 'null']}
+        input_sources: {type: array, items: {type: object}}
+        transformations: {type: array, items: {type: object}}
+        validation_status: {type: object}
+        model_info: {type: object}
+        trace_id:
+          type: [string, 'null']
+          description: OpenTelemetry trace id, so a ring hop has a place in a trace
+        engagement_id:
+          type: [string, 'null']
+          description: Signed Red Team engagement this was produced under
+        sensitivity: {$ref: '#/components/schemas/Sensitivity'}
+        promoted_from:
+          type: [string, 'null']
+          description: artifact_id this was promoted from, for memory lineage
+
+    Artifact:
+      type: object
+      required: [artifact_id, artifact_type, provenance]
+      properties:
+        artifact_id: {type: string}
+        artifact_type: {type: string, examples: [code, verdict, finding]}
+        content: {type: string}
+        provenance: {$ref: '#/components/schemas/Provenance'}
+        content_sha256:
+          type: string
+          description: |
+            Computed from `content`; any supplied value is overwritten. A hash filled
+            in by the producer proves nothing.
+
+    RememberRequest:
+      type: object
+      required: [artifact]
+      properties:
+        task_id: {type: [string, 'null']}
+        request_id: {type: [string, 'null']}
+        budget_tokens: {type: [integer, 'null']}
+        deadline_ms: {type: [integer, 'null']}
+        artifact: {$ref: '#/components/schemas/Artifact'}
+        index_episodic:
+          type: boolean
+          default: true
+          description: Embed and index. False records provenance only.
+
+    RememberResponse:
+      type: object
+      required: [arm_id, request_id, usage, confidence, artifact_id, episodic_written, semantic_written]
+      properties:
+        arm_id: {type: string}
+        request_id: {type: string}
+        usage: {type: object}
+        confidence: {type: number}
+        produced_at: {type: string, format: date-time}
+        artifact_id: {type: string}
+        episodic_written: {type: boolean}
+        semantic_written: {type: boolean}
+        duplicate:
+          type: boolean
+          description: Already stored. Expected, because ring delivery is at-least-once.
+
+    RecallRequest:
+      type: object
+      required: [query]
+      description: |
+        Note what is **absent**: any field naming the caller's clearance. It is read
+        from the capability token — a caller that states its own clearance is the same
+        escalation as an arm that states its own peers.
+      properties:
+        task_id:
+          type: [string, 'null']
+          description: Narrows the search to one task's artifacts
+        request_id: {type: [string, 'null']}
+        budget_tokens: {type: [integer, 'null']}
+        deadline_ms: {type: [integer, 'null']}
+        query: {type: string, minLength: 1, maxLength: 10000}
+        top_k: {type: integer, default: 10, minimum: 1, maximum: 100}
+        scope:
+          type: string
+          enum: [episodic, semantic]
+          default: episodic
+        arm_id:
+          type: [string, 'null']
+          description: Whose episodic memory to search. Defaults to the token's `sub`.
+
+    MemoryHit:
+      type: object
+      required: [artifact_id, artifact_type, content, score, created_by, task_id, sensitivity, created_at]
+      properties:
+        artifact_id: {type: string}
+        artifact_type: {type: string}
+        content: {type: string}
+        score: {type: number, minimum: 0, maximum: 1}
+        created_by: {type: string}
+        task_id: {type: string}
+        sensitivity: {$ref: '#/components/schemas/Sensitivity'}
+        created_at: {type: string, format: date-time}
+
+    RecallResponse:
+      type: object
+      required: [arm_id, request_id, usage, confidence, hits, scope]
+      properties:
+        arm_id: {type: string}
+        request_id: {type: string}
+        usage: {type: object}
+        confidence:
+          type: number
+          description: |
+            The mean hit score. Zero when nothing was recalled — reporting 1.0 for
+            "I found nothing" would mislead a caller deciding whether to trust it.
+        produced_at: {type: string, format: date-time}
+        hits: {type: array, items: {$ref: '#/components/schemas/MemoryHit'}}
+        scope: {type: string, enum: [episodic, semantic]}
+        withheld:
+          type: integer
+          minimum: 0
+          description: |
+            Matches suppressed because they exceed the caller's clearance. Reported as
+            a count so the diode is visible.
+
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, request_id, timestamp]
+          properties:
+            code: {type: string}
+            message: {type: string}
+            details: {type: object}
+            request_id: {type: string}
+            timestamp: {type: string, format: date-time}

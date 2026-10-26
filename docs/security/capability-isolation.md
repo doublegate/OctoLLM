@@ -164,7 +164,7 @@ Capability isolation directly mitigates these threats from the [threat model](./
 
 | Threat | How Capabilities Mitigate | Residual Risk |
 |--------|---------------------------|---------------|
-| **Compromised Arm Lateral Movement** | Arm can only invoke actions explicitly granted; no access to other arms | Very Low |
+| **Compromised Arm Lateral Movement** | Arm can only invoke actions explicitly granted; no access beyond task-scoped, orchestrator-issued, expiring peer capabilities | Very Low |
 | **Privilege Escalation** | Time-limited tokens prevent persistent elevated access | Very Low |
 | **Command Injection** | Command allowlist enforced at capability level | Very Low |
 | **Data Exfiltration** | Network access restricted by capabilities | Low |

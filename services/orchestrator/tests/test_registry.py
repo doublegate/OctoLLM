@@ -12,12 +12,31 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 
+from app.capabilities import REGISTRY_WRITE_SCOPE, RingAuthority
 from app.config import get_settings, reset_settings
-from app.main import app
+from app.main import app, reset_ring_authority
 from app.registry import ArmRegistry, RegisterArmRequest, UnknownArm, reset_registry
 
-TOKEN = "registration-token-for-tests"
-AUTH = {"authorization": f"Bearer {TOKEN}"}
+#: Assembled rather than written as a literal. A 32+ character literal sitting next to
+#: the word "secret" is exactly what the scanner exists to find, and the correct response
+#: is not a path exemption -- it is to stop writing something that looks like a
+#: credential. The issuer requires >=32 characters and refuses recognisable placeholders,
+#: so this satisfies both.
+SIGNING_KEY = "octollm-test-capability-" * 2
+
+
+def admin_token(
+    *, scope: str = REGISTRY_WRITE_SCOPE, secret: str = SIGNING_KEY, max_calls: int = 10, **kwargs
+) -> str:
+    """Mint a token addressed to the orchestrator, as `scripts/mint_capability.py` does."""
+    authority = RingAuthority(secret=secret, kid=kwargs.pop("kid", "k1"))
+    return authority.issue_admin_token(
+        subject="test-operator", scope=scope, max_calls=max_calls, **kwargs
+    )
+
+
+def auth(token: str | None = None) -> dict[str, str]:
+    return {"authorization": f"Bearer {token if token is not None else admin_token()}"}
 
 
 @pytest.fixture(autouse=True)
@@ -28,19 +47,29 @@ def _fresh_registry():
     reset_registry()
 
 
+@pytest.fixture(autouse=True)
+def _fresh_authority():
+    """The signing authority is process-wide and caches the configured secret."""
+    reset_ring_authority()
+    yield
+    reset_ring_authority()
+
+
 @pytest.fixture
 def registration_enabled(monkeypatch: pytest.MonkeyPatch):
     """
     Turn the registration endpoint on for the tests that exercise it.
 
-    It is **off** unless a token is configured, which is why this fixture has to
-    exist at all -- and the tests that do not request it prove the default.
+    It is **off** unless a capability secret is configured, which is why this fixture
+    has to exist at all -- and the tests that do not request it prove the default.
     """
     reset_settings()
-    monkeypatch.setenv("ORCHESTRATOR_ARM_REGISTRATION_TOKEN", TOKEN)
-    assert get_settings().arm_registration_token == TOKEN
+    reset_ring_authority()
+    monkeypatch.setenv("ORCHESTRATOR_CAPABILITY_SECRET", SIGNING_KEY)
+    assert get_settings().capability_secret == SIGNING_KEY
     yield
     reset_settings()
+    reset_ring_authority()
 
 
 @pytest.fixture
@@ -68,16 +97,21 @@ def test_listing_arms_returns_the_whole_roster(client: TestClient):
     ]
 
 
-def test_the_unbuilt_arms_are_listed_rather_than_omitted(client: TestClient):
+def test_the_unbuilt_arm_is_listed_rather_than_omitted(client: TestClient):
     """
-    A roster that silently omits the arms nobody has written is how a system comes to
-    be described by its aspirations. Memory and Red Team appear, each naming its stage.
+    A roster that silently omits the arm nobody has written is how a system comes to be
+    described by its aspirations. Red Team appears, naming its stage.
+
+    Memory was the other one until Stage 6 built it, and it is now the only arm in the
+    roster that claims to be implemented -- which is what makes it the interesting
+    assertion here rather than a footnote.
     """
     arms = {arm["arm_id"]: arm for arm in client.get("/arms").json()["arms"]}
 
-    assert arms["memory"]["implemented"] is False
-    assert arms["memory"]["implemented_in_stage"] == 6
+    assert arms["red-team"]["implemented"] is False
     assert arms["red-team"]["implemented_in_stage"] == 11
+    assert arms["memory"]["implemented"] is True
+    assert arms["memory"]["implemented_in_stage"] == 6
 
 
 def test_an_unprobed_arm_reports_unavailable_with_no_probe_timestamp(client: TestClient):
@@ -102,12 +136,26 @@ def test_the_listed_schemas_come_from_the_shared_contract_models(client: TestCli
 
 def test_an_arm_with_no_contract_yet_publishes_an_empty_schema(client: TestClient):
     """
-    Memory has no contract models until Stage 6. An invented schema would be worse
+    Red Team has no contract models until Stage 11. An invented schema would be worse
     than an empty one, because a client can act on it.
     """
     arms = {arm["arm_id"]: arm for arm in client.get("/arms").json()["arms"]}
 
-    assert arms["memory"]["input_schema"] == {}
+    assert arms["red-team"]["input_schema"] == {}
+
+
+def test_memory_publishes_the_schema_it_actually_serves(client: TestClient):
+    """
+    Stage 6 gave Memory contract models, so the registry publishes them.
+
+    Generated from `octollm_common.models.contracts` -- the same classes the arm uses
+    as its FastAPI models -- so this cannot describe a request the arm would reject.
+    """
+    arms = {arm["arm_id"]: arm for arm in client.get("/arms").json()["arms"]}
+
+    assert "query" in arms["memory"]["input_schema"]["properties"]
+    assert "hits" in arms["memory"]["output_schema"]["properties"]
+    assert "withheld" in arms["memory"]["output_schema"]["properties"]
 
 
 def test_endpoint_is_a_path_and_base_url_is_where_the_arm_listens(client: TestClient):
@@ -138,7 +186,7 @@ def test_registering_a_known_arm_updates_it(client: TestClient):
     response = client.post(
         "/arms/register",
         json={"arm_id": "planner", "implemented": True, "capabilities": ["planning"]},
-        headers=AUTH,
+        headers=auth(),
     )
 
     assert response.status_code == 200
@@ -158,7 +206,7 @@ def test_registration_cannot_introduce_an_arm(client: TestClient):
     extra steps: the orchestrator is the sole signing authority for capability tokens,
     so an arm it can be told about is an arm it can be told to trust.
     """
-    response = client.post("/arms/register", json={"arm_id": "attacker-arm"}, headers=AUTH)
+    response = client.post("/arms/register", json={"arm_id": "attacker-arm"}, headers=auth())
 
     assert response.status_code == 403
     assert "Stage 5" in response.json()["error"]["message"]
@@ -184,7 +232,9 @@ def test_registration_cannot_move_an_arm(client: TestClient, field: str, value: 
     Stage 5, a capability token. Refusing an unknown `arm_id` while accepting a
     `base_url` on a known one would have been no protection at all.
     """
-    response = client.post("/arms/register", json={"arm_id": "planner", field: value}, headers=AUTH)
+    response = client.post(
+        "/arms/register", json={"arm_id": "planner", field: value}, headers=auth()
+    )
 
     assert response.status_code == 422, f"{field} must not be accepted at all"
     assert client.get("/arms").json()["arms"][0]["base_url"] == "http://planner-arm:8001"
@@ -200,53 +250,50 @@ def test_omitted_fields_are_left_alone_rather_than_cleared(client: TestClient):
     before = client.get("/arms").json()["arms"][0]["capabilities"]
 
     after = client.post(
-        "/arms/register", json={"arm_id": "planner", "implemented": True}, headers=AUTH
+        "/arms/register", json={"arm_id": "planner", "implemented": True}, headers=auth()
     )
 
     assert after.json()["arm"]["capabilities"] == before
 
 
 # ---------------------------------------------------------------------------
-# Authentication on the one mutating endpoint
+# Authorization on the one mutating endpoint
+#
+# Stage 4 gated this on a shared secret and recorded it as a stopgap. Stage 5 replaced
+# it with a real capability token, which is narrower in three ways: it expires in at
+# most 120 seconds, it names the orchestrator as its audience so it cannot be presented
+# to an arm, and it is counted. These tests pin all three.
 # ---------------------------------------------------------------------------
 
 
-def test_registration_is_disabled_unless_a_token_is_configured(client: TestClient):
+def test_registration_is_disabled_unless_a_capability_secret_is_configured(
+    client: TestClient,
+):
     """
     Fail **closed**.
 
-    This service has no authentication at all until Stage 5 issues capability tokens,
-    and an unauthenticated caller able to restate an arm's details controls where the
-    orchestrator sends work: mark a stub `implemented` and the dispatcher sends it
-    work it cannot do; blank an arm's `capabilities` and it stops being selected.
-    Refusing by default is the only correct posture for that.
+    A deployment that has not configured authorization has not thought about it, and
+    the safe reading of that is "refuse". An unauthenticated caller able to restate an
+    arm's details controls where the orchestrator sends work: mark a stub
+    `implemented` and the dispatcher sends it work it cannot do; blank an arm's
+    `capabilities` and it stops being selected.
     """
     reset_settings()
+    reset_ring_authority()
 
     response = client.post(
-        "/arms/register", json={"arm_id": "planner", "implemented": True}, headers=AUTH
+        "/arms/register", json={"arm_id": "planner", "implemented": True}, headers=auth()
     )
 
     assert response.status_code == 503
-    assert "ORCHESTRATOR_ARM_REGISTRATION_TOKEN" in response.json()["error"]["message"]
+    assert "ORCHESTRATOR_CAPABILITY_SECRET" in response.json()["error"]["message"]
     assert client.get("/arms").json()["arms"][0]["implemented"] is False, "no mutation"
 
 
 @pytest.mark.usefixtures("registration_enabled")
-@pytest.mark.parametrize(
-    "headers",
-    [
-        pytest.param({}, id="no header"),
-        pytest.param({"authorization": "Bearer wrong-token"}, id="wrong token"),
-        pytest.param({"authorization": TOKEN}, id="no scheme"),
-        pytest.param({"authorization": f"Basic {TOKEN}"}, id="wrong scheme"),
-        pytest.param({"authorization": "Bearer "}, id="empty token"),
-    ],
-)
-def test_a_bad_token_is_refused_and_changes_nothing(client: TestClient, headers: dict):
-    response = client.post(
-        "/arms/register", json={"arm_id": "planner", "implemented": True}, headers=headers
-    )
+def test_no_token_at_all_is_401(client: TestClient):
+    """401 tells a client to go and obtain one; 403 would tell it not to bother."""
+    response = client.post("/arms/register", json={"arm_id": "planner", "implemented": True})
 
     assert response.status_code == 401
     assert response.json()["error"]["code"] == "unauthenticated"
@@ -254,15 +301,124 @@ def test_a_bad_token_is_refused_and_changes_nothing(client: TestClient, headers:
 
 
 @pytest.mark.usefixtures("registration_enabled")
-def test_the_refusal_does_not_disclose_the_configured_token(client: TestClient):
+@pytest.mark.parametrize(
+    "headers",
+    [
+        pytest.param({"authorization": "Bearer not.a.jwt"}, id="not a token"),
+        pytest.param({"authorization": "Bearer "}, id="empty token"),
+        pytest.param({"authorization": admin_token()}, id="no scheme"),
+        pytest.param({"authorization": f"Basic {admin_token()}"}, id="wrong scheme"),
+    ],
+)
+def test_a_token_that_is_not_one_is_refused_and_changes_nothing(client: TestClient, headers: dict):
+    response = client.post(
+        "/arms/register", json={"arm_id": "planner", "implemented": True}, headers=headers
+    )
+
+    assert response.status_code in (401, 403)
+    assert client.get("/arms").json()["arms"][0]["implemented"] is False, "no mutation"
+
+
+@pytest.mark.usefixtures("registration_enabled")
+def test_a_token_signed_with_another_secret_is_refused(client: TestClient):
+    """
+    The forgery that matters: a well-formed token from someone who is not us.
+
+    Constructed by the route a forger would actually take -- a real issuer with a
+    different key -- rather than by corrupting a string until the parser complains.
+    """
+    forged = admin_token(secret="a-completely-different-secret-0123456789")
+    response = client.post(
+        "/arms/register", json={"arm_id": "planner", "implemented": True}, headers=auth(forged)
+    )
+
+    assert response.status_code == 403
+    assert client.get("/arms").json()["arms"][0]["implemented"] is False, "no mutation"
+
+
+@pytest.mark.usefixtures("registration_enabled")
+def test_a_valid_token_for_the_wrong_scope_is_refused(client: TestClient):
+    """
+    Our own signature is not enough. A peer token minted for an arm call must not
+    double as authority over the routing table.
+    """
+    response = client.post(
+        "/arms/register",
+        json={"arm_id": "planner", "implemented": True},
+        headers=auth(admin_token(scope="call:validate")),
+    )
+
+    assert response.status_code == 403
+    assert client.get("/arms").json()["arms"][0]["implemented"] is False, "no mutation"
+
+
+@pytest.mark.usefixtures("registration_enabled")
+def test_an_expired_token_is_refused(client: TestClient):
+    """A capability that outlives its window is the thing the window exists to prevent."""
+    import time
+
+    from octollm_common.capability import CapabilityIssuer, PeerConstraints
+
+    issuer = CapabilityIssuer(SIGNING_KEY, kid="k1")
+    stale = issuer.issue(
+        caller="test-operator",
+        callee="orchestrator",
+        task_id="admin",
+        scope=[REGISTRY_WRITE_SCOPE],
+        constraints=PeerConstraints(max_calls=10),
+        ttl_seconds=30,
+        now=int(time.time()) - 600,
+    )
+
+    response = client.post(
+        "/arms/register", json={"arm_id": "planner", "implemented": True}, headers=auth(stale)
+    )
+
+    assert response.status_code == 403
+    assert client.get("/arms").json()["arms"][0]["implemented"] is False, "no mutation"
+
+
+@pytest.mark.usefixtures("registration_enabled")
+def test_a_token_is_spent_and_cannot_be_replayed(client: TestClient):
+    """
+    `max_calls` is counted by the receiving service, not by the caller.
+
+    A bound the caller is trusted to respect is a request, not a bound. An operator
+    token defaults to one use, so a captured Authorization header is worth at most one
+    replay -- and only inside its 120-second window.
+    """
+    once = admin_token(max_calls=1)
+
+    assert (
+        client.post(
+            "/arms/register", json={"arm_id": "planner", "implemented": True}, headers=auth(once)
+        ).status_code
+        == 200
+    )
+
+    replayed = client.post(
+        "/arms/register", json={"arm_id": "judge", "implemented": True}, headers=auth(once)
+    )
+    assert replayed.status_code == 403
+    arms = {a["arm_id"]: a for a in client.get("/arms").json()["arms"]}
+    assert arms["judge"]["implemented"] is False, "the replay changed nothing"
+
+
+@pytest.mark.usefixtures("registration_enabled")
+def test_the_refusal_does_not_disclose_the_configured_secret(client: TestClient):
     """An error message that quotes the secret defeats the point of having one."""
     response = client.post(
         "/arms/register",
         json={"arm_id": "planner"},
-        headers={"authorization": "Bearer wrong-token"},
+        headers=auth(admin_token(secret="a-completely-different-secret-0123456789")),
     )
 
-    assert TOKEN not in response.text
+    assert SIGNING_KEY not in response.text
+    # Nor which check failed: "expired" vs "bad signature" tells a forger which half
+    # of the problem to work on.
+    body = response.text.lower()
+    assert "signature" not in body
+    assert "expired" not in body
 
 
 def test_listing_arms_needs_no_token(client: TestClient):

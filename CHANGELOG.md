@@ -9,6 +9,147 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Stage 6 — the Memory / Curator arm
+
+- **`services/arms/memory/`**, the first arm in this repository that answers with
+  something rather than a 501. `POST /recall` and `POST /remember`, both capability-gated,
+  plus a Neural Ring consumer that ingests `artifact` without anyone calling it.
+- **The `memory` Postgres schema** — `entities`, `relationships`, `task_history` and
+  `action_log`, transcribed from `docs/implementation/memory-systems.md` rather than
+  redesigned. Dedicated rather than shared with `public`: a role scoped to
+  `GRANT USAGE ON SCHEMA memory` cannot read the orchestrator's tables however thoroughly
+  the arm ingesting every other arm's output is compromised.
+- **Episodic memory in Qdrant**, which had been in the compose stack since Phase 0 with
+  **nothing reading or writing it**. One collection per (arm, embedding model), and the
+  model is in the name because changing between two models of the *same dimension* fails
+  silently: the writes succeed, the searches return results, and every score is
+  meaningless. The dimension is probed from the live provider, never configured.
+- **Alembic**, for the first time. It has been a declared dependency since Phase 0 and
+  four documents told people to run `alembic upgrade head` against a project with no
+  `alembic.ini`, no `env.py` and no `versions/`. Scoped to the `memory` schema by
+  `include_object`, so an autogenerate run cannot propose dropping another service's
+  tables.
+- **`make migrate-check`**, which compares the ORM against the migrated database and
+  **caught four real disagreements on its first run** — two `DESC` indexes declared
+  without their ordering, and two GIN indexes written as raw SQL and therefore invisible
+  to the comparison.
+- **`action_log.artifact_id`, unique**, which the design document does not have. Ring
+  delivery is at-least-once, so a redelivery is normal operation; without it the second
+  delivery doubles the record and every count built on it is wrong. The same defect as
+  `store_task_result`, fixed before the traffic that would expose it.
+- **An enforceable data diode.** `RecallRequest` has no field for the caller's clearance;
+  it is read from a `clearance:<level>` scope on the capability token and defaults to
+  `internal` when the grant is silent. Filtering happens in the Qdrant query rather than
+  after it, so `limit` is honoured among documents the caller may see, and `withheld`
+  reports how many were suppressed.
+- **`make test-memory`, `make migrate`, `make data-services`**, and a `test-memory` CI job
+  with Postgres, Qdrant and Redis as services. The suite runs against real engines and the
+  target refuses to run without them.
+- **`MemoryClient` in both SDKs**, `docs/api/openapi/memory.yaml`, and
+  `docs/adr/011-memory-arm-and-the-two-stores.md`.
+- **`make smoke` round-trips an artifact through Memory** — remember, duplicate
+  detection, recall — against the running stack, with a capability token minted from the
+  secret the stack is actually using.
+
+### Fixed
+
+- **`RequireCapability` answered 403 instead of 401 when no token was presented at all**,
+  because task binding was checked before token presence. That collapsed the distinction
+  Stage 5 introduced deliberately: 401 tells a client to obtain a token, 403 tells it not
+  to bother. Found by a Memory test asserting the 401.
+- **`scripts/mint_capability.py` wrote a structlog line to stdout**, so command
+  substitution captured a log line *and* the token. Pasted into an `Authorization` header
+  that produced a malformed request, which uvicorn answered with a bare
+  `400 Invalid HTTP request received` naming neither the header nor the cause — while the
+  script's own docstring claimed stdout carried the token and nothing else. Diagnostics
+  now go to stderr.
+- **`make sdk-parity-check` had two blind spots.** Its TypeScript regex required a generic
+  type parameter, so an ordinary `this.post('/x', body)` matched nothing and was exempt
+  from every assertion in the file; and `arm_routes` derived only `spec.endpoint`, so any
+  route an arm added beyond it was unchecked. The check now covers 9 services and 34
+  calls, and reads one `FRAMEWORK_ARMS` list rather than two that could disagree.
+- **`check_compose_env.py` and `check_port_map.py` did not know about the Memory arm**,
+  which would have left its environment and ports unchecked — the exact gap those checks
+  exist to close.
+
+### Changed
+
+- **Collection floors raised**: shared framework 210, orchestrator 226, memory 63 (new).
+- **`roster.py` marks Memory `implemented: True`** — the first arm to do so. A test
+  asserts the implemented list explicitly, so Stage 8 flipping the next one has to come
+  through it.
+- **`make up` generates a per-run capability secret** and passes it to compose in the
+  environment, never to a file, so the stack is fully usable out of the box without a
+  committed or on-disk secret. `make smoke` reads it back from the running container.
+- **`create_arm_app` accepts `lifespan` and `readiness`**, so an arm that owns connections
+  can open them and report on them honestly. `/ready` is now false when a declared check
+  fails.
+
+#### Stage 5 — the Neural Ring and capability tokens
+
+- **`octollm_common.capability`** — capability tokens, which existed as 87KB of design
+  document and zero lines of code while `docs/api/openapi/executor.yaml` required one on
+  every request. HS256 with a `kid` from day one, a TTL capped at **120 seconds** and
+  refused rather than clamped above it, a per-callee `aud`, a per-task binding, and
+  `constraints.max_calls` **counted by the callee** — a bound the caller is trusted to
+  respect is a request, not a bound. `algorithms=["HS256"]` is passed explicitly on every
+  decode, and `kid` selects from a fixed map built at startup, never from the token.
+- **`octollm_common.ring`** — artifacts on Redis Streams, bounded by the topology each arm
+  declares in `ArmSpec.publishes` / `subscribes`. Consumer groups give at-least-once
+  delivery with explicit acknowledgement, so a crash mid-handler redelivers rather than
+  drops; one group per arm means replicas share work while a second arm gets its own copy.
+  A message that does not parse is acked and logged rather than redelivered forever — a
+  poison pill looks exactly like an arm that has stopped working.
+- **`octollm_common.peer`** — direct arm-to-arm HTTP for the loops the documents name
+  (Coder↔Judge above all), with `PeerLoopContract` bounding iterations, an absolute
+  deadline and a token budget inside a single graph node. `UsageAccumulator` produces the
+  **cumulative** `usage` every arm response carries: the orchestrator cannot observe a peer
+  call, so without it the orchestrator is not under-reporting off-graph spend, it is
+  structurally unable to report it.
+- **`octollm_common.security.RequireCapability`** — the callee-side FastAPI gate.
+  Enforcement in the runtime rather than in the spec, which is the difference between a
+  required credential and a documented one. 401 when no token is presented so a client
+  knows to obtain one, 403 when a token will never work so it does not spin; the denial
+  reason is logged and never returned, because "expired" versus "bad signature" tells a
+  forger which half to work on.
+- **`octollm_common.models.provenance`** — the `data-flow.md` envelope transcribed
+  verbatim, plus `trace_id` (a ring message is otherwise the one hop with no place in a
+  trace), `engagement_id` (Red Team audit binding), `sensitivity` (what makes the data
+  diode enforceable rather than aspirational, defaulting to `internal` and never
+  `public`), and `promoted_from` (memory lineage). `content_sha256` is computed and any
+  supplied value overwritten — a hash filled in by the producer proves nothing.
+- **`app.capabilities.RingAuthority`** — the orchestrator as sole signing authority.
+  It mints only for edges the **static roster** declares, never the live registry:
+  `ArmRegistry` accepts `peers` from an arm's own `/capabilities` response, so a
+  compromised arm could otherwise widen its own reach by lying to a probe. A test performs
+  that attack and asserts the token is still refused.
+- **`scripts/mint_capability.py`** — how an operator obtains an administrative token.
+  There is deliberately no endpoint that issues one: an endpoint that mints authority for
+  whoever asks is an endpoint an attacker asks nicely.
+- **`ORCHESTRATOR_CAPABILITY_SECRET` / `_KID` / `_TTL_SECONDS`**, replacing
+  `ORCHESTRATOR_ARM_REGISTRATION_TOKEN`. Unset by default, and every capability-gated
+  endpoint then fails closed with 503. A short or placeholder secret is refused at
+  construction, so a misconfigured service dies at startup rather than reporting itself
+  healthy and failing on the first real request.
+- **`docs/adr/010-neural-ring-and-capability-tokens.md`**, recording the transport split,
+  why authorization reads the roster rather than the registry, the HS256 symmetry
+  limitation, and the four alternatives considered.
+
+### Changed
+
+- **`POST /arms/register` now requires a capability token**, not a shared secret. Stage 4
+  shipped that secret and recorded it as a stopgap; the replacement is narrower in three
+  ways — it expires within 120 seconds, it names the orchestrator as its audience so it
+  cannot be presented to an arm, and it is counted, so a captured `Authorization` header
+  is worth at most one replay inside a two-minute window.
+- **CI's `test-shared` job runs against a `redis:8-alpine` service.** The 15 Neural Ring
+  tests use a real Redis rather than a fake, because a double implements whatever the code
+  already assumes and so cannot show that a consumer group survives a restart, that an
+  unacknowledged message redelivers, or that `mkstream` lets a consumer start before its
+  producer. They skip when no Redis is reachable, which is exactly why the gate must
+  provide one.
+- **Collection floors raised**: shared framework 103 → **210**, orchestrator 197 → **225**.
+
 #### Stage 4 — the shared arm framework
 
 - **`shared/python/octollm_common`**, an installable package (`pip install -e
@@ -83,6 +224,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `scripts/smoke.sh` honoured `REFLEX_URL` but not `REFLEX_PORT`, so relocating a port
   with the documented variable moved the service and left the smoke test asking the old
   one — a check failing for a reason unrelated to what it checks.
+
+### Changed
+
+- **`docs/security/capability-isolation.md` no longer claims a compromised arm has "no
+  access to other arms."** The threat-model row now reads "no access beyond task-scoped,
+  orchestrator-issued, expiring peer capabilities" — true both today and once the Neural
+  Ring (Stage 5) lets arms talk without the brain. The old wording would have become
+  false the day the ring shipped, which is why it gated Stage 5.
+- **`AGENTS.md` is the canonical working guide**, with `CLAUDE.md` and `GEMINI.md` as
+  symlinks to it. Universal engineering rules now come from the shared Master-Claude
+  core; the project block holds only what is specific to OctoLLM.
 
 ### Removed
 

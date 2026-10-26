@@ -388,19 +388,18 @@ paths:
 
         An omitted field is left alone rather than cleared.
 
-        **Authentication.** This endpoint requires a bearer token matching
-        `ORCHESTRATOR_ARM_REGISTRATION_TOKEN`, and is **disabled with 503 when no
-        token is configured** — which is the default. The service has no other
-        authentication until Stage 5 issues capability tokens, and an unauthenticated
-        caller able to restate an arm's details controls where the orchestrator sends
-        work, so it fails closed. The read path (`GET /arms`) stays open: the roster
+        **Authorization.** This endpoint requires a capability token signed by the
+        orchestrator, and is **disabled with 503 when no
+        `ORCHESTRATOR_CAPABILITY_SECRET` is configured** — which is the default. An
+        unauthenticated caller able to restate an arm's details controls where the
+        orchestrator sends work, so it fails closed. The read path (`GET /arms`) stays open: the roster
         is public information.
 
       tags:
         - registry
       operationId: register_arm
       security:
-        - armRegistrationToken: []
+        - capabilityToken: []
       requestBody:
         required: true
         content:
@@ -1269,19 +1268,31 @@ components:
   # ==============================================================================
 
   securitySchemes:
-    armRegistrationToken:
+    capabilityToken:
       type: http
       scheme: bearer
+      bearerFormat: JWT
       description: |
-        The shared secret required by `POST /arms/register`, configured as
-        `ORCHESTRATOR_ARM_REGISTRATION_TOKEN`. When it is unset — the default — the
-        endpoint refuses every write with 503.
+        A capability token signed by the orchestrator, which is the sole signing
+        authority. Signing is configured by `ORCHESTRATOR_CAPABILITY_SECRET`; when it
+        is unset — the default — every capability-gated endpoint refuses with 503.
 
-        This is a deliberate stopgap with a known replacement. Stage 5 makes the
-        orchestrator the signing authority for per-arm capability tokens, and this
-        secret goes away with it. It exists because shipping the one mutating
-        endpoint on the registry ungated would put the hole in `main` before the
-        traffic that makes it exploitable arrives.
+        The token is deliberately narrow. It names the orchestrator as its audience
+        (`aud`), so one of these cannot be presented to an arm; it carries a `scope`,
+        and `POST /arms/register` requires `registry:write`; it expires within 120
+        seconds; and `constraints.max_calls` is counted by the orchestrator rather
+        than trusted to the caller, defaulting to a single use for an administrative
+        action. A captured `Authorization` header is therefore worth at most one
+        replay inside a two-minute window.
+
+        There is no endpoint that issues one: an endpoint that mints authority for
+        whoever asks is an endpoint an attacker asks nicely. Operators mint them with
+        `scripts/mint_capability.py`, which needs the signing secret and so grants
+        nothing to anyone who did not already hold it.
+
+        Peer tokens for arm-to-arm calls use the same format with an arm as `aud`,
+        and are minted per task step by the execution engine (Stage 7). See
+        ADR-010.
 
         No other endpoint is authenticated yet.
 
