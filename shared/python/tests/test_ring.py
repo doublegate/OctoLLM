@@ -219,13 +219,24 @@ async def test_an_unacknowledged_message_is_redelivered(redis, artifact_type) ->
     try:
         first = RingConsumer(redis, consumer_spec, consumer_name="c1")
         await first.ensure_groups()
-        await RingPublisher(redis, producer).publish(make_artifact(artifact_type))
+        original = make_artifact(artifact_type)
+        await RingPublisher(redis, producer).publish(original)
 
         delivered = await first.consume(block_ms=500)
         assert len(delivered) == 1  # read, and deliberately NOT acked
 
         pending = await redis.xpending(stream_key(artifact_type), first.group)
         assert pending["pending"] == 1
+
+        # Calling consume again on the same consumer recovers its pending message.
+        redelivered = await first.consume(block_ms=50)
+        assert [m.artifact.artifact_id for m in redelivered] == [original.artifact_id]
+
+        # A replacement consumer reclaims the idle pending message via XAUTOCLAIM.
+        replacement = RingConsumer(redis, consumer_spec, consumer_name="c2", reclaim_idle_ms=0)
+        reclaimed = await replacement.consume(block_ms=50)
+        assert [m.artifact.artifact_id for m in reclaimed] == [original.artifact_id]
+        assert await replacement.ack(reclaimed) == 1
     finally:
         await cleanup(redis, artifact_type)
 

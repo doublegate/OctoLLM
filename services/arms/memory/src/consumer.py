@@ -41,7 +41,7 @@ from octollm_common.models.contracts import RememberRequest
 from octollm_common.models.provenance import Artifact, Provenance
 from octollm_common.ring import RingConsumer, RingPublisher
 
-from .service import ARM_ID, MemoryService
+from .service import ARM_ID, ConflictingArtifactError, MemoryService
 
 logger = structlog.get_logger(__name__)
 
@@ -128,6 +128,16 @@ class ArtifactConsumer:
                     RememberRequest(artifact=message.artifact),
                     request_id=f"ring-{message.message_id}",
                 )
+            except ConflictingArtifactError as exc:
+                self.failed += 1
+                logger.warning(
+                    "memory_ring_conflicting_artifact",
+                    artifact_id=message.artifact.artifact_id,
+                    message_id=message.message_id,
+                    error=str(exc),
+                )
+                handled.append(message)
+                continue
             except Exception as exc:  # noqa: BLE001 - leave it pending for redelivery
                 self.failed += 1
                 logger.warning(
@@ -135,6 +145,15 @@ class ArtifactConsumer:
                     artifact_id=message.artifact.artifact_id,
                     message_id=message.message_id,
                     error=str(exc),
+                )
+                continue
+
+            if message.artifact.content and not response.episodic_written:
+                self.failed += 1
+                logger.warning(
+                    "memory_ring_episodic_incomplete",
+                    artifact_id=message.artifact.artifact_id,
+                    message_id=message.message_id,
                 )
                 continue
 

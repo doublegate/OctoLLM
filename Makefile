@@ -147,8 +147,9 @@ test-memory: ## Memory arm suite (needs Postgres, Qdrant and Redis), coverage at
 	@# search, at-least-once redelivery. They SKIP when the services are absent, and a
 	@# skipped suite reports exactly what a passing one reports.
 	@$(PYTHON) -c "import psycopg, os; \
-	  psycopg.connect(os.environ.get('MEMORY_PG_DSN', \
-	    'postgresql://octollm:octollm_dev_password@localhost:15432/octollm')).close()" >/dev/null 2>&1 \
+	  dsn = os.environ.get('MEMORY_PG_DSN') or os.environ.get('MEMORY_DATABASE_URL', \
+	    'postgresql://octollm:octollm_dev_password@localhost:15432/octollm').replace('+psycopg', ''); \
+	  psycopg.connect(dsn).close()" >/dev/null 2>&1 \
 	  || { echo "::error::No Postgres. Run: make data-services   (or point MEMORY_DATABASE_URL at one)"; exit 1; }
 	@curl -sf $${MEMORY_QDRANT_URL:-http://localhost:6333}/readyz >/dev/null 2>&1 \
 	  || { echo "::error::No Qdrant at $${MEMORY_QDRANT_URL:-http://localhost:6333}. Run: make data-services"; exit 1; }

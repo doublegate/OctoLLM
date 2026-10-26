@@ -473,3 +473,36 @@ async def test_redis_counter_sets_a_ttl_only_on_first_increment() -> None:
     assert await counter.increment("j", ttl_seconds=42) == 2
     assert await counter.increment("j", ttl_seconds=42) == 3
     assert redis.expires == [("octollm:cap:calls:j", 42)]
+
+
+async def test_call_counter_ttl_covers_verification_leeway(issuer: CapabilityIssuer) -> None:
+    """
+    The counter entry must outlive the verifier's leeway window.
+
+    Otherwise a single-use token spent just before `exp` has its counter entry expire at
+    `exp` while `jwt.decode` still accepts the token for `leeway` more seconds.
+    """
+    recorded_ttls: list[int] = []
+
+    class RecordingCounter:
+        async def increment(self, jti: str, *, ttl_seconds: int) -> int:
+            recorded_ttls.append(ttl_seconds)
+            return 1
+
+    now = int(time.time())
+    token = issuer.issue(
+        caller="coder",
+        callee="judge",
+        task_id="t",
+        scope=["s"],
+        ttl_seconds=1,
+        now=now - 1,
+    )
+    verifier = CapabilityVerifier(
+        {"k1": SECRET},
+        audience="judge",
+        counter=RecordingCounter(),
+        leeway=5,
+    )
+    await verifier.verify(token, required_scope="s", task_id="t")
+    assert recorded_ttls and recorded_ttls[0] >= 5

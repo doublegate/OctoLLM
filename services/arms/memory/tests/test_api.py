@@ -163,6 +163,67 @@ async def test_the_second_write_of_one_artifact_reports_duplicate(
             await qdrant.delete_collection(name)
 
 
+async def test_remember_refuses_an_artifact_whose_task_does_not_match_the_token(
+    client, issuer
+) -> None:
+    """
+    `X-Task-Id` matching the token is necessary but not sufficient.
+
+    The artifact's own `provenance.task_id` must also match `claims.task_id`, or a
+    holder of a task-1 grant can attribute writes to task-2.
+    """
+    forged = make_artifact(created_by=CALLER, task_id="task-2")
+    response = await client.post(
+        "/remember",
+        json={"artifact": forged.model_dump(mode="json")},
+        headers=headers(token(issuer, "memory:write", task="task-1"), task="task-1"),
+    )
+    assert response.status_code == 403
+    assert response.json()["error"]["code"] == "forbidden"
+
+
+async def test_remember_rejects_a_conflicting_duplicate_before_indexing_episodic(
+    client, issuer, qdrant, episodic
+) -> None:
+    """
+    A replay with the same `artifact_id` but altered content or sensitivity is rejected.
+
+    Otherwise `EpisodicStore.index()` would overwrite the searchable vector and
+    downgrade its clearance label while Postgres kept the original audit row.
+    """
+    original = make_artifact(
+        created_by=CALLER,
+        artifact_id="conflict-id-1",
+        content="secret rotation key",
+        sensitivity="restricted",
+    )
+    downgraded = make_artifact(
+        created_by=CALLER,
+        artifact_id="conflict-id-1",
+        content="secret rotation key",
+        sensitivity="internal",
+    )
+    try:
+        first = await remember(client, issuer, original)
+        assert first.status_code == 200
+
+        second = await remember(client, issuer, downgraded)
+        assert second.status_code == 409
+        assert second.json()["error"]["code"] == "conflict"
+
+        internal = await client.post(
+            "/recall",
+            json={"query": "secret rotation key", "top_k": 5},
+            headers=headers(token(issuer, "call:recall", clearance="internal")),
+        )
+        assert internal.json()["hits"] == []
+        assert internal.json()["withheld"] == 1
+    finally:
+        name = episodic.collection_for(CALLER)
+        if await qdrant.collection_exists(name):
+            await qdrant.delete_collection(name)
+
+
 async def test_an_artifact_can_be_recorded_without_a_vector(client, issuer) -> None:
     """`index_episodic=False` for artifacts not worth embedding, such as an ack."""
     artifact = make_artifact(created_by=CALLER, artifact_type="memory_write_ack", content="")

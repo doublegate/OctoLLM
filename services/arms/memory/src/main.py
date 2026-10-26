@@ -29,9 +29,10 @@ from contextlib import asynccontextmanager
 from typing import Any
 
 import structlog
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from octollm_common import create_arm_app
 from octollm_common.capability import CapabilityClaims, CapabilityVerifier, InMemoryCallCounter
+from octollm_common.errors import error_body
 from octollm_common.llm import create_provider
 from octollm_common.models.contracts import (
     RecallRequest,
@@ -44,7 +45,7 @@ from octollm_common.roster import spec_for
 from octollm_common.security import CapabilityPolicy, RequireCapability, clearance_from
 
 from .config import get_settings
-from .service import ARM_ID, MemoryService
+from .service import ARM_ID, ConflictingArtifactError, MemoryService
 
 logger = structlog.get_logger(__name__)
 
@@ -204,9 +205,35 @@ async def remember(
     claims: CapabilityClaims = Depends(RequireCapability(WRITE_POLICY)),
 ) -> RememberResponse:
     """Commit one artifact. Idempotent: a redelivery is reported, not rejected."""
-    return await _service().remember(
-        body, request_id=getattr(request.state, "request_id", "unknown")
-    )
+    request_id = getattr(request.state, "request_id", "unknown")
+    if body.artifact.provenance.task_id != claims.task_id:
+        logger.warning(
+            "capability_denied",
+            reason="artifact_task_mismatch",
+            token_task_id=claims.task_id,
+            artifact_task_id=body.artifact.provenance.task_id,
+            path=request.url.path,
+            request_id=request_id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=error_body(
+                code="forbidden",
+                message="The presented capability token does not authorize this request.",
+                request_id=request_id,
+            ),
+        )
+    try:
+        return await _service().remember(body, request_id=request_id)
+    except ConflictingArtifactError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=error_body(
+                code="conflict",
+                message=str(exc),
+                request_id=request_id,
+            ),
+        ) from exc
 
 
 app = create_arm_app(

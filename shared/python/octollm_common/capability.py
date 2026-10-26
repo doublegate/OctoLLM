@@ -48,6 +48,7 @@ change rather than a protocol change.
 
 from __future__ import annotations
 
+import math
 import time
 import uuid
 from typing import Any, Protocol
@@ -498,7 +499,7 @@ class CapabilityVerifier:
                 f"Token covers task {claims.task_id}, not {task_id}.",
             )
 
-        remaining_ttl = max(1, claims.exp - int(time.time()))
+        remaining_ttl = max(1, math.ceil((claims.exp + self._leeway) - time.time()) + 1)
         count = await self._counter.increment(claims.jti, ttl_seconds=remaining_ttl)
         if count > claims.constraints.max_calls:
             raise CapabilityDenied(

@@ -232,6 +232,48 @@ async def test_a_failed_write_leaves_the_message_pending_for_redelivery(
         await cleanup_collection(qdrant, episodic)
 
 
+async def test_an_incomplete_episodic_write_leaves_the_message_pending_for_redelivery(
+    consumer, publish, redis, artifact_type, monkeypatch, qdrant, episodic
+) -> None:
+    """
+    When Qdrant or the embedding provider fails during `remember`, `episodic_written` is
+    `False`. The ring consumer must NOT acknowledge the message until the vector write
+    succeeds, because Postgres stores only the hash, not the content needed to rebuild it.
+    """
+    try:
+        artifact = await publish(content="needs vector indexing")
+        real_index = episodic.index
+        calls = {"n": 0}
+
+        async def flaky_index(art):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise RuntimeError("qdrant temporarily unavailable")
+            await real_index(art)
+
+        monkeypatch.setattr(episodic, "index", flaky_index)
+
+        stored_first = await consumer.drain_once()
+        assert stored_first == 0
+        assert consumer.failed == 1
+        pending = await redis.xpending(stream_key(artifact_type), consumer._consumer.group)
+        assert pending["pending"] == 1, "partial write without episodic vector was acknowledged"
+
+        # Next drain recovers the pending message, repairs the episodic vector, and acks.
+        await consumer.drain_once()
+        pending_after = await redis.xpending(stream_key(artifact_type), consumer._consumer.group)
+        assert pending_after["pending"] == 0
+        hits, _ = await episodic.search(
+            arm_id="coder",
+            query="needs vector indexing",
+            limit=5,
+            clearance=artifact.provenance.sensitivity,
+        )
+        assert [h["artifact_id"] for h in hits] == [artifact.artifact_id]
+    finally:
+        await cleanup_collection(qdrant, episodic)
+
+
 async def test_an_empty_ring_is_not_an_error(consumer) -> None:
     """The idle path. A consumer that raised on quiet would restart forever."""
     assert await consumer.drain_once() == 0

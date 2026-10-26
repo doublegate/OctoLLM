@@ -196,11 +196,13 @@ class RingConsumer:
         *,
         consumer_name: str,
         group: str | None = None,
+        reclaim_idle_ms: int = 30_000,
     ) -> None:
         self._redis = redis
         self._spec = spec
         self._group = group or f"{spec.arm_id}-group"
         self._consumer = consumer_name
+        self._reclaim_idle_ms = reclaim_idle_ms
 
     @property
     def group(self) -> str:
@@ -239,10 +241,12 @@ class RingConsumer:
 
     async def consume(self, *, count: int = 10, block_ms: int = 1000) -> list[RingMessage]:
         """
-        Read undelivered artifacts for this group.
+        Read pending and undelivered artifacts for this group.
 
-        Returns an empty list when the block expires with nothing new, which is the
-        normal idle path and not an error.
+        Pending messages are recovered before reading `">"`: idle entries from dead or
+        stalled consumers are reclaimed via `XAUTOCLAIM`, and this consumer's own
+        unacknowledged entries are re-read with `"0"`. Returns an empty list when the
+        block expires with nothing new, which is the normal idle path and not an error.
 
         A message whose payload does not parse is **acknowledged and dropped**, with a
         warning. Leaving it pending would make it redeliver forever, and one
@@ -252,40 +256,97 @@ class RingConsumer:
         if not self._spec.subscribes:
             return []
 
-        streams = {stream_key(t): ">" for t in self._spec.subscribes}
-        response = await self._redis.xreadgroup(
-            groupname=self._group,
-            consumername=self._consumer,
-            streams=streams,
-            count=count,
-            block=block_ms,
-        )
-        if not response:
-            return []
-
         messages: list[RingMessage] = []
+        seen: set[tuple[str, str]] = set()
+
+        if hasattr(self._redis, "xautoclaim"):
+            for artifact_type in self._spec.subscribes:
+                if len(messages) >= count:
+                    break
+                key = stream_key(artifact_type)
+                claimed = await self._redis.xautoclaim(
+                    key,
+                    self._group,
+                    self._consumer,
+                    min_idle_time=self._reclaim_idle_ms,
+                    start_id="0-0",
+                    count=count - len(messages),
+                )
+                entries = (
+                    claimed[1] if isinstance(claimed, tuple | list) and len(claimed) >= 2 else []
+                )
+                deleted = (
+                    claimed[2] if isinstance(claimed, tuple | list) and len(claimed) >= 3 else []
+                )
+                for raw_deleted in deleted:
+                    await self._redis.xack(key, self._group, _as_str(raw_deleted))
+                await self._collect_entries(key, artifact_type, entries, messages, seen)
+
+        if len(messages) < count:
+            pending_streams = {stream_key(t): "0" for t in self._spec.subscribes}
+            pending_response = await self._redis.xreadgroup(
+                groupname=self._group,
+                consumername=self._consumer,
+                streams=pending_streams,
+                count=count - len(messages),
+            )
+            await self._collect_response(pending_response, messages, seen)
+
+        if len(messages) < count:
+            streams = {stream_key(t): ">" for t in self._spec.subscribes}
+            response = await self._redis.xreadgroup(
+                groupname=self._group,
+                consumername=self._consumer,
+                streams=streams,
+                count=count - len(messages),
+                block=block_ms if not messages else None,
+            )
+            await self._collect_response(response, messages, seen)
+
+        return messages
+
+    async def _collect_response(
+        self,
+        response: Any,
+        messages: list[RingMessage],
+        seen: set[tuple[str, str]],
+    ) -> None:
+        if not response:
+            return
         for raw_stream, entries in response:
             key = _as_str(raw_stream)
             artifact_type = key.removeprefix(f"{RING_PREFIX}:")
-            for raw_id, fields in entries:
-                message_id = _as_str(raw_id)
-                payload = _field(fields, "artifact")
-                if payload is None:
-                    await self._drop(key, message_id, "no artifact field")
-                    continue
-                try:
-                    artifact = Artifact.from_json(payload)
-                except ValueError as exc:
-                    await self._drop(key, message_id, str(exc))
-                    continue
-                messages.append(
-                    RingMessage(
-                        message_id=message_id,
-                        artifact_type=artifact_type,
-                        artifact=artifact,
-                    )
+            await self._collect_entries(key, artifact_type, entries, messages, seen)
+
+    async def _collect_entries(
+        self,
+        key: str,
+        artifact_type: str,
+        entries: Any,
+        messages: list[RingMessage],
+        seen: set[tuple[str, str]],
+    ) -> None:
+        for raw_id, fields in entries:
+            message_id = _as_str(raw_id)
+            if (key, message_id) in seen:
+                continue
+            seen.add((key, message_id))
+            payload = _field(fields, "artifact")
+            if payload is None:
+                await self._drop(key, message_id, "no artifact field")
+                continue
+            try:
+                artifact = Artifact.from_json(payload)
+            except ValueError as exc:
+                await self._drop(key, message_id, str(exc))
+                continue
+            messages.append(
+                RingMessage(
+                    message_id=message_id,
+                    artifact_type=artifact_type,
+                    artifact=artifact,
                 )
-        return messages
+            )
 
     async def ack(self, messages: Sequence[RingMessage]) -> int:
         """

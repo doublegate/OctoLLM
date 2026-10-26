@@ -48,9 +48,24 @@ from .vectors import EpisodicStore, VectorStoreError
 
 logger = structlog.get_logger(__name__)
 
-__all__ = ["MemoryService"]
+__all__ = ["ConflictingArtifactError", "MemoryService"]
 
 ARM_ID = "memory"
+
+
+class ConflictingArtifactError(Exception):
+    """An existing artifact_id was re-submitted with altered content or provenance."""
+
+
+def _matches_stored_provenance(artifact: Artifact, existing: Any) -> bool:
+    prov = artifact.provenance
+    return bool(
+        existing.arm_id == prov.created_by
+        and existing.task_id == prov.task_id
+        and existing.action_type == artifact.artifact_type
+        and existing.sensitivity == str(prov.sensitivity)
+        and existing.content_sha256 == artifact.content_sha256
+    )
 
 
 class MemoryService:
@@ -70,6 +85,19 @@ class MemoryService:
         """
         artifact = request.artifact
         created = await self._semantic.remember(artifact)
+        if not created:
+            existing = await self._semantic.provenance_for(artifact.artifact_id)
+            if existing is not None and not _matches_stored_provenance(artifact, existing):
+                logger.warning(
+                    "memory_conflicting_duplicate",
+                    artifact_id=artifact.artifact_id,
+                    stored_arm_id=existing.arm_id,
+                    incoming_arm_id=artifact.provenance.created_by,
+                )
+                raise ConflictingArtifactError(
+                    f"Artifact {artifact.artifact_id!r} already exists with different "
+                    "content or provenance."
+                )
 
         episodic = False
         if request.index_episodic and artifact.content:
