@@ -47,7 +47,7 @@ toml = "1.1"
 reqwest = { version = "0.13", features = ["json", "rustls"], default-features = false }
 
 # Redis
-redis = { version = "1.7", features = ["tokio-comp", "connection-manager"] }
+redis = { version = "1.8", features = ["tokio-comp", "connection-manager"] }
 deadpool = "0.13"
 deadpool-redis = "0.23"
 
@@ -58,7 +58,7 @@ thiserror = "2.0"
 # Logging and tracing
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-tracing-opentelemetry = "0.33"
+tracing-opentelemetry = "0.34"
 
 # Metrics
 prometheus = { version = "0.14", features = ["process"] }
@@ -68,10 +68,10 @@ chrono = { version = "0.4", features = ["serde"] }
 
 # Regex
 regex = "1.13"
-fancy-regex = "0.19"
+fancy-regex = "0.20"
 
 # UUID
-uuid = { version = "1.28", features = ["v4", "serde"] }
+uuid = { version = "1.29", features = ["v4", "serde"] }
 
 # Environment
 # dotenvy, not dotenv: the original is unmaintained (RUSTSEC-2021-0141) and is the
@@ -82,7 +82,7 @@ config = "0.15"
 num_cpus = "1.17"
 
 # Security
-jsonwebtoken = "11.0"
+jsonwebtoken = "11.1"
 argon2 = "0.6"
 sha2 = "0.11"
 

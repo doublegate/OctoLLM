@@ -41,9 +41,9 @@ env:
   # newly-stabilised rule can turn a green `main` red with no commit to blame -- which
   # is what happened here between 2025-12 and 2026-09 (ruff UP045/UP006). Keep these in
   # step with [tool.poetry.group.dev] in pyproject.toml when bumping.
-  RUFF_VERSION: 0.17.1
+  RUFF_VERSION: 0.17.2
   BLACK_VERSION: 26.10.1
-  MYPY_VERSION: 2.3.1
+  MYPY_VERSION: 2.4.0
   PYTHON_VERSION: '3.14'
 
 jobs:

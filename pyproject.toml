@@ -24,19 +24,19 @@ package-mode = false
 # runs 3.14. The upper bound is not arbitrary either — presidio-analyzer/presidio-anonymizer
 # 2.2.364 declare `Requires-Python <3.15`, so an open-ended range makes the lock unsolvable.
 python = ">=3.14,<3.15"
-fastapi = ">=0.143.2,<0.144.0"
+fastapi = "^0.162.0"
 pydantic = "^2.14.1"
-pydantic-settings = "^2.16.0"
-uvicorn = {extras = ["standard"], version = ">=0.52.4,<0.55.0"}
+pydantic-settings = "^2.16.1"
+uvicorn = {extras = ["standard"], version = ">=0.54.0,<0.55.0"}
 httpx = "^0.28.1"
 redis = "^8.1.0"
 psycopg = {extras = ["binary", "pool"], version = "^3.3.5"}
-sqlalchemy = {extras = ["asyncio"], version = "^2.1.4"}
-alembic = "^1.20.0"
-qdrant-client = "^1.19.0"
-openai = "^3.31.0"
-anthropic = "^1.15.0"
-langchain = "^1.4.6"
+sqlalchemy = {extras = ["asyncio"], version = "^2.1.6"}
+alembic = "^1.20.1"
+qdrant-client = "^1.20.0"
+openai = "^3.37.0"
+anthropic = "^2.3.0"
+langchain = "^1.4.7"
 langchain-openai = "^1.7.2"
 structlog = "^26.1.0"
 prometheus-client = "^0.26.0"
@@ -44,25 +44,25 @@ pyjwt = {extras = ["crypto"], version = "^2.14.0"}
 tenacity = "^9.2.1"
 python-multipart = "^0.0.32"
 python-dotenv = "^1.2.3"
-presidio-analyzer = "^2.2.364"
+presidio-analyzer = "^2.2.365"
 # Transitive pin, held here deliberately: presidio-analyzer accepts spacy >=3.4.4, and
 # the resolver otherwise settles on spacy 3.7.5 -> srsly 2.4.8, which has no cp314 wheel
 # and fails to compile against the 3.14 C API (PyObject_AsReadBuffer was removed). The
 # 3.8.x line ships cp314 wheels. Drop this once presidio floors spacy itself.
 spacy = "^3.8.16"
-presidio-anonymizer = "^2.2.364"
+presidio-anonymizer = "^2.2.365"
 tiktoken = "^0.14.0"
-starlette = "^1.8.0"
+starlette = "^1.10.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.1.1"
-pytest-asyncio = "^1.4.0"
+pytest-asyncio = "^1.4.1"
 pytest-cov = "^7.1.0"
-pytest-mock = "^3.15.1"
+pytest-mock = "^3.17.0"
 pytest-timeout = "^2.4.0"
 black = "^26.10.1"
-ruff = "^0.17.1"
-mypy = "^2.3.1"
+ruff = "^0.17.2"
+mypy = "^2.4.0"
 pre-commit = "^4.7.0"
 ipython = "^9.17.1"
 httpx = "^0.28.1"
@@ -70,8 +70,8 @@ httpx = "^0.28.1"
 [tool.poetry.group.test.dependencies]
 pytest-benchmark = "^5.3.0"
 faker = "^40.43.0"
-hypothesis = "^6.170.0"
-locust = "^2.46.7"
+hypothesis = "^6.170.11"
+locust = "^2.47.0"
 
 [build-system]
 requires = ["poetry-core"]

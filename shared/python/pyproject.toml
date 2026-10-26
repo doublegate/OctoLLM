@@ -19,7 +19,7 @@ classifiers = [
 # Deliberately small. This package is imported by all eight arm images and by the
 # orchestrator, so every dependency added here is added to nine services at once.
 dependencies = [
-    "fastapi>=0.143.2",
+    "fastapi>=0.162.0",
     "pydantic>=2.14.1",
     "httpx>=0.28.1",
     "structlog>=26.1.0",
@@ -31,11 +31,11 @@ dependencies = [
 # default install must be able to run the whole stack with no provider at all, which
 # is what FakeProvider is for.
 ollama = ["ollama>=0.6.1"]
-openai = ["openai>=3.31.0"]
-anthropic = ["anthropic>=1.15.0"]
+openai = ["openai>=3.37.0"]
+anthropic = ["anthropic>=2.3.0"]
 dev = [
     "pytest>=9.1.1",
-    "pytest-asyncio>=1.4.0",
+    "pytest-asyncio>=1.4.1",
     "pytest-cov>=7.1.0",
     # An INDEPENDENT validator for the fake's schema synthesis. Checking synthesised
     # output with the code that synthesised it proves nothing; this is a separate
@@ -45,7 +45,7 @@ dev = [
 ]
 
 [build-system]
-requires = ["setuptools>=83.0.0", "wheel"]
+requires = ["setuptools>=84.2.1", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
