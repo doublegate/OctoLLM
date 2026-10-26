@@ -17,12 +17,12 @@ classifiers = [
 ]
 
 dependencies = [
-    "fastapi>=0.143.2",
-    "uvicorn[standard]>=0.52.4",
+    "fastapi>=0.162.0",
+    "uvicorn[standard]>=0.54.0",
     "pydantic>=2.14.1",
-    "pydantic-settings>=2.16.0",
-    "sqlalchemy[asyncio]>=2.1.4",
-    "alembic>=1.20.0",
+    "pydantic-settings>=2.16.1",
+    "sqlalchemy[asyncio]>=2.1.6",
+    "alembic>=1.20.1",
     "psycopg[binary]>=3.3.5",
     "httpx>=0.28.1",
     "tenacity>=9.2.1",
@@ -30,23 +30,23 @@ dependencies = [
     "prometheus-client>=0.26.0",
     "python-multipart>=0.0.32",
     "structlog>=26.1.0",
-    "opentelemetry-api>=1.44.0",
-    "opentelemetry-sdk>=1.44.0",
-    "opentelemetry-instrumentation-fastapi>=0.65b0",
-    "opentelemetry-instrumentation-httpx>=0.65b0",
-    "opentelemetry-instrumentation-psycopg>=0.65b0",
-    "opentelemetry-instrumentation-redis>=0.65b0",
-    "opentelemetry-exporter-otlp-proto-grpc>=1.44.0",
+    "opentelemetry-api>=1.45.1",
+    "opentelemetry-sdk>=1.45.1",
+    "opentelemetry-instrumentation-fastapi>=0.66b1",
+    "opentelemetry-instrumentation-httpx>=0.66b1",
+    "opentelemetry-instrumentation-psycopg>=0.66b1",
+    "opentelemetry-instrumentation-redis>=0.66b1",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.45.1",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=9.1.1",
-    "pytest-asyncio>=1.4.0",
+    "pytest-asyncio>=1.4.1",
     "pytest-cov>=7.1.0",
     "black>=26.10.1",
-    "ruff>=0.17.1",
-    "mypy>=2.3.1",
+    "ruff>=0.17.2",
+    "mypy>=2.4.0",
     "httpx>=0.28.1",
     "faker>=40.43.0",
     "aiosqlite>=0.22.1",
@@ -55,7 +55,7 @@ dev = [
 [build-system]
 # setuptools >=83: everything below it is covered by a GitHub advisory, and a
 # build-system floor is what Dependabot reads as the installed version.
-requires = ["setuptools>=83.0.0", "wheel"]
+requires = ["setuptools>=84.2.1", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]

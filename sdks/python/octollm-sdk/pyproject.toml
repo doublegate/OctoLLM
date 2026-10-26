@@ -1,7 +1,7 @@
 [build-system]
 # setuptools >=83: everything below it is covered by a GitHub advisory, and a
 # build-system floor is what Dependabot reads as the installed version.
-requires = ["setuptools>=83.0.0", "wheel"]
+requires = ["setuptools>=84.2.1", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -26,17 +26,17 @@ classifiers = [
 dependencies = [
     "httpx>=0.28.1",
     "pydantic>=2.14.1",
-    "python-dateutil>=2.9.0.post0",
+    "python-dateutil>=3.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=9.1.1",
-    "pytest-asyncio>=1.4.0",
+    "pytest-asyncio>=1.4.1",
     "pytest-cov>=7.1.0",
     "black>=26.10.1",
-    "ruff>=0.17.1",
-    "mypy>=2.3.1",
+    "ruff>=0.17.2",
+    "mypy>=2.4.0",
 ]
 
 [project.urls]
