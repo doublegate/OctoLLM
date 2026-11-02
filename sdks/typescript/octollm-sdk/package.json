@@ -35,18 +35,18 @@
   },
   "homepage": "https://github.com/doublegate/OctoLLM#readme",
   "dependencies": {
-    "axios": "^1.20.0",
+    "axios": "^1.21.0",
     "axios-retry": "^4.5.0"
   },
   "devDependencies": {
-    "@babel/core": "^8.0.9",
+    "@babel/core": "^8.0.10",
     "@babel/eslint-parser": "^8.0.7",
     "@babel/preset-typescript": "^8.0.7",
     "@eslint/js": "^10.0.1",
     "@swc/core": "^1.16.20",
     "@swc/jest": "^0.2.39",
     "@types/jest": "^30.0.0",
-    "@types/node": "^26.6.5",
+    "@types/node": "^26.6.6",
     "eslint": "^10.13.0",
     "globals": "^17.13.0",
     "jest": "^30.5.2",
