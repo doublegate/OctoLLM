@@ -42,7 +42,7 @@ structlog = "^26.1.0"
 prometheus-client = "^0.26.0"
 pyjwt = {extras = ["crypto"], version = "^2.14.0"}
 tenacity = "^9.2.1"
-python-multipart = "^0.0.32"
+python-multipart = ">=0.0.32,<0.0.34"
 python-dotenv = "^1.2.3"
 presidio-analyzer = "^2.2.365"
 # Transitive pin, held here deliberately: presidio-analyzer accepts spacy >=3.4.4, and
